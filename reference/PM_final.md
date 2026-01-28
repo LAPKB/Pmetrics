@@ -68,10 +68,6 @@ Michael Neely, Julian Otalvaro
     i.e. those that have unknown mean and unknown variance, both of
     which are fitted during the run
 
-  - **popRanFix** The final cycle median values for each parameter that
-    is random but fixed to be the same for all subjects, i.e. unknown
-    mean, zero variance, with only mean fitted in the run
-
   - **postPoints** (NPAG only) Data frame of posterior population points
     for each of the first 100 subject, with columns id, point,
     parameters and probability. The first column is the subject, the
@@ -146,12 +142,6 @@ Michael Neely, Julian Otalvaro
   The final cycle median values for each random parameter, i.e. those
   that have unknown mean and unknown variance, both of which are fitted
   during the run
-
-- `popRanFix`:
-
-  The final cycle median values for each parameter that is random but
-  fixed to be the same for all subjects, i.e. unknown mean, zero
-  variance, with only mean fitted in the run
 
 - `postPoints`:
 

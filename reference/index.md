@@ -219,8 +219,6 @@ Auxilliary functions
 
 Pmetrics datasets
 
-- [`ITex`](https://lapkb.github.io/Pmetrics_rust/reference/ITex.md) :
-  Example IT2B Output
 - [`NPex`](https://lapkb.github.io/Pmetrics_rust/reference/NPex.md) :
   Example NPAG Output with validation
 - [`badData`](https://lapkb.github.io/Pmetrics_rust/reference/badData.md)
@@ -239,8 +237,6 @@ Pmetrics datasets
   Example MIC data
 - [`modEx`](https://lapkb.github.io/Pmetrics_rust/reference/modEx.md) :
   Pmetrics model object
-- [`model`](https://lapkb.github.io/Pmetrics_rust/reference/model.md) :
-  Pmetrics model
 - [`simEx`](https://lapkb.github.io/Pmetrics_rust/reference/simEx.md) :
   Example simulator output
 
@@ -266,12 +262,16 @@ Utility functions
 
 - [`PM_build()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_build.md)
   **\[stable\]** : Build Pmetrics
+- [`PM_help()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_help.md)
+  **\[stable\]** : Get Help and Report Issues
 - [`PMcheck()`](https://lapkb.github.io/Pmetrics_rust/reference/PMcheck.md)
   **\[superseded\]** : Check Pmetrics Inputs for Errors
 - [`PMpatch()`](https://lapkb.github.io/Pmetrics_rust/reference/PMpatch.md)
   : Download and install Pmetrics patches
 - [`PMtest()`](https://lapkb.github.io/Pmetrics_rust/reference/PMtest.md)
   **\[stable\]** : Test Pmetrics
+- [`PM_tutorial()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_tutorial.md)
+  **\[stable\]** : Pmetrics tutorial
 - [`setPMoptions()`](https://lapkb.github.io/Pmetrics_rust/reference/setPMoptions.md)
   **\[stable\]** : Set Pmetrics User Options
 

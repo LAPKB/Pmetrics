@@ -41,7 +41,7 @@ summary(object, at = "intersect", ci = 0.95, ...)
 
 ## Value
 
-A tibble with the following columns (only the first four if
+A tibble with the following columns (only the first five if
 `at = "intersect"`):
 
 - **reg_num** is the number of the simulation regimen

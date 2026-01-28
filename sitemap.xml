@@ -1,20 +1,9 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/404.html</loc></url>
-<url><loc>https://lapkb.github.io/Pmetrics_rust/articles/data.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/articles/index.html</loc></url>
-<url><loc>https://lapkb.github.io/Pmetrics_rust/articles/intro.html</loc></url>
-<url><loc>https://lapkb.github.io/Pmetrics_rust/articles/models.html</loc></url>
-<url><loc>https://lapkb.github.io/Pmetrics_rust/articles/objects.html</loc></url>
-<url><loc>https://lapkb.github.io/Pmetrics_rust/articles/overview.html</loc></url>
-<url><loc>https://lapkb.github.io/Pmetrics_rust/articles/plotly.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/articles/pmetrics.html</loc></url>
-<url><loc>https://lapkb.github.io/Pmetrics_rust/articles/pta.html</loc></url>
-<url><loc>https://lapkb.github.io/Pmetrics_rust/articles/running.html</loc></url>
-<url><loc>https://lapkb.github.io/Pmetrics_rust/articles/simulation.html</loc></url>
-<url><loc>https://lapkb.github.io/Pmetrics_rust/articles/workflow.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/authors.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/index.html</loc></url>
-<url><loc>https://lapkb.github.io/Pmetrics_rust/reference/ITex.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/ITload.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/ITreport.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/NM2PM.html</loc></url>
@@ -31,6 +20,7 @@
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/PM_data.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/PM_final.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/PM_fit.html</loc></url>
+<url><loc>https://lapkb.github.io/Pmetrics_rust/reference/PM_help.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/PM_load.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/PM_manual.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/PM_model.html</loc></url>
@@ -85,6 +75,7 @@
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/click_plot.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/compile_model.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/cor2cov.html</loc></url>
+<url><loc>https://lapkb.github.io/Pmetrics_rust/reference/create_pmetrics_project.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/dataEx.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/dummy_compile.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/export_plotly.html</loc></url>
@@ -111,7 +102,6 @@
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/make_valid.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/mic1.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/modEx.html</loc></url>
-<url><loc>https://lapkb.github.io/Pmetrics_rust/reference/model.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/model_lib.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/model_parameters.html</loc></url>
 <url><loc>https://lapkb.github.io/Pmetrics_rust/reference/modifyList2.html</loc></url>

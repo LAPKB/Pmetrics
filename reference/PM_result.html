@@ -11,7 +11,7 @@ by using the PM_load function."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-default me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">3.0.0</small>
+    <small class="nav-text text-default me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">3.0.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -19,21 +19,8 @@ by using the PM_load function."></head><body>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/pmetrics.html">Start Here</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/pmetrics.html">Book</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/intro.html">Introduction</a></li>
-    <li><a class="dropdown-item" href="../articles/overview.html">Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/workflow.html">Workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/data.html">Data Objects</a></li>
-    <li><a class="dropdown-item" href="../articles/models.html">Model Objects</a></li>
-    <li><a class="dropdown-item" href="../articles/running.html">Running the fit</a></li>
-    <li><a class="dropdown-item" href="../articles/objects.html">Created Objects</a></li>
-    <li><a class="dropdown-item" href="../articles/simulation.html">Simulation</a></li>
-    <li><a class="dropdown-item" href="../articles/pta.html">Probability of Target Attainment</a></li>
-    <li><a class="dropdown-item" href="../articles/plotly.html">Plotly plots</a></li>
-  </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/LAPKB/Pmetrics_rust/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -147,6 +134,7 @@ new optimal sampling results.</p></dd>
 <li><p><a href="#method-PM_result-step"><code>PM_result$step()</code></a></p></li>
 <li><p><a href="#method-PM_result-opt"><code>PM_result$opt()</code></a></p></li>
 <li><p><a href="#method-PM_result-load"><code>PM_result$load()</code></a></p></li>
+<li><p><a href="#method-PM_result-continue"><code>PM_result$continue()</code></a></p></li>
 <li><p><a href="#method-PM_result-clone"><code>PM_result$clone()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-PM_result-new"></a><div class="section">
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
@@ -440,15 +428,39 @@ Replaced by <a href="PM_load.html">PM_load</a>.</p><div class="section">
 </dl><p></p></div>
 </div>
 
-</div><p></p><hr><a id="method-PM_result-clone"></a><div class="section">
-<h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
-<p>The objects of this class are cloneable with this method.</p><div class="section">
+</div><p></p><hr><a id="method-PM_result-continue"></a><div class="section">
+<h3 id="method-continue-">Method <code>continue()</code><a class="anchor" aria-label="anchor" href="#method-continue-"></a></h3>
+<p>Continue fitting the model to the data using the final population points
+from the prior run as the prior for the new run.</p><div class="section">
 <h4 id="usage-13">Usage<a class="anchor" aria-label="anchor" href="#usage-13"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_result</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_result</span><span class="op">$</span><span class="fu">continue</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-13">Arguments<a class="anchor" aria-label="anchor" href="#arguments-13"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>...</code></dt>
+<dd><p>Additional arguments passed to the underlying <code>fit</code> method of the model. See the documentation for <code>fit</code> for details on supported parameters.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="details-5">Details<a class="anchor" aria-label="anchor" href="#details-5"></a></h4>
+<p>This method is useful if a prior run did not converge before the maximum
+number of cycles. It uses the final population points from the prior run
+as the prior for a new run. The data and model are the same as in the prior run.</p>
+</div>
+
+
+</div><p></p><hr><a id="method-PM_result-clone"></a><div class="section">
+<h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
+<p>The objects of this class are cloneable with this method.</p><div class="section">
+<h4 id="usage-14">Usage<a class="anchor" aria-label="anchor" href="#usage-14"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PM_result</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-14">Arguments<a class="anchor" aria-label="anchor" href="#arguments-14"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
@@ -465,7 +477,7 @@ Replaced by <a href="PM_load.html">PM_load</a>.</p><div class="section">
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Michael Neely, Julián Otálvaro, Markus Hößvd.</p>
+  <p>Developed by Michael Neely, Julián Otálvaro, Markus Hovd.</p>
 </div>
 
 <div class="pkgdown-footer-right">

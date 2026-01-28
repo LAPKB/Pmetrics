@@ -9,7 +9,7 @@ Sets up a directory tree for a new Pmetrics project"></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-default me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">3.0.0</small>
+    <small class="nav-text text-default me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">3.0.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -17,21 +17,8 @@ Sets up a directory tree for a new Pmetrics project"></head><body>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/pmetrics.html">Start Here</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/pmetrics.html">Book</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/intro.html">Introduction</a></li>
-    <li><a class="dropdown-item" href="../articles/overview.html">Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/workflow.html">Workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/data.html">Data Objects</a></li>
-    <li><a class="dropdown-item" href="../articles/models.html">Model Objects</a></li>
-    <li><a class="dropdown-item" href="../articles/running.html">Running the fit</a></li>
-    <li><a class="dropdown-item" href="../articles/objects.html">Created Objects</a></li>
-    <li><a class="dropdown-item" href="../articles/simulation.html">Simulation</a></li>
-    <li><a class="dropdown-item" href="../articles/pta.html">Probability of Target Attainment</a></li>
-    <li><a class="dropdown-item" href="../articles/plotly.html">Plotly plots</a></li>
-  </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/LAPKB/Pmetrics_rust/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -79,26 +66,16 @@ current working directory.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A new folder named <code>project</code> with the following subfolders:</p>
-<dl><dt>Rscript </dt>
-<dd><p>The folder for the Rscript containing all run instructions.
-Within this folder will be a skeleton R script for the project.</p></dd>
-
-<dt>Runs </dt>
-<dd><p>The folder for all Pmetrics runs.  Put run files, i.e. a data file and a
-model file in this directory prior to each run.</p></dd>
-
-<dt>Sim </dt>
-<dd><p>The folder for all simulations related to the project.</p></dd>
-
-<dt>src </dt>
-<dd><p>The folder for source data files in their original format, to preserve
-integrity and for audit purposes.</p></dd>
-
-</dl></div>
+    <p>A new folder with the name in <code>project</code> and the following subfolders:</p><ul><li><p><strong>Rscript</strong> The folder containing a skeleton <em>Analysis.R</em> script for the project.</p></li>
+<li><p><strong>Runs</strong> The folder for all Pmetrics runs, which will be sequentially numbered.</p></li>
+<li><p><strong>Sim</strong> The folder for all simulations related to the project.</p></li>
+<li><p><strong>src</strong> The folder for source data files in their original format, to preserve
+integrity and for audit purposes.</p></li>
+</ul></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>This function will create a new project folder tree with appropriate subfolders and a skeleton R script.</p>
+    <p>This function will create a new project folder tree with appropriate subfolders and a skeleton R script.
+You can edit the folder names and add new ones as you wish.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -121,7 +98,7 @@ integrity and for audit purposes.</p></dd>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Michael Neely, Julián Otálvaro, Markus Hößvd.</p>
+  <p>Developed by Michael Neely, Julián Otálvaro, Markus Hovd.</p>
 </div>
 
 <div class="pkgdown-footer-right">

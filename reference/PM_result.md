@@ -125,6 +125,8 @@ Michael Neely, Julian Otalvaro
 
 - [`PM_result$load()`](#method-PM_result-load)
 
+- [`PM_result$continue()`](#method-PM_result-continue)
+
 - [`PM_result$clone()`](#method-PM_result-clone)
 
 ------------------------------------------------------------------------
@@ -434,6 +436,32 @@ Replaced by
 - `...`:
 
   Not used.
+
+------------------------------------------------------------------------
+
+### Method `continue()`
+
+Continue fitting the model to the data using the final population points
+from the prior run as the prior for the new run.
+
+#### Usage
+
+    PM_result$continue(...)
+
+#### Arguments
+
+- `...`:
+
+  Additional arguments passed to the underlying `fit` method of the
+  model. See the documentation for `fit` for details on supported
+  parameters.
+
+#### Details
+
+This method is useful if a prior run did not converge before the maximum
+number of cycles. It uses the final population points from the prior run
+as the prior for a new run. The data and model are the same as in the
+prior run.
 
 ------------------------------------------------------------------------
 

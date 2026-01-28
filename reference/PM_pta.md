@@ -7,7 +7,7 @@ target attainment analysis.
 
 ## Details
 
-\#' There are two ways of creating a *PM_pta* object.
+There are two ways of creating a *PM_pta* object.
 
 - **PM_sim\$pta()** This way uses the simulation method directly from a
   [PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md)

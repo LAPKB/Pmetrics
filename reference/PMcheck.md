@@ -11,7 +11,7 @@ check for data errors.
 ## Usage
 
 ``` r
-PMcheck(data, fix = FALSE, quiet = FALSE)
+PMcheck(data, path, fix = FALSE, quiet = FALSE)
 ```
 
 ## Arguments
@@ -23,6 +23,10 @@ PMcheck(data, fix = FALSE, quiet = FALSE)
   or a data.frame containing the output of a previous
   [PMreadMatrix](https://lapkb.github.io/Pmetrics_rust/reference/PMreadMatrix.md)
   command.
+
+- path:
+
+  The path of the data if originally a file
 
 - fix:
 

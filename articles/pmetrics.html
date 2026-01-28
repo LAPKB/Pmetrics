@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Pmetrics</a>
 
-    <small class="nav-text text-default me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">3.0.0</small>
+    <small class="nav-text text-default me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">3.0.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,23 +38,8 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="active nav-item"><a class="nav-link" href="../articles/pmetrics.html">Start Here</a></li>
+<li class="active nav-item"><a class="nav-link" href="../articles/pmetrics.html">Book</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/intro.html">Introduction</a></li>
-    <li><a class="dropdown-item" href="../articles/overview.html">Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/workflow.html">Workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/data.html">Data Objects</a></li>
-    <li><a class="dropdown-item" href="../articles/models.html">Model Objects</a></li>
-    <li><a class="dropdown-item" href="../articles/running.html">Running the fit</a></li>
-    <li><a class="dropdown-item" href="../articles/objects.html">Created Objects</a></li>
-    <li><a class="dropdown-item" href="../articles/simulation.html">Simulation</a></li>
-    <li><a class="dropdown-item" href="../articles/pta.html">Probability of Target Attainment</a></li>
-    <li><a class="dropdown-item" href="../articles/plotly.html">Plotly plots</a></li>
-  </ul>
-</li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -84,45 +69,13 @@
 
 
 
-    <section class="level2" data-number="1"><h2 data-number="1" id="what-is-pmetrics">
-<span class="header-section-number">1</span> What is Pmetrics?<a class="anchor" aria-label="anchor" href="#what-is-pmetrics"></a>
-</h2>
-<p>Pmetrics is a population modeling and simulation package for R. It can model data using nonparametric and parametric approaches. Some excellent articles discussing the differences, strengths, and limitations of both approaches are below.</p>
-<ul>
-<li>Goutelle, Sylvain, Jean‐Baptiste Woillard, Thierry Buclin, Laurent Bourguignon, Walter Yamada, Chantal Csajka, Michael Neely, and Monia Guidi. “Parametric and Nonparametric Methods in Population Pharmacokinetics: Experts’ Discussion on Use, Strengths, and Limitations.” The Journal of Clinical Pharmacology 62, no. 2 (February 2022): 158–70. https://doi.org/10.1002/jcph.1993.</li>
-<li>Goutelle, Sylvain, Jean‐Baptiste Woillard, Michael Neely, Walter Yamada, and Laurent Bourguignon. “Nonparametric Methods in Population Pharmacokinetics.” The Journal of Clinical Pharmacology 62, no. 2 (February 2022): 142–57. https://doi.org/10.1002/jcph.1650.</li>
-<li>Guidi, Monia, Chantal Csajka, and Thierry Buclin. “Parametric Approaches in Population Pharmacokinetics.” Journal of Clinical Pharmacology 62, no. 2 (February 2022): 125–41. https://doi.org/10.1002/jcph.1633.</li>
-</ul></section><section class="level2" data-number="2"><h2 data-number="2" id="how-do-i-get-pmetrics">
-<span class="header-section-number">2</span> How do I get Pmetrics?<a class="anchor" aria-label="anchor" href="#how-do-i-get-pmetrics"></a>
-</h2>
-<p>It’s easy and <em>all free</em>!</p>
-<ol type="1">
-<li>Install <a href="https://cran.r-project.org" class="external-link">R</a>
-</li>
-<li>Install <a href="https://www.rstudio.com" class="external-link">Rstudio</a>, from <a href="https://posit.co" class="external-link">posit</a>.</li>
-<li>Install the <em>devtools</em> package into Rstudio. The easiest way is to click the Install button on the Packages tab, and search the CRAN repository for <em>devtools</em>.</li>
-</ol>
-<p><img src="Images/installPkg.png"></p>
-<ol start="4" type="1">
-<li>Type the following into the R console (lower left window): <code>devtools::install_github("LAPKB/Pmetrics")</code>
-</li>
-<li>Launch Pmetrics in Rstudio with <code><a href="https://lapkb.github.io/Pmetrics_rust/">library(Pmetrics)</a></code>
-</li>
-<li>Run <code><a href="../reference/PMbuild.html">PMbuild()</a></code> to download necessary components and install them. It might be many components, depending on your system.</li>
-</ol>
-<p>That’s it!</p>
-</section><section class="level2" data-number="3"><h2 data-number="3" id="how-do-i-get-help">
-<span class="header-section-number">3</span> How do I get help?<a class="anchor" aria-label="anchor" href="#how-do-i-get-help"></a>
-</h2>
-<p>Head on over to our <a href="https://github.com/LAPKB/Pmetrics/discussions" class="external-link">Discussion</a> board at Github.</p>
-</section><section class="level2" data-number="4"><h2 data-number="4" id="how-do-i-start-using-pmetrics">
-<span class="header-section-number">4</span> How do I start using Pmetrics?<a class="anchor" aria-label="anchor" href="#how-do-i-start-using-pmetrics"></a>
-</h2>
-<p>A good place to start is to run <code><a href="../reference/PM_tutorial.html">PM_tutorial()</a></code>, which will install an <strong>Examples</strong> folder at your chosen location, which will contain sample data, models, and a script to get you started building and simulating from population models. Also have a look at the Articles on this website. All functions are extensively documented, most with examples, which can be seen in the Reference section of the <a href="https://lapkb.github.io/Pmetrics/" class="external-link">website</a>. There are also more tutorials and references on our Laboratory of Applied Pharmacokinetics and Bioinformatics <a href="http://www.lapk.org" class="external-link">website</a>.</p>
-</section><section class="level2" data-number="5"><h2 data-number="5" id="thank-you-for-your-support">
-<span class="header-section-number">5</span> Thank you for your support!<a class="anchor" aria-label="anchor" href="#thank-you-for-your-support"></a>
-</h2>
-</section><script id="quarto-html-after-body" type="application/javascript">
+    <p><strong>Thank you for your interest</strong> in <span style="color: #841010; font-family: 'Arial', Arial, sans-serif; font-weight: 900;">Pmetrics</span>!</p>
+<p>Please visit the <a href="https://lapkb.github.io/PM_tutorial/" class="external-link">online book</a> to learn more about the package and its functions.</p>
+<p>You can also view the source code and report issues on <a href="https://github.com/LAPKB/Pmetrics_rust/" class="external-link">GitHub</a>.</p>
+
+
+
+<script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
@@ -205,13 +158,12 @@
       }
     }
   });
-  </script></main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
-    </nav></aside>
+  </script></main>
 </div>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Michael Neely, Julián Otálvaro, Markus Hößvd.</p>
+  <p>Developed by Michael Neely, Julián Otálvaro, Markus Hovd.</p>
 </div>
 
 <div class="pkgdown-footer-right">

@@ -29,31 +29,24 @@ PMtree(...)
 
 ## Value
 
-A new folder named `project` with the following subfolders:
+A new folder with the name in `project` and the following subfolders:
 
-- Rscript :
+- **Rscript** The folder containing a skeleton *Analysis.R* script for
+  the project.
 
-  The folder for the Rscript containing all run instructions. Within
-  this folder will be a skeleton R script for the project.
+- **Runs** The folder for all Pmetrics runs, which will be sequentially
+  numbered.
 
-- Runs :
+- **Sim** The folder for all simulations related to the project.
 
-  The folder for all Pmetrics runs. Put run files, i.e. a data file and
-  a model file in this directory prior to each run.
-
-- Sim :
-
-  The folder for all simulations related to the project.
-
-- src :
-
-  The folder for source data files in their original format, to preserve
-  integrity and for audit purposes.
+- **src** The folder for source data files in their original format, to
+  preserve integrity and for audit purposes.
 
 ## Details
 
 This function will create a new project folder tree with appropriate
-subfolders and a skeleton R script.
+subfolders and a skeleton R script. You can edit the folder names and
+add new ones as you wish.
 
 ## See also
 

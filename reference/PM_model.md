@@ -15,7 +15,9 @@ objects. Defining a PM_model allows for fitting it to the data via the
 probability distribution of model equation paramter values in the
 population. The PM_model object is created using the a model building
 app (coming soon), by defining a list directly in R, or by reading a
-model text file. See the vignette on models for details.
+model text file. When reading a model text file, the list code is
+generated and copied to the clipboard for pasting in to scripts. Model
+files will be deprecated in future versions of Pmetrics.
 
 **Some notes on the example at the end of this help page:**
 
@@ -66,7 +68,9 @@ Michael Neely
 
 - [`PM_model$compile()`](#method-PM_model-compile)
 
-- [`PM_model$update()`](#method-PM_model-update)
+- [`PM_model$save()`](#method-PM_model-save)
+
+- [`PM_model$copy()`](#method-PM_model-copy)
 
 - [`PM_model$clone()`](#method-PM_model-clone)
 
@@ -74,23 +78,19 @@ Michael Neely
 
 ### Method `new()`
 
-This is the method to create a new `PM_model` object. If all arguments
-are `NULL`, e.g. `mod <- PM_model$new()` the model builder shiny app
-will launch by a call to
-[`build_model()`](https://lapkb.github.io/Pmetrics_rust/reference/build_model.md),
-which will return the model object upon exit.
+This is the method to create a new `PM_model` object.
 
-Otherwise, the first parameter allows creation of a model from a variety
-of pre-existing sources, and if used, all the subsequent arguments will
-be ignored. If a model is defined on the fly, the arguments form the
+The first argument allows creation of a model from a variety of
+pre-existing sources, and if used, all the subsequent arguments will be
+ignored. If a model is defined on the fly, the arguments form the
 building blocks. Blocks are of two types:
 
-- **Vectors** define *primary parameters*, *covariates*, and *error
+- **Lists** define *primary parameters*, *covariates*, and *error
   models*. These portions of the model have specific and defined creator
   functions and no additional R code is permissible. They take this
   form:
 
-      block_name = c(
+      block_name = list(
         var1 = creator(),
         var2 = creator()
       )
@@ -146,13 +146,14 @@ blocks.
   input, which can be one of the following:
 
   - Quoted name of a model text file in the working directory which will
-    be read and passed to Rust engine.
+    be read and passed to Rust engine. **Note:** Model text files are
+    being deprecated in future versions of Pmetrics.
 
   - List that defines the model directly in R. This will be in the same
     format as if all the subsequent arguments were used. For example:
 
         mod_list <- list(
-         pri = c(...),
+         pri = list(...),
          eqn = function(){...},
          out = function(){...},
          err = c(...)
@@ -169,14 +170,14 @@ blocks.
 - `pri`:
 
   The first of the arguments used if `x` is not specified. This is a
-  named vector of primary parameters, which are the model parameters
-  that are estimated in the population analysis. They are specified by
-  one of two creator functions:
+  named list of primary parameters, which are the model parameters that
+  are estimated in the population analysis. They are specified by one of
+  two creator functions:
   [`ab()`](https://lapkb.github.io/Pmetrics_rust/reference/ab.md) or
   [`msd()`](https://lapkb.github.io/Pmetrics_rust/reference/msd.md). For
   example,
 
-      pri = c(
+      pri = list(
         Ke = ab(0, 5),
         V = msd(100, 10)
       )
@@ -189,12 +190,13 @@ blocks.
 
 - `cov`:
 
-  A vector whose names are some or all of the covariates in the data
-  file. Unlike prior versions of Pmetrics, as of 3.0.0, they do not have
-  to be listed in the same order as in the data file, and they do not
-  need to be all present. **Only those covariates used in model
-  equations need to be declared here.** Values for each element in the
-  covariate vector are the
+  A list whose names are some or all of the covariates in the data file.
+  Unlike prior versions of Pmetrics, as of 3.0.0, they do not have to be
+  listed in the same order as in the data file, and they do not need to
+  be all present. **Only those covariates you wish to use in model
+  equations or analyze for relationships to model parameters need to be
+  declared here.** Values for each element in the covariate vector are
+  the
   [`interp()`](https://lapkb.github.io/Pmetrics_rust/reference/interp.md)
   creator function to declare how each covariate is interpolated between
   entries in the data. The default argument for
@@ -207,7 +209,7 @@ blocks.
 
   For example:
 
-      cov = c(
+      cov = list(
         wt = interp(), # will be linear by default
         visit = interp("none")
       )
@@ -254,11 +256,11 @@ blocks.
     illustrating the inclusion of the required parameter.
 
         mod <- PM_model$new(
-          pri = c(
+          pri = list(
             ke0 = ab(0, 5),
             v = ab(0, 100)
           ),
-          cov = c(
+          cov = list(
             crcl = interp()
           ),
           eqn = function(){
@@ -302,7 +304,7 @@ blocks.
   A function defining the lag time (delayed absorption) for the bolus
   input. The function must have no arguments, and the equations must be
   defined in R syntax The equations must be defined in the form of
-  `tlag[i] = par`, where `tlag[i]` is the lag for drug (input) `i` and
+  `lag[i] = par`, where `lag[i]` is the lag for drug (input) `i` and
   `par` is the lag parameter used in the `pri` block.
 
   For example, if `antacid` is a covariate in the data file, and `lag1`
@@ -310,7 +312,7 @@ blocks.
   absorption if an antacid is present.
 
       lag = function() {
-        tlag[1] = if(antacid == 1) lag1 else 0
+        lag[1] = if(antacid == 1) lag1 else 0
       }
 
   As for `eqn`, additional equations in R code can be defined in this
@@ -396,7 +398,7 @@ blocks.
         y[1] = x[1]/v
         y[2] = x[4]
       },
-      err = c(
+      err = list(
        proportional(2, c(0.1, 0.15, 0, 0))
       )
 
@@ -423,7 +425,7 @@ blocks.
   three output equations corresponding to three sources of observations
   in the data, the error models could be defined as:
 
-      err = c(
+      err = list(
         proportional(2, c(0.1, 0.15, 0, 0)),
         proportional(3, c(0.05, 0.1, 0, 0)),
         additive(1, c(0.2, 0.25, 0, 0))
@@ -439,7 +441,7 @@ blocks.
   [`replicate()`](https://rdrr.io/r/base/lapply.html) , e.g., for 3
   outputs with the same error model:
 
-      err = c(
+      err = list(
         replicate(3, proportional(2, c(0.1, 0.15, 0, 0)))
       )
 
@@ -761,23 +763,36 @@ already compiled, the method does nothing.
 
 ------------------------------------------------------------------------
 
-### Method [`update()`](https://rdrr.io/r/stats/update.html)
+### Method [`save()`](https://rdrr.io/r/base/save.html)
 
-Update the model using recursive lists of changes and recompile the
-updated model.
+Save model to file (deprecated).
 
 #### Usage
 
-    PM_model$update(...)
+    PM_model$save()
 
-#### Arguments
+#### Details
 
-- `...`:
+This method is deprecated. Existing or manually created model files may
+be read with `PM_model$new(filename)`, but including model code in
+scripts is preferred, as this makes models used in runs transparent and
+more easily edited. Use the `PM_model$copy()` method instead to copy the
+model code to the clipboard and paste into scripts.
 
-  Named elements corresponding to the blocks in the model, such as
-  "pri", "cov", "sec", "eqn", "ini", "lag", "fa", "out", and "err". For
-  each block, create a list of changes, which may be additions, edits,
-  or deletions. For deletions, set the value to `NULL`.
+------------------------------------------------------------------------
+
+### Method `copy()`
+
+Copy model code to clipboard.
+
+#### Usage
+
+    PM_model$copy()
+
+#### Details
+
+This method copies the R code to create the model to the clipboard. This
+is useful for saving the model code in a script.
 
 ------------------------------------------------------------------------
 
