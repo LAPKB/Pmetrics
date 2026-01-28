@@ -56,63 +56,56 @@
 <div class="page-header"><h1 id="pmetrics-">Pmetrics <a href="https://lapkb.github.io/Pmetrics/"><img src="reference/figures/Pmetrics_logo.png" align="right" height="100" width="100" alt="Pmetrics"></a>
 <a class="anchor" aria-label="anchor" href="#pmetrics-"></a>
 </h1></div>
-<blockquote>
-<p>[!WARNING]</p>
-<p>This is a development branch of Pmetrics using a new backend written in Rust. The repository for the current stable release is <a href="https://github.com/LAPKB/Pmetrics" class="external-link">LAPKB/Pmetrics</a>.</p>
-</blockquote>
-<p>Thank you for your interest in Pmetrics, created by the <a href="http://www.lapk.org" class="external-link">Laboratory of Applied Pharmacokinetics and Bioinformatics</a>. Pmetrics is a library package for R to perform non-parametric and parametric pharmacokinetic-pharmacodynamic population and individual modeling and simulation. It is primarily designed for pharmacometric researchers.</p>
-<p>Pmetrics is based on over 40 years of research by our laboratory and is the most mature non-parametric method available. Nevertheless, Pmetrics is dynamically evolving. Best of all, it is SHAREWARE with only a suggested donation.</p>
-<div class="section level2">
-<h2 id="source-code">Source code<a class="anchor" aria-label="anchor" href="#source-code"></a>
-</h2>
-<p>The open source code for the Pmetrics R package is hosted here on Github. LAPKB has developed two other packages, <a href="https://github.com/LAPKB/PMcore" class="external-link">PMcore</a> and <a href="https://github.com/LAPKB/pharmsol" class="external-link">pharmsol</a>, which implement the core algorithms used by Pmetrics. These packages are also open source and available on Github.</p>
-</div>
+<p>Thank you for your interest in <code>Pmetrics</code>, created by the <a href="http://www.lapk.org" class="external-link">Laboratory of Applied Pharmacokinetics and Bioinformatics</a>. <code>Pmetrics</code> is a library package for R to perform non-parametric and parametric pharmacokinetic-pharmacodynamic population and individual modeling and simulation. It is primarily designed for pharmacometric researchers.</p>
+<p><code>Pmetrics</code> is based on over 40 years of research by our laboratory and is the most mature non-parametric method available. Nevertheless, <code>Pmetrics</code> is dynamically evolving. Best of all, it is SHAREWARE with only a suggested donation.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>To install and use Pmetrics, you will need <strong>R</strong>, <strong>Rust</strong>, and the <strong>Pmetrics</strong> package appropriate for your system.</p>
-<p><a href="https://r-project.org" class="external-link"><img src="reference/figures/Rlogo.png" align="left" height="40" width="40" alt="R"></a><br><br> You can download and install <strong>R</strong> from the <a href="https://cran.r-project.org/" class="external-link">Comprehensive R Archive Network (CRAN)</a>. In addition, we <em>strongly</em> recommend a third-party integrated development environment (IDE) to use R and Pmetrics rather than the rudimentary IDE that comes with R. We use all the IDEs below when developing and working with Pmetrics.</p>
-<ul>
-<li>
-<a href="https://posit.co/download/rstudio-desktop/" class="external-link">RStudio</a> is the oldest and most stable IDE, developed by <a href="https://posit.co" class="external-link">Posit</a>. Most users who only program in R use Rstudio. It has a simple interface with many R-specific buttons and menus. It is relatively easy to learn and use, but does not support other programming languages.</li>
-<li>
-<a href="https://positron.posit.co" class="external-link">Positron</a> is a newer alternative also from Posit. Posit are now mostly developing Positron rather than Rstudio. Positron primarily supports users who work in R and Python. However, it is built upon <a href="https://code.visualstudio.com" class="external-link">VS Code</a>, which gives Positron access to thousands of extensions, including multiple AI tools to assist with coding and data analysis, and Positron can support additional programming languages. It is far more powerful than Rstudio, but has a steeper learning curve and currently fewer R-specific buttons and menus. VS Code users will find Positron familiar.</li>
-<li>
-<a href="https://code.visualstudio.com" class="external-link">VS Code</a> itself can be used for R, but it is best suited for experienced coders who also use other programming languages.</li>
-</ul>
-<p><a href="https://rust-lang.org" class="external-link"><img src="reference/figures/rust-logo-64x64.png" align="left" height="40" width="40" alt="Rust"></a><br><br><strong>Rust</strong> is the language used by pharmsol for the backend of Pmetrics and all the heavy “number crunching”. Rust is modern, fast, reliable, widely used, and extremely well supported. It works on all major operating systems.</p>
+<div class="section level3">
+<h3 id="r-required">R (required)<a class="anchor" aria-label="anchor" href="#r-required"></a>
+</h3>
+<p>You can download and install <a href="https://r-project.org" class="external-link">R</a> from the <a href="https://cran.r-project.org/" class="external-link">Comprehensive R Archive Network (CRAN)</a>.</p>
+</div>
+<div class="section level3">
+<h3 id="rust-required">Rust (required)<a class="anchor" aria-label="anchor" href="#rust-required"></a>
+</h3>
+<p>The simulation engine for <code>Pmetrics</code> is written in <code>Rust</code>, which is required to fit models.</p>
 <p>Follow the instructions on the <a href="https://www.rust-lang.org/tools/install" class="external-link">Rust website</a> to install Rust on your system.</p>
-<p><img src="reference/figures/Pmetrics_logo.png" align="left" height="40" width="40" alt="Pmetrics"><br><br> The compiled versions of <strong>Pmetrics</strong> for MacOS, Windows and Linux are hosted on <a href="https://lapkb.r-universe.dev/Pmetrics" class="external-link">r-universe</a>. Follow these easy steps to install the correct version for your system.</p>
-<ol style="list-style-type: decimal">
-<li>
-<p>Add the LAPKB r-universe repository to your list of repositories by adding this code to your <code>.Rprofile</code> script, which ensures that R will always include the LAPKB repository when installing or updating packages, even after you restart or update R.</p>
+</div>
+<div class="section level3">
+<h3 id="pmetrics">Pmetrics<a class="anchor" aria-label="anchor" href="#pmetrics"></a>
+</h3>
+<p><code>Pmetrics</code> is distributed on <a href="https://lapkb.r-universe.dev/Pmetrics" class="external-link">r-universe</a>, and built for Windows, MacOS, and Linux. To install, you must specify <code>r-universe</code> as the repository using</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    CRAN <span class="op">=</span> <span class="st">"https://cloud.r-project.org"</span>,</span>
-<span>    LAPKB <span class="op">=</span> <span class="st">"https://lapkb.r-universe.dev"</span></span>
-<span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>If you don’t have an <code>.Rprofile</code> script, you can create one in your home directory. This only needs to be done once.</p>
-<details><summary><p>Mac</p>
-</summary><p>You can create or edit the <code>.Rprofile</code> file using TextEdit or any text editor. Make sure to save it as a plain text file named <code>.Rprofile</code> in your home directory, i.e., <code>/Users/yourusername/.Rprofile</code>. Do not add a <code>.txt</code> extension. To open/edit your <code>.Rprofile</code> later, type <code>open -e ~/.Rprofile</code> in the Terminal.</p>
-</details><details><summary><p>Windows</p>
-</summary><p>You can create or edit the <code>.Rprofile</code> file using Notepad or any text editor. Make sure to save it as a plain text file named <code>.Rprofile</code> in your home directory, i.e., <code>C:\Users\yourusername\.Rprofile</code>. Do not add a <code>.txt</code> extension. To open/edit your <code>.Rprofile</code> later, type <code>notepad %USERPROFILE%\.Rprofile</code> in the Command Prompt.</p>
-</details><details><summary><p>Linux</p>
-</summary><p>You can create or edit the <code>.Rprofile</code> file using any text editor, such as <code>nano</code> or <code>vim</code>. Make sure to save it as a plain text file named <code>.Rprofile</code> in your home directory, i.e., <code>/home/yourusername/.Rprofile</code>. To open/edit your <code>.Rprofile</code> later, type <code>nano ~/.Rprofile</code> or <code>vim ~/.Rprofile</code> in the terminal.</p>
-</details>
-</li>
-<li>
-<p>After you have run the above command once, you can install or update previously installed Pmetrics by running this command in R:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"Pmetrics"</span><span class="op">)</span></span></code></pre></div>
-<p>This command is the same as for any other R package hosted on CRAN. By having the LAPKB repository in your list of repositories, R will automatically find and install/update the correct version of Pmetrics for your system.</p>
-<details><summary><p>What if I couldn’t add the LAPKB repository to my .Rprofile?</p>
-</summary><p>You can still install Pmetrics by specifying the repository directly in the <code>install.packages</code> function like this:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"Pmetrics"</span>, repos <span class="op">=</span> <span class="st">"https://lapkb.r-universe.dev"</span><span class="op">)</span></span></code></pre></div>
-<p>However, you will need to include the <code>repos</code> argument each time you want to install or update Pmetrics.</p>
-</details>
-</li>
-</ol>
+<p>For updating the package and for easier future installations, you can run the following command to add the <code>r-universe</code> repository to your <code>R.profile</code></p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/write.html" class="external-link">write</a></span><span class="op">(</span><span class="st">'options(repos = c(CRAN = "https://cloud.r-project.org", LAPKB = "https://lapkb.r-universe.dev"))'</span>, <span class="st">"~/.Rprofile"</span>, append <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>With this setup, you can install or update Pmetrics using the standard command <code>install.packages("Pmetrics")</code> without specifying the repository each time.</p>
+</div>
+<div class="section level3">
+<h3 id="ide-optional">IDE (optional)<a class="anchor" aria-label="anchor" href="#ide-optional"></a>
+</h3>
+<p>In addition, we <em>strongly</em> recommend a third-party integrated development environment (IDE) to use R and Pmetrics rather than the rudimentary IDE that comes with R. We use all the IDEs below when developing and working with Pmetrics.</p>
+<ul>
+<li><p><a href="https://posit.co/download/rstudio-desktop/" class="external-link">RStudio</a> is the oldest and most stable IDE, developed by <a href="https://posit.co" class="external-link">Posit</a>. Most users who only program in R use Rstudio. It has a simple interface with many R-specific buttons and menus. It is relatively easy to learn and use, but does not support other programming languages.</p></li>
+<li><p><a href="https://positron.posit.co" class="external-link">Positron</a> is a newer alternative also from Posit. Posit are now mostly developing Positron rather than Rstudio. Positron primarily supports users who work in R and Python. However, it is built upon <a href="https://code.visualstudio.com" class="external-link">VS Code</a>, which gives Positron access to thousands of extensions, including multiple AI tools to assist with coding and data analysis, and Positron can support additional programming languages. It is far more powerful than Rstudio, but has a steeper learning curve and currently fewer R-specific buttons and menus. VS Code users will find Positron familiar.</p></li>
+<li><p><a href="https://code.visualstudio.com" class="external-link">VS Code</a> itself can be used for R, but it is best suited for experienced coders who also use other programming languages.</p></li>
+</ul>
+</div>
+</div>
+<div class="section level2">
+<h2 id="related-projects">Related projects<a class="anchor" aria-label="anchor" href="#related-projects"></a>
+</h2>
+<p>The LAPKB has developed two packages in <code>Rust</code> to power <code>Pmetrics</code>.</p>
+<p><a href="https://github.com/LAPKB/pharmsol" class="external-link"><code>pharmsol</code></a> is a Rust library for defining and solving pharmacokinetic models.</p>
+<p><a href="https://github.com/LAPKB/PMcore" class="external-link"><code>PMcore</code></a> depends on <code>pharmsol</code> to fit models to data, and implements the different algorithms which are made available in <code>Pmetrics</code>.</p>
+<p>Pmetrics and the code that powers it is provided as open-source code.</p>
+</div>
+<div class="section level2">
+<h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
+</h2>
+<p>We welcome contributions in the form of feature requests, raising issues, or writing code.</p>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
