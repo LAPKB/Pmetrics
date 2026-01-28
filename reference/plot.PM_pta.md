@@ -175,7 +175,7 @@ plot(
   - `legend = list(orientation = "h", font = list(color = "blue"))`
 
   Default will be the labeled regimen names as an argument when creating
-  a [PM_pta](https://lapkb.github.io/Pmetrics_rust/reference/PM_pta.md)
+  a [PM_pta](https://lapkb.github.io/Pmetrics/reference/PM_pta.md)
   object, or if missing, "Regimen 1, Regimen 2,...Regimen n", where *n*
   is the number of regimens in the PM_pta object.
 
@@ -316,25 +316,25 @@ Plots the object.
 
 ## Details
 
-[PM_pta](https://lapkb.github.io/Pmetrics_rust/reference/PM_pta.md)
-objects are made with the `$pta` method for
-[PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md) or
-with `PM_pta$new()`.
+[PM_pta](https://lapkb.github.io/Pmetrics/reference/PM_pta.md) objects
+are made with the `$pta` method for
+[PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md) or with
+`PM_pta$new()`.
 
 ## See also
 
 Other PMplots:
-[`plot.PM_cov()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cov.md),
-[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cycle.md),
-[`plot.PM_data()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_data.md),
-[`plot.PM_final()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_final.md),
-[`plot.PM_model()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_model.md),
-[`plot.PM_op()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_op.md),
-[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_opt.md),
-[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pop.md),
-[`plot.PM_post()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_post.md),
-[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_sim.md),
-[`plot.PM_valid()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_valid.md)
+[`plot.PM_cov()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_cov.md),
+[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_cycle.md),
+[`plot.PM_data()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_data.md),
+[`plot.PM_final()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_final.md),
+[`plot.PM_model()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_model.md),
+[`plot.PM_op()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_op.md),
+[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_opt.md),
+[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_pop.md),
+[`plot.PM_post()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_post.md),
+[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.md),
+[`plot.PM_valid()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_valid.md)
 
 ## Author
 

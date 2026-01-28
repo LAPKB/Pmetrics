@@ -40,7 +40,7 @@ Michael Neely
 
 - `simdata`:
 
-  A [PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md)
+  A [PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md)
   object with the simulated profiles
 
 - `mmInt`:
@@ -91,16 +91,15 @@ model parameters.
   There are several choices for the population parameters.
 
   - A
-    [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+    [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
     loaded with
-    [PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md),
-    in which case the `$final` field will be used, e.g.
+    [PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md), in
+    which case the `$final` field will be used, e.g.
     `run1 <- PM_load(1)` and `poppar = run1`.
 
-  - A
-    [PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+  - A [PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
     object, typically as a field in a
-    [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+    [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
     e.g., `poppar = run1$final`.
 
   - A list containing three items in this order, but of any name: vector
@@ -117,7 +116,7 @@ model parameters.
 
   One of three choices:
 
-  - [PM_model](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md)
+  - [PM_model](https://lapkb.github.io/Pmetrics/reference/PM_model.md)
     object
 
   - Character vector with the filename of a Pmetrics model in the
@@ -125,7 +124,7 @@ model parameters.
 
   - If `model` is missing, there are two possibilities: \*\* When
     `poppar` is a
-    [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+    [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
     with a valid `$model` field, the model in `poppar` will be used.
     \*\* In the absence of a `poppar` with a valid model field, look for
     a file called "model.txt" in the working directory.
@@ -134,7 +133,7 @@ model parameters.
 
   One of three choices:
 
-  - [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  - [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
     object
 
   - Character vector with the filename of a Pmetrics data in the working
@@ -142,7 +141,7 @@ model parameters.
 
   - If `data` is missing, there are two possibilities: \*\* When
     `poppar` is a
-    [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+    [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
     with a valid `$data` field, the data in `poppar` will be used. \*\*
     In the absence of a `poppar` with a valid data field, look for a
     file called "data.csv" in the working directory. In either choice,
@@ -212,14 +211,14 @@ model parameters.
 - `...`:
 
   Other parameters to pass to
-  [PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md)\$new().
+  [PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md)\$new().
   Most are not necessary, but `usePost = TRUE` can be used to calculate
   individual MMopt times. In this case, the number of posterior
   distributions contained in `poppar$final$postPoints` needs to match
   the number of subjects in `data`. You can also pass `include` and
   `exclude` to limit the subjects used in `data`. This will work whether
   `usePost` is `TRUE` or `FALSE`. Note that the following arguments to
-  [PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md)\$new
+  [PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md)\$new
   cannot be modified.
 
   - `nsim` is zero
@@ -253,12 +252,12 @@ Plot method
 - `...`:
 
   Arguments passed to
-  [plot.PM_opt](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_opt.md)
+  [plot.PM_opt](https://lapkb.github.io/Pmetrics/reference/plot.PM_opt.md)
 
 #### Details
 
 See
-[plot.PM_opt](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_opt.md).
+[plot.PM_opt](https://lapkb.github.io/Pmetrics/reference/plot.PM_opt.md).
 
 ------------------------------------------------------------------------
 

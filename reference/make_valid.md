@@ -3,11 +3,11 @@
 **\[deprecated\]**
 
 This function is replaced by
-[PM_valid](https://lapkb.github.io/Pmetrics_rust/reference/PM_valid.md),
+[PM_valid](https://lapkb.github.io/Pmetrics/reference/PM_valid.md),
 which is typically called with the `$validate` method for a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
 object, but can be called directly on a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
 object.
 
 ## Usage

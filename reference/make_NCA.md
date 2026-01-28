@@ -1,12 +1,12 @@
 # Non-compartmental analysis
 
 Performs a non-compartmental analysis from a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
 object using observed concentrations in the raw data file
 `PM_result$data$standard_data` or from an individual Bayesian posterior
 predicted time-observation profiles `PM_result$post$data` generated
 automatically after an NPAG run and loaded with
-[PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md) .
+[PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md) .
 
 ## Usage
 

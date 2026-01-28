@@ -91,7 +91,7 @@ add_smooth(
   upper right = (1,1). This argument maps to
   [`plotly::add_text()`](https://rdrr.io/pkg/plotly/man/add_trace.html).
   It is also an option that can be set in
-  [setPMoptions](https://lapkb.github.io/Pmetrics_rust/reference/setPMoptions.md)
+  [setPMoptions](https://lapkb.github.io/Pmetrics/reference/setPMoptions.md)
   to avoid specifying this argument for every plot. The default option
   is `TRUE`. If specified as a Pmetrics option, it can be overridden for
   specific plots by supplying a value.
@@ -109,7 +109,7 @@ intent of this function is to replicate the behavior of
 
 ## See also
 
-[add_shapes](https://lapkb.github.io/Pmetrics_rust/reference/add_shapes.md)
+[add_shapes](https://lapkb.github.io/Pmetrics/reference/add_shapes.md)
 
 ## Examples
 

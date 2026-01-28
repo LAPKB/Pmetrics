@@ -1,11 +1,11 @@
 # Summarize PM_op_data objects
 
 **\[stable\]** Summarizes the raw data (`class: PM_op_data`) from a
-[PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md) object
-in the same way as summarizing a
-[PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md)
-object. Both use
-[summary.PM_op](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_op.md).
+[PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md) object in
+the same way as summarizing a
+[PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md) object.
+Both use
+[summary.PM_op](https://lapkb.github.io/Pmetrics/reference/summary.PM_op.md).
 
 ## Usage
 
@@ -23,7 +23,7 @@ summary(object, ...)
 - ...:
 
   Additional arguments passed to
-  [summary.PM_op](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_op.md)
+  [summary.PM_op](https://lapkb.github.io/Pmetrics/reference/summary.PM_op.md)
 
 ## Examples
 

@@ -4,14 +4,14 @@
 
 This object contains all of the results after a Pmetrics runs. It is
 created by using the
-[PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md)
+[PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md)
 function.
 
 ## Details
 
 After a run completes, results are stored on your hard drive. They are
 loaded back into R with
-[PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md) to
+[PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md) to
 create the PM_result object, which contains both the results and
 functions to analyze or plot the result.
 
@@ -23,47 +23,43 @@ Michael Neely, Julian Otalvaro
 
 - `pop`:
 
-  A [PM_pop](https://lapkb.github.io/Pmetrics_rust/reference/PM_pop.md)
+  A [PM_pop](https://lapkb.github.io/Pmetrics/reference/PM_pop.md)
   object
 
 - `post`:
 
-  A
-  [PM_post](https://lapkb.github.io/Pmetrics_rust/reference/PM_post.md)
+  A [PM_post](https://lapkb.github.io/Pmetrics/reference/PM_post.md)
   object
 
 - `final`:
 
-  A
-  [PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+  A [PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
   object
 
 - `cycle`:
 
-  A
-  [PM_cycle](https://lapkb.github.io/Pmetrics_rust/reference/PM_cycle.md)
+  A [PM_cycle](https://lapkb.github.io/Pmetrics/reference/PM_cycle.md)
   object
 
 - `op`:
 
-  A [PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md)
-  object
+  A [PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md) object
 
 - `cov`:
 
-  A [PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/PM_cov.md)
+  A [PM_cov](https://lapkb.github.io/Pmetrics/reference/PM_cov.md)
   object
 
 - `data`:
 
-  [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
   object representing the original .csv data file used in the run. The
   predictions contained in the `$data` fields from `$pop` and `$post`
   will be added to this
-  [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
   object to permit easy addition of such predictions to raw data plots.
   See
-  [plot.PM_data](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_data.md)
+  [plot.PM_data](https://lapkb.github.io/Pmetrics/reference/plot.PM_data.md)
   for more details.
 
 - `model`:
@@ -90,10 +86,10 @@ Michael Neely, Julian Otalvaro
 
   If the `$opt` method has been executed after a run, this field will
   contain a
-  [PM_opt](https://lapkb.github.io/Pmetrics_rust/reference/PM_opt.md)
-  object which has optimal sampling times and methods to plot them. Use
-  the `$save` method on the augmented `PM_result` object to save it with
-  the new optimal sampling results.
+  [PM_opt](https://lapkb.github.io/Pmetrics/reference/PM_opt.md) object
+  which has optimal sampling times and methods to plot them. Use the
+  `$save` method on the augmented `PM_result` object to save it with the
+  new optimal sampling results.
 
 ## Methods
 
@@ -144,7 +140,7 @@ Create new object populated with data from previous run
 - `out`:
 
   The parsed output from
-  [PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md),
+  [PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md),
   which is automatically generated. This is not a user-modifiable.
 
 - `path`:
@@ -159,11 +155,11 @@ Create new object populated with data from previous run
 #### Details
 
 Creation of new `PM_result` objects is via
-[PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md).
+[PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md).
 
 ------------------------------------------------------------------------
 
-### Method [`fit()`](https://lapkb.github.io/Pmetrics_rust/reference/fit.md)
+### Method [`fit()`](https://lapkb.github.io/Pmetrics/reference/fit.md)
 
 Fit the model to the data \#' @details This method is used to fit the
 model in the PM_result object to data. It calls the `$fit` method of the
@@ -265,12 +261,11 @@ Perform non-compartmental analysis
 - `...`:
 
   Arguments passed to
-  [makeNCA](https://lapkb.github.io/Pmetrics_rust/reference/makeNCA.md).
+  [makeNCA](https://lapkb.github.io/Pmetrics/reference/makeNCA.md).
 
 #### Details
 
-See
-[makeNCA](https://lapkb.github.io/Pmetrics_rust/reference/makeNCA.md).
+See [makeNCA](https://lapkb.github.io/Pmetrics/reference/makeNCA.md).
 
 ------------------------------------------------------------------------
 
@@ -287,15 +282,14 @@ Re-generate the report
 - `...`:
 
   Parameters passed to
-  [PM_report](https://lapkb.github.io/Pmetrics_rust/reference/PM_report.md).
+  [PM_report](https://lapkb.github.io/Pmetrics/reference/PM_report.md).
   In particular, pay attention to `path`.
 
 ------------------------------------------------------------------------
 
 ### Method `sim()`
 
-Calls
-[PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md).
+Calls [PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md).
 Default is to use the `$final`, `$model`, and `$data` objects within the
 PM_result. It is common to supply a different `data` template.
 Occasionally it is necessary to use a different `model` with the
@@ -311,12 +305,12 @@ Occasionally it is necessary to use a different `model` with the
 - `...`:
 
   Parameters passed to
-  [PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md).
-  If using the `$final`, `$model`, and `$data` fields, it is not
-  necessary to specify these. Alternates for any of these should be
-  specified. Other parameters for
-  [PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md)
-  should be passed as named arguments, e.g.
+  [PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md). If
+  using the `$final`, `$model`, and `$data` fields, it is not necessary
+  to specify these. Alternates for any of these should be specified.
+  Other parameters for
+  [PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md) should
+  be passed as named arguments, e.g.
   `$sim(include = 1:2, predInt = 1, limits = NA)`.
 
 ------------------------------------------------------------------------
@@ -373,7 +367,7 @@ Validate the result by internal simulation methods.
 - `...`:
 
   Arguments passed to
-  [PM_valid](https://lapkb.github.io/Pmetrics_rust/reference/PM_valid.md).
+  [PM_valid](https://lapkb.github.io/Pmetrics/reference/PM_valid.md).
 
 ------------------------------------------------------------------------
 
@@ -391,7 +385,7 @@ values and covariates.
 - `...`:
 
   Arguments passed to
-  [PM_step](https://lapkb.github.io/Pmetrics_rust/reference/PM_step.md).
+  [PM_step](https://lapkb.github.io/Pmetrics/reference/PM_step.md).
 
 ------------------------------------------------------------------------
 
@@ -410,12 +404,12 @@ Method to compute optimal sampling times.
 - `...`:
 
   Parameters to pass to
-  [PM_opt](https://lapkb.github.io/Pmetrics_rust/reference/PM_opt.md).
+  [PM_opt](https://lapkb.github.io/Pmetrics/reference/PM_opt.md).
 
 #### Details
 
-See [PM_opt](https://lapkb.github.io/Pmetrics_rust/reference/PM_opt.md)
-for details.
+See [PM_opt](https://lapkb.github.io/Pmetrics/reference/PM_opt.md) for
+details.
 
 ------------------------------------------------------------------------
 
@@ -425,7 +419,7 @@ for details.
 
 Deprecated method to load prior results saved with the `$save` method.
 Replaced by
-[PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md).
+[PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md).
 
 #### Usage
 

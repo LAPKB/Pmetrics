@@ -50,7 +50,7 @@ add new ones as you wish.
 
 ## See also
 
-[PM_manual](https://lapkb.github.io/Pmetrics_rust/reference/PM_manual.md)
+[PM_manual](https://lapkb.github.io/Pmetrics/reference/PM_manual.md)
 
 ## Author
 

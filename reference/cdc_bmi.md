@@ -22,8 +22,8 @@ Downloaded from
 Tables were last updated in 2000, based on data through 1994.
 Definitions of overweight and obese come from these data, based on BMI
 percentile \>=85 for overweight and \>=95 for obese. See
-[ger_bmi](https://lapkb.github.io/Pmetrics_rust/reference/ger_bmi.md)
-for percentiles based on more modern NHANES data.
+[ger_bmi](https://lapkb.github.io/Pmetrics/reference/ger_bmi.md) for
+percentiles based on more modern NHANES data.
 
 ## Author
 

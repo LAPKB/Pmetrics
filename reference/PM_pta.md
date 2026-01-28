@@ -10,20 +10,19 @@ target attainment analysis.
 There are two ways of creating a *PM_pta* object.
 
 - **PM_sim\$pta()** This way uses the simulation method directly from a
-  [PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md)
-  object.
+  [PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md) object.
 
 - **PM_pta\$new()** This way takes an external
-  [PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md)
-  result as an argument and creates the PTA. It is described here.
+  [PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md) result
+  as an argument and creates the PTA. It is described here.
 
 Both methods require the prior creation of a simulation of appropriate
 regimens.
 
 ## See also
 
-[plot.PM_pta](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pta.md),
-[PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md)
+[plot.PM_pta](https://lapkb.github.io/Pmetrics/reference/plot.PM_pta.md),
+[PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md)
 
 ## Author
 
@@ -97,7 +96,7 @@ Create a new `PM_pta` object.
   - `NPex$data$standard_data` *PM_data_data*
 
   - `"simout.txt"` matches files with wildcard ability, see
-    [PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md)
+    [PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md)
 
 - `simlabels`:
 
@@ -114,7 +113,7 @@ Create a new `PM_pta` object.
   - A single numerical value such as a concentration, e.g. 10.
 
   - A sampled distribution using
-    [makePTAtarget](https://lapkb.github.io/Pmetrics_rust/reference/makePTAtarget.md).
+    [makePTAtarget](https://lapkb.github.io/Pmetrics/reference/makePTAtarget.md).
 
   - A list of multiple targets combining the above if multiple
     `target_type`s are used. If so, the first `target` can be a vector,
@@ -126,7 +125,7 @@ Create a new `PM_pta` object.
     `target_type` of "max" as in this example:
     `target = list(c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 10, 50)`. The first
     value can also be a sampled distribution made with
-    [makePTAtarget](https://lapkb.github.io/Pmetrics_rust/reference/makePTAtarget.md).
+    [makePTAtarget](https://lapkb.github.io/Pmetrics/reference/makePTAtarget.md).
 
 - `target_type`:
 
@@ -234,7 +233,7 @@ given `target_type`. The tibbles have the following columns:
 
 - **target** is the specified `target` for the results row. If a
   distribution created by
-  [makePTAtarget](https://lapkb.github.io/Pmetrics_rust/reference/makePTAtarget.md),
+  [makePTAtarget](https://lapkb.github.io/Pmetrics/reference/makePTAtarget.md),
   this will be a tibble with the simulated targets
 
 - **type** is the specified `target_type` for the results row
@@ -257,7 +256,7 @@ given `target_type`. The tibbles have the following columns:
   and `target_type` will reflect all requested values expressed in
   parenthetical multiplication format to emphasize intersection, e.g.,
   (auc)(min). Simulated (rather than discrete) targets made with
-  [makePTAtarget](https://lapkb.github.io/Pmetrics_rust/reference/makePTAtarget.md)
+  [makePTAtarget](https://lapkb.github.io/Pmetrics/reference/makePTAtarget.md)
   will be abbreviated as "(sim)", e.g. (sim)(5) for a combination of
   simulated targets and a single concentration target of 5.
 
@@ -320,7 +319,7 @@ Save the current PM_pta object into a .rds file.
 ### Method [`summary()`](https://rdrr.io/r/base/summary.html)
 
 Summarize the `PM_pta` object. See
-[summary.PM_pta](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_pta.md).
+[summary.PM_pta](https://lapkb.github.io/Pmetrics/reference/summary.PM_pta.md).
 
 #### Usage
 
@@ -331,14 +330,14 @@ Summarize the `PM_pta` object. See
 - `...`:
 
   Arguments passed to
-  [summary.PM_pta](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_pta.md)
+  [summary.PM_pta](https://lapkb.github.io/Pmetrics/reference/summary.PM_pta.md)
 
 ------------------------------------------------------------------------
 
 ### Method [`plot()`](https://rdrr.io/r/graphics/plot.default.html)
 
 Plot the `PM_pta` object. See
-[plot.PM_pta](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pta.md).
+[plot.PM_pta](https://lapkb.github.io/Pmetrics/reference/plot.PM_pta.md).
 
 #### Usage
 
@@ -349,7 +348,7 @@ Plot the `PM_pta` object. See
 - `...`:
 
   Arguments passed to
-  [plot.PM_pta](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pta.md)
+  [plot.PM_pta](https://lapkb.github.io/Pmetrics/reference/plot.PM_pta.md)
 
 ------------------------------------------------------------------------
 

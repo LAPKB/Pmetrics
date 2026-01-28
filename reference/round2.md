@@ -18,7 +18,7 @@ round2(x, digits = getPMoptions("digits"))
 - digits:
 
   The number of digits to round to. Default is set using
-  [setPMoptions](https://lapkb.github.io/Pmetrics_rust/reference/setPMoptions.md).
+  [setPMoptions](https://lapkb.github.io/Pmetrics/reference/setPMoptions.md).
 
 ## Value
 

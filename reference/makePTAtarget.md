@@ -4,9 +4,9 @@
 
 Generates an object of class *PMpta.targ* which can be used in the
 `$new()` method for
-[PM_pta](https://lapkb.github.io/Pmetrics_rust/reference/PM_pta.md) or
+[PM_pta](https://lapkb.github.io/Pmetrics/reference/PM_pta.md) or
 `$pta()` method for
-[PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md) for
+[PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md) for
 targets sampled from a distribution.
 
 ## Usage
@@ -32,7 +32,7 @@ A data frame with two columns named targets and n, of class
 
 ## See also
 
-[PM_pta](https://lapkb.github.io/Pmetrics_rust/reference/PM_pta.md)
+[PM_pta](https://lapkb.github.io/Pmetrics/reference/PM_pta.md)
 
 ## Examples
 

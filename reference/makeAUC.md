@@ -27,12 +27,12 @@ makeAUC(
 - data:
 
   A suitable data object, i.e.
-  [PM_pop](https://lapkb.github.io/Pmetrics_rust/reference/PM_pop.md),
-  [PM_post](https://lapkb.github.io/Pmetrics_rust/reference/PM_post.md),
-  [PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md),
-  [PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md),
-  or some other suitable dataframe with at least time/observation
-  columns referred to by `formula`.
+  [PM_pop](https://lapkb.github.io/Pmetrics/reference/PM_pop.md),
+  [PM_post](https://lapkb.github.io/Pmetrics/reference/PM_post.md),
+  [PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md),
+  [PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md), or
+  some other suitable dataframe with at least time/observation columns
+  referred to by `formula`.
 
 - formula:
 
@@ -103,9 +103,9 @@ PM_post, PM_op, or PMsim object is specified, `formula` is not required.
 
 ## See also
 
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
-[PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md),
-[PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
+[PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md),
+[PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md)
 
 ## Author
 

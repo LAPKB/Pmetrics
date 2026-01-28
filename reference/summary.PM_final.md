@@ -64,11 +64,11 @@ The output is a data frame. For NPAG this has 4 columns:
 ## Details
 
 \#' This is a function usually called by the `$summary()` method for
-[PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+[PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
 objects within a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md).
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md).
 The function can be called directly on a
-[PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+[PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
 object. For NPAG runs, this function will generate weighted medians as
 central tendencies of the population points with a 95% confidence
 interval (95% CI) around the median, and the median absolute weighted
@@ -98,7 +98,7 @@ SD/\sqrt(nsub)\$\$ \$\$SE_var = var \* \sqrt(2/(nsub-1))\$\$.
 
 ## See also
 
-[PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+[PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
 
 ## Author
 

@@ -32,22 +32,22 @@ PM_parse(path = ".", fit = "fit.rds", write = TRUE)
 The output of `PM_parse` is a list containing the following elements
 
 - **op** Written to the standard of
-  [`PM_op()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md)
+  [`PM_op()`](https://lapkb.github.io/Pmetrics/reference/PM_op.md)
 
 - **pop** Written to the standard of
-  [`PM_pop()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_pop.md)
+  [`PM_pop()`](https://lapkb.github.io/Pmetrics/reference/PM_pop.md)
 
 - **post** Written to the standard of
-  [`PM_post()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_post.md)
+  [`PM_post()`](https://lapkb.github.io/Pmetrics/reference/PM_post.md)
 
 - **cycles** Written to the standard of
-  [`PM_cycle()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_cycle.md)
+  [`PM_cycle()`](https://lapkb.github.io/Pmetrics/reference/PM_cycle.md)
 
 - **final** Written to the standard of
-  [`PM_final()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+  [`PM_final()`](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
 
 - **cov** Written to the standard of
-  [`PM_cov()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_cov.md)
+  [`PM_cov()`](https://lapkb.github.io/Pmetrics/reference/PM_cov.md)
 
 ## Details
 

@@ -11,7 +11,7 @@ badData
 
 ## Format
 
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
 
 ## Details
 

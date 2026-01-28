@@ -8,8 +8,8 @@ analysis
 ## Details
 
 Data and model objects can be previously created as
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md) or
-[PM_model](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md)
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md) or
+[PM_model](https://lapkb.github.io/Pmetrics/reference/PM_model.md)
 objects, or created on the fly when making a new PM_fit object. PM_fit
 objects contain methods to cross-check data and model objects for
 compatibility, as well as to run the analysis.
@@ -18,12 +18,12 @@ compatibility, as well as to run the analysis.
 
 - `data`:
 
-  [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
   object
 
 - `model`:
 
-  [PM_model](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md)
+  [PM_model](https://lapkb.github.io/Pmetrics/reference/PM_model.md)
   object
 
 ## Methods
@@ -57,17 +57,17 @@ Create a new object
 - `data`:
 
   Either the name of a
-  [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
   object in memory or the quoted name of a Pmetrics data file in the
   current working directory, which will crate a
-  [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
   object on the fly. However, if created on the fly, this object will
   not be available to other methods or other instances of PM_fit.
 
 - `model`:
 
   Similarly, this is either the name of a
-  [PM_model](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md)
+  [PM_model](https://lapkb.github.io/Pmetrics/reference/PM_model.md)
   object in memory or the quoted name of a Pmetrics text model file in
   the current working directory. Again, if created on the fly, the
   object will not be available to other methods or other instances of
@@ -87,7 +87,7 @@ Run a fit of model to the data (deprecated)
 
 The `$run` method for `PM_fit` objects has been deprecated in favor of
 the `$fit` method in
-[`PM_model()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md).
+[`PM_model()`](https://lapkb.github.io/Pmetrics/reference/PM_model.md).
 
 ------------------------------------------------------------------------
 

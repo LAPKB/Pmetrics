@@ -23,7 +23,7 @@ A formatted text output of the data frame.
 
 Uses [dplyr::mutate](https://dplyr.tidyverse.org/reference/mutate.html)
 to convert all columns to character, rounds numeric values using
-[round2](https://lapkb.github.io/Pmetrics_rust/reference/round2.md), and
+[round2](https://lapkb.github.io/Pmetrics/reference/round2.md), and
 formats the output using
 [knitr::kable](https://rdrr.io/pkg/knitr/man/kable.html) for a simple
 table format. The function replaces spaces with non-breaking spaces for

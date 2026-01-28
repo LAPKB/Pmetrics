@@ -3,9 +3,8 @@
 **\[stable\]**
 
 Adds columns to
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
-object for creatinine clearance or estimated glomerular filtration rate
-(eGFR).
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md) object
+for creatinine clearance or estimated glomerular filtration rate (eGFR).
 
 Creatinine clearance can be estimated by:
 
@@ -44,8 +43,7 @@ add_renal(
 
 - x:
 
-  A
-  [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  A [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
   data object
 
 - method:

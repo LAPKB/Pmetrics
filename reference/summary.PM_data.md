@@ -15,8 +15,7 @@ summary(object, formula, FUN, include, exclude, ...)
 
 - object:
 
-  A
-  [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  A [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
   object.
 
 - formula:

@@ -25,8 +25,8 @@ Physiologically Based Pharmacokinetic Modeling.” Clinical
 Pharmacokinetics 61, no. 2 (February 2022): 307–20.
 [doi:10.1007/s40262-021-01072-4](https://doi.org/10.1007/s40262-021-01072-4)
 . These data are in the same format as
-[cdc_bmi](https://lapkb.github.io/Pmetrics_rust/reference/cdc_bmi.md)
-but are derived from more recent NHANES data.
+[cdc_bmi](https://lapkb.github.io/Pmetrics/reference/cdc_bmi.md) but are
+derived from more recent NHANES data.
 
 ## Author
 

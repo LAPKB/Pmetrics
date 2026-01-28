@@ -7,14 +7,14 @@ Contains final cycle information from run.
 ## Details
 
 The PM_final object is both a data field within a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
 and itself an R6 object comprising data fields and associated methods
 suitable for analysis and plotting of final cycle parameters.
 
 Because PM_final objects are automatically added to the
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
-at the end of a successful run, it is generally not necessary for users
-to generate PM_final objects themselves.
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md) at
+the end of a successful run, it is generally not necessary for users to
+generate PM_final objects themselves.
 
 The main results are contained in the `$data` field, and it is this
 field which is passed to the `$plot` and `$summary` methods. You can use
@@ -29,7 +29,7 @@ To provide a more traditional experience in R, the `$data` field is also
 separated by list items into the other data fields within the R6 object,
 e.g. `popMean` or `nsub`. This allows you to access them in an S3 way,
 e.g. `run1$final$popMean` if `run1` is a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
 object.
 
 ## Author
@@ -298,12 +298,12 @@ Plot method
 - `...`:
 
   Arguments passed to
-  [plot.PM_final](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_final.md)
+  [plot.PM_final](https://lapkb.github.io/Pmetrics/reference/plot.PM_final.md)
 
 #### Details
 
 See
-[plot.PM_final](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_final.md).
+[plot.PM_final](https://lapkb.github.io/Pmetrics/reference/plot.PM_final.md).
 
 ------------------------------------------------------------------------
 
@@ -320,12 +320,12 @@ Summary method
 - `...`:
 
   Arguments passed to
-  [summary.PM_final](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_final.md)
+  [summary.PM_final](https://lapkb.github.io/Pmetrics/reference/summary.PM_final.md)
 
 #### Details
 
 See
-[summary.PM_final](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_final.md).
+[summary.PM_final](https://lapkb.github.io/Pmetrics/reference/summary.PM_final.md).
 
 ------------------------------------------------------------------------
 

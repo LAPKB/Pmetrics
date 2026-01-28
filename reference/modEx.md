@@ -16,8 +16,7 @@ modEx
 
 ## Format
 
-R6
-[PM_model](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md)
+R6 [PM_model](https://lapkb.github.io/Pmetrics/reference/PM_model.md)
 
 ## Author
 

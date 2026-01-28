@@ -13,9 +13,9 @@ build_model(..., update = FALSE)
 - ...:
 
   Optional
-  [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
   and/or
-  [PM_model](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md)
+  [PM_model](https://lapkb.github.io/Pmetrics/reference/PM_model.md)
   object(s). *PM_data* objects supply covariates. *PM_model* objects
   supply any other defined model element, and covariates only if there
   is no *PM_data* object or it has no covariates. If the *PM_model*

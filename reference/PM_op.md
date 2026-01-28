@@ -3,20 +3,20 @@
 **\[stable\]**
 
 Contains observed vs. predicted data after a run, typically a field in a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
 
 ## Details
 
 The PM_op object is both a data field within a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
 and itself an R6 object comprising data fields and associated methods
 suitable for analysis and plotting of observed vs. population or
 individual predicted outputs.
 
 Because PM_op objects are automatically added to the
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
-at the end of a successful run, it is generally not necessary for users
-to generate PM_op objects themselves.
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md) at
+the end of a successful run, it is generally not necessary for users to
+generate PM_op objects themselves.
 
 The main results are contained in the `$data` field, and it is this
 field which is passed to the `$plot` and `$summary` methods. You can use
@@ -30,7 +30,7 @@ To provide a more traditional experience in R, the `$data` field is also
 separated by columns into the other data fields within the R6 object,
 e.g. `id` or `time`. This allows you to access them in an S3 way, e.g.
 `run1$op$time` if `run1` is a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
 object.
 
 ## Author
@@ -167,12 +167,12 @@ Plot method
 - `...`:
 
   Arguments passed to
-  [plot.PM_op](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_op.md)
+  [plot.PM_op](https://lapkb.github.io/Pmetrics/reference/plot.PM_op.md)
 
 #### Details
 
 See
-[plot.PM_op](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_op.md).
+[plot.PM_op](https://lapkb.github.io/Pmetrics/reference/plot.PM_op.md).
 
 ------------------------------------------------------------------------
 
@@ -189,12 +189,12 @@ Summary method
 - `...`:
 
   Arguments passed to
-  [summary.PM_op](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_op.md)
+  [summary.PM_op](https://lapkb.github.io/Pmetrics/reference/summary.PM_op.md)
 
 #### Details
 
 See
-[summary.PM_op](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_op.md).
+[summary.PM_op](https://lapkb.github.io/Pmetrics/reference/summary.PM_op.md).
 
 ------------------------------------------------------------------------
 
@@ -211,7 +211,7 @@ Calculate AUC
 - `...`:
 
   Arguments passed to
-  [makeAUC](https://lapkb.github.io/Pmetrics_rust/reference/makeAUC.md)
+  [makeAUC](https://lapkb.github.io/Pmetrics/reference/makeAUC.md)
 
 - `data`:
 
@@ -219,8 +219,7 @@ Calculate AUC
 
 #### Details
 
-See
-[makeAUC](https://lapkb.github.io/Pmetrics_rust/reference/makeAUC.md)
+See [makeAUC](https://lapkb.github.io/Pmetrics/reference/makeAUC.md)
 
 ------------------------------------------------------------------------
 

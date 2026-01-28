@@ -45,9 +45,9 @@ zBMI(agemos, sex, bmi, wt, ht, data = "CDC")
 - data:
 
   Source data for calculations. Default is "CDC" which uses the
-  [cdc_bmi](https://lapkb.github.io/Pmetrics_rust/reference/cdc_bmi.md)
+  [cdc_bmi](https://lapkb.github.io/Pmetrics/reference/cdc_bmi.md)
   dataset. The alternative is "NHANES", which uses the
-  [ger_bmi](https://lapkb.github.io/Pmetrics_rust/reference/ger_bmi.md)
+  [ger_bmi](https://lapkb.github.io/Pmetrics/reference/ger_bmi.md)
   dataset.
 
 ## Value

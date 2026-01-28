@@ -3,8 +3,7 @@
 **\[stable\]**
 
 Print the errors in a Pmetrics data file or
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
-object.
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md) object.
 
 ## Usage
 
@@ -18,7 +17,7 @@ print(x, ...)
 - x:
 
   A PMerr object made by validation in
-  [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md).
+  [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md).
 
 - ...:
 
@@ -30,7 +29,7 @@ A printed object.
 
 ## See also
 
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
 
 ## Author
 

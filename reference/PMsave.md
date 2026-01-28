@@ -18,9 +18,9 @@ PMsave(...)
 
 ## See also
 
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
-[PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md),
-[PM_pta](https://lapkb.github.io/Pmetrics_rust/reference/PM_pta.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
+[PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md),
+[PM_pta](https://lapkb.github.io/Pmetrics/reference/PM_pta.md)
 
 ## Author
 

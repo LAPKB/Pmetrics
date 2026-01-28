@@ -14,7 +14,7 @@ print(x, ...)
 - x:
 
   An object made by
-  [summary.PM_data](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_data.md).
+  [summary.PM_data](https://lapkb.github.io/Pmetrics/reference/summary.PM_data.md).
 
 - ...:
 
@@ -27,14 +27,13 @@ A printed object
 ## Details
 
 Print the summary of
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
-object.
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md) object.
 
 Summarize the raw data used for a Pmetrics run.
 
 ## See also
 
-[summary.PM_data](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_data.md)
+[summary.PM_data](https://lapkb.github.io/Pmetrics/reference/summary.PM_data.md)
 
 ## Author
 

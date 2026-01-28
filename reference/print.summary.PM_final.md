@@ -16,7 +16,7 @@ print(x, digits = 3, ...)
 - x:
 
   A summary.PM_final object made by
-  [summary.PM_final](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_final.md).
+  [summary.PM_final](https://lapkb.github.io/Pmetrics/reference/summary.PM_final.md).
 
 - digits:
 
@@ -34,13 +34,13 @@ A printed object.
 
 Print a summary of parameter medians and MAWD, with point estimates and
 credibilty intervals from an object made by
-[summary.PM_final](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_final.md).
+[summary.PM_final](https://lapkb.github.io/Pmetrics/reference/summary.PM_final.md).
 Users do not normally need to call this function directly, as it will be
 the default method to display the object.
 
 ## See also
 
-[summary.PM_final](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_final.md)
+[summary.PM_final](https://lapkb.github.io/Pmetrics/reference/summary.PM_final.md)
 
 ## Author
 

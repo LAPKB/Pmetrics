@@ -3,9 +3,9 @@
 **\[stable\]**
 
 Plots a
-[PM_model](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md)
-based on differential equations using network plots from tidygraph and
-ggraph packages.
+[PM_model](https://lapkb.github.io/Pmetrics/reference/PM_model.md) based
+on differential equations using network plots from tidygraph and ggraph
+packages.
 
 ## Usage
 
@@ -19,7 +19,7 @@ plot(x, marker = TRUE, line = TRUE, explicit, implicit, print = TRUE, ...)
 - x:
 
   The name of an
-  [PM_model](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md)
+  [PM_model](https://lapkb.github.io/Pmetrics/reference/PM_model.md)
   object.
 
 - marker:
@@ -95,28 +95,28 @@ A plot object of the model.
 ## Details
 
 This accepts a
-[PM_model](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md)
+[PM_model](https://lapkb.github.io/Pmetrics/reference/PM_model.md)
 object and creates a network plot where nodes are compartments and edges
 are arrows connecting compartments.
 
 ## See also
 
-[PM_model](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md),
+[PM_model](https://lapkb.github.io/Pmetrics/reference/PM_model.md),
 [`ggraph::ggraph()`](https://ggraph.data-imaginist.com/reference/ggraph.html),
 [`ggplot2::ggplot()`](https://ggplot2.tidyverse.org/reference/ggplot.html)
 
 Other PMplots:
-[`plot.PM_cov()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cov.md),
-[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cycle.md),
-[`plot.PM_data()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_data.md),
-[`plot.PM_final()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_final.md),
-[`plot.PM_op()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_op.md),
-[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_opt.md),
-[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pop.md),
-[`plot.PM_post()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_post.md),
-[`plot.PM_pta()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pta.md),
-[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_sim.md),
-[`plot.PM_valid()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_valid.md)
+[`plot.PM_cov()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_cov.md),
+[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_cycle.md),
+[`plot.PM_data()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_data.md),
+[`plot.PM_final()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_final.md),
+[`plot.PM_op()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_op.md),
+[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_opt.md),
+[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_pop.md),
+[`plot.PM_post()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_post.md),
+[`plot.PM_pta()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_pta.md),
+[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.md),
+[`plot.PM_valid()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_valid.md)
 
 ## Author
 

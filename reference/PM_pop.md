@@ -4,21 +4,21 @@
 
 Contains the population predictions at short intervals specified as an
 argument to the run method of
-[PM_fit](https://lapkb.github.io/Pmetrics_rust/reference/PM_fit.md).
-Default is every 12 minutes.
+[PM_fit](https://lapkb.github.io/Pmetrics/reference/PM_fit.md). Default
+is every 12 minutes.
 
 ## Details
 
 \#' The PM_pop object is both a data field within a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
 and itself an R6 object comprising data fields and associated methods
 suitable for analysis and plotting of population predictions generated
 during the run.
 
 Because PM_pop objects are automatically added to the
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
-at the end of a successful run, it is generally not necessary for users
-to generate PM_pop objects themselves.
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md) at
+the end of a successful run, it is generally not necessary for users to
+generate PM_pop objects themselves.
 
 The main results are contained in the `$data` field, and it is this
 field which is passed to the `$plot` and `$summary` methods. data frame
@@ -121,12 +121,12 @@ Plot method
 - `...`:
 
   Arguments passed to
-  [plot.PM_pop](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pop.md)
+  [plot.PM_pop](https://lapkb.github.io/Pmetrics/reference/plot.PM_pop.md)
 
 #### Details
 
 See
-[plot.PM_pop](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pop.md).
+[plot.PM_pop](https://lapkb.github.io/Pmetrics/reference/plot.PM_pop.md).
 
 ------------------------------------------------------------------------
 
@@ -143,12 +143,12 @@ Summary method
 - `...`:
 
   Arguments passed to
-  [summary.PM_pop](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_pop.md)
+  [summary.PM_pop](https://lapkb.github.io/Pmetrics/reference/summary.PM_pop.md)
 
 #### Details
 
 See
-[summary.PM_pop](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_pop.md).
+[summary.PM_pop](https://lapkb.github.io/Pmetrics/reference/summary.PM_pop.md).
 
 ------------------------------------------------------------------------
 
@@ -165,7 +165,7 @@ Calculate AUC
 - `...`:
 
   Arguments passed to
-  [makeAUC](https://lapkb.github.io/Pmetrics_rust/reference/makeAUC.md)
+  [makeAUC](https://lapkb.github.io/Pmetrics/reference/makeAUC.md)
 
 - `data`:
 
@@ -173,8 +173,7 @@ Calculate AUC
 
 #### Details
 
-See
-[makeAUC](https://lapkb.github.io/Pmetrics_rust/reference/makeAUC.md)
+See [makeAUC](https://lapkb.github.io/Pmetrics/reference/makeAUC.md)
 
 ------------------------------------------------------------------------
 

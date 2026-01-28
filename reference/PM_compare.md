@@ -17,7 +17,7 @@ PM_compare(..., icen = "median", outeq = 1, plot = FALSE)
 
 - ...:
 
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
   objects to compare. See details.
 
 - icen:
@@ -51,26 +51,26 @@ model with the most "best" metrics.
 - **-2\*ll** Final cycle -2\*Log-likelihood
 
 - One of the following, depending on the option set in
-  [setPMoptions](https://lapkb.github.io/Pmetrics_rust/reference/setPMoptions.md):
+  [setPMoptions](https://lapkb.github.io/Pmetrics/reference/setPMoptions.md):
 
   - **aic** Final cycle Akaike Information Criterion OR
 
   - **bic** Final cycle Bayesian (Schwartz) Information Criterion
 
 - **popBias** Bias, calculated by the method set in
-  [setPMoptions](https://lapkb.github.io/Pmetrics_rust/reference/setPMoptions.md),
+  [setPMoptions](https://lapkb.github.io/Pmetrics/reference/setPMoptions.md),
   of the predictions based on `icen` population parameters
 
 - **popImp** Imprecision, calculated by the method set in
-  [setPMoptions](https://lapkb.github.io/Pmetrics_rust/reference/setPMoptions.md),
+  [setPMoptions](https://lapkb.github.io/Pmetrics/reference/setPMoptions.md),
   of the predictions based on `icen` population parameters
 
 - **postBias** Bias, calculated by the method set in
-  [setPMoptions](https://lapkb.github.io/Pmetrics_rust/reference/setPMoptions.md),
+  [setPMoptions](https://lapkb.github.io/Pmetrics/reference/setPMoptions.md),
   of the predictions based on `icen` posterior parameters
 
 - **postImp** Imprecision, calculated by the method set in
-  [setPMoptions](https://lapkb.github.io/Pmetrics_rust/reference/setPMoptions.md),
+  [setPMoptions](https://lapkb.github.io/Pmetrics/reference/setPMoptions.md),
   of the predictions based on `icen` posterior parameters
 
 - **popInt** Intercept of observed vs. population predicted values
@@ -109,7 +109,7 @@ for that parameter are significantly different.
 
 ## See also
 
-[PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md)
+[PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md)
 
 ## Author
 

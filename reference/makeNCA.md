@@ -3,9 +3,9 @@
 Performs a non-compartmental analysis from observed concentrations in
 the raw data file or from an individual Bayesian posterior predicted
 time-observation profiles in
-[PM_post](https://lapkb.github.io/Pmetrics_rust/reference/PM_post.md)
+[PM_post](https://lapkb.github.io/Pmetrics/reference/PM_post.md)
 generated automatically after an NPAG run and loaded with
-[PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md).
+[PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md).
 
 ## Usage
 
@@ -35,32 +35,32 @@ makeNCA(
 
   - It can be the run number, e.g. 3, that has been previously loaded
     with
-    [PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md).
+    [PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md).
     Either the mdata file from the run (NPAG or IT2B) can be used
     (default) or the post object can be used (NPAG only) by specifying
     `postPred = T` below. If
     [ggplot2::x](https://ggplot2.tidyverse.org/reference/aes_position.html)
     is a run number that corresponds to both an NPAG and IT2B run which
     have been previously loaded into memory with
-    [PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md),
+    [PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md),
     the NPAG run will be used.
 
   - It can be the run number of a run that has *not* been previously
     loaded with
-    [PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md).
-    In this case, the current working directory should be the Runs
-    folder as makeNCA will call
-    [PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md).
+    [PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md). In
+    this case, the current working directory should be the Runs folder
+    as makeNCA will call
+    [PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md).
 
   - It can be the specific name of an mdata.x file already loaded into
     memory with
-    [PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md),
+    [PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md),
     e.g. mdata.3. Note that quotation marks are not necessary since
     mdata.3 is an object, not a label/character vector.
 
   - Finally, it can be the name of a Pmetrics data file in the current
     working directory, which will be loaded with
-    [PMreadMatrix](https://lapkb.github.io/Pmetrics_rust/reference/PMreadMatrix.md)
+    [PMreadMatrix](https://lapkb.github.io/Pmetrics/reference/PMreadMatrix.md)
     and analyzed, e.g. "data.csv". In this case, quotation marks are
     reqired, because `x` is now a character vector specifying the
     filename of the file to load.

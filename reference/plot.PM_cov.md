@@ -36,11 +36,10 @@ plot(
 - x:
 
   The name of an
-  [PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/PM_cov.md)
-  data object and loaded with
-  [PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md)
-  as a
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+  [PM_cov](https://lapkb.github.io/Pmetrics/reference/PM_cov.md) data
+  object and loaded with
+  [PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md) as a
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
   e.g. `PM_result$cov`.
 
 - formula:
@@ -52,7 +51,7 @@ plot(
 
   Controls characteristics of lines. Unlike some other Pmetrics plots,
   but like
-  [plot.PM_op](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_op.md),
+  [plot.PM_op](https://lapkb.github.io/Pmetrics/reference/plot.PM_op.md),
   `line` is a list of three elements:
 
   - `lm` If set to `TRUE` or a list of plotly line attributes, will
@@ -318,22 +317,22 @@ though cl_0 is constant for a given subject.
 
 ## See also
 
-[PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/PM_cov.md),
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+[PM_cov](https://lapkb.github.io/Pmetrics/reference/PM_cov.md),
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
 [plotly::schema](https://rdrr.io/pkg/plotly/man/schema.html)
 
 Other PMplots:
-[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cycle.md),
-[`plot.PM_data()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_data.md),
-[`plot.PM_final()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_final.md),
-[`plot.PM_model()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_model.md),
-[`plot.PM_op()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_op.md),
-[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_opt.md),
-[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pop.md),
-[`plot.PM_post()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_post.md),
-[`plot.PM_pta()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pta.md),
-[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_sim.md),
-[`plot.PM_valid()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_valid.md)
+[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_cycle.md),
+[`plot.PM_data()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_data.md),
+[`plot.PM_final()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_final.md),
+[`plot.PM_model()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_model.md),
+[`plot.PM_op()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_op.md),
+[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_opt.md),
+[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_pop.md),
+[`plot.PM_post()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_post.md),
+[`plot.PM_pta()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_pta.md),
+[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.md),
+[`plot.PM_valid()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_valid.md)
 
 ## Author
 

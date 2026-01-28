@@ -21,7 +21,7 @@ Coefficients to calculate sex-specific percentiles of length, weight and
 head cicumference data in children from 0 to 18 years. Downloaded and
 combined from [](https://www.cdc.gov/growthcharts/data_tables.htm). Used
 with the
-[`qgrowth()`](https://lapkb.github.io/Pmetrics_rust/reference/qgrowth.md)
+[`qgrowth()`](https://lapkb.github.io/Pmetrics/reference/qgrowth.md)
 function to generate height and weight percentiles for the purposes of
 simulation.
 

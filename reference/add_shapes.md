@@ -29,14 +29,14 @@ This function adds a shape to the layout element of a plotly plot. Type
 `schema()` in the console and expand the list for layout \>
 layoutAttributes \> shapes for details on how to specify a shape. A
 convenient Pmetrics helper function to add line shapes is
-[ab_line](https://lapkb.github.io/Pmetrics_rust/reference/ab_line.md).
-Other shapes such as circles, rectangles and paths can be added, but
-must be done manually as outlined in the plotly schema documentation. An
-example of a circle shape is below in examples.
+[ab_line](https://lapkb.github.io/Pmetrics/reference/ab_line.md). Other
+shapes such as circles, rectangles and paths can be added, but must be
+done manually as outlined in the plotly schema documentation. An example
+of a circle shape is below in examples.
 
 ## See also
 
-[ab_line](https://lapkb.github.io/Pmetrics_rust/reference/ab_line.md)
+[ab_line](https://lapkb.github.io/Pmetrics/reference/ab_line.md)
 
 ## Examples
 

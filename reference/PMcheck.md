@@ -4,9 +4,9 @@
 
 This function is largely superseded as it is called automatically when
 data are initialized as a
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
-object. It can still be called independently of this route and will
-check for data errors.
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md) object.
+It can still be called independently of this route and will check for
+data errors.
 
 ## Usage
 
@@ -21,7 +21,7 @@ PMcheck(data, path, fix = FALSE, quiet = FALSE)
   The name of a Pmetrics .csv matrix file in the current working
   directory, the full path to one not in the current working directory,
   or a data.frame containing the output of a previous
-  [PMreadMatrix](https://lapkb.github.io/Pmetrics_rust/reference/PMreadMatrix.md)
+  [PMreadMatrix](https://lapkb.github.io/Pmetrics/reference/PMreadMatrix.md)
   command.
 
 - path:
@@ -107,11 +107,11 @@ row numbers that contain that error.
 It will check the data for errors which would cause the analysis to
 fail. Note that as of Pmetrics Version 2, this function is called
 automatically when a new
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
-object is created, and users generally no longer need to call the
-function directly. In `PM_data$new()`, the data object is first
-standardized to contain all required columns, since only "ID", "TIME",
-"DOSE" and "OUT" are required at minimum, and then checked with PMcheck.
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md) object
+is created, and users generally no longer need to call the function
+directly. In `PM_data$new()`, the data object is first standardized to
+contain all required columns, since only "ID", "TIME", "DOSE" and "OUT"
+are required at minimum, and then checked with PMcheck.
 
 If calling PMcheck directly, either a filename or a Pmetrics data object
 in memory are accepted as `data`. Because there is no standardization
@@ -216,8 +216,8 @@ handles each of the errors in the following ways.
 
 ## See also
 
-[PMwriteMatrix](https://lapkb.github.io/Pmetrics_rust/reference/PMwriteMatrix.md),
-[PMreadMatrix](https://lapkb.github.io/Pmetrics_rust/reference/PMreadMatrix.md)
+[PMwriteMatrix](https://lapkb.github.io/Pmetrics/reference/PMwriteMatrix.md),
+[PMreadMatrix](https://lapkb.github.io/Pmetrics/reference/PMreadMatrix.md)
 
 ## Author
 

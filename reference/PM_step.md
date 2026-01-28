@@ -4,9 +4,9 @@
 
 This function is largely superseded as it is accessed through the
 `$step` methods for
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
-and [PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/PM_cov.md)
-objects. There is rarely a need to call it directly any longer.
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md) and
+[PM_cov](https://lapkb.github.io/Pmetrics/reference/PM_cov.md) objects.
+There is rarely a need to call it directly any longer.
 
 ## Usage
 
@@ -19,8 +19,7 @@ PM_step(x, icen = "median", direction = "both")
 - x:
 
   A PMcov object which is the `$data` field of a
-  [PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/PM_cov.md)
-  object
+  [PM_cov](https://lapkb.github.io/Pmetrics/reference/PM_cov.md) object
 
 - icen:
 
@@ -41,8 +40,8 @@ indicates that the variable was not retained in the final model.
 ## Details
 
 It will perform stepwise linear regressions on a
-[PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/PM_cov.md)
-object. Every covariate in the model will be tested in a stepwise linear
+[PM_cov](https://lapkb.github.io/Pmetrics/reference/PM_cov.md) object.
+Every covariate in the model will be tested in a stepwise linear
 regression for their relationships to each parameter in the model.
 Bayesian posterior parameters and individual covariates are used.
 

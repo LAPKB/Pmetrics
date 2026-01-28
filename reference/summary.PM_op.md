@@ -22,8 +22,7 @@ summary(
 
 - object:
 
-  A [PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md)
-  object
+  A [PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md) object
 
 - digits:
 
@@ -89,17 +88,17 @@ A list with three elements of class *summary.PM_op*.
 ## Details
 
 This is a function usually called by the `$summary()` method for
-[PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md)
-objects within a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
-to summarize observations, predictions and errors. The function can be
+[PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md) objects
+within a
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md) to
+summarize observations, predictions and errors. The function can be
 called directly on a
-[PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md)
-object. See examples.
+[PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md) object. See
+examples.
 
 ## See also
 
-[PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md)
+[PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md)
 
 ## Author
 

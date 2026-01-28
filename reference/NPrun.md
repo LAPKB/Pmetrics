@@ -13,28 +13,27 @@ NPrun(data, model, ...)
 
 - data:
 
-  A
-  [`PM_data()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  A [`PM_data()`](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
   object, the character name of a data .csv file, or an appropriate data
   frame that can be coerced into a
-  [`PM_data()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  [`PM_data()`](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
   object.
 
 - model:
 
   A
-  [`PM_model()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md)
+  [`PM_model()`](https://lapkb.github.io/Pmetrics/reference/PM_model.md)
   object, or a list that can be coerced into one.
 
 - ...:
 
   Additional arguments passed to the `$fit` method in
-  [`PM_model()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md).
+  [`PM_model()`](https://lapkb.github.io/Pmetrics/reference/PM_model.md).
 
 ## Value
 
 Unlike older versions of Pmetrics, this wrapper function will return a
-[`PM_result()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+[`PM_result()`](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
 directly.
 
 ## Details

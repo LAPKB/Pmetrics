@@ -15,14 +15,14 @@ summary(object, at = "intersect", ci = 0.95, ...)
 
 - object:
 
-  A [PM_pta](https://lapkb.github.io/Pmetrics_rust/reference/PM_pta.md)
+  A [PM_pta](https://lapkb.github.io/Pmetrics/reference/PM_pta.md)
   object
 
 - at:
 
   Which object in the
-  [PM_pta](https://lapkb.github.io/Pmetrics_rust/reference/PM_pta.md)
-  result list to summarize. By default "intersect" if an intersection is
+  [PM_pta](https://lapkb.github.io/Pmetrics/reference/PM_pta.md) result
+  list to summarize. By default "intersect" if an intersection is
   present due to creation of the object with multiple target types, or 1
   if no intersection is present, which means only 1 target type was
   selected. If "intersect" is present in the object, the default can be
@@ -75,7 +75,7 @@ A tibble with the following columns (only the first five if
 ## Details
 
 Summarize Pharmacodynamic Index (PDI) statistics and success proportions
-in a [PM_pta](https://lapkb.github.io/Pmetrics_rust/reference/PM_pta.md)
+in a [PM_pta](https://lapkb.github.io/Pmetrics/reference/PM_pta.md)
 object. The PDI is the metric calculated by the target type and target,
 e.g. AUC/Target, or %time\>target. Since a PDI cannot be calculated for
 intersections, summarizing the intersection object only provides the
@@ -83,7 +83,7 @@ success proportion per simulation/target.
 
 ## See also
 
-[PM_pta](https://lapkb.github.io/Pmetrics_rust/reference/PM_pta.md)
+[PM_pta](https://lapkb.github.io/Pmetrics/reference/PM_pta.md)
 
 ## Author
 

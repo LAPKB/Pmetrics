@@ -3,7 +3,7 @@
 **\[stable\]**
 
 Print a Pmetrics NPC (Numerical Predictive Check) object, made by
-[plot.PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_sim.md).
+[plot.PM_sim](https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.md).
 
 ## Usage
 
@@ -17,7 +17,7 @@ print(x, ...)
 - x:
 
   A PMnpc object made by
-  [plot.PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_sim.md).
+  [plot.PM_sim](https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.md).
 
 - ...:
 
@@ -29,7 +29,7 @@ A printed object.
 
 ## See also
 
-[plot.PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_sim.md)
+[plot.PM_sim](https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.md)
 
 ## Author
 

@@ -5,9 +5,9 @@
 Reads a Pmetrics .csv matrix input file into R. This function is largely
 superseded as the function is called automatically when data are
 intialized as a
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
-object with `PM_data$new()`. There is rarely need to call
-`PMreadMatrix()` directly any longer.
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md) object
+with `PM_data$new()`. There is rarely need to call `PMreadMatrix()`
+directly any longer.
 
 ## Usage
 
@@ -33,13 +33,13 @@ PMreadMatrix(
 
   Delimiter between columns, which is a comma by default, but can be
   changed with
-  [setPMoptions](https://lapkb.github.io/Pmetrics_rust/reference/setPMoptions.md).
+  [setPMoptions](https://lapkb.github.io/Pmetrics/reference/setPMoptions.md).
 
 - dec:
 
   Decimal separator, which is a period by default, but can be changed
   with
-  [setPMoptions](https://lapkb.github.io/Pmetrics_rust/reference/setPMoptions.md).
+  [setPMoptions](https://lapkb.github.io/Pmetrics/reference/setPMoptions.md).
 
 - quiet:
 
@@ -64,7 +64,7 @@ referencing in R.
 As of Pmetrics version 2, the structure of a valid .csv file relaxed.
 Minimal required columns are id, time, dose, and out. This function is
 now included as part of the
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md) R6
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md) R6
 object to create new `PM_data` objects. Users should rarely have a need
 to call `PMreadMatrix` as a standalone function unless they continue to
 use Pmetrics in its legacy mode (versions \< 2.0). Note that support for
@@ -76,10 +76,9 @@ Details can be found in the
 
 ## See also
 
-[PMwriteMatrix](https://lapkb.github.io/Pmetrics_rust/reference/PMwriteMatrix.md),
-[PMcheck](https://lapkb.github.io/Pmetrics_rust/reference/PMcheck.md),
-and
-[plot.PM_data](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_data.md)
+[PMwriteMatrix](https://lapkb.github.io/Pmetrics/reference/PMwriteMatrix.md),
+[PMcheck](https://lapkb.github.io/Pmetrics/reference/PMcheck.md), and
+[plot.PM_data](https://lapkb.github.io/Pmetrics/reference/plot.PM_data.md)
 
 ## Author
 

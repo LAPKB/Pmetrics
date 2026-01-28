@@ -1,16 +1,15 @@
 # Plot Pmetrics Validation Objects
 
 **\[stable\]** Usually called by the `$plot` method for
-[PM_valid](https://lapkb.github.io/Pmetrics_rust/reference/PM_valid.md)
+[PM_valid](https://lapkb.github.io/Pmetrics/reference/PM_valid.md)
 objects, which are in turn typically added to a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
 object by the `$validate` method. For example:
 
        NPex$validate(limits = c(0, 3)) # creates a PM_valid object and adds it to the $valid field of NPex
        NPex$valid$plot(type = "vpc", tad = TRUE, log = TRUE) # now we can plot it
 
-Plot
-[PM_valid](https://lapkb.github.io/Pmetrics_rust/reference/PM_valid.md)
+Plot [PM_valid](https://lapkb.github.io/Pmetrics/reference/PM_valid.md)
 objects.
 
 ## Usage
@@ -43,7 +42,7 @@ plot(
 
   The name of an *PM_valid* data object, which is usually called by the
   `$validate` method for
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
   objects.
 
 - type:
@@ -281,7 +280,7 @@ Plots and returns the plotly object
 
 Generates a plot of outputs (typically concentrations) on the y axis and
 time on the x axis. If `tad` was set to `TRUE` when
-[make_valid](https://lapkb.github.io/Pmetrics_rust/reference/make_valid.md)
+[make_valid](https://lapkb.github.io/Pmetrics/reference/make_valid.md)
 was called, then time may be either absolute (default) or time after
 dose, controlled by the `tad` argument to this plot function. The
 following items are included in the plot:
@@ -310,20 +309,20 @@ errors.
 
 ## See also
 
-[make_valid](https://lapkb.github.io/Pmetrics_rust/reference/make_valid.md)
+[make_valid](https://lapkb.github.io/Pmetrics/reference/make_valid.md)
 
 Other PMplots:
-[`plot.PM_cov()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cov.md),
-[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cycle.md),
-[`plot.PM_data()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_data.md),
-[`plot.PM_final()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_final.md),
-[`plot.PM_model()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_model.md),
-[`plot.PM_op()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_op.md),
-[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_opt.md),
-[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pop.md),
-[`plot.PM_post()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_post.md),
-[`plot.PM_pta()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pta.md),
-[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_sim.md)
+[`plot.PM_cov()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_cov.md),
+[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_cycle.md),
+[`plot.PM_data()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_data.md),
+[`plot.PM_final()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_final.md),
+[`plot.PM_model()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_model.md),
+[`plot.PM_op()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_op.md),
+[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_opt.md),
+[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_pop.md),
+[`plot.PM_post()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_post.md),
+[`plot.PM_pta()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_pta.md),
+[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.md)
 
 ## Author
 

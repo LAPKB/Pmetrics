@@ -8,16 +8,15 @@ methods to process the data
 ## Details
 
 *PM_data* objects are passed to
-[PM_fit](https://lapkb.github.io/Pmetrics_rust/reference/PM_fit.md)
-objects to initiate a population analysis. The object is created by
-reading a delimited file in the current working directory. The data will
-be transformed into the standard format which is the same for all
-engines, with a report of any assumptions that were necessary to
-standardize the data.
-[PMcheck](https://lapkb.github.io/Pmetrics_rust/reference/PMcheck.md) is
-called on the standard data to evaluate for errors. If dates and times
-are converted to relative decimal times in the standard data, automatic
-detection of the correct format will be attempted using
+[PM_fit](https://lapkb.github.io/Pmetrics/reference/PM_fit.md) objects
+to initiate a population analysis. The object is created by reading a
+delimited file in the current working directory. The data will be
+transformed into the standard format which is the same for all engines,
+with a report of any assumptions that were necessary to standardize the
+data. [PMcheck](https://lapkb.github.io/Pmetrics/reference/PMcheck.md)
+is called on the standard data to evaluate for errors. If dates and
+times are converted to relative decimal times in the standard data,
+automatic detection of the correct format will be attempted using
 [`lubridate::parse_date_time()`](https://lubridate.tidyverse.org/reference/parse_date_time.html).
 In the case of failure due to an unusual format, use the 'dt' argument
 to specify the correct format in your data. In the case of successful
@@ -32,11 +31,11 @@ There are a number of methods defined for a PM_data object, including to
 write the standard data back to a file for future use, to summarize and
 to plot the object, to conduct a non-compartmental analysis on the raw
 data using
-[makeNCA](https://lapkb.github.io/Pmetrics_rust/reference/makeNCA.md),
-to calculate an AUC using
-[makeAUC](https://lapkb.github.io/Pmetrics_rust/reference/makeAUC.md),
-and to add event rows, which is particularly useful for making
-simulation templates on the fly.
+[makeNCA](https://lapkb.github.io/Pmetrics/reference/makeNCA.md), to
+calculate an AUC using
+[makeAUC](https://lapkb.github.io/Pmetrics/reference/makeAUC.md), and to
+add event rows, which is particularly useful for making simulation
+templates on the fly.
 
 ## Public fields
 
@@ -51,11 +50,10 @@ simulation templates on the fly.
 - `pop`:
 
   The `$data` field from a
-  [PM_pop](https://lapkb.github.io/Pmetrics_rust/reference/PM_pop.md)
-  object. This makes it easy to add population predictions to a raw data
-  plot. This field will be `NULL` until the PM_data object is added to
-  the
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+  [PM_pop](https://lapkb.github.io/Pmetrics/reference/PM_pop.md) object.
+  This makes it easy to add population predictions to a raw data plot.
+  This field will be `NULL` until the PM_data object is added to the
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
   after a run. As examples:
 
   - `dat <- PM_data$new("data.csv")`. Here, `dat$pop` will be `NULL`.
@@ -66,7 +64,7 @@ simulation templates on the fly.
 - `post`:
 
   The `$data` field from a
-  [PM_post](https://lapkb.github.io/Pmetrics_rust/reference/PM_post.md)
+  [PM_post](https://lapkb.github.io/Pmetrics/reference/PM_post.md)
   object. See details in the `pop` argument above.
 
 ## Methods
@@ -172,7 +170,7 @@ Save data to file
 - `...`:
 
   Arguments passed to
-  [PMwriteMatrix](https://lapkb.github.io/Pmetrics_rust/reference/PMwriteMatrix.md)
+  [PMwriteMatrix](https://lapkb.github.io/Pmetrics/reference/PMwriteMatrix.md)
 
 #### Details
 
@@ -194,12 +192,11 @@ Calculate AUC
 - `...`:
 
   Arguments passed to
-  [makeAUC](https://lapkb.github.io/Pmetrics_rust/reference/makeAUC.md).
+  [makeAUC](https://lapkb.github.io/Pmetrics/reference/makeAUC.md).
 
 #### Details
 
-See
-[makeAUC](https://lapkb.github.io/Pmetrics_rust/reference/makeAUC.md).
+See [makeAUC](https://lapkb.github.io/Pmetrics/reference/makeAUC.md).
 
 ------------------------------------------------------------------------
 
@@ -216,12 +213,11 @@ Perform non-compartmental analysis
 - `...`:
 
   Arguments passed to
-  [makeNCA](https://lapkb.github.io/Pmetrics_rust/reference/makeNCA.md).
+  [makeNCA](https://lapkb.github.io/Pmetrics/reference/makeNCA.md).
 
 #### Details
 
-See
-[makeNCA](https://lapkb.github.io/Pmetrics_rust/reference/makeNCA.md).
+See [makeNCA](https://lapkb.github.io/Pmetrics/reference/makeNCA.md).
 
 ------------------------------------------------------------------------
 
@@ -238,12 +234,12 @@ Plot method
 - `...`:
 
   Arguments passed to
-  [plot.PM_data](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_data.md)
+  [plot.PM_data](https://lapkb.github.io/Pmetrics/reference/plot.PM_data.md)
 
 #### Details
 
 See
-[plot.PM_data](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_data.md).
+[plot.PM_data](https://lapkb.github.io/Pmetrics/reference/plot.PM_data.md).
 
 ------------------------------------------------------------------------
 
@@ -290,12 +286,12 @@ Summary method
 - `...`:
 
   Arguments passed to
-  [summary.PM_data](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_data.md).
+  [summary.PM_data](https://lapkb.github.io/Pmetrics/reference/summary.PM_data.md).
 
 #### Details
 
 See
-[summary.PM_data](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_data.md).
+[summary.PM_data](https://lapkb.github.io/Pmetrics/reference/summary.PM_data.md).
 
 ------------------------------------------------------------------------
 

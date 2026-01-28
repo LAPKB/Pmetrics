@@ -7,16 +7,16 @@ Contains a data frame with subject-specific covariate data output.
 ## Details
 
 The PM_cov object is both a data field within a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
 and itself an R6 object comprising data fields and associated methods
 suitable for analysis and plotting relationships between covariates and
 posterior parameters, covariates over time, or parameter values over
 time.
 
 Because PM_cov objects are automatically added to the
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
-at the end of a successful run, it is generally not necessary for users
-to generate PM_cov objects themselves.
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md) at
+the end of a successful run, it is generally not necessary for users to
+generate PM_cov objects themselves.
 
 The results are contained in the `$data` field, and it is this field
 which is passed to the `$plot` and `$summary` methods. You can use this
@@ -33,8 +33,8 @@ parameter, covariate-time, or parameter-time relationships.
 
 ## See also
 
-[plot.PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cov.md),
-[PM_step](https://lapkb.github.io/Pmetrics_rust/reference/PM_step.md)
+[plot.PM_cov](https://lapkb.github.io/Pmetrics/reference/plot.PM_cov.md),
+[PM_step](https://lapkb.github.io/Pmetrics/reference/PM_step.md)
 
 ## Author
 
@@ -124,12 +124,11 @@ parameter values
 - `...`:
 
   Arguments passed to
-  [PM_step](https://lapkb.github.io/Pmetrics_rust/reference/PM_step.md)
+  [PM_step](https://lapkb.github.io/Pmetrics/reference/PM_step.md)
 
 #### Details
 
-See
-[PM_step](https://lapkb.github.io/Pmetrics_rust/reference/PM_step.md).
+See [PM_step](https://lapkb.github.io/Pmetrics/reference/PM_step.md).
 
 ------------------------------------------------------------------------
 
@@ -146,12 +145,12 @@ Summary method
 - `...`:
 
   Arguments passed to
-  [summary.PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_cov.md)
+  [summary.PM_cov](https://lapkb.github.io/Pmetrics/reference/summary.PM_cov.md)
 
 #### Details
 
 See
-[summary.PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_cov.md).
+[summary.PM_cov](https://lapkb.github.io/Pmetrics/reference/summary.PM_cov.md).
 
 ------------------------------------------------------------------------
 
@@ -168,12 +167,12 @@ Plot method
 - `...`:
 
   Arguments passed to
-  [plot.PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cov.md)
+  [plot.PM_cov](https://lapkb.github.io/Pmetrics/reference/plot.PM_cov.md)
 
 #### Details
 
 See
-[plot.PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cov.md).
+[plot.PM_cov](https://lapkb.github.io/Pmetrics/reference/plot.PM_cov.md).
 
 ------------------------------------------------------------------------
 

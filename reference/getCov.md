@@ -14,8 +14,7 @@ getCov(mdata)
 
 - mdata:
 
-  A
-  [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  A [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
   object. It can be other data frames but the results will likely not be
   meaningful.
 
@@ -28,9 +27,9 @@ A list with named items: *ncov, covnames, covstart, covend*.
 The function subtracts the number of fixed columns in a standard data
 format, currently 14, from the total number of columns in `mdata` and
 queries the remaining columns. When given a
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
-object, will return a list with the number of covariates, their names,
-and the starting and ending column numbers
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md) object,
+will return a list with the number of covariates, their names, and the
+starting and ending column numbers
 
 ## Author
 

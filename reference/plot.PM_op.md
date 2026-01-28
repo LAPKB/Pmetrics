@@ -39,11 +39,11 @@ plot(
 - x:
 
   The name of a
-  [PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md) data
+  [PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md) data
   object and loaded with
-  [PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md)
-  as a field in a
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+  [PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md) as a
+  field in a
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
   e.g. `PM_result$op`.
 
 - line:
@@ -127,7 +127,7 @@ plot(
   `marker = list(color = orange, shape = "circle", size = 10, opacity = 0.5, line = list(color = black, width = 1))`.
   The color of any BLQ points is set to a color 90 degrees different on
   the color wheel from the color of the other points using
-  [opposite_color](https://lapkb.github.io/Pmetrics_rust/reference/opposite_color.md)
+  [opposite_color](https://lapkb.github.io/Pmetrics/reference/opposite_color.md)
   to ensure good contrast. The symbol for BLQ points is fixed to
   "triangle-down", and the opacity is fixed to 1. Size is the same as
   for other points.
@@ -325,46 +325,46 @@ Plots the object.
 ## Details
 
 This is a function usually called by the `$plot()` method for
-[PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md)
-objects within a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
-to generate a plot of Observed vs. Predicted observations. The function
-can be called directly on a
-[PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md)
-object. The default is to generate an observed vs. predicted plot of
-predictions based on the median of the Bayesian posterior distributions
-for each subject. Missing observations are excluded. Observations
-reported as BLQ (below the limit of quantification) are indicated as
-downward triangles, and colored differently from other observations.
-They are plotted at the reported LOQ on the observed axis and the
-predicted value on the predicted axis. They are not included in any
-regression lines or statistics.
+[PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md) objects
+within a
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md) to
+generate a plot of Observed vs. Predicted observations. The function can
+be called directly on a
+[PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md) object. The
+default is to generate an observed vs. predicted plot of predictions
+based on the median of the Bayesian posterior distributions for each
+subject. Missing observations are excluded. Observations reported as BLQ
+(below the limit of quantification) are indicated as downward triangles,
+and colored differently from other observations. They are plotted at the
+reported LOQ on the observed axis and the predicted value on the
+predicted axis. They are not included in any regression lines or
+statistics.
 
 Clicking on a point in the plot will highlight all points from that
 subject. The color of the highlight is 180 degrees different on the
 color wheel from the color of the other points
-([opposite_color](https://lapkb.github.io/Pmetrics_rust/reference/opposite_color.md)),
+([opposite_color](https://lapkb.github.io/Pmetrics/reference/opposite_color.md)),
 ensuring good contrast. Clicking on the plot background will remove the
 highlighting.
 
 ## See also
 
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
-[PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md),
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
+[PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md),
 [plotly::schema](https://rdrr.io/pkg/plotly/man/schema.html)
 
 Other PMplots:
-[`plot.PM_cov()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cov.md),
-[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cycle.md),
-[`plot.PM_data()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_data.md),
-[`plot.PM_final()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_final.md),
-[`plot.PM_model()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_model.md),
-[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_opt.md),
-[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pop.md),
-[`plot.PM_post()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_post.md),
-[`plot.PM_pta()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pta.md),
-[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_sim.md),
-[`plot.PM_valid()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_valid.md)
+[`plot.PM_cov()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_cov.md),
+[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_cycle.md),
+[`plot.PM_data()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_data.md),
+[`plot.PM_final()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_final.md),
+[`plot.PM_model()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_model.md),
+[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_opt.md),
+[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_pop.md),
+[`plot.PM_post()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_post.md),
+[`plot.PM_pta()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_pta.md),
+[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.md),
+[`plot.PM_valid()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_valid.md)
 
 ## Author
 

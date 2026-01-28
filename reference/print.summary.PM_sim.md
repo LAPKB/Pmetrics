@@ -16,7 +16,7 @@ print(x, ...)
 - x:
 
   An object made by
-  [summary.PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_sim.md).
+  [summary.PM_sim](https://lapkb.github.io/Pmetrics/reference/summary.PM_sim.md).
 
 - ...:
 
@@ -29,13 +29,13 @@ A printed object.
 ## Details
 
 Print a summary of simulations made by
-[summary.PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_sim.md).
+[summary.PM_sim](https://lapkb.github.io/Pmetrics/reference/summary.PM_sim.md).
 Users do not normally need to call this print function directly, as it
 will be the default method to display the object.
 
 ## See also
 
-[summary.PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_sim.md)
+[summary.PM_sim](https://lapkb.github.io/Pmetrics/reference/summary.PM_sim.md)
 
 ## Author
 

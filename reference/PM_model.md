@@ -9,7 +9,7 @@ models necessary to run a population analysis.
 
 PM_model objects are one of two fundamental objects in Pmetrics, along
 with
-[`PM_data()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+[`PM_data()`](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
 objects. Defining a PM_model allows for fitting it to the data via the
 `$fit()` method to conduct a population analysis, i.e. estimating the
 probability distribution of model equation paramter values in the
@@ -164,7 +164,7 @@ blocks.
     the prior example: `PM_model$new(mod)`
 
   See the user manual
-  [`PM_manual()`](https://lapkb.github.io/Pmetrics_rust/reference/PM_manual.md)
+  [`PM_manual()`](https://lapkb.github.io/Pmetrics/reference/PM_manual.md)
   for more help on directly defining models in R.
 
 - `pri`:
@@ -173,8 +173,8 @@ blocks.
   named list of primary parameters, which are the model parameters that
   are estimated in the population analysis. They are specified by one of
   two creator functions:
-  [`ab()`](https://lapkb.github.io/Pmetrics_rust/reference/ab.md) or
-  [`msd()`](https://lapkb.github.io/Pmetrics_rust/reference/msd.md). For
+  [`ab()`](https://lapkb.github.io/Pmetrics/reference/ab.md) or
+  [`msd()`](https://lapkb.github.io/Pmetrics/reference/msd.md). For
   example,
 
       pri = list(
@@ -182,11 +182,10 @@ blocks.
         V = msd(100, 10)
       )
 
-  The [`ab()`](https://lapkb.github.io/Pmetrics_rust/reference/ab.md)
-  creator specifies the initial range `[a, b]` of the parameter, while
-  the [`msd()`](https://lapkb.github.io/Pmetrics_rust/reference/msd.md)
-  creator specifies the initial mean and standard deviation of the
-  parameter.
+  The [`ab()`](https://lapkb.github.io/Pmetrics/reference/ab.md) creator
+  specifies the initial range `[a, b]` of the parameter, while the
+  [`msd()`](https://lapkb.github.io/Pmetrics/reference/msd.md) creator
+  specifies the initial mean and standard deviation of the parameter.
 
 - `cov`:
 
@@ -196,12 +195,11 @@ blocks.
   be all present. **Only those covariates you wish to use in model
   equations or analyze for relationships to model parameters need to be
   declared here.** Values for each element in the covariate vector are
-  the
-  [`interp()`](https://lapkb.github.io/Pmetrics_rust/reference/interp.md)
+  the [`interp()`](https://lapkb.github.io/Pmetrics/reference/interp.md)
   creator function to declare how each covariate is interpolated between
   entries in the data. The default argument for
-  [`interp()`](https://lapkb.github.io/Pmetrics_rust/reference/interp.md)
-  is "lm" which means that values will be linearly interpolated between
+  [`interp()`](https://lapkb.github.io/Pmetrics/reference/interp.md) is
+  "lm" which means that values will be linearly interpolated between
   entries, like the R linear model function
   [`stats::lm()`](https://rdrr.io/r/stats/lm.html). The alternative is
   "none", which holds the covariate value the same as the previous entry
@@ -239,7 +237,7 @@ blocks.
 
   - **Implicit equations** referenced by calling the name of a Pmetrics
     model library object detailed in
-    [`model_lib()`](https://lapkb.github.io/Pmetrics_rust/reference/model_lib.md).
+    [`model_lib()`](https://lapkb.github.io/Pmetrics/reference/model_lib.md).
     The Pmetrics model library contains a number of template models
     solved analytically (algebraically) and may include user-defined
     models. For example, to use a two-compartment model with intavenous
@@ -418,9 +416,9 @@ blocks.
   An unammed vector of error models for each of the output equations
   with observations, i.e. those that have an `outeq` number associated
   with them in the data. Each error model is defined by the
-  [`proportional()`](https://lapkb.github.io/Pmetrics_rust/reference/proportional.md)
+  [`proportional()`](https://lapkb.github.io/Pmetrics/reference/proportional.md)
   creator or the
-  [`additive()`](https://lapkb.github.io/Pmetrics_rust/reference/additive.md)
+  [`additive()`](https://lapkb.github.io/Pmetrics/reference/additive.md)
   creator, relative to the observation error. For example, if there are
   three output equations corresponding to three sources of observations
   in the data, the error models could be defined as:
@@ -488,12 +486,12 @@ Plot the model.
 #### Details
 
 This method plots the model using the
-[`plot.PM_model()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_model.md)
+[`plot.PM_model()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_model.md)
 function.
 
 ------------------------------------------------------------------------
 
-### Method [`fit()`](https://lapkb.github.io/Pmetrics_rust/reference/fit.md)
+### Method [`fit()`](https://lapkb.github.io/Pmetrics/reference/fit.md)
 
 This is the main method to run a population analysis.
 
@@ -521,13 +519,13 @@ This is the main method to run a population analysis.
 - `data`:
 
   Either the name of a
-  [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
   object in memory or the quoted filename (with or without a path) of a
   Pmetrics data file. If the path is not specified, the file is assumed
   to be in the current working directory, unless the `path` argument
   below is also specified as a global option for the fit. The file will
   be used to create a
-  [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
   object on the fly. However, if created on the fly, this object will
   not be available to other methods or other instances of `$fit()`.
 
@@ -574,9 +572,9 @@ This is the main method to run a population analysis.
   to a new covergence with the new data.
 
   - The name of a suitable
-    [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+    [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
     object from a prior run loaded with
-    [PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md).
+    [PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md).
     This starts from the non-uniform, informative distribution obtained
     at the end of a prior NPAG run. Example:
     `run1 <- PM_load(1); fit1$run(prior = run1)`.
@@ -646,7 +644,7 @@ This is the main method to run a population analysis.
 - `report`:
 
   If missing, the default Pmetrics report template as specified in
-  [getPMoptions](https://lapkb.github.io/Pmetrics_rust/reference/getPMoptions.md)
+  [getPMoptions](https://lapkb.github.io/Pmetrics/reference/getPMoptions.md)
   is used. Otherwise can be "plotly", "ggplot", or "none".
 
 - `intern`:
@@ -662,15 +660,15 @@ precisely, minimize the objective function, which is -2\*log-likelihood.
 
 The `$fit()` method is the means of running that compiled code to
 conduct to fitting procedure. At a minimum, it requires a
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
-object, which can be created with `PM_data$new()`. There are a number of
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md) object,
+which can be created with `PM_data$new()`. There are a number of
 additional arguments to control the fitting procedure, such as the
 number of cycles to run, the initial number of support points, and the
 algorithm to use, among others.
 
 The `$fit()` method is the descendant of the legacy
-[NPrun](https://lapkb.github.io/Pmetrics_rust/reference/NPrun.md)
-function, which is maintained as a wrapper to `$fit()` for backwards
+[NPrun](https://lapkb.github.io/Pmetrics/reference/NPrun.md) function,
+which is maintained as a wrapper to `$fit()` for backwards
 compatibility.
 
 #### Returns
@@ -692,14 +690,13 @@ row contains values for the parameters and the associated probability
 for those parameter values. The file can be saved as a csv file.
 
 To calculate the posteriors, `map()` calls the
-[`fit()`](https://lapkb.github.io/Pmetrics_rust/reference/fit.md) method
-with the `cycles` argument set to 0 and the `algorithm` argument set to
+[`fit()`](https://lapkb.github.io/Pmetrics/reference/fit.md) method with
+the `cycles` argument set to 0 and the `algorithm` argument set to
 "POSTPROB". If `data` are not provided as an argument to `map()`, the
 model's `data` field is used instead. If `data` is provided, it must be
-a [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+a [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
 object or the pathname of a file which can be loaded as a
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
-object.
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md) object.
 
 #### Usage
 
@@ -727,8 +724,7 @@ Simulate data from the model using a set of parameter values.
 
 - `data`:
 
-  A
-  [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  A [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
   object containing the dosing and observation information.
 
 - `theta`:

@@ -16,7 +16,7 @@ print(x, digits = getPMoptions("digits"), embed = FALSE, ...)
 - x:
 
   An object made by
-  [summary.PM_op](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_op.md).
+  [summary.PM_op](https://lapkb.github.io/Pmetrics/reference/summary.PM_op.md).
 
 - digits:
 
@@ -38,15 +38,15 @@ A printed object.
 ## Details
 
 Print a summary of observations, predictions and errors in a
-[summary.PM_op](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_op.md)
+[summary.PM_op](https://lapkb.github.io/Pmetrics/reference/summary.PM_op.md)
 object made by
-[summary.PM_op](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_op.md).
+[summary.PM_op](https://lapkb.github.io/Pmetrics/reference/summary.PM_op.md).
 Users do not normally need to call this function directly, as it will be
 the default method to display the object.
 
 ## See also
 
-[summary.PM_op](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_op.md)
+[summary.PM_op](https://lapkb.github.io/Pmetrics/reference/summary.PM_op.md)
 
 ## Author
 

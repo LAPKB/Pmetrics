@@ -3,8 +3,8 @@
 **\[stable\]**
 
 Convert old-style, USC\*PACK single drug working copy files into a
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
-object and write a .csv file to the current working directory.
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md) object
+and write a .csv file to the current working directory.
 
 ## Usage
 

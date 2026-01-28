@@ -40,7 +40,7 @@ plot(
 - x:
 
   The name of an `PM_data` data object or loaded as a field in a
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
   object
 
 - include:
@@ -77,19 +77,19 @@ plot(
     following:
 
   - If plotting data contained in a
-    [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+    [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
     use "pop" or "post" to include population or posterior predictions.
     \*\* Example 1:
     `run1 <- PM_load(1); run1$data$plot(line = list(pred = "post"))`
 
   - If plotting data not contained in a
-    [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+    [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
     you may add the name of a population
-    [PM_pop](https://lapkb.github.io/Pmetrics_rust/reference/PM_pop.md)
-    or posterior
-    [PM_post](https://lapkb.github.io/Pmetrics_rust/reference/PM_post.md)
+    [PM_pop](https://lapkb.github.io/Pmetrics/reference/PM_pop.md) or
+    posterior
+    [PM_post](https://lapkb.github.io/Pmetrics/reference/PM_post.md)
     prediction object in a
-    [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+    [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
     object. This might be useful if you want to see how the predictions
     from one population match the raw data from another. \*\* Example 2:
     `dat <- PM_data$new("new.csv"); dat$plot(line = list(pred = run1$post))`.
@@ -365,21 +365,21 @@ legend are omitted by default.
 
 ## See also
 
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md),
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md),
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
 
 Other PMplots:
-[`plot.PM_cov()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cov.md),
-[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cycle.md),
-[`plot.PM_final()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_final.md),
-[`plot.PM_model()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_model.md),
-[`plot.PM_op()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_op.md),
-[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_opt.md),
-[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pop.md),
-[`plot.PM_post()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_post.md),
-[`plot.PM_pta()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pta.md),
-[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_sim.md),
-[`plot.PM_valid()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_valid.md)
+[`plot.PM_cov()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_cov.md),
+[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_cycle.md),
+[`plot.PM_final()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_final.md),
+[`plot.PM_model()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_model.md),
+[`plot.PM_op()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_op.md),
+[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_opt.md),
+[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_pop.md),
+[`plot.PM_post()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_post.md),
+[`plot.PM_pta()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_pta.md),
+[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.md),
+[`plot.PM_valid()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_valid.md)
 
 ## Author
 

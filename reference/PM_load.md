@@ -24,13 +24,13 @@ PM_load(run, path = ".", file = "PMout.Rdata")
   Default is "PMout.Rdata", which is created after a Pmetrics run, but
   it could also be the name of an .Rdata file created by running the
   `$save` method for a
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
   object.
 
 ## Value
 
 An R6
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md).
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md).
 
 ## Details
 
@@ -61,12 +61,12 @@ results.
 
 ## See also
 
-[PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md),
-[PM_cycle](https://lapkb.github.io/Pmetrics_rust/reference/PM_cycle.md),
-[PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md),
-[PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/PM_cov.md),
-[PM_pop](https://lapkb.github.io/Pmetrics_rust/reference/PM_pop.md),
-[PM_post](https://lapkb.github.io/Pmetrics_rust/reference/PM_post.md)
+[PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md),
+[PM_cycle](https://lapkb.github.io/Pmetrics/reference/PM_cycle.md),
+[PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md),
+[PM_cov](https://lapkb.github.io/Pmetrics/reference/PM_cov.md),
+[PM_pop](https://lapkb.github.io/Pmetrics/reference/PM_pop.md),
+[PM_post](https://lapkb.github.io/Pmetrics/reference/PM_post.md)
 
 ## Author
 

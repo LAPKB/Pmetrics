@@ -1,11 +1,11 @@
 # Plot PM_cycle_data objects
 
 **\[stable\]** Plots the raw data (`class: PM_cycle_data`) from a
-[PM_cycle](https://lapkb.github.io/Pmetrics_rust/reference/PM_cycle.md)
+[PM_cycle](https://lapkb.github.io/Pmetrics/reference/PM_cycle.md)
 object in the same way as plotting a
-[PM_cycle](https://lapkb.github.io/Pmetrics_rust/reference/PM_cycle.md)
+[PM_cycle](https://lapkb.github.io/Pmetrics/reference/PM_cycle.md)
 object. Both use
-[plot.PM_cycle](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cycle.md).
+[plot.PM_cycle](https://lapkb.github.io/Pmetrics/reference/plot.PM_cycle.md).
 
 ## Usage
 
@@ -23,7 +23,7 @@ plot(x, ...)
 - ...:
 
   Additional arguments passed to
-  [plot.PM_cycle](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cycle.md)
+  [plot.PM_cycle](https://lapkb.github.io/Pmetrics/reference/plot.PM_cycle.md)
 
 ## Examples
 

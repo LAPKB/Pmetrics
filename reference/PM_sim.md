@@ -145,7 +145,7 @@ Michael Neely
 
 This function simulates outputs from given inputs and a model. It can be
 called directly or via the `$sim` method for
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
 objects.
 
 #### Usage
@@ -176,15 +176,15 @@ objects.
   One of four things:
 
   1.  A
-      [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+      [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
       object containing the final population parameter distribution from
       a model run, a model object, and a data object. The model object
       may be replaced by a different
-      [PM_model](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md),
+      [PM_model](https://lapkb.github.io/Pmetrics/reference/PM_model.md),
       as long as the primary parameters are the same as the original
       model. The data object may also be replaced (and often is) by a
       different
-      [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+      [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
       object compatible with the model.
 
           run1 <- PM_load(1) # load the PM_result object
@@ -196,7 +196,7 @@ objects.
           # poppar and data necessary, model obtained from mod
 
   2.  Population prior parameters as a
-      [PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+      [PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
       object found in `PM_result$final`.
 
           run1 <- PM_load(1) # load the PM_result object
@@ -275,32 +275,32 @@ objects.
 - `model`:
 
   Name of a suitable
-  [PM_model](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md)
+  [PM_model](https://lapkb.github.io/Pmetrics/reference/PM_model.md)
   object or a model file template in the working directory. If missing,
   and `poppar` is a
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
   the model within the `$model` field of the
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
   object will be used. If `model` is missing and `poppar` is not a
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
   then Pmetrics will attempt to load a model file in the working
   directory called "model.txt" as the default name.
 
 - `data`:
 
   Either a
-  [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+  [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
   object or a character vector with the file name of a Pmetrics data
   file in the working directory that contains **template** regimens and
   observation times. The value for outputs can be coded as any number(s)
   other than -99. The number(s) will be replaced in the simulator output
   with the simulated values. Outputs equal to -99 will be simulated as
   missing. If `data` is missing, and `poppar` is a
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
   the data within the `$data` field of the
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
   object will be used. If `data` is missing and `poppar` is not a
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
   then Pmetrics will attempt to load a data template file in the working
   directory called "data.csv" as the default name.
 
@@ -315,7 +315,7 @@ objects.
 
   - The second option is to set `limits` to `NA`. This will use the
     parameter limits on the primary parameters that are specified in the
-    [PM_model](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md)
+    [PM_model](https://lapkb.github.io/Pmetrics/reference/PM_model.md)
     object.
 
   - The third option is a numeric vector of length 1 or 2, e.g.
@@ -352,12 +352,12 @@ objects.
 - `split`:
 
   Boolean operator controlling whether to split an NPAG
-  [PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+  [PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
   object into one distribution per support point, with means equal to
   the vector of parameter values for that point, and covariance equal to
   the population covariance divided by the number of support points.
   Default for NPAG
-  [PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+  [PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
   objects is `TRUE`, otherwise `FALSE`.
 
 - `include`:
@@ -406,13 +406,13 @@ objects.
 
   Pmetrics can simulate values for some/all covariates declared in the
   `cov` block of the
-  [PM_model](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md).
+  [PM_model](https://lapkb.github.io/Pmetrics/reference/PM_model.md).
   This argument is a list with the following named elements.
 
   - **cov** Optional if `poppar` is a
-    [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+    [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
     object, but required if `poppar` is a
-    [PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+    [PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
     object or a manually specified prior, e.g., with values obtained
     from the literature.
 
@@ -427,7 +427,7 @@ objects.
   - **fix** Optional in all cases.
 
   The simplest example is when simulating covariates from a
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md):
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md):
 
       run1 <- PM_load(1)
       run1$sim(..., covariate = list())`
@@ -446,18 +446,17 @@ objects.
   calculates the covariate correlations.
 
   - **Case 1**. If `poppar` is a
-    [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+    [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
     Pmetrics will use the `$cov` field within that object to obtain
     covariate means, standard deviations (sd), and correlations among
     covariates and parameter values. In this case, you can omit this
     element of the `covariate` list. See the example above.
 
   - **Case 2**. If `poppar` is a
-    [PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md),
+    [PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md),
     you will need to supply the name of a
-    [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
-    or
-    [PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/PM_cov.md)
+    [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
+    or [PM_cov](https://lapkb.github.io/Pmetrics/reference/PM_cov.md)
     object as the value for this element so that Pmetrics can calculate
     covariate means, sd, and correlations.
 
@@ -502,19 +501,19 @@ objects.
   Examples:
 
   - Using a
-    [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+    [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
     as poppar: `PM_sim$new(poppar = run1, covariate = list())`. Here we
     don't need to specify `cov` because it is already in the
-    [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+    [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
     `run1`. We are not re-centering or otherwise modifying the
     covariates, so `covariate` can be an empty list.
 
   - Using a
-    [PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+    [PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
     as poppar:
     `PM_sim$new(poppar = run1$final, covariate = list(cov = run1$cov, mean = list(wt = 50))`.
     Here we need to specify `cov` because it is not in the
-    [PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+    [PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
     object. Futhermore, we want to recenter the mean values, so we add
     the `$mean` element.
 
@@ -562,7 +561,7 @@ objects.
 
   Boolean, default `FALSE`. Only applicable when `poppar` contains an
   NPAG
-  [PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+  [PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
   object. If `TRUE`, the mean posterior parameter values and covariances
   for each subject, modified by `include` or `exclude`, in `poppar` will
   be used to simulate rather than the population prior. The number of
@@ -594,8 +593,8 @@ objects.
 
   These columns may not have noise added: `id`, `evid`, `addl`, `ii`,
   `input`, `outeq`, `c0`, `c1`, `c2`, and `c3`. See
-  [PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
-  for further details on these columns.
+  [PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md) for
+  further details on these columns.
 
   Each element in the `noise` list should be another list with the
   following arguments. The `coeff` argument is mandatory, and should be
@@ -605,7 +604,7 @@ objects.
   - **coeff** Mandatory. A vector of up to 4 coefficients for the noise
     model. They correspond to *C0*, *C1*, *C2*, and *C3* for the assay
     noise model (as in
-    [PM_model](https://lapkb.github.io/Pmetrics_rust/reference/PM_model.md)).
+    [PM_model](https://lapkb.github.io/Pmetrics/reference/PM_model.md)).
     See the 'mode' argument for details on how these values are used to
     generate noise. Examples:
     `noise = list(out = list(coeff = c(0.1, 0.1))` or
@@ -670,17 +669,15 @@ three ways to execute the simulator.
 - **PM_sim\$new()**
 
 They return fully parsed simulator output as PM_sim objects in R.
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
-or
-[PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md) or
+[PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
 objects can easily be used as the prior distributions for sampling.
 Prior distributions may also be manually specified, useful when
 simulating from literature values. Prior distributions may be
 unimodal-multivariate (parametric sampling), or multimodal-multivariate
 (semi-parametric sampling). For
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
-or
-[PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md) or
+[PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
 priors, this can be accomplished with the `split` argument. For manual
 priors, the `weights` argument in the `poppar` list specifies the
 weights for each distribution.
@@ -801,7 +798,7 @@ A PM_sim object.
 - `...`:
 
   Arguments passed to
-  [plot.PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_sim.md).
+  [plot.PM_sim](https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.md).
 
 - `at`:
 
@@ -823,7 +820,7 @@ based on the results of the current Simulation.
 - `...`:
 
   Additional parameters, refer to
-  [PM_pta](https://lapkb.github.io/Pmetrics_rust/reference/PM_pta.md).
+  [PM_pta](https://lapkb.github.io/Pmetrics/reference/PM_pta.md).
 
 ------------------------------------------------------------------------
 
@@ -840,7 +837,7 @@ based on the results of the current Simulation.
 - `...`:
 
   Arguments passed to
-  [makeAUC](https://lapkb.github.io/Pmetrics_rust/reference/makeAUC.md).
+  [makeAUC](https://lapkb.github.io/Pmetrics/reference/makeAUC.md).
 
 ------------------------------------------------------------------------
 
@@ -857,7 +854,7 @@ based on the results of the current Simulation.
 - `...`:
 
   Parameters passed to
-  [summary.PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_sim.md).
+  [summary.PM_sim](https://lapkb.github.io/Pmetrics/reference/summary.PM_sim.md).
 
 ------------------------------------------------------------------------
 

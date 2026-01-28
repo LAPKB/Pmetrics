@@ -2,8 +2,7 @@
 
 **\[stable\]**
 
-Plots
-[PM_post](https://lapkb.github.io/Pmetrics_rust/reference/PM_post.md)
+Plots [PM_post](https://lapkb.github.io/Pmetrics/reference/PM_post.md)
 objects
 
 ## Usage
@@ -42,9 +41,9 @@ plot(
 - x:
 
   The name of a
-  [PM_post](https://lapkb.github.io/Pmetrics_rust/reference/PM_post.md)
+  [PM_post](https://lapkb.github.io/Pmetrics/reference/PM_post.md)
   object, e.g. `NPex$post`. in a
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
   object
 
 - include:
@@ -291,14 +290,14 @@ Plots the object.
 ## Details
 
 This is a function usually called by the `$plot()` method for
-[PM_post](https://lapkb.github.io/Pmetrics_rust/reference/PM_post.md)
-objects within a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
-to generate the plot. However, the function can be called directly on a
-[PM_post](https://lapkb.github.io/Pmetrics_rust/reference/PM_post.md)
-object. This function will plot time and population predictions with a
-variety of options. By default markers are included and have the
-following plotly properties:
+[PM_post](https://lapkb.github.io/Pmetrics/reference/PM_post.md) objects
+within a
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md) to
+generate the plot. However, the function can be called directly on a
+[PM_post](https://lapkb.github.io/Pmetrics/reference/PM_post.md) object.
+This function will plot time and population predictions with a variety
+of options. By default markers are included and have the following
+plotly properties:
 `list(symbol = "circle", color = "red", size = 10, opacity = 0.5, line = list(color = "black", width = 1))`.
 Markers can be joined by lines, default is `TRUE`. If `TRUE`, the
 joining lines will have the following properties:
@@ -307,21 +306,21 @@ legend are omitted by default.
 
 ## See also
 
-[PM_post](https://lapkb.github.io/Pmetrics_rust/reference/PM_post.md),
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+[PM_post](https://lapkb.github.io/Pmetrics/reference/PM_post.md),
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
 
 Other PMplots:
-[`plot.PM_cov()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cov.md),
-[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cycle.md),
-[`plot.PM_data()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_data.md),
-[`plot.PM_final()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_final.md),
-[`plot.PM_model()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_model.md),
-[`plot.PM_op()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_op.md),
-[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_opt.md),
-[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pop.md),
-[`plot.PM_pta()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pta.md),
-[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_sim.md),
-[`plot.PM_valid()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_valid.md)
+[`plot.PM_cov()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_cov.md),
+[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_cycle.md),
+[`plot.PM_data()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_data.md),
+[`plot.PM_final()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_final.md),
+[`plot.PM_model()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_model.md),
+[`plot.PM_op()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_op.md),
+[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_opt.md),
+[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_pop.md),
+[`plot.PM_pta()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_pta.md),
+[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.md),
+[`plot.PM_valid()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_valid.md)
 
 ## Author
 

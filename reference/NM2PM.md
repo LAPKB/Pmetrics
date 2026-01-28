@@ -85,14 +85,14 @@ A list of other differences follows by data item.
   included in the Pmetric data file.
 
 It is strongly suggested to run
-[`PMcheck`](https://lapkb.github.io/Pmetrics_rust/reference/PMcheck.md)
-on the returned object for final adjusting.
+[`PMcheck`](https://lapkb.github.io/Pmetrics/reference/PMcheck.md) on
+the returned object for final adjusting.
 
 ## See also
 
-[`PMcheck`](https://lapkb.github.io/Pmetrics_rust/reference/PMcheck.md),
-[`PMwriteMatrix`](https://lapkb.github.io/Pmetrics_rust/reference/PMwriteMatrix.md),
-[`PMwrk2csv`](https://lapkb.github.io/Pmetrics_rust/reference/PMwrk2csv.md)
+[`PMcheck`](https://lapkb.github.io/Pmetrics/reference/PMcheck.md),
+[`PMwriteMatrix`](https://lapkb.github.io/Pmetrics/reference/PMwriteMatrix.md),
+[`PMwrk2csv`](https://lapkb.github.io/Pmetrics/reference/PMwrk2csv.md)
 
 ## Author
 

@@ -7,26 +7,26 @@ generation of visual predictive checks (VPCs), prediction corrected
 visual predictive checks, (pcVPCs), normalized prediction distribution
 errors (NPDE), and numerical predictive checks. This is typically a
 field in a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
 
 ## Details
 
 The PM_valid object is both a data field within a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md),
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md),
 and itself an R6 object comprising data fields and associated methods
 suitable for analysis and plotting of observed vs. population or
 individual predicted outputs.
 
 Because PM_valid objects are automatically added to the
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
-by calling the `$validate()` method of a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md) by
+calling the `$validate()` method of a
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
 after a successful run, it is generally not necessary for users to
 generate PM_valid objects themselves.
 
 ## See also
 
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
 
 ## Author
 
@@ -89,9 +89,9 @@ checks (pcVPCs).
 
   The result of a prior run, usually supplied by calling the
   `$validate()` method of a
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
   at the end of a run, or later loaded with
-  [PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md).
+  [PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md).
 
 - `tad`:
 
@@ -128,12 +128,12 @@ checks (pcVPCs).
 - `limits`:
 
   Limits on simulated parameters. See
-  [PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md).
+  [PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md).
 
 - `...`:
 
   Other parameters to be passed to
-  [PM_sim](https://lapkb.github.io/Pmetrics_rust/reference/PM_sim.md),
+  [PM_sim](https://lapkb.github.io/Pmetrics/reference/PM_sim.md),
   especially `limits`.
 
 #### Details
@@ -155,8 +155,8 @@ An R6 object of class `PM_valid`, which is a list with the following.
 - simdata The combined, simulated files for all subjects using the
   population mean values and each subject as a template. This object
   will be automatically saved to the run, to be loaded with
-  [PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md)
-  next time.
+  [PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md) next
+  time.
 
 - timeBinMedian A data frame with the median times for each cluster bin.
 
@@ -183,7 +183,7 @@ An R6 object of class `PM_valid`, which is a list with the following.
 ### Method [`plot()`](https://rdrr.io/r/graphics/plot.default.html)
 
 Plot method. Calls
-[plot.PM_valid](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_valid.md).
+[plot.PM_valid](https://lapkb.github.io/Pmetrics/reference/plot.PM_valid.md).
 
 #### Usage
 

@@ -15,8 +15,7 @@ summary(object, cycle = NULL, digits = 3, ...)
 
 - object:
 
-  A
-  [PM_cycle](https://lapkb.github.io/Pmetrics_rust/reference/PM_cycle.md)
+  A [PM_cycle](https://lapkb.github.io/Pmetrics/reference/PM_cycle.md)
   object
 
 - cycle:
@@ -35,7 +34,7 @@ summary(object, cycle = NULL, digits = 3, ...)
 
 A list of class *summary.PM_cycle* whose elements are the last cycle
 values for the following fields in a
-[PM_cycle](https://lapkb.github.io/Pmetrics_rust/reference/PM_cycle.md)
+[PM_cycle](https://lapkb.github.io/Pmetrics/reference/PM_cycle.md)
 object.
 
 - **cycle** Maximum cycle number
@@ -59,17 +58,16 @@ object.
 ## Details
 
 This is a function usually called by the `$summary()` method for
-[PM_cycle](https://lapkb.github.io/Pmetrics_rust/reference/PM_cycle.md)
+[PM_cycle](https://lapkb.github.io/Pmetrics/reference/PM_cycle.md)
 objects within a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
-to summarize final cycle statistics. The function can be called directly
-on a
-[PM_cycle](https://lapkb.github.io/Pmetrics_rust/reference/PM_cycle.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md) to
+summarize final cycle statistics. The function can be called directly on
+a [PM_cycle](https://lapkb.github.io/Pmetrics/reference/PM_cycle.md)
 object. See examples.
 
 ## See also
 
-[PM_cycle](https://lapkb.github.io/Pmetrics_rust/reference/PM_cycle.md)
+[PM_cycle](https://lapkb.github.io/Pmetrics/reference/PM_cycle.md)
 
 ## Author
 

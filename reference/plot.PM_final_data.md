@@ -1,11 +1,11 @@
 # Plot PM_final_data objects
 
 **\[stable\]** Plots the raw data (`class: PM_final_data`) from a
-[PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+[PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
 object in the same way as plotting a
-[PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+[PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
 object. Both use
-[plot.PM_final](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_final.md).
+[plot.PM_final](https://lapkb.github.io/Pmetrics/reference/plot.PM_final.md).
 
 ## Usage
 
@@ -23,7 +23,7 @@ plot(x, ...)
 - ...:
 
   Additional arguments passed to
-  [plot.PM_final](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_final.md)
+  [plot.PM_final](https://lapkb.github.io/Pmetrics/reference/plot.PM_final.md)
 
 ## Examples
 

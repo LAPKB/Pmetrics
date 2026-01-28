@@ -14,17 +14,16 @@ PM_report(x, template, path, show = TRUE, quiet = TRUE)
 
 - x:
 
-  A
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+  A [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
   object obtained from
-  [PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md).
+  [PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md).
 
 - template:
 
   If missing, the default Pmetrics report template as specified in
-  [getPMoptions](https://lapkb.github.io/Pmetrics_rust/reference/getPMoptions.md)
+  [getPMoptions](https://lapkb.github.io/Pmetrics/reference/getPMoptions.md)
   is used. It can be changed with
-  [setPMoptions](https://lapkb.github.io/Pmetrics_rust/reference/setPMoptions.md).
+  [setPMoptions](https://lapkb.github.io/Pmetrics/reference/setPMoptions.md).
   Otherwise, the value for `template` can be "plotly", "ggplot", or
   "none".
 
@@ -48,7 +47,7 @@ Generates an HTML-report in the folder specified by `path`.
 
 ## See also
 
-[PM_load](https://lapkb.github.io/Pmetrics_rust/reference/PM_load.md)
+[PM_load](https://lapkb.github.io/Pmetrics/reference/PM_load.md)
 
 ## Author
 

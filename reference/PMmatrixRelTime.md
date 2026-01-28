@@ -4,8 +4,8 @@
 
 Convert dates/times to relative times. This function is largely
 superseded as it is called automatically when data are initialized as a
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
-object. There is rarely a need to call it directly any longer.
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md) object.
+There is rarely a need to call it directly any longer.
 
 ## Usage
 
@@ -77,7 +77,7 @@ dose reset (evid=4) is encountered.
 
 ## See also
 
-[`PMreadMatrix`](https://lapkb.github.io/Pmetrics_rust/reference/PMreadMatrix.md)
+[`PMreadMatrix`](https://lapkb.github.io/Pmetrics/reference/PMreadMatrix.md)
 
 ## Author
 

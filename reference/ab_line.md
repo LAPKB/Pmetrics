@@ -66,13 +66,13 @@ one of the following:
 
 If using this function to add a line to an existing plot, it must be
 used with
-[add_shapes](https://lapkb.github.io/Pmetrics_rust/reference/add_shapes.md).
+[add_shapes](https://lapkb.github.io/Pmetrics/reference/add_shapes.md).
 If used for a new plot, it can be included as an element in the layout
 list.
 
 ## See also
 
-[add_shapes](https://lapkb.github.io/Pmetrics_rust/reference/add_shapes.md)
+[add_shapes](https://lapkb.github.io/Pmetrics/reference/add_shapes.md)
 
 ## Examples
 

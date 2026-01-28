@@ -34,17 +34,17 @@ covariates and Bayesian posterior parameter values.
 ## Details
 
 This is a function usually called by the `$summary()` method for
-[PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/PM_cov.md)
-objects with a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
-to summarize covariates and Bayesian posterior parameter values for each
+[PM_cov](https://lapkb.github.io/Pmetrics/reference/PM_cov.md) objects
+with a
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md) to
+summarize covariates and Bayesian posterior parameter values for each
 subject. The function can be called directly on a
-[PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/PM_cov.md)
-object. See examples.Summarize .
+[PM_cov](https://lapkb.github.io/Pmetrics/reference/PM_cov.md) object.
+See examples.Summarize .
 
 ## See also
 
-[PM_cov](https://lapkb.github.io/Pmetrics_rust/reference/PM_cov.md)
+[PM_cov](https://lapkb.github.io/Pmetrics/reference/PM_cov.md)
 
 ## Author
 

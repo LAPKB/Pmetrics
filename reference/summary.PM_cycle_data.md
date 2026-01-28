@@ -1,11 +1,11 @@
 # Summarize PM_cycle_data objects
 
 **\[stable\]** Summarizes the raw data (`class: PM_cycle_data`) from a
-[PM_cycle](https://lapkb.github.io/Pmetrics_rust/reference/PM_cycle.md)
+[PM_cycle](https://lapkb.github.io/Pmetrics/reference/PM_cycle.md)
 object in the same way as summarizing a
-[PM_cycle](https://lapkb.github.io/Pmetrics_rust/reference/PM_cycle.md)
+[PM_cycle](https://lapkb.github.io/Pmetrics/reference/PM_cycle.md)
 object. Both use
-[summary.PM_cycle](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_cycle.md).
+[summary.PM_cycle](https://lapkb.github.io/Pmetrics/reference/summary.PM_cycle.md).
 
 ## Usage
 
@@ -23,7 +23,7 @@ summary(object, ...)
 - ...:
 
   Additional arguments passed to
-  [summary.PM_cycle](https://lapkb.github.io/Pmetrics_rust/reference/summary.PM_cycle.md)
+  [summary.PM_cycle](https://lapkb.github.io/Pmetrics/reference/summary.PM_cycle.md)
 
 ## Examples
 

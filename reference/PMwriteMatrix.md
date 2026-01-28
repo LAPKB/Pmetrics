@@ -4,10 +4,10 @@
 
 This function is largely superseded as the function is accessed with the
 `$save()` method for
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md)
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md)
 objects. There is rarely a need to call it directly. It is the companion
 function to
-[PMreadMatrix](https://lapkb.github.io/Pmetrics_rust/reference/PMreadMatrix.md).
+[PMreadMatrix](https://lapkb.github.io/Pmetrics/reference/PMreadMatrix.md).
 It will write an appropriate R data object to a formatted .csv file.
 
 ## Usage
@@ -27,7 +27,7 @@ PMwriteMatrix(
 - data:
 
   Must be a data.frame with appropriate structure (see
-  [PMcheck](https://lapkb.github.io/Pmetrics_rust/reference/PMcheck.md)).
+  [PMcheck](https://lapkb.github.io/Pmetrics/reference/PMcheck.md)).
 
 - filename:
 
@@ -51,22 +51,22 @@ PMwriteMatrix(
 ## Value
 
 Returns the error report (see
-[PMcheck](https://lapkb.github.io/Pmetrics_rust/reference/PMcheck.md)
-for details).
+[PMcheck](https://lapkb.github.io/Pmetrics/reference/PMcheck.md) for
+details).
 
 ## Details
 
 *PMwriteMatrix* will first run
-[PMcheck](https://lapkb.github.io/Pmetrics_rust/reference/PMcheck.md) to
+[PMcheck](https://lapkb.github.io/Pmetrics/reference/PMcheck.md) to
 determine if there are any errors in the structure of `data`. If the
 error check fails, the file will not be written and a message will be
 printed on the console.
 
 ## See also
 
-[PM_data](https://lapkb.github.io/Pmetrics_rust/reference/PM_data.md),
-[PMcheck](https://lapkb.github.io/Pmetrics_rust/reference/PMcheck.md),
-[PMreadMatrix](https://lapkb.github.io/Pmetrics_rust/reference/PMreadMatrix.md)
+[PM_data](https://lapkb.github.io/Pmetrics/reference/PM_data.md),
+[PMcheck](https://lapkb.github.io/Pmetrics/reference/PMcheck.md),
+[PMreadMatrix](https://lapkb.github.io/Pmetrics/reference/PMreadMatrix.md)
 
 ## Author
 

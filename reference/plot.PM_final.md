@@ -3,9 +3,9 @@
 **\[stable\]**
 
 Plot R6
-[PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+[PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
 objects loaded as a field in the
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
 object, e.g. `PM_result$final`.
 
 ## Usage
@@ -37,9 +37,9 @@ plot(
 - x:
 
   The name of an
-  [PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+  [PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
   data object as a field in a
-  [PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
+  [PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md)
   R6 object, e.g `PM_result$final`.
 
 - formula:
@@ -71,7 +71,7 @@ plot(
   The `line` argument is used to format:
 
   - the density line drawn over an NPAG
-    [PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+    [PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
     object. Default is `FALSE`, which means no density line will be
     drawn. Use `TRUE` to draw the default line, which is black, solid,
     and of width 1, or specify as a list to control these elements, e.g.
@@ -79,13 +79,13 @@ plot(
 
   - the drop lines from point to lower surface when a `formula` is
     specified to generate a bivariate plot from an NPAG
-    [PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+    [PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
     object. In this case, default is `line = TRUE`. The default format
     is black, dashed, and of width 1.
 
   - the lines drawing the normal distribution of parameter values from
     an IT2B
-    [PM_Final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+    [PM_Final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
     object. Again, here the default is `line = TRUE`, and the format is
     black, solid, of width 1. See
     [density](https://rdrr.io/r/stats/density.html). Ignored for IT2B
@@ -280,12 +280,12 @@ Plots the object.
 ## Details
 
 This is a function usually called by the `$plot()` method for
-[PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+[PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
 objects within a
-[PM_result](https://lapkb.github.io/Pmetrics_rust/reference/PM_result.md)
-to generate a plot the parameter value probability densities after
+[PM_result](https://lapkb.github.io/Pmetrics/reference/PM_result.md) to
+generate a plot the parameter value probability densities after
 completion of a model fitting. The function can be called directly on a
-[PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md)
+[PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md)
 object.
 
 If `formula` is omitted, this will generate a marginal plot for each
@@ -306,21 +306,21 @@ from the mvtnorm package.
 
 ## See also
 
-[PM_final](https://lapkb.github.io/Pmetrics_rust/reference/PM_final.md),
+[PM_final](https://lapkb.github.io/Pmetrics/reference/PM_final.md),
 [plotly::schema](https://rdrr.io/pkg/plotly/man/schema.html)
 
 Other PMplots:
-[`plot.PM_cov()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cov.md),
-[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_cycle.md),
-[`plot.PM_data()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_data.md),
-[`plot.PM_model()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_model.md),
-[`plot.PM_op()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_op.md),
-[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_opt.md),
-[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pop.md),
-[`plot.PM_post()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_post.md),
-[`plot.PM_pta()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_pta.md),
-[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_sim.md),
-[`plot.PM_valid()`](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_valid.md)
+[`plot.PM_cov()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_cov.md),
+[`plot.PM_cycle()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_cycle.md),
+[`plot.PM_data()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_data.md),
+[`plot.PM_model()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_model.md),
+[`plot.PM_op()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_op.md),
+[`plot.PM_opt()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_opt.md),
+[`plot.PM_pop()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_pop.md),
+[`plot.PM_post()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_post.md),
+[`plot.PM_pta()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_pta.md),
+[`plot.PM_sim()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_sim.md),
+[`plot.PM_valid()`](https://lapkb.github.io/Pmetrics/reference/plot.PM_valid.md)
 
 ## Author
 

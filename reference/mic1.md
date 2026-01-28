@@ -28,7 +28,7 @@ Copy the table into excel, save as a .csv file, and read into R using a
 function like [`read.csv()`](https://rdrr.io/r/utils/read.table.html) or
 [`readr::read_csv()`](https://readr.tidyverse.org/reference/read_delim.html).
 Then use
-[`makePTAtarget()`](https://lapkb.github.io/Pmetrics_rust/reference/makePTAtarget.md).
+[`makePTAtarget()`](https://lapkb.github.io/Pmetrics/reference/makePTAtarget.md).
 
 ## Author
 

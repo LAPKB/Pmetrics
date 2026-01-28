@@ -1,11 +1,11 @@
 # Plot PM_op_data objects
 
 **\[stable\]** Plots the raw data (`class: PM_op_data`) from a
-[PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md) object
-in the same way as plotting a
-[PM_op](https://lapkb.github.io/Pmetrics_rust/reference/PM_op.md)
-object. Both use
-[plot.PM_op](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_op.md).
+[PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md) object in
+the same way as plotting a
+[PM_op](https://lapkb.github.io/Pmetrics/reference/PM_op.md) object.
+Both use
+[plot.PM_op](https://lapkb.github.io/Pmetrics/reference/plot.PM_op.md).
 
 ## Usage
 
@@ -23,7 +23,7 @@ plot(x, ...)
 - ...:
 
   Additional arguments passed to
-  [plot.PM_op](https://lapkb.github.io/Pmetrics_rust/reference/plot.PM_op.md)
+  [plot.PM_op](https://lapkb.github.io/Pmetrics/reference/plot.PM_op.md)
 
 ## Examples
 

@@ -2,4 +2,4 @@
 
 ### All vignettes
 
-- [Pmetrics](https://lapkb.github.io/Pmetrics_rust/articles/pmetrics.md):
+- [Pmetrics](https://lapkb.github.io/Pmetrics/articles/pmetrics.md):
