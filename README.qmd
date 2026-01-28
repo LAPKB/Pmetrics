@@ -2,10 +2,6 @@
 
 # Pmetrics <a href="https://lapkb.github.io/Pmetrics/"><img src="man/figures/Pmetrics_logo.png" align="right" height="100" width = "100" alt="Pmetrics" /></a>
 
-::: {.callout-warning}
-This is a development branch of Pmetrics using a new backend written in Rust. The repository for the current stable release is [LAPKB/Pmetrics](https://github.com/LAPKB/Pmetrics).
-:::
-
 Thank you for your interest in Pmetrics, created by the [Laboratory of
 Applied Pharmacokinetics and
 Bioinformatics](http://www.lapk.org). Pmetrics is a library package
