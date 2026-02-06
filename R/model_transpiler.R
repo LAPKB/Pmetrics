@@ -375,7 +375,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
   transpile_ini <- function(fun, params, covs, sec) {
     exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
     header <- sprintf(
-      "|p, t, cov, _x| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",
+      "|p, t, cov, x| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",
       paste(covs, collapse = ", "),
       paste(params, collapse = ", "),
       paste(sec, collapse = ", ")
