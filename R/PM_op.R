@@ -74,10 +74,10 @@ PM_op <- R6::R6Class(
     #' Creation of new `PM_op` object is automatic at the end of a run and not generally necessary
     #' for the user to do.
     #' @param PMdata include `r template("PMdata")`.
-    #' @param path include `r template("path")`.
+    #' @param json A parsed JSON list from `result.json`, as read by [PM_parse].
     #' @param ... Not currently used.
-    initialize = function(PMdata = NULL, path = ".", ...) {
-      op <- private$make(PMdata, path)
+    initialize = function(PMdata = NULL, json = NULL, ...) {
+      op <- private$make(PMdata, json)
       self$data <- op
       if (length(op) > 1) { # all the objects were made
         self$id <- op$id
@@ -128,55 +128,51 @@ PM_op <- R6::R6Class(
   }
 ), # end public
 private = list(
-  make = function(data, path) {
-    if (file.exists(file.path(path, "pred.csv"))) {
-      op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), 
-      col_types = list(
-        time = readr::col_double(),
-        outeq = readr::col_integer(),
-        block = readr::col_integer(),
-        obs = readr::col_double(),
-        cens = readr::col_character(),
-        pop_mean = readr::col_double(),
-        pop_median = readr::col_double(),
-        post_mean = readr::col_double(),
-        post_median = readr::col_double()
-      ), show_col_types = FALSE) %>% filter(!is.na(obs))
-      
-      if(!"cens" %in% names(op_raw)){
-        op_raw <- op_raw %>% mutate(cens = "none") # if cens column missing, assume all observed
-      } 
-      
-      
-    } else if (inherits(data, "PM_op") & !is.null(data$data)) { # file not there, and already PM_op
+  make = function(data, json = NULL) {
+    # --- Obtain predictions data ---
+    if (!is.null(json) && !is.null(json$predictions)) {
+      op_raw <- tibble::as_tibble(json$predictions$predictions) %>% filter(!is.na(obs))
+      if (!"cens" %in% names(op_raw)) {
+        op_raw <- op_raw %>% mutate(cens = "none")
+      }
+    } else if (inherits(data, "PM_op") & !is.null(data$data)) {
       if(!"cens" %in% names(data$data)){
-        data$data <- data$data %>% mutate(cens = "none") # if cens column missing, assume all observed
+        data$data <- data$data %>% mutate(cens = "none")
       } 
       class(data$data) <- c("PM_op_data", "data.frame")
       return(data$data)
     } else {
       cli::cli_warn(c(
         "!" = "Unable to generate obs-pred information.",
-        "i" = "{.file {file.path(path, 'pred.csv')}} does not exist, and result does not have valid {.code PM_op} object ."
+        "i" = "No JSON predictions and no valid {.code PM_op} object."
       ))
       return(NULL)
     }
     
-    
-    
-    if (file.exists(file.path(path, "settings.json"))) {
-      config <- jsonlite::fromJSON(file.path(path, "settings.json"))
-    } else if (inherits(data, "PM_op")) { # file not there, and already PM_op
+    # --- Obtain settings/config ---
+    if (!is.null(json) && !is.null(json$settings)) {
+      config <- json$settings
+    } else if (inherits(data, "PM_op")) {
       class(data$data) <- c("PM_op_data", "data.frame")
       return(data$data)
     } else {
       cli::cli_warn(c(
         "!" = "Unable to generate obs-pred information.",
-        "i" = "{.file {file.path(path, 'settings.json')}} does not exist, and result does not have valid {.code PM_op} object."
+        "i" = "No JSON settings and no valid {.code PM_op} object."
       ))
       return(NULL)
     }
-    poly <- map(config$errormodels$models, \(x) x %>% pluck("poly")) %>% bind_rows()
+    # config$errormodels$models is a list: each element is either
+    # list(Additive = list(lambda=..., poly=list(c0=,c1=,c2=,c3=))) or "None"
+    poly <- map(config$errormodels$models, function(m) {
+      if (is.list(m)) {
+        model_type <- names(m)[1]
+        p <- m[[model_type]]$poly
+        if (!is.null(p)) as.data.frame(p) else data.frame(c0 = 0, c1 = 0, c2 = 0, c3 = 0)
+      } else {
+        data.frame(c0 = 0, c1 = 0, c2 = 0, c3 = 0)
+      }
+    }) %>% bind_rows()
     op <- op_raw %>%
     # left_join(pred_raw, by = c("id", "time", "outeq")) %>%
     pivot_longer(cols = c(pop_mean, pop_median, post_mean, post_median)) %>%

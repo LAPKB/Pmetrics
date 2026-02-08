@@ -85,7 +85,7 @@ or individual predictions based on Bayesian posterior parameter value distributi
 \subsection{Method \code{new()}}{
 Create new object populated with observed vs. predicted data
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_op$new(PMdata = NULL, path = ".", ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_op$new(PMdata = NULL, json = NULL, path = ".", ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -94,8 +94,10 @@ Create new object populated with observed vs. predicted data
 \item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
 .}
 
+\item{\code{json}}{A parsed JSON list from \code{result.json}, as read by \link{PM_parse}. If provided, \code{path} is ignored.}
+
 \item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
-.}
+. Deprecated in favour of \code{json}.}
 
 \item{\code{...}}{Not currently used.}
 }

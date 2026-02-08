@@ -54,10 +54,10 @@ PM_cov <- R6::R6Class(
     #' Creation of new `PM_cov` object is automatic and not generally necessary
     #' for the user to do.
     #' @param PMdata include `r template("PMdata")`.
-    #' @param path include `r template("path")`.
+    #' @param json A parsed JSON list from `result.json`, as read by [PM_parse].
     #' @param ... Not currently used.
-    initialize = function(PMdata = NULL, path = ".", ...) {
-      self$data <- private$make(PMdata, path)
+    initialize = function(PMdata = NULL, json = NULL, ...) {
+      self$data <- private$make(PMdata, json)
     },
     #' @description
     #' Stepwise linear regression of covariates and Bayesian posterior
@@ -94,29 +94,56 @@ PM_cov <- R6::R6Class(
     }
   ), # end public
   private = list(
-    make = function(data, path) {
-      if (file.exists(file.path(path, "posterior.csv"))) {
-        posts <- readr::read_csv(file = file.path( path, "posterior.csv"), show_col_types = FALSE)
-      } else if (inherits(data, "PM_cov") & !is.null(data$data)) { # file not there, and already PM_cov
+    make = function(data, json = NULL) {
+      # --- Obtain posterior data ---
+      if (!is.null(json) && !is.null(json$posterior)) {
+        par_names <- json$settings$parameters$parameters$name
+        # json$theta is already a matrix [nspp x npar]
+        theta_mat <- json$theta
+        colnames(theta_mat) <- par_names
+        theta <- tibble::as_tibble(theta_mat)
+        theta$prob <- json$w
+        # json$data$subjects is a data.frame with column $id
+        subject_ids <- json$data$subjects$id
+        # json$posterior is a matrix [nsubjects x nspp]
+        post_list <- lapply(seq_len(nrow(json$posterior)), function(i) {
+          probs <- json$posterior[i, ]
+          df <- theta[, par_names, drop = FALSE]
+          df$prob <- probs
+          df$id <- subject_ids[i]
+          df$point <- seq_len(length(probs))
+          df
+        })
+        posts <- dplyr::bind_rows(post_list) %>%
+          dplyr::relocate(id, point, dplyr::everything())
+      } else if (inherits(data, "PM_cov") & !is.null(data$data)) {
         class(data$data) <- c("PM_cov_data", "data.frame")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate covariate-posterior information.",
-          "i" = "{.file {file.path(path, 'posterior.csv')}} does not exist, and result does not have valid {.code PM_cov} object."
+          "i" = "No JSON posterior and no valid {.code PM_cov} object."
         ))
         return(NULL)
       }
       
-      if (file.exists(file.path(path, "covs.csv"))) {
-        covs <- readr::read_csv(file = file.path(path, "covs.csv"), show_col_types = FALSE)
-      } else if (inherits(data, "PM_cov")) { # file not there, and already PM_cov
+      # --- Obtain covariates data ---
+      # TODO: Extract covariates from json$data$subjects when available
+      if (!is.null(json) && !is.null(json$data$subjects)) {
+        # Placeholder: covariates extraction from JSON not yet implemented
+        # Fall back to warning for now
+        cli::cli_warn(c(
+          "!" = "Covariate extraction from JSON not yet implemented.",
+          "i" = "PM_cov requires covariate data to be available in the JSON."
+        ))
+        return(NULL)
+      } else if (inherits(data, "PM_cov")) {
         class(data$data) <- c("PM_cov_data", "data.frame")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate covariate-posterior information.",
-          "i" = "{.file {file.path(path, 'covs.csv')}} does not exist, and result does not have valid {.code PM_cov} object."
+          "i" = "No covariate data and no valid {.code PM_cov} object."
         ))
         return(NULL)
       }

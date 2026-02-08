@@ -4,10 +4,17 @@
 \alias{PM_parse}
 \title{Parse Pmetrics output}
 \usage{
-PM_parse(path = ".", fit = "fit.rds", write = TRUE)
+PM_parse(
+  path = ".",
+  result_file = "result.json",
+  fit = "fit.rds",
+  write = TRUE
+)
 }
 \arguments{
-\item{path}{The directory containing the output from the Rust-implementation of NPAG}
+\item{path}{The directory containing the \code{result.json} output from the Rust-implementation of NPAG}
+
+\item{result_file}{The name of the result JSON file. Default is "result.json".}
 
 \item{fit}{The relative path to a "fit.rds" file, which is normal output after a fit containing the data and model used.}
 
@@ -30,7 +37,9 @@ The output of \code{PM_parse} is a list containing the following elements
 A flexible parser for Pmetrics output
 }
 \details{
-Currently written for the Rust implementation of NPAG
+Currently written for the Rust implementation of NPAG.
+Reads a single \code{result.json} file and passes the parsed JSON
+to each component constructor.
 }
 \author{
 Michael Neely and Markus Hovd
