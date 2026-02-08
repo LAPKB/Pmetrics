@@ -128,15 +128,84 @@ PM_cov <- R6::R6Class(
       }
       
       # --- Obtain covariates data ---
-      # TODO: Extract covariates from json$data$subjects when available
       if (!is.null(json) && !is.null(json$data$subjects)) {
-        # Placeholder: covariates extraction from JSON not yet implemented
-        # Fall back to warning for now
-        cli::cli_warn(c(
-          "!" = "Covariate extraction from JSON not yet implemented.",
-          "i" = "PM_cov requires covariate data to be available in the JSON."
-        ))
-        return(NULL)
+        subjects <- json$data$subjects
+        n_subj <- nrow(subjects)
+        cov_list <- vector("list", n_subj * 50L)
+        list_idx <- 0L
+
+        for (i in seq_len(n_subj)) {
+          subj_id <- subjects$id[i]
+          occ_df <- subjects$occasions[[i]]
+          n_occ <- nrow(occ_df)
+
+          for (j in seq_len(n_occ)) {
+            block <- occ_df$index[j]
+            covs_inner <- occ_df[["covariates"]][["covariates"]]
+            cov_names <- names(covs_inner)
+            if (length(cov_names) == 0) next
+
+            # Collect segments per covariate for this occasion
+            seg_list <- setNames(vector("list", length(cov_names)), cov_names)
+            all_from <- numeric(0)
+            for (cn in cov_names) {
+              segs <- covs_inner[[cn]][["segments"]][[j]]
+              seg_list[[cn]] <- segs
+              all_from <- c(all_from, segs[["from"]])
+            }
+            all_times <- sort(unique(all_from))
+
+            # Evaluate covariates at each unique segment start time
+            for (t_val in all_times) {
+              row_data <- list(id = subj_id, time = t_val, block = block)
+              for (cn in cov_names) {
+                segs <- seg_list[[cn]]
+                n_seg <- nrow(segs)
+                value <- NA_real_
+                for (k in seq_len(n_seg)) {
+                  seg_from <- segs[["from"]][k]
+                  seg_to <- segs[["to"]][k]
+                  in_seg <- (t_val >= seg_from) &&
+                    (is.na(seg_to) || t_val < seg_to)
+                  # Match at or beyond the last segment start
+                  if (!in_seg && k == n_seg && t_val >= seg_from) {
+                    in_seg <- TRUE
+                  }
+                  if (in_seg) {
+                    lin <- segs[["method"]][["Linear"]]
+                    cf <- segs[["method"]][["CarryForward"]]
+                    if (!is.null(lin) && !is.na(lin[["intercept"]][k])) {
+                      value <- lin[["intercept"]][k] +
+                        lin[["slope"]][k] * (t_val - seg_from)
+                    } else if (!is.null(cf) && !is.na(cf[["value"]][k])) {
+                      value <- cf[["value"]][k]
+                    }
+                    break
+                  }
+                }
+                row_data[[cn]] <- value
+              }
+              list_idx <- list_idx + 1L
+              cov_list[[list_idx]] <- tibble::as_tibble(row_data)
+            }
+          }
+        }
+
+        if (list_idx > 0L) {
+          covs <- dplyr::bind_rows(cov_list[seq_len(list_idx)])
+          # Deduplicate: keep one row per unique covariate combination
+          # within each subject/block, retaining the earliest time
+          covs <- covs %>%
+            dplyr::group_by(id, block) %>%
+            dplyr::distinct(
+              dplyr::across(dplyr::all_of(cov_names)),
+              .keep_all = TRUE
+            ) %>%
+            dplyr::ungroup()
+        } else {
+          cli::cli_warn(c("!" = "No covariates found in JSON data."))
+          return(NULL)
+        }
       } else if (inherits(data, "PM_cov")) {
         class(data$data) <- c("PM_cov_data", "data.frame")
         return(data$data)
