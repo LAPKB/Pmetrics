@@ -64,6 +64,18 @@ jobs:
           fi
         shell: bash
 
+      - name: Run integration tests
+        run: |
+          testthat::test_dir(
+            "tests/testthat",
+            filter = "^test-integration",
+            stop_on_failure = TRUE,
+            reporter = testthat::CheckReporter$new()
+          )
+        shell: Rscript {0}
+        env:
+          NOT_CRAN: true
+
       - name: Check package
         uses: r-lib/actions/check-r-package@v2
         with:
