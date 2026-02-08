@@ -54,10 +54,10 @@ PM_cov <- R6::R6Class(
     #' Creation of new `PM_cov` object is automatic and not generally necessary
     #' for the user to do.
     #' @param PMdata include `r template("PMdata")`.
-    #' @param path include `r template("path")`.
+    #' @param json A parsed JSON list from `result.json`, as read by [PM_parse].
     #' @param ... Not currently used.
-    initialize = function(PMdata = NULL, path = ".", ...) {
-      self$data <- private$make(PMdata, path)
+    initialize = function(PMdata = NULL, json = NULL, ...) {
+      self$data <- private$make(PMdata, json)
     },
     #' @description
     #' Stepwise linear regression of covariates and Bayesian posterior
@@ -94,29 +94,125 @@ PM_cov <- R6::R6Class(
     }
   ), # end public
   private = list(
-    make = function(data, path) {
-      if (file.exists(file.path(path, "posterior.csv"))) {
-        posts <- readr::read_csv(file = file.path( path, "posterior.csv"), show_col_types = FALSE)
-      } else if (inherits(data, "PM_cov") & !is.null(data$data)) { # file not there, and already PM_cov
+    make = function(data, json = NULL) {
+      # --- Obtain posterior data ---
+      if (!is.null(json) && !is.null(json$posterior)) {
+        par_names <- json$settings$parameters$parameters$name
+        # json$theta is already a matrix [nspp x npar]
+        theta_mat <- json$theta
+        colnames(theta_mat) <- par_names
+        theta <- tibble::as_tibble(theta_mat)
+        theta$prob <- json$w
+        # json$data$subjects is a data.frame with column $id
+        subject_ids <- json$data$subjects$id
+        # json$posterior is a matrix [nsubjects x nspp]
+        post_list <- lapply(seq_len(nrow(json$posterior)), function(i) {
+          probs <- json$posterior[i, ]
+          df <- theta[, par_names, drop = FALSE]
+          df$prob <- probs
+          df$id <- subject_ids[i]
+          df$point <- seq_len(length(probs))
+          df
+        })
+        posts <- dplyr::bind_rows(post_list) %>%
+          dplyr::relocate(id, point, dplyr::everything())
+      } else if (inherits(data, "PM_cov") & !is.null(data$data)) {
         class(data$data) <- c("PM_cov_data", "data.frame")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate covariate-posterior information.",
-          "i" = "{.file {file.path(path, 'posterior.csv')}} does not exist, and result does not have valid {.code PM_cov} object."
+          "i" = "No JSON posterior and no valid {.code PM_cov} object."
         ))
         return(NULL)
       }
       
-      if (file.exists(file.path(path, "covs.csv"))) {
-        covs <- readr::read_csv(file = file.path(path, "covs.csv"), show_col_types = FALSE)
-      } else if (inherits(data, "PM_cov")) { # file not there, and already PM_cov
+      # --- Obtain covariates data ---
+      if (!is.null(json) && !is.null(json$data$subjects)) {
+        subjects <- json$data$subjects
+        n_subj <- nrow(subjects)
+        cov_list <- vector("list", n_subj * 50L)
+        list_idx <- 0L
+
+        for (i in seq_len(n_subj)) {
+          subj_id <- subjects$id[i]
+          occ_df <- subjects$occasions[[i]]
+          n_occ <- nrow(occ_df)
+
+          for (j in seq_len(n_occ)) {
+            block <- occ_df$index[j]
+            covs_inner <- occ_df[["covariates"]][["covariates"]]
+            cov_names <- names(covs_inner)
+            if (length(cov_names) == 0) next
+
+            # Collect segments per covariate for this occasion
+            seg_list <- setNames(vector("list", length(cov_names)), cov_names)
+            all_from <- numeric(0)
+            for (cn in cov_names) {
+              segs <- covs_inner[[cn]][["segments"]][[j]]
+              seg_list[[cn]] <- segs
+              all_from <- c(all_from, segs[["from"]])
+            }
+            all_times <- sort(unique(all_from))
+
+            # Evaluate covariates at each unique segment start time
+            for (t_val in all_times) {
+              row_data <- list(id = subj_id, time = t_val, block = block)
+              for (cn in cov_names) {
+                segs <- seg_list[[cn]]
+                n_seg <- nrow(segs)
+                value <- NA_real_
+                for (k in seq_len(n_seg)) {
+                  seg_from <- segs[["from"]][k]
+                  seg_to <- segs[["to"]][k]
+                  in_seg <- (t_val >= seg_from) &&
+                    (is.na(seg_to) || t_val < seg_to)
+                  # Match at or beyond the last segment start
+                  if (!in_seg && k == n_seg && t_val >= seg_from) {
+                    in_seg <- TRUE
+                  }
+                  if (in_seg) {
+                    lin <- segs[["method"]][["Linear"]]
+                    cf <- segs[["method"]][["CarryForward"]]
+                    if (!is.null(lin) && !is.na(lin[["intercept"]][k])) {
+                      value <- lin[["intercept"]][k] +
+                        lin[["slope"]][k] * (t_val - seg_from)
+                    } else if (!is.null(cf) && !is.na(cf[["value"]][k])) {
+                      value <- cf[["value"]][k]
+                    }
+                    break
+                  }
+                }
+                row_data[[cn]] <- value
+              }
+              list_idx <- list_idx + 1L
+              cov_list[[list_idx]] <- tibble::as_tibble(row_data)
+            }
+          }
+        }
+
+        if (list_idx > 0L) {
+          covs <- dplyr::bind_rows(cov_list[seq_len(list_idx)])
+          # Deduplicate: keep one row per unique covariate combination
+          # within each subject/block, retaining the earliest time
+          covs <- covs %>%
+            dplyr::group_by(id, block) %>%
+            dplyr::distinct(
+              dplyr::across(dplyr::all_of(cov_names)),
+              .keep_all = TRUE
+            ) %>%
+            dplyr::ungroup()
+        } else {
+          cli::cli_warn(c("!" = "No covariates found in JSON data."))
+          return(NULL)
+        }
+      } else if (inherits(data, "PM_cov")) {
         class(data$data) <- c("PM_cov_data", "data.frame")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate covariate-posterior information.",
-          "i" = "{.file {file.path(path, 'covs.csv')}} does not exist, and result does not have valid {.code PM_cov} object."
+          "i" = "No covariate data and no valid {.code PM_cov} object."
         ))
         return(NULL)
       }

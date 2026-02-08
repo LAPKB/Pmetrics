@@ -54,10 +54,10 @@ PM_pop <- R6::R6Class(
     #' Creation of new `PM_pop` object is automatic and not generally necessary
     #' for the user to do.
     #' @param PMdata include `r template("PMdata")`.
-    #' @param path include `r template("path")`.
+    #' @param json A parsed JSON list from `result.json`, as read by [PM_parse].
     #' @param ... Not currently used.
-    initialize = function(PMdata = NULL, path = ".", ...) {
-      self$data <- private$make(PMdata, path)
+    initialize = function(PMdata = NULL, json = NULL, ...) {
+      self$data <- private$make(PMdata, json)
     },
     #' @description
     #' Plot method
@@ -91,27 +91,17 @@ PM_pop <- R6::R6Class(
   }
 ), # end public
 private = list(
-  make = function(data, path) {
-    if (file.exists(file.path(path, "pred.csv"))) {
-      op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), 
-      col_types = list(
-        time = readr::col_double(),
-        outeq = readr::col_integer(),
-        block = readr::col_integer(),
-        obs = readr::col_double(),
-        cens = readr::col_character(),
-        pop_mean = readr::col_double(),
-        pop_median = readr::col_double(),
-        post_mean = readr::col_double(),
-        post_median = readr::col_double()
-      ), show_col_types = FALSE) 
-    } else if (inherits(data, "PM_pop") & !is.null(data$data)) { # file not there, and already PM_pop
+  make = function(data, json = NULL) {
+    # --- Obtain predictions data ---
+    if (!is.null(json) && !is.null(json$predictions)) {
+      op_raw <- tibble::as_tibble(json$predictions$predictions)
+    } else if (inherits(data, "PM_pop") & !is.null(data$data)) {
       class(data$data) <- c("PM_pop_data", "data.frame")
       return(data$data)
     } else {
       cli::cli_warn(c(
         "!" = "Unable to generate pop pred information.",
-        "i" = "{.file {file.path(path, 'pred.csv')}} does not exist, and result does not have valid {.code PM_pop} object."
+        "i" = "No JSON predictions and no valid {.code PM_pop} object."
       ))
       return(NULL)
     }
