@@ -110,6 +110,7 @@ pub(crate) fn fit(
     output_path: PathBuf,
     solver: Option<&str>,
 ) -> std::result::Result<(), anyhow::Error> {
+<<<<<<< HEAD
     let model = compile_dsl(source, solver)?;
     let names = param_names(&model);
     let outputs = output_names(&model);

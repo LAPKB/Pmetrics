@@ -49,7 +49,14 @@ inst/rust/template/*
 # Example runs
 data-raw/Runs/
 inst/Examples/
-
+tests/testthat/Runs/
+Examples
+!inst/Examples/
+Experimental
+other/
+1
+2
+3
 
 # Misc project outputs
 *_test.R
