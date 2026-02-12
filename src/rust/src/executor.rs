@@ -42,7 +42,7 @@ pub(crate) fn fit<E: Equation + Send>(
     let data = data::read_pmetrics(data.to_str().unwrap()).expect("Failed to read data");
     //dbg!(&data);
     let mut algorithm = dispatch_algorithm(settings, eq, data)?;
-    let result = algorithm.fit()?;
+    let mut result = algorithm.fit()?;
     result.write_outputs()?;
     Ok(())
 }
