@@ -1,4 +1,4 @@
-library(Pmetrics)
+devtools::load_all()
 
 setwd("inst/Examples/Runs")
 
