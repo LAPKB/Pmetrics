@@ -913,7 +913,9 @@ PM_sim <- R6::R6Class(
         
         ###### POPPAR
         
-        npar <- ncol(poppar$popPoints) - 1
+       
+        npar <- length(poppar$popMean)
+        
         
         
         ###### MODEL
@@ -989,7 +991,6 @@ PM_sim <- R6::R6Class(
         
         
         # PARAMETER LIMITS --------------------------------------------------------
-        
         if (all(is.null(limits))) { # limits are omitted altogether
           parLimits <- tibble::tibble(par = 1:npar , min = rep(-Inf, npar), max = rep(Inf, npar))
         } else if (!any(is.na(limits)) & is.vector(limits)) { # no limit is NA and specified as vector of length 1 or 2
@@ -1009,7 +1010,14 @@ PM_sim <- R6::R6Class(
             max = max * limits[2]
           )
         } else if (length(limits) == 1 && is.na(limits)) { # limits specified as NA (use limits in model)
-          parLimits <- poppar$ab
+          if (inherits(poppar, "PM_final_data")) {
+            parLimits <- poppar$ab
+          } else {
+            parLimits <- tibble::tibble(par = model$model_list$parameters, 
+            min = purrr::map_dbl(model$model_list$pri, ~.x$min),
+            max = purrr::map_dbl(model$model_list$pri, ~.x$max)
+            )
+          }
         } else if (any(is.na(limits))) { # some NAs, causes error
           cli::cli_abort(c(
             "x" = "The {.arg limits} argument is malformed.",
@@ -1027,7 +1035,7 @@ PM_sim <- R6::R6Class(
         }
         
         
-        
+      
         
         # COVARIATES ----------------------------------------------------
         
@@ -2576,7 +2584,7 @@ total_cov <- bind_rows(retained, discarded) %>%
 select(-prob) %>% cov()
 total_nsim <- sum(nrow(retained), nrow(discarded)) # sum will ignore NULL values
 
-return(list(
+  return(list(
   thetas = retained, total_means = total_means,
   total_cov = total_cov,
   total_nsim = total_nsim
