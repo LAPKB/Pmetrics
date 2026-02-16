@@ -961,7 +961,6 @@ PM_sim <- R6::R6Class(
         
         ###### POPPAR
         
-        
         npar <- if (useTheta) {
           ncol(poppar$popPoints) - 1
         } else {
@@ -2687,7 +2686,6 @@ generate_multimodal_samples <- function(num_samples, weights, means, cov_matrix,
     discarded <- if (length(discard_list) > 0) dplyr::bind_rows(discard_list) else NULL
     list(keep = samples, discard = discarded)
   })
-  
   
   retained <- all_samples |>
   map(\(x) x$keep) |>
