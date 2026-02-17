@@ -1801,7 +1801,7 @@ plot.PM_data <- function(
         pred <- list(pred)
       } else if (pred[[1]] %in% c("pop", "post")) { # pred[[1]] was "pop" or "post"
         thisPred <- pred[[1]]
-        if (is.null(x[[thisPred]])) { # post/pop missing because x was data not from a PM_result
+        if (is.null(x[[thisPred]])) { # post/pop missing because x was data did not come from a PM_result
           cli::cli_warn(c(
             "!" = "{.code pred = {thisPred}} can only be used as a shortcut when plotting {.cls PM_data} from a {.cls PM_result}.",
             "i" = "Supply a {.cls PM_result} object, e.g. {.code line = list(pred = run2$post)}, if you wish to add predictions otherwise."
@@ -1818,6 +1818,7 @@ plot.PM_data <- function(
         pred <- NULL
       }
       
+      
       # process pred list to determine formatting
       if (length(pred) == 1) { # default
         predArgs <- TRUE
@@ -1829,7 +1830,7 @@ plot.PM_data <- function(
         } else {
           purrr::pluck(pred, "icen") <- NULL
         } # was in list, so remove after extraction
-        predArgs <- pred[-1]
+        predArgs <- pred[-1] # get args beyond data to plot for pred
       }
       
       predArgs <- amendLine(predArgs) # color will be set by obs later
