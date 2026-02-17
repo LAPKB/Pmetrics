@@ -1628,8 +1628,10 @@ plot.PM_data <- function(
     
     # process marker
     marker <- amendMarker(marker)
-    marker$color <- map_chr(marker$color, \(x) substr(x, 1, 7)) # remove alpha if present, controlled by opacity
-    
+    if (stringr::str_detect(marker$color, "#")){ # color is hex
+      marker$color <- map_chr(marker$color, \(x) substr(x, 1, 7)) # remove alpha if present, controlled by opacity
+    }
+
     highlight_color <- opposite_color(marker$color[1]) # in plotly_Utils.R
     
     
@@ -2090,7 +2092,7 @@ plot.PM_data <- function(
     }
     
     return(invisible(p))
-  }
+    }
   # SUMMARY -----------------------------------------------------------------
   
   #' @title Summarize PM_data objects
