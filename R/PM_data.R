@@ -1792,13 +1792,17 @@ plot.PM_data <- function(
     # remove missing
     sub <- sub %>% filter(out != -99)
     
-    
+
     # now process pred data if there
     if (!is.null(pred)) {
       if (inherits(pred, c("PM_post", "PM_pop"))) { # only PM_post/pop was supplied, make into a list of 1
         pred <- list(pred$data)
       } else if (inherits(pred, c("PM_post_data", "PM_pop_data"))) { # only PM_post_data/PM_pop_data was supplied, make into a list of 1
         pred <- list(pred)
+      } else if (inherits(pred[[1]], c("PM_post", "PM_pop"))) { # PM_post/pop as first argument of list
+        pred[[1]] <- pred[[1]]$data
+      } else if (inherits(pred[[1]], c("PM_post_data", "PM_pop_data"))){ # PM_post_data/PM_pop_data as first argument of list
+        pred[[1]] <- pred[[1]] # nothing to do, in right format already
       } else if (pred[[1]] %in% c("pop", "post")) { # pred[[1]] was "pop" or "post"
         thisPred <- pred[[1]]
         if (is.null(x[[thisPred]])) { # post/pop missing because x was data did not come from a PM_result
@@ -1808,9 +1812,13 @@ plot.PM_data <- function(
           ))
           pred <- NULL
         } else { # post/pop present
-          pred[[1]] <- x[[thisPred]]
+          if (length(pred) == 1){ # pred is either "pop" or "post"
+            pred <- list(x[[thisPred]])
+          } else {
+            pred[[1]] <- x[[thisPred]]
+          }
         }
-      } else { # pred[[1]] was not "pop", "post", PM_result$pop, or PM_result$post
+      } else { # pred[[1]] was none of the above
         cli::cli_warn(c(
           "!" = "The {.var pred} argument is mis-specified.",
           "i" = "See the help for {.code plot.PM_data}."
@@ -1820,7 +1828,7 @@ plot.PM_data <- function(
       
       
       # process pred list to determine formatting
-      if (length(pred) == 1) { # default
+      if (length(pred) == 1) { # default formatting and prediction
         predArgs <- TRUE
         icen <- "median"
       } else { # not default, but need to extract icen if present
@@ -1835,6 +1843,8 @@ plot.PM_data <- function(
       
       predArgs <- amendLine(predArgs) # color will be set by obs later
       
+    
+
       # filter and group by id
       if (!is.null(pred[[1]])) { # if pred not reset to null b/c of invalid pred[[1]]
         predsub <- pred[[1]] %>%
@@ -1851,6 +1861,7 @@ plot.PM_data <- function(
         # select relevant columns and filter missing
         predsub <- predsub %>%
         select(id, time, out = pred, cens, outeq) %>%
+          mutate(id = as.character(id)) %>%
         filter(out != -99 & (cens == "none" | cens == 0))
         
         
