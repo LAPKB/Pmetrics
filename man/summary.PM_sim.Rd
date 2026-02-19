@@ -11,7 +11,7 @@
   field = "obs",
   group = NULL,
   statistics = c("mean", "sd", "median", "min", "max"),
-  digits = max(3, getOption("digits") - 3),
+  digits = getPMoptions("digits"),
   ...
 )
 }
@@ -38,15 +38,15 @@
 Default is  \code{c("mean", "sd", "median", "min", "max")}, but
 can be any subset of these and can also include specific quantiles, e.g. \code{c(25, "median", 75)}.}
 
-\item{digits}{Integer, used for number of digits to print.}
+\item{digits}{Integer, used for number of digits to print. Default is value set with \code{setPMoptions()}.}
 
 \item{...}{Not used.}
 }
 \value{
-If \code{by} is omitted, a data frame with rows for each data element except ID,
-and columns labeled according to the selected \code{statistics}. If \code{by} is specified,
+If \code{group} is omitted, a data frame with rows for each data element except ID,
+and columns labeled according to the selected \code{statistics}. If \code{group} is specified,
 return will be a list with named elements according to the selected \code{statistics},
-each containing a data frame with the summaries for each group in \code{by}.
+each containing a data frame with the summaries for each group in \code{group}.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
