@@ -1628,8 +1628,10 @@ plot.PM_data <- function(
     
     # process marker
     marker <- amendMarker(marker)
-    marker$color <- map_chr(marker$color, \(x) substr(x, 1, 7)) # remove alpha if present, controlled by opacity
-    
+    if (stringr::str_detect(marker$color, "#")){ # color is hex
+      marker$color <- map_chr(marker$color, \(x) substr(x, 1, 7)) # remove alpha if present, controlled by opacity
+    }
+
     highlight_color <- opposite_color(marker$color[1]) # in plotly_Utils.R
     
     
@@ -1792,25 +1794,33 @@ plot.PM_data <- function(
     # remove missing
     sub <- sub %>% filter(out != -99)
     
-    
+
     # now process pred data if there
     if (!is.null(pred)) {
       if (inherits(pred, c("PM_post", "PM_pop"))) { # only PM_post/pop was supplied, make into a list of 1
         pred <- list(pred$data)
       } else if (inherits(pred, c("PM_post_data", "PM_pop_data"))) { # only PM_post_data/PM_pop_data was supplied, make into a list of 1
         pred <- list(pred)
+      } else if (inherits(pred[[1]], c("PM_post", "PM_pop"))) { # PM_post/pop as first argument of list
+        pred[[1]] <- pred[[1]]$data
+      } else if (inherits(pred[[1]], c("PM_post_data", "PM_pop_data"))){ # PM_post_data/PM_pop_data as first argument of list
+        pred[[1]] <- pred[[1]] # nothing to do, in right format already
       } else if (pred[[1]] %in% c("pop", "post")) { # pred[[1]] was "pop" or "post"
         thisPred <- pred[[1]]
-        if (is.null(x[[thisPred]])) { # post/pop missing because x was data not from a PM_result
+        if (is.null(x[[thisPred]])) { # post/pop missing because x was data did not come from a PM_result
           cli::cli_warn(c(
             "!" = "{.code pred = {thisPred}} can only be used as a shortcut when plotting {.cls PM_data} from a {.cls PM_result}.",
             "i" = "Supply a {.cls PM_result} object, e.g. {.code line = list(pred = run2$post)}, if you wish to add predictions otherwise."
           ))
           pred <- NULL
         } else { # post/pop present
-          pred[[1]] <- x[[thisPred]]
+          if (length(pred) == 1){ # pred is either "pop" or "post"
+            pred <- list(x[[thisPred]])
+          } else {
+            pred[[1]] <- x[[thisPred]]
+          }
         }
-      } else { # pred[[1]] was not "pop", "post", PM_result$pop, or PM_result$post
+      } else { # pred[[1]] was none of the above
         cli::cli_warn(c(
           "!" = "The {.var pred} argument is mis-specified.",
           "i" = "See the help for {.code plot.PM_data}."
@@ -1818,8 +1828,9 @@ plot.PM_data <- function(
         pred <- NULL
       }
       
+      
       # process pred list to determine formatting
-      if (length(pred) == 1) { # default
+      if (length(pred) == 1) { # default formatting and prediction
         predArgs <- TRUE
         icen <- "median"
       } else { # not default, but need to extract icen if present
@@ -1829,11 +1840,13 @@ plot.PM_data <- function(
         } else {
           purrr::pluck(pred, "icen") <- NULL
         } # was in list, so remove after extraction
-        predArgs <- pred[-1]
+        predArgs <- pred[-1] # get args beyond data to plot for pred
       }
       
       predArgs <- amendLine(predArgs) # color will be set by obs later
       
+    
+
       # filter and group by id
       if (!is.null(pred[[1]])) { # if pred not reset to null b/c of invalid pred[[1]]
         predsub <- pred[[1]] %>%
@@ -1850,6 +1863,7 @@ plot.PM_data <- function(
         # select relevant columns and filter missing
         predsub <- predsub %>%
         select(id, time, out = pred, cens, outeq) %>%
+          mutate(id = as.character(id)) %>%
         filter(out != -99 & (cens == "none" | cens == 0))
         
         
@@ -2078,7 +2092,7 @@ plot.PM_data <- function(
     }
     
     return(invisible(p))
-  }
+    }
   # SUMMARY -----------------------------------------------------------------
   
   #' @title Summarize PM_data objects

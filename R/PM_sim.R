@@ -2390,12 +2390,12 @@ plot.PM_sim <- function(x,
 #' @param statistics The summary statistics to report.
 #' Default is  `c("mean", "sd", "median", "min", "max")`, but
 #' can be any subset of these and can also include specific quantiles, e.g. `c(25, "median", 75)`.
-#' @param digits Integer, used for number of digits to print.
+#' @param digits Integer, used for number of digits to print. Default is value set with `setPMoptions()`.
 #' @param ... Not used.
-#' @return If `by` is omitted, a data frame with rows for each data element except ID,
-#' and columns labeled according to the selected `statistics`. If `by` is specified,
+#' @return If `group` is omitted, a data frame with rows for each data element except ID,
+#' and columns labeled according to the selected `statistics`. If `group` is specified,
 #' return will be a list with named elements according to the selected `statistics`,
-#' each containing a data frame with the summaries for each group in `by`.
+#' each containing a data frame with the summaries for each group in `group`.
 #' @author Michael Neely
 #' @examples
 #' \dontrun{
@@ -2408,15 +2408,19 @@ plot.PM_sim <- function(x,
 #' @export
 summary.PM_sim <- function(object, include, exclude, field = "obs", group = NULL,
 statistics = c("mean", "sd", "median", "min", "max"),
-digits = max(3, getOption("digits") - 3), ...) {
+digits = getPMoptions("digits"), ...) {
   # get the right data
   if (inherits(object, "PM_sim")) {
     dat <- object$data[[field]]
   } else if (inherits(object, "PM_sim_data")) {
-    # include/exclude template ids
-    if (missing(include)) include <- unique(object[[field]]$id)
-    if (missing(exclude)) exclude <- NA
-    dat <- object[[field]] %>% includeExclude(include, exclude)
+    dat <- object[[field]]
+    if ("id" %in% names(dat)){
+      # include/exclude template ids
+      if (missing(include)) include <- unique(dat$id)
+      if (missing(exclude)) exclude <- NA
+      dat <- dat %>% includeExclude(include, exclude)
+    }
+
   } else {
     cli::cli_abort(c("x" = "Object does not appear to be a simulation."))
   }
