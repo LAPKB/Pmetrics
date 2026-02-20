@@ -55,11 +55,10 @@ PM_cycle <- R6::R6Class(
     #' Creation of new `PM_cycle` object is automatic and not generally necessary
     #' for the user to do.
     #' @param PMdata include `r template("PMdata")`.
-    #' @param path include `r template("path")`.
+    #' @param json A parsed JSON list from `result.json`, as read by [PM_parse].
     #' @param ... Not currently used.
-    
-    initialize = function(PMdata = NULL, path = ".", ...) {
-      self$data <- private$make(PMdata, path )
+    initialize = function(PMdata = NULL, json = NULL, ...) {
+      self$data <- private$make(PMdata, json)
     },
     #' @description
     #' Plot method
@@ -119,59 +118,99 @@ PM_cycle <- R6::R6Class(
     }
   ), # end active
   private = list(
-    make = function(data, path) {
-      if (file.exists(file.path(path, "cycles.csv"))) {
-        raw <- readr::read_csv(file = file.path(path, "cycles.csv"), show_col_types = FALSE)
-        if (nrow(raw)==0){ # posterior 
-          raw <- data.frame(cycle = 0, status = "Posterior")
-          write.csv(raw, file.path(path, "cycles.csv"), row.names = FALSE)
+    make = function(data, json = NULL) {
+      # --- Obtain cycles data ---
+      if (!is.null(json) && !is.null(json$cyclelog)) {
+        cycles_raw <- json$cyclelog$cycles
+        # cycles_raw is a data.frame with columns: cycle, objf, error_models, theta, nspp, delta_objf, status
+        raw <- tibble::tibble(
+          cycle = cycles_raw$cycle,
+          neg2ll = -2 * cycles_raw$objf,
+          nspp = cycles_raw$nspp,
+          delta_objf = cycles_raw$delta_objf,
+          status = sapply(cycles_raw$status, function(s) {
+            if (is.list(s)) names(s)[1] else as.character(s)
+          })
+        )
+        # Extract gamlam values from error_models
+        # cycles_raw$error_models is a data.frame with column $models (list column)
+        gamlam_vals <- sapply(cycles_raw$error_models$models, function(models) {
+          sapply(models, function(m) {
+            if (is.list(m) && !is.null(names(m))) {
+              # m is e.g. list(Additive = list(lambda = ..., poly = ...))
+              model_type <- names(m)[1]
+              lam <- m[[model_type]]$lambda
+              if (is.list(lam)) lam[[1]] else lam
+            } else {
+              NA
+            }
+          })
+        })
+        # Extract per-parameter mean/sd/median from theta in each cycle
+        par_names <- json$settings$parameters$parameters$name
+        n_params <- length(par_names)
+        # cycles_raw$theta is a list column of matrices [nspp_i x npar]
+        cycle_stats <- lapply(cycles_raw$theta, function(theta_mat) {
+          # theta_mat is already a matrix after jsonlite simplification
+          if (is.null(theta_mat) || (is.matrix(theta_mat) && nrow(theta_mat) == 0)) return(NULL)
+          if (!is.matrix(theta_mat)) theta_mat <- matrix(theta_mat, ncol = n_params)
+          stats <- list()
+          for (j in seq_len(n_params)) {
+            vals <- theta_mat[, j]
+            stats[[paste0(par_names[j], ".mean")]] <- mean(vals)
+            stats[[paste0(par_names[j], ".sd")]] <- sd(vals)
+            stats[[paste0(par_names[j], ".median")]] <- median(vals)
+          }
+          as.data.frame(stats)
+        })
+        cycle_stats_df <- dplyr::bind_rows(cycle_stats)
+        raw <- dplyr::bind_cols(raw, cycle_stats_df)
+        # Add gamlam columns
+        if (is.matrix(gamlam_vals)) {
+          for (k in seq_len(nrow(gamlam_vals))) {
+            raw[[paste0("gamlam.", k - 1)]] <- gamlam_vals[k, ]
+          }
+        } else {
+          raw[["gamlam.0"]] <- gamlam_vals
         }
-      } else if (inherits(data, "PM_cycle") & !is.null(data$data)) { # file not there, and already PM_cycle
+        if (nrow(raw) == 0) {
+          raw <- data.frame(cycle = 0, status = "Posterior")
+        }
+      } else if (inherits(data, "PM_cycle") & !is.null(data$data)) {
         class(data$data) <- c("PM_cycle_data", "list")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate cycle information.",
-          "i" = "{.file {file.path(path, 'cycles.csv')}} does not exist, and result does not have valid {.code PM_cycle} object."
+          "i" = "No JSON cyclelog and no valid {.code PM_cycle} object."
         ))
         return(NULL)
       }
       
-      
-      if (file.exists(file.path(path, "pred.csv"))) {
-        op_raw <- readr::read_csv(file = file.path(path, "pred.csv"), 
-        col_types = list(
-          time = readr::col_double(),
-          outeq = readr::col_integer(),
-          block = readr::col_integer(),
-          obs = readr::col_double(),
-          cens = readr::col_character(),
-          pop_mean = readr::col_double(),
-          pop_median = readr::col_double(),
-          post_mean = readr::col_double(),
-          post_median = readr::col_double()
-        ), show_col_types = FALSE) %>% filter(!is.na(obs))
-      } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_op
+      # --- Obtain predictions data (for AIC/BIC n_subjects) ---
+      if (!is.null(json) && !is.null(json$predictions)) {
+        op_raw <- tibble::as_tibble(json$predictions$predictions) %>% filter(!is.na(obs))
+      } else if (inherits(data, "PM_cycle")) {
         class(data$data) <- c("PM_cycle_data", "list")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate cycle information.",
-          "i" = "{.file {file.path(path, 'pred.csv')}} does not exist, and result does not have valid {.code PM_cycle} object."
+          "i" = "No JSON predictions and no valid {.code PM_cycle} object."
         ))
         return(NULL)
       }
       
-      
-      if (file.exists(file.path(path, "settings.json"))) {
-        config <- jsonlite::fromJSON(file.path(path, "settings.json"))
-      } else if (inherits(data, "PM_cycle") & !is.null(data$data)) { # file not there, and already PM_op
+      # --- Obtain settings/config ---
+      if (!is.null(json) && !is.null(json$settings)) {
+        config <- json$settings
+      } else if (inherits(data, "PM_cycle") & !is.null(data$data)) {
         class(data$data) <- c("PM_cycle_data", "list")
         return(data$data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate cycle information.",
-          "i" = "{.file {file.path(path, 'settings.json')}} does not exist, and result does not have valid {.code PM_cycle} object."
+          "i" = "No JSON settings and no valid {.code PM_cycle} object."
         ))
         return(NULL)
       }
