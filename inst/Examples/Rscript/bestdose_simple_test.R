@@ -32,7 +32,8 @@ problem <- PM_bestdose_problem$new(
     target = target_file,
     dose_range = list(min = 0, max = 300),
     bias_weight = 0.0,
-    target_type = "concentration" # "concentration", "auc_from_zero", "auc_from_last_dose"
+    target_type = "concentration", # "concentration", "auc_from_zero", "auc_from_last_dose"
+    max_cycles = 500
 )
 
 cat("\nPosterior support points:\n")
