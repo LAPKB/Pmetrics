@@ -54,6 +54,10 @@ PM_result <- R6::R6Class(
     #' Use the `$save` method on the augmented `PM_result` object to save it with the
     #' new optimal sampling results.
     opt_samp = NULL,
+    #' @field NPdata List of NPAG run information
+    NPdata = NULL,
+    #' @field ITdata List of IT2B run information
+    ITdata = NULL,
     
     #' @description
     #' Create new object populated with data from previous run
@@ -64,6 +68,31 @@ PM_result <- R6::R6Class(
     #' @param path include `r template("path")`.
     #' @param quiet Quietly validate. Default is `FALSE`.
     initialize = function(out, path = ".", quiet = TRUE) {
+      
+      if (!is.null(out$NPdata)) {
+        self$NPdata <- out$NPdata
+        class(self$NPdata) <- c("NPAG", "list")
+        allData <- "NPdata"
+      } else {
+        self$NPdata <- NULL
+      }
+      if (!is.null(out$ITdata)) {
+        self$ITdata <- out$ITdata
+        class(self$ITdata) <- c("IT2B", "list")
+        allData <- "ITdata"
+      } else {
+        self$ITdata <- NULL
+      }
+      if (is.null(out$NPdata) & is.null(out$ITdata)) { # neither present
+        if (!is.null(out$op)) { # check if it is a rust object (op is always present)
+          if (!inherits(out$op, "R6")) { # it is a rust object
+            self$NPdata <- out
+            class(self$NPdata) <- c("NPAG", "rust", "list")
+            allData <- "NPdata"
+          }
+        }
+      }
+      
       # the following were saved as R6 objects
       purrr::walk(
         c("pop", "post", "final", "cycle", "op", "cov", "data", "model", "valid"),
@@ -71,14 +100,24 @@ PM_result <- R6::R6Class(
           self[[x]] <- NULL
           if (!is.null(out[[x]])) { # if the object is loaded...
             if (!inherits(out[[x]], "R6")) { # older save
-              cli::cli_abort(c("x" = "The object was saved in an older format. Please re-run the analysis."))
+              if (inherits(out[[x]], paste0("PM", x)) || inherits(out[[x]], "PMmatrix")) {
+                self[[x]] <- get(paste0("PM_", x))$new(out[[x]]) # ...make the R6 from old PMxxx
+              } else {
+                self[[x]] <- get(paste0("PM_", x))$new(out[[allData]]) # ...make the R6 from raw
+              }
             } else {
               if(x == "model"){
-                args <- list(x  = out[[x]], compile = FALSE)
+                tryCatch({
+                  args <- list(x  = out[[x]], compile = FALSE)
+                  self[[x]] <- do.call(get(paste0("PM_", x))$new, args = args)
+                }, error = function(e) {
+                  cli::cli_warn(c("!" = "Failed to upgrade model object. Keeping original (limited functionality)."))
+                  self[[x]] <- out[[x]]
+                })
               } else { 
                 args <- list(out[[x]], path = path, quiet = TRUE)
+                self[[x]] <- do.call(get(paste0("PM_", x))$new, args = args) # was saved in R6 format, but remake to update if needed
               }
-              self[[x]] <- do.call(get(paste0("PM_", x))$new, args = args) # was saved in R6 format, but remake to update if needed
             }
           }
         }
@@ -376,7 +415,7 @@ PM_load <- function(run, path = ".", file = "PMout.Rdata") {
   # internal function
   output2List <- function(Out) {
     result <- list()
-    for (i in 1:length(Out)) {
+    for (i in seq_along(Out)) {
       aux_list <- list(Out[[i]])
       names(aux_list) <- names(Out)[i]
       result <- append(result, aux_list)
@@ -396,7 +435,10 @@ PM_load <- function(run, path = ".", file = "PMout.Rdata") {
   if (file.exists(filepath)) { found <- filepath }
   
   if (found != "") {
-    result <- output2List(Out = get(load(found)))
+    
+    env <- new.env()
+    obj_names <- load(found, envir = env)
+    result <- output2List(Out = get(obj_names, envir = env))
     rebuild <- PM_result$new(result, path = dirname(found), quiet = TRUE)
     return(rebuild)
   } else {
