@@ -69,11 +69,7 @@ bestdose_parse_data <- function(data) {
     }
 }
 
-bestdose_default_settings <- function(prior, model) {
-    if (inherits(prior, "PM_result")) {
-        return(prior$settings)
-    }
-
+bestdose_default_settings <- function(prior, model, max_cycles = 500) {
     param_ranges <- lapply(model$model_list$pri, function(x) {
         c(x$min, x$max)
     })
@@ -82,14 +78,8 @@ bestdose_default_settings <- function(prior, model) {
     list(
         algorithm = "NPAG",
         ranges = param_ranges,
-        error_models = list(
-            list(
-                initial = 0.0,
-                type = "additive",
-                coeff = c(0.0, 0.2, 0.0, 0.0)
-            )
-        ),
-        max_cycles = 500,
+        error_models = lapply(model$model_list$err, function(x) x$flatten()),
+        max_cycles = max_cycles,
         points = 2028,
         seed = 22,
         prior = "prior.csv",
@@ -123,6 +113,7 @@ PM_bestdose <- R6::R6Class(
                               bias_weight = 0.5,
                               target_type = "concentration",
                               time_offset = NULL,
+                              max_cycles = 500,
                               settings = NULL,
                               result = NULL,
                               problem_obj = NULL,
@@ -145,6 +136,7 @@ PM_bestdose <- R6::R6Class(
                 bias_weight = bias_weight,
                 target_type = target_type,
                 time_offset = time_offset,
+                max_cycles = max_cycles,
                 settings = settings
             )
 
@@ -266,6 +258,7 @@ PM_bestdose_problem <- R6::R6Class(
                               bias_weight = 0.5,
                               target_type = "concentration",
                               time_offset = NULL,
+                              max_cycles = 500,
                               settings = NULL) {
             if (!target_type %in% c("concentration", "auc_from_zero", "auc_from_last_dose")) {
                 cli::cli_abort("target_type must be one of: concentration, auc_from_zero, auc_from_last_dose")
@@ -290,7 +283,7 @@ PM_bestdose_problem <- R6::R6Class(
 
             if (is.null(settings)) {
                 model_for_settings <- if (!is.null(model_info$model)) model_info$model else model
-                settings <- bestdose_default_settings(prior, model_for_settings)
+                settings <- bestdose_default_settings(prior, model_for_settings, max_cycles = max_cycles)
             }
 
             prep <- bestdose_prepare(
