@@ -1368,11 +1368,6 @@ PM_model <- R6::R6Class(
           cli::cli_inform(c("i" = "Compiling model..."))
           # path inside Pmetrics package
           template_path <- if (Sys.getenv("env") == "Development") { file.path(temporary_path(), "template") } else { system.file(package = "Pmetrics")}
-          if (file.access(template_path, 0) == -1 | file.access(template_path, 2) == -1){
-            cli::cli_abort(c("x" = "Template path {.path {template_path}} does not exist or is not writable.",
-            "i" = "Please set the template path with {.fn setPMoptions} (choose {.emph Compile Options}), to an existing, writable folder."
-          ))
-        } 
         if (Sys.getenv("env") == "Development") {cat("Using template path:", template_path, "\n")}
         tryCatch(
           {
