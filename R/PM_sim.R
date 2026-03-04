@@ -563,6 +563,19 @@ PM_sim <- R6::R6Class(
             "i" = "Instead, use {.arg noise}. See {.help PM_sim}."
           ))
         }
+      
+        # check to make sure any arguments in ... are not misspelled or otherwise unrecognized
+        allArgs <- formals(PM_sim$public_methods$initialize) %>% names()
+        dotArgs <- names(dots)
+        unrecog <- setdiff(dotArgs, allArgs)
+        if (length(unrecog) > 0) {
+          cli::cli_abort(c(
+            "x" = "The following argument{?s} {?is/are} not recognized: {.val {unrecog}}.",
+            "i" = "Check for case erorrs or misspellings. Refer to {.help PM_sim} for a list of valid arguments."
+          ))
+        }
+      
+      
         
         if (missing(poppar)) {
           cli::cli_abort(c(
@@ -803,7 +816,7 @@ PM_sim <- R6::R6Class(
         )
         
         return(self)
-      }, # end initialize
+    }, # end initialize
       #'
       #' @description
       #' `r lifecycle::badge("stable")`
@@ -914,7 +927,7 @@ PM_sim <- R6::R6Class(
         ###### POPPAR
         
        
-        npar <- length(poppar$popMean)
+        npar <- if (useTheta) {ncol(poppar$popPoints) - 1} else {length(poppar$popMean)}
         
         
         

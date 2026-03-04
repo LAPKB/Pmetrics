@@ -786,7 +786,7 @@ return(temp)
 #' }
 #' @export
 
-PMcheck <- function(data, path, fix = FALSE, quiet = FALSE) {
+PMcheck <- function(data, path = ".", fix = FALSE, quiet = FALSE) {
   # get the data
   if (is.character(data)) { # data is a filename
     data2 <- tryCatch(PMreadMatrix(data, quiet = TRUE), error = function(e) {
