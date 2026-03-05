@@ -381,8 +381,6 @@ createBDdescription <- function(PM_result, covariates = NULL, ode = NULL, drug_n
 #' @param PM_result A PM model result object
 #' @param drug_name A character string for the drug name to be used in the description
 #' @return A list containing the description, model, and support points formatted for BestDose
-#' 
-#' @export
 
 createBDmodel <- function(PM_result, drug_name = "Drug") {
   # gather basic elements of the model to be used in BestDose
