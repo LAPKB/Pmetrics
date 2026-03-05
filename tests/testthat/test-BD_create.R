@@ -7,7 +7,7 @@ PMmodel <- NPex$model$arg_list
 # =================================
 # Test Helper
 # ================================
-test_that("extractPMCovariates return adequate values", {
+test_that("getODEfromLib returns adequate values", {
   ode <- getODEfromLib("two_comp_bolus")
 
   expect_type(ode, "list")
@@ -124,6 +124,13 @@ test_that("extractPMLag return adequate with ode", {
   expect_equal(lag$lag1, "lag[1] = tlag1")
 })
 
+test_that("extractPMLag : NULL lag block", {
+  PMmodel$lag <- NULL
+  lag <- extractPMLag(PMmodel)
+
+  expect_null(lag)
+})
+
 # =================================
 # Test extractPMFa
 # ================================
@@ -158,6 +165,19 @@ test_that("extractPMInitialVal handle NULL", {
   expect_null(iv)
 })
 
+test_that("extractPMInitialVal handle NULL", {
+  PMmodel$ini <- function() {
+    X[1] = 10
+    X[2] = 10 * v
+  }
+
+  iv <- extractPMInitialVal(PMmodel)
+
+  expect_equal(length(iv), 2)
+  expect_equal(names(iv), c("X1", "X2"))
+})
+
+
 # =================================
 # Test extractPMOuteq
 # =================================
@@ -171,6 +191,25 @@ test_that("extractPMOuteq return adequate values", {
   expect_equal(outeq$y1, "y[1] = x[2]/v")
 })
 
+# cli::test_that_cli("extractPMOuteq handles NULL", {
+#   # PMmodel$err <- NULL
+#   # err <- extractPMError(PMmodel)
+
+#   # expect cli::cli_abort to be called with the correct message
+#   expect_snapshot(error = TRUE, {
+#     PMmodel$out <- NULL
+#     err <- extractPMOuteq(PMmodel)
+#     cli::cli_abort("x" = "The output block is NULL. Please check your PM model.")
+#   })
+# })
+
+test_that("extractPMOuteq handles NULL", {
+  PMmodel$out <- NULL
+  expect_error(
+    extractPMOuteq(PMmodel),
+    "The output block is NULL. Please check your PM model."
+  )
+})
 
 # =================================
 # Test extractPMError
@@ -187,7 +226,13 @@ test_that("extractPMError return adequate values", {
   expect_equal(err$coefficient, data.frame(c0 = 0.0, c1 = 0.1, c2 = 0.0, c3 = 0.0))
 })
 
-
+test_that("extractPMError handles NULL", {
+  PMmodel$err <- NULL
+  expect_error(
+    extractPMError(PMmodel),
+    "The error block is NULL. Please check your PM model."
+  )
+})
 
 # =================================
 # Test createBDdescription
@@ -204,7 +249,7 @@ test_that("createBDdescription return adequate values if cov is NULL", {
   expect_equal(description$name, "Drug.json")
   expect_null(description$pmx_path)
   expect_equal(description$version, 1.0)
-  expect_equal(description$compartments, 1) # should be 2 here but too many manipulation to get the right value
+  expect_equal(description$compartments, 1) 
   expect_equal(description$target, "concentration")
   expect_equal(description$target_unit, "mg/L")
   expect_equal(description$dose_unit, "mg")
@@ -214,14 +259,14 @@ test_that("createBDdescription return adequate values if cov is NULL", {
 })
 
 test_that("createBDdescription return adequate values if any cov is present", {
-
+  ode <- extractPMequation(PMmodel)
   covariates <- list(
     wt = list(interp = "linear"),
     africa = list(interp = "none"),
     age = list(interp = "linear")
   )
   
-  description <- createBDdescription(PM_result, covariates = covariates)
+  description <- createBDdescription(PM_result, covariates = covariates, ode = ode)
   
   expected_desc_names <- c("drug", "route", "name", "pmx_path","version", "compartments", "target", "target_unit",  "dose_unit", "description", "reference", "covariates")
   expect_type(description, "list")  
@@ -232,7 +277,7 @@ test_that("createBDdescription return adequate values if any cov is present", {
   expect_equal(description$name, "Drug.json")
   expect_null(description$pmx_path)
   expect_equal(description$version, 1.0)
-  expect_equal(description$compartments, 1) # should be 2 here but too many manipulation to get the right value
+  expect_equal(description$compartments, 2) # should be 2 here but too many manipulation to get the right value
   expect_equal(description$target, "concentration")
   expect_equal(description$target_unit, "mg/L")
   expect_equal(description$dose_unit, "mg")
@@ -271,6 +316,7 @@ test_that("createBDdescription return adequate values if any cov is present", {
 # =================================
 
 test_that("createBDmodel return adequate values", {
+  ode <- extractPMequation(PMmodel)
   bd_mod <- createBDmodel(PM_result)
 
   expect_type(bd_mod, "list")  
@@ -286,7 +332,7 @@ test_that("createBDmodel return adequate values", {
   expect_equal(bd_mod$description$name, "Drug.json")
   expect_null(bd_mod$description$pmx_path)
   expect_equal(bd_mod$description$version, 1.0)
-  expect_equal(bd_mod$description$compartments, 1) # should be
+  expect_equal(bd_mod$description$compartments, 2) # should be
   expect_equal(bd_mod$description$target, "concentration")
   expect_equal(bd_mod$description$target_unit, "mg/L")
   expect_equal(bd_mod$description$dose_unit, "mg")

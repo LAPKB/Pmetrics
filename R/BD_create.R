@@ -213,7 +213,7 @@ if (is.null(PMmodel$fa)) return(NULL)
 # extract fa parameter and format it for BestDose
   fa <- deparse(PMmodel$fa)
 
-  # extract fa time parameter and trim the white space at the beginning and end of the string
+  # extract fa parameter and trim the white space at the beginning and end of the string
   # case incensitive search, hence the '(?i)' for "fa[1]", "fa[2]", etc. and capture the whole line
   bloc <- fa[stringr::str_detect(fa, "(?i)fa\\[[0-9]+\\]")]
   bloc <- stringr::str_trim(bloc)
@@ -237,16 +237,6 @@ if (is.null(PMmodel$fa)) return(NULL)
 #' 
 #' @param PMmodel A PM model object
 #' @return A list of the initial parameters if present in the PM model, otherwise NULL
-#' 
-#' @export 
-#' 
-
-#' @title Extract the initial parameters from a PM model and format them for BestDose
-#' @description 
-#' `r lifecycle::badge("experimental")`
-#' 
-#' @param PMmodel A PM model object
-#' @return A list of the initial parameters if present in the PM model, otherwise NULL
 
 extractPMInitialVal <- function(PMmodel) {
 if (is.null(PMmodel$ini)) return(NULL)
@@ -254,13 +244,13 @@ if (is.null(PMmodel$ini)) return(NULL)
 
 ini <- deparse(PMmodel$ini)
 
-  # extract ini time parameter and trim the white space at the beginning and end of the string
-  # case incensitive search, hence the '(?i)' for "ini[1]", "ini[2]", etc. and capture the whole line
-  bloc <- ini[stringr::str_detect(ini, "(?i)ini\\[[0-9]+\\]")]
+  # extract initial value parameter and trim the white space at the beginning and end of the string
+  # case insensitive search, hence the '(?i)' for "x[1]", "x[2]", etc. and capture the whole line
+  bloc <- ini[stringr::str_detect(ini, "(?i)x\\[[0-9]+\\]")]
   bloc <- stringr::str_trim(bloc)
 
   # get name for the list
-  ini_name <- stringr::str_extract(bloc, "(?i)ini\\[[0-9]+\\]")
+  ini_name <- stringr::str_extract(bloc, "(?i)x\\[[0-9]+\\]")
   ini_name <- stringr::str_replace_all(ini_name, "\\[|\\]", "")
 
   ini_list <- list()
@@ -282,14 +272,14 @@ ini <- deparse(PMmodel$ini)
 
 extractPMOuteq <- function(PMmodel) {
   if (is.null(PMmodel$out)) {
-    return(stop("The output block is NULL. Please check your PM model."))
+    cli::cli_abort(c("x" = "The output block is NULL. Please check your PM model."))
   }
 
   # deparse the function call
   out <- deparse(PMmodel$out)
 
   # extract out time parameter and trim the white space at the beginning and end of the string
-  # case incensitive search, hence the '(?i)' for "y[1]", "y[2]", etc. and capture the whole line
+  # case insensitive search, hence the '(?i)' for "y[1]", "y[2]", etc. and capture the whole line
   bloc <- out[stringr::str_detect(out, "(?i)y\\[[0-9]+\\]")]
   bloc <- stringr::str_trim(bloc)
 
@@ -316,10 +306,10 @@ extractPMOuteq <- function(PMmodel) {
 extractPMError <- function(PMmodel) {
 
   if (is.null(PMmodel$err)) {
-    return(stop("The error block is NULL. Please check your PM model."))
+    cli::cli_abort(c("x" = "The error block is NULL. Please check your PM model."))
   }
 
-  # extract error parameter and format it for BestDosea
+  # extract error parameter and format it for BestDose
   err <- PMmodel$err[[1]]
   error_list <- list(
     type = err$type,
@@ -336,11 +326,12 @@ extractPMError <- function(PMmodel) {
 #'
 #' @param PM_result A PM model object
 #' @param covariates the covariates information extracted with `extractPMCovariates` function.
+#' @param ode the ordinary differential equations information extracted with `extractPMequation` function.
 #' @param drug_name A character string for the drug name to be used in the description
 #' 
 #' @return A description list for the bestdose model.
 
-createBDdescription <- function(PM_result, covariates = NULL, drug_name = "Drug") {
+createBDdescription <- function(PM_result, covariates = NULL, ode = NULL, drug_name = "Drug") {
   # gather basic elements of the model to be used in BestDose
   PMmodel <- PM_result$model$arg_list
   covariates_list <- NULL
@@ -357,6 +348,13 @@ createBDdescription <- function(PM_result, covariates = NULL, drug_name = "Drug"
     )
   }
 
+  # get the number of compartments from the number of ode
+  if (!is.null(ode)) {
+    compartments <- length(ode)
+  } else {
+    compartments <- 1
+  }
+
   # create the description block
   description <- list(
     drug = drug_name,
@@ -364,7 +362,7 @@ createBDdescription <- function(PM_result, covariates = NULL, drug_name = "Drug"
     name = paste0(drug_name, ".json"),
     pmx_path = NULL,
     version = 1.0,
-    compartments = length(PMmodel$eqn),
+    compartments = compartments,
     target = "concentration",
     target_unit = "mg/L",
     dose_unit = "mg",
@@ -390,6 +388,7 @@ createBDmodel <- function(PM_result, drug_name = "Drug") {
   # gather basic elements of the model to be used in BestDose
   PMmodel <- PM_result$model$arg_list
   support_points <- PM_result$final$popPoints
+  ode = extractPMequation(PMmodel)
 
   # create the model part of the file
   model_list <- list(
@@ -399,13 +398,13 @@ createBDmodel <- function(PM_result, drug_name = "Drug") {
     initial_conditions = extractPMInitialVal(PMmodel),
     fa = extractPMFa(PMmodel),
     lag = extractPMLag(PMmodel),
-    equation = extractPMequation(PMmodel),
+    equation = ode,
     out = extractPMOuteq(PMmodel),
     error = extractPMError(PMmodel)
   )
 
-  # creat the description part of the file
-  description <- createBDdescription(PM_result, covariates = model_list$covariates, drug_name = drug_name)
+  # create the description part of the file
+  description <- createBDdescription(PM_result, covariates = model_list$covariates, ode = ode, drug_name = drug_name)
 
   # create the R object to write the model file
   model_file <- list(
