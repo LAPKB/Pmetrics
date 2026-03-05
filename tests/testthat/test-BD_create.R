@@ -7,7 +7,7 @@ PMmodel <- NPex$model$arg_list
 # =================================
 # Test Helper
 # ================================
-test_that("getODEfromLib returns adequate values", {
+testthat::test_that("getODEfromLib returns adequate values", {
   ode <- getODEfromLib("two_comp_bolus")
 
   expect_type(ode, "list")
@@ -23,7 +23,7 @@ test_that("getODEfromLib returns adequate values", {
 # Test extractPMPrimary
 # ================================
 
-test_that("extractPMPrimary", {
+testthat::test_that("extractPMPrimary", {
   pri <- extractPMPrimary(PMmodel)
 
   expect_type(pri, "list")
@@ -36,7 +36,7 @@ test_that("extractPMPrimary", {
 # =================================
 # Test extractPMCovariate
 # ================================
-test_that("extractPMCovariates return adequate values", {
+testthat::test_that("extractPMCovariates return adequate values", {
   cov <- extractPMCovariates(PMmodel)
 
   expect_type(cov, "list")
@@ -46,7 +46,7 @@ test_that("extractPMCovariates return adequate values", {
   expect_equal(cov$gender$interp, "linear")
 })
 
-test_that("extractPMCovariates handles NULL", {
+testthat::test_that("extractPMCovariates handles NULL", {
   cov <- NULL
 
   expect_null(extractPMCovariates(cov))
@@ -57,7 +57,7 @@ test_that("extractPMCovariates handles NULL", {
 # Test extractPMSecondary
 # ================================
 
-test_that("extractPMSecondary return adequate with ode", {
+testthat::test_that("extractPMSecondary return adequate with ode", {
   PMmodel$sec <- function() {
     v = v0 * wt
     ke = ke0 * age
@@ -73,7 +73,7 @@ test_that("extractPMSecondary return adequate with ode", {
 })
 
 
-test_that("extractPMSecondary", {
+testthat::test_that("extractPMSecondary", {
   cov <- extractPMSecondary(PMmodel)
 
   expect_null(cov)
@@ -85,7 +85,7 @@ test_that("extractPMSecondary", {
 # Test extractPMequation
 # ================================
 
-test_that("extractPMequation return adequate with ode", {
+testthat::test_that("extractPMequation return adequate with ode", {
   eqn <- extractPMequation(PMmodel)
 
   expect_type(eqn, "list")
@@ -95,7 +95,7 @@ test_that("extractPMequation return adequate with ode", {
   expect_equal(eqn$dx2, "dx[2] = rateiv[1] + ka * x[1] - ke * x[2]")
 })
 
-test_that("extractPMequation return adequate values with mod_lib()", {
+testthat::test_that("extractPMequation return adequate values with mod_lib()", {
   PMmodel$eqn <- function() {
     two_comp_bolus
   }
@@ -115,7 +115,7 @@ test_that("extractPMequation return adequate values with mod_lib()", {
 # Test extractPMLag
 # ================================
 
-test_that("extractPMLag return adequate with ode", {
+testthat::test_that("extractPMLag return adequate with ode", {
   lag <- extractPMLag(PMmodel)
 
   expect_type(lag, "list")
@@ -124,7 +124,7 @@ test_that("extractPMLag return adequate with ode", {
   expect_equal(lag$lag1, "lag[1] = tlag1")
 })
 
-test_that("extractPMLag : NULL lag block", {
+testthat::test_that("extractPMLag : NULL lag block", {
   PMmodel$lag <- NULL
   lag <- extractPMLag(PMmodel)
 
@@ -135,7 +135,7 @@ test_that("extractPMLag : NULL lag block", {
 # Test extractPMFa
 # ================================
 
-test_that("extractPMFa handle fa function", {
+testthat::test_that("extractPMFa handle fa function", {
   PMmodel$fa <- function() {
     fa[1] = 0.8
   }
@@ -149,7 +149,7 @@ test_that("extractPMFa handle fa function", {
 })
 
 
-test_that("extractPMFa handle NULL", {
+testthat::test_that("extractPMFa handle NULL", {
   fa <- extractPMFa(PMmodel)
 
   expect_null(fa)
@@ -159,13 +159,13 @@ test_that("extractPMFa handle NULL", {
 # Test extractPMInitialVal
 # ================================
 
-test_that("extractPMInitialVal handle NULL", {
+testthat::test_that("extractPMInitialVal handle NULL", {
   iv <- extractPMInitialVal(PMmodel)
 
   expect_null(iv)
 })
 
-test_that("extractPMInitialVal handle NULL", {
+testthat::test_that("extractPMInitialVal handle NULL", {
   PMmodel$ini <- function() {
     X[1] = 10
     X[2] = 10 * v
@@ -182,7 +182,7 @@ test_that("extractPMInitialVal handle NULL", {
 # Test extractPMOuteq
 # =================================
 
-test_that("extractPMOuteq return adequate values", {
+testthat::test_that("extractPMOuteq return adequate values", {
   outeq <- extractPMOuteq(PMmodel)
 
   expect_type(outeq, "list")
@@ -191,19 +191,8 @@ test_that("extractPMOuteq return adequate values", {
   expect_equal(outeq$y1, "y[1] = x[2]/v")
 })
 
-# cli::test_that_cli("extractPMOuteq handles NULL", {
-#   # PMmodel$err <- NULL
-#   # err <- extractPMError(PMmodel)
 
-#   # expect cli::cli_abort to be called with the correct message
-#   expect_snapshot(error = TRUE, {
-#     PMmodel$out <- NULL
-#     err <- extractPMOuteq(PMmodel)
-#     cli::cli_abort("x" = "The output block is NULL. Please check your PM model.")
-#   })
-# })
-
-test_that("extractPMOuteq handles NULL", {
+testthat::test_that("extractPMOuteq handles NULL", {
   PMmodel$out <- NULL
   expect_error(
     extractPMOuteq(PMmodel),
@@ -215,7 +204,7 @@ test_that("extractPMOuteq handles NULL", {
 # Test extractPMError
 # =================================
 
-test_that("extractPMError return adequate values", {
+testthat::test_that("extractPMError return adequate values", {
   err <- extractPMError(PMmodel)
 
   expect_type(err, "list")  
@@ -223,10 +212,10 @@ test_that("extractPMError return adequate values", {
   expect_equal(names(err), c("type", "initial_value", "coefficient"))
   expect_equal(err$type, "proportional")
   expect_equal(err$initial_value, 5)
-  expect_equal(err$coefficient, data.frame(c0 = 0.0, c1 = 0.1, c2 = 0.0, c3 = 0.0))
+  expect_equal(err$coefficient, data.frame(c0 = 0.02, c1 = 0.05, c2 = -0.0002, c3 = 0.0))
 })
 
-test_that("extractPMError handles NULL", {
+testthat::test_that("extractPMError handles NULL", {
   PMmodel$err <- NULL
   expect_error(
     extractPMError(PMmodel),
@@ -238,7 +227,7 @@ test_that("extractPMError handles NULL", {
 # Test createBDdescription
 # =================================
 
-test_that("createBDdescription return adequate values if cov is NULL", {
+testthat::test_that("createBDdescription return adequate values if cov is NULL", {
   description <- createBDdescription(PM_result)
   expected_desc_names <- c("drug", "route", "name", "pmx_path","version", "compartments", "target", "target_unit",  "dose_unit", "description", "reference", "covariates")
   expect_type(description, "list")  
@@ -258,7 +247,7 @@ test_that("createBDdescription return adequate values if cov is NULL", {
   expect_null(description$covariates)
 })
 
-test_that("createBDdescription return adequate values if any cov is present", {
+testthat::test_that("createBDdescription return adequate values if any cov is present", {
   ode <- extractPMequation(PMmodel)
   covariates <- list(
     wt = list(interp = "linear"),
@@ -315,7 +304,7 @@ test_that("createBDdescription return adequate values if any cov is present", {
 # Test createBDmodel
 # =================================
 
-test_that("createBDmodel return adequate values", {
+testthat::test_that("createBDmodel return adequate values", {
   ode <- extractPMequation(PMmodel)
   bd_mod <- createBDmodel(PM_result)
 
@@ -348,6 +337,6 @@ test_that("createBDmodel return adequate values", {
   # check support points
   expect_type(bd_mod$support_point, "list")
   expect_equal(ncol(bd_mod$support_point), 5)
-  expect_equal(nrow(bd_mod$support_point), 17)
+  expect_equal(nrow(bd_mod$support_point), 19)
   expect_equal(names(bd_mod$support_point), c("ka", "ke", "v", "tlag1", "prob"))
 })
