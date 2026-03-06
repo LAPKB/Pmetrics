@@ -293,15 +293,6 @@ PM_bestdose_posterior <- R6::R6Class(
             self$handle <- NULL
         },
 
-        #' @description
-        #' Run optimization and return raw list (doses, objf, predictions)
-        optimize_raw = function(target,
-                                dose_range = list(min = 0, max = 1000),
-                                bias_weight = 0.5,
-                                target_type = "concentration",
-                                time_offset = NULL) {
-            private$.run_optimize(target, dose_range, bias_weight, target_type, time_offset)
-        },
 
         #' @description
         #' Run optimization and return a `PM_bestdose` result object
@@ -310,7 +301,7 @@ PM_bestdose_posterior <- R6::R6Class(
                             bias_weight = 0.5,
                             target_type = "concentration",
                             time_offset = NULL) {
-            raw <- self$optimize_raw(target, dose_range, bias_weight, target_type, time_offset)
+            raw <- private$.run_optimize(target, dose_range, bias_weight, target_type, time_offset)
             PM_bestdose$new(
                 result = raw$result,
                 posterior_obj = self,
@@ -321,23 +312,24 @@ PM_bestdose_posterior <- R6::R6Class(
     private = list(
         .run_optimize = function(target, dose_range, bias_weight, target_type, time_offset) {
             if (is.null(self$handle)) {
-                cli::cli_abort("BestDose posterior handle has been released")
+                cli::cli_abort(c( x = "PM_bestdose_posterior object is not properly initialized",
+                "i" = "Re-run `PM_bestdose$new()`."   ))
             }
 
             if (!target_type %in% c("concentration", "auc_from_zero", "auc_from_last_dose")) {
-                cli::cli_abort("target_type must be one of: concentration, auc_from_zero, auc_from_last_dose")
+                cli::cli_abort(" {.arg target_type} must be one of: concentration, auc_from_zero, auc_from_last_dose")
             }
 
             if (bias_weight < 0 || bias_weight > 1) {
-                cli::cli_abort("bias_weight must be between 0 and 1")
+                cli::cli_abort("{.arg bias_weight} must be between 0 and 1")
             }
 
             if (is.null(dose_range$min) || is.null(dose_range$max)) {
-                cli::cli_abort("dose_range must have both 'min' and 'max' elements")
+                cli::cli_abort("{.arg dose_range} must have both 'min' and 'max' elements")
             }
 
             if (dose_range$min >= dose_range$max) {
-                cli::cli_abort("dose_range$min must be less than dose_range$max")
+                cli::cli_abort("{.arg dose_range$min} must be less than {.arg dose_range$max}")
             }
 
             target_data_path <- bestdose_parse_data(target)
