@@ -20,7 +20,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use tracing_subscriber::layer::SubscriberExt;
 
-use crate::bestdose_executor::BestDoseProblemHandle;
+use crate::bestdose_executor::BestDosePosteriorHandle;
 use crate::logs::RFormatLayer;
 
 fn validate_data_path(data_path: &str) -> Result<()> {
@@ -322,12 +322,6 @@ fn bestdose_prepare(
     model_path: &str,
     prior_path: &str,
     past_data_path: Nullable<String>,
-    target_data_path: &str,
-    time_offset: Nullable<f64>,
-    dose_min: f64,
-    dose_max: f64,
-    bias_weight: f64,
-    target_type: &str,
     params: List,
     kind: &str,
 ) -> Robj {
@@ -335,12 +329,6 @@ fn bestdose_prepare(
         model_path,
         prior_path,
         past_data_path,
-        target_data_path,
-        time_offset,
-        dose_min,
-        dose_max,
-        bias_weight,
-        target_type,
         params,
         kind,
     )
@@ -348,10 +336,23 @@ fn bestdose_prepare(
 
 #[extendr]
 fn bestdose_optimize(
-    handle: ExternalPtr<BestDoseProblemHandle>,
-    bias_weight: Nullable<f64>,
+    handle: ExternalPtr<BestDosePosteriorHandle>,
+    target_data_path: &str,
+    time_offset: Nullable<f64>,
+    dose_min: f64,
+    dose_max: f64,
+    bias_weight: f64,
+    target_type: &str,
 ) -> Robj {
-    bestdose_executor::bestdose_optimize_internal(handle, bias_weight)
+    bestdose_executor::bestdose_optimize_internal(
+        handle,
+        target_data_path,
+        time_offset,
+        dose_min,
+        dose_max,
+        bias_weight,
+        target_type,
+    )
 }
 
 extendr_module! {

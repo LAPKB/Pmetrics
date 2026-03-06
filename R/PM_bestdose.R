@@ -103,7 +103,7 @@ PM_bestdose <- R6::R6Class(
     "PM_bestdose",
     public = list(
         result = NULL,
-        problem = NULL,
+        posterior = NULL,
         bias_weight = NULL,
         initialize = function(prior = NULL,
                               model = NULL,
@@ -116,10 +116,10 @@ PM_bestdose <- R6::R6Class(
                               max_cycles = 500,
                               settings = NULL,
                               result = NULL,
-                              problem_obj = NULL,
+                              posterior_obj = NULL,
                               bias_override = NULL) {
             if (!is.null(result)) {
-                private$.set_result(result, problem_obj, bias_override)
+                private$.set_result(result, posterior_obj, bias_override)
                 return(invisible(self))
             }
 
@@ -127,21 +127,22 @@ PM_bestdose <- R6::R6Class(
                 cli::cli_abort("target must be supplied when computing a new BestDose result")
             }
 
-            problem <- PM_bestdose_problem$new(
+            posterior <- PM_bestdose_posterior$new(
                 prior = prior,
                 model = model,
                 past_data = past_data,
-                target = target,
-                dose_range = dose_range,
-                bias_weight = bias_weight,
-                target_type = target_type,
-                time_offset = time_offset,
                 max_cycles = max_cycles,
                 settings = settings
             )
 
-            raw <- problem$optimize_raw(bias_weight = bias_weight)
-            private$.set_result(raw$result, problem, raw$bias_weight)
+            raw <- posterior$optimize_raw(
+                target = target,
+                dose_range = dose_range,
+                bias_weight = bias_weight,
+                target_type = target_type,
+                time_offset = time_offset
+            )
+            private$.set_result(raw$result, posterior, raw$bias_weight)
             invisible(self)
         },
 
@@ -217,27 +218,27 @@ PM_bestdose <- R6::R6Class(
         }
     ),
     private = list(
-        .set_result = function(result, problem, bias_weight) {
+        .set_result = function(result, posterior, bias_weight) {
             self$result <- result
-            self$problem <- problem
+            self$posterior <- posterior
             self$bias_weight <- bias_weight
         }
     )
 )
 
 #' @title
-#' Prepare a reusable BestDose optimization problem
+#' Compute a reusable BestDose posterior
 #'
 #' @description
 #' `r lifecycle::badge("experimental")`
 #'
-#' Use `PM_bestdose_problem` to mirror the Rust workflow: compute posterior
-#' support points once, inspect them in R, and solve for multiple bias weights
-#' without repeating the expensive initialization step.
+#' Use `PM_bestdose_posterior` to compute the Bayesian posterior once from
+#' prior population data and patient history, then call `$optimize()` multiple
+#' times with different targets, dose ranges, or bias weights.
 #'
 #' @export
-PM_bestdose_problem <- R6::R6Class(
-    "PM_bestdose_problem",
+PM_bestdose_posterior <- R6::R6Class(
+    "PM_bestdose_posterior",
     public = list(
         handle = NULL,
         theta = NULL,
@@ -245,41 +246,16 @@ PM_bestdose_problem <- R6::R6Class(
         param_names = NULL,
         posterior_weights = NULL,
         population_weights = NULL,
-        bias_weight = NULL,
-        target_type = NULL,
-        dose_range = NULL,
         model_info = NULL,
         settings = NULL,
         initialize = function(prior,
                               model,
                               past_data = NULL,
-                              target,
-                              dose_range = list(min = 0, max = 1000),
-                              bias_weight = 0.5,
-                              target_type = "concentration",
-                              time_offset = NULL,
                               max_cycles = 500,
                               settings = NULL) {
-            if (!target_type %in% c("concentration", "auc_from_zero", "auc_from_last_dose")) {
-                cli::cli_abort("target_type must be one of: concentration, auc_from_zero, auc_from_last_dose")
-            }
-
-            if (bias_weight < 0 || bias_weight > 1) {
-                cli::cli_abort("bias_weight must be between 0 and 1")
-            }
-
-            if (is.null(dose_range$min) || is.null(dose_range$max)) {
-                cli::cli_abort("dose_range must have both 'min' and 'max' elements")
-            }
-
-            if (dose_range$min >= dose_range$max) {
-                cli::cli_abort("dose_range$min must be less than dose_range$max")
-            }
-
             prior_path <- bestdose_parse_prior(prior)
             model_info <- bestdose_parse_model(model)
             past_data_path <- if (!is.null(past_data)) bestdose_parse_data(past_data) else NULL
-            target_data_path <- bestdose_parse_data(target)
 
             if (is.null(settings)) {
                 model_for_settings <- if (!is.null(model_info$model)) model_info$model else model
@@ -290,12 +266,6 @@ PM_bestdose_problem <- R6::R6Class(
                 model_path = model_info$path,
                 prior_path = prior_path,
                 past_data_path = past_data_path,
-                target_data_path = target_data_path,
-                time_offset = time_offset,
-                dose_min = dose_range$min,
-                dose_max = dose_range$max,
-                bias_weight = bias_weight,
-                target_type = target_type,
                 params = settings,
                 kind = model_info$kind
             )
@@ -314,13 +284,10 @@ PM_bestdose_problem <- R6::R6Class(
             self$param_names <- prep$param_names
             self$posterior_weights <- prep$posterior_weights
             self$population_weights <- prep$population_weights
-            self$bias_weight <- prep$bias_weight
-            self$target_type <- prep$target_type
-            self$dose_range <- dose_range
             self$model_info <- model_info
             self$settings <- settings
 
-            cli::cli_alert_success("BestDose problem prepared with %d support points", dim[1])
+            cli::cli_alert_success("BestDose posterior computed with {dim[1]} support points")
         },
         finalize = function() {
             self$handle <- NULL
@@ -328,39 +295,67 @@ PM_bestdose_problem <- R6::R6Class(
 
         #' @description
         #' Run optimization and return raw list (doses, objf, predictions)
-        optimize_raw = function(bias_weight = NULL) {
-            private$.run_optimize(bias_weight)
+        optimize_raw = function(target,
+                                dose_range = list(min = 0, max = 1000),
+                                bias_weight = 0.5,
+                                target_type = "concentration",
+                                time_offset = NULL) {
+            private$.run_optimize(target, dose_range, bias_weight, target_type, time_offset)
         },
 
         #' @description
         #' Run optimization and return a `PM_bestdose` result object
-        optimize = function(bias_weight = NULL) {
-            raw <- self$optimize_raw(bias_weight)
+        optimize = function(target,
+                            dose_range = list(min = 0, max = 1000),
+                            bias_weight = 0.5,
+                            target_type = "concentration",
+                            time_offset = NULL) {
+            raw <- self$optimize_raw(target, dose_range, bias_weight, target_type, time_offset)
             PM_bestdose$new(
                 result = raw$result,
-                problem_obj = self,
+                posterior_obj = self,
                 bias_override = raw$bias_weight
             )
         }
     ),
     private = list(
-        .run_optimize = function(bias_weight) {
+        .run_optimize = function(target, dose_range, bias_weight, target_type, time_offset) {
             if (is.null(self$handle)) {
-                cli::cli_abort("BestDose problem handle has been released")
+                cli::cli_abort("BestDose posterior handle has been released")
             }
 
-            bw <- if (is.null(bias_weight)) self$bias_weight else bias_weight
+            if (!target_type %in% c("concentration", "auc_from_zero", "auc_from_last_dose")) {
+                cli::cli_abort("target_type must be one of: concentration, auc_from_zero, auc_from_last_dose")
+            }
 
-            if (bw < 0 || bw > 1) {
+            if (bias_weight < 0 || bias_weight > 1) {
                 cli::cli_abort("bias_weight must be between 0 and 1")
             }
 
-            res <- bestdose_optimize(self$handle, bw)
+            if (is.null(dose_range$min) || is.null(dose_range$max)) {
+                cli::cli_abort("dose_range must have both 'min' and 'max' elements")
+            }
+
+            if (dose_range$min >= dose_range$max) {
+                cli::cli_abort("dose_range$min must be less than dose_range$max")
+            }
+
+            target_data_path <- bestdose_parse_data(target)
+
+            res <- bestdose_optimize(
+                self$handle,
+                target_data_path,
+                time_offset,
+                dose_range$min,
+                dose_range$max,
+                bias_weight,
+                target_type
+            )
             if (is.character(res)) {
                 cli::cli_abort(res)
             }
 
-            list(result = res, bias_weight = bw)
+            list(result = res, bias_weight = bias_weight)
         }
     )
 )

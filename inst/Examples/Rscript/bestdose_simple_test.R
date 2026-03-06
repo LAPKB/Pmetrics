@@ -24,25 +24,26 @@ target_file <- "../src/bestdose_target.csv"
 prior_file <- "../src/bestdose_prior.csv"
 
 
-# Prepare the problem once (posterior + handle to optimized model)
-problem <- PM_bestdose_problem$new(
+# Step 1: Compute the posterior once (expensive step)
+posterior <- PM_bestdose_posterior$new(
     prior = prior_file,
     model = mod_onecomp,
     past_data = past_file,
-    target = target_file,
-    dose_range = list(min = 0, max = 300),
-    bias_weight = 0.0,
-    target_type = "concentration", # "concentration", "auc_from_zero", "auc_from_last_dose"
     max_cycles = 500
 )
 
 cat("\nPosterior support points:\n")
-print(head(problem$theta))
+print(head(posterior$theta))
 
-# Reuse the same problem for different bias weights
+# Step 2: Reuse the posterior for different bias weights
 bias_weights <- seq(0, 1, by = 0.25)
 results <- lapply(bias_weights, function(lambda) {
-    problem$optimize(bias_weight = lambda)
+    posterior$optimize(
+        target = target_file,
+        dose_range = list(min = 0, max = 300),
+        bias_weight = lambda,
+        target_type = "concentration"
+    )
 })
 
 for (i in seq_along(results)) {
