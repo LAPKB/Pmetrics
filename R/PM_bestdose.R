@@ -135,7 +135,7 @@ PM_bestdose <- R6::R6Class(
                 settings = settings
             )
 
-            raw <- posterior$optimize_raw(
+            raw <- posterior$optimize(
                 target = target,
                 dose_range = dose_range,
                 bias_weight = bias_weight,
