@@ -190,6 +190,44 @@ test_that("Basic model fitting", {
   expect_output(exFit$run(intern = T), "The run did not converge before the last cycle.")
 })
 
+test_that("Analytical models allow multi-line secondary conditionals", {
+  mod <- PM_model$new(
+    pri = list(
+      Ka = ab(0.5, 6),
+      Ke = ab(0.1, 1.5),
+      v0 = ab(25, 120)
+    ),
+    cov = list(
+      gender = interp("none"),
+      wt = interp()
+    ),
+    sec = function() {
+      v = v0 * wt
+      if (gender < 1) {
+        v = v0 * 0.8
+      }
+    },
+    eqn = function() {
+      two_comp_bolus
+    },
+    lag = function() {
+      lag[1] = 0
+    },
+    out = function() {
+      y[1] = x[2] / v
+    },
+    err = list(
+      proportional(5, c(0.1, 0.15, 0, 0))
+    ),
+    compile = FALSE
+  )
+
+  expect_s3_class(mod, "PM_model")
+  sec_code <- paste(deparse(mod$arg_list$sec), collapse = "\n")
+  expect_true(grepl("if (gender < 1)", sec_code, fixed = TRUE))
+  expect_true(grepl("v = v0 * wt", sec_code, fixed = TRUE))
+})
+
 # test_that("Load model",{
 #   exRes <- PM_load(1)
 #   expect_equal(exRes$data$data,PM_data$new(data = "ex.csv", quiet=T)$data, ignore_attr = T)

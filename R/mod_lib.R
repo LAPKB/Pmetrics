@@ -21,8 +21,9 @@ alt_mod_lib_names <- function(){
 # returns model from detected template, 0 if none, and -1 if more than one
 get_found_model <- function(fun){
   eqns <- as.list(body(fun)[-1])
-  found_pri <- map(eqns, \(x) deparse(x) %in% mod_lib_names()) %>% unlist()
-  found_alt <- map(eqns, \(x) deparse(x) %in% alt_mod_lib_names()$alt) %>% unlist()
+  expr_to_char <- \(x) paste(deparse(x, width.cutoff = 500L), collapse = "\n")
+  found_pri <- map_lgl(eqns, \(x) expr_to_char(x) %in% mod_lib_names())
+  found_alt <- map_lgl(eqns, \(x) expr_to_char(x) %in% alt_mod_lib_names()$alt)
   all_found <- sum(found_pri, found_alt)
   
   if(all_found > 1){
@@ -38,10 +39,10 @@ get_found_model <- function(fun){
   }
   
   if (any(found_pri)) { # found a primary model name
-    found_model_name <- eqns[[which(found_pri)]] %>% deparse()
+    found_model_name <- expr_to_char(eqns[[which(found_pri)]])
   } else { # found an alternative model name
     found_model_name <- alt_mod_lib_names() %>%
-    filter(alt == eqns[[which(found_alt)]] %>% deparse()) %>%
+    filter(alt == expr_to_char(eqns[[which(found_alt)]])) %>%
     pull(primary)
   }
   
