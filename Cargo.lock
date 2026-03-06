@@ -1350,6 +1350,7 @@ dependencies = [
 [[package]]
 name = "pmcore"
 version = "0.22.2"
+source = "git+https://github.com/LAPKB/PMcore?branch=feat%2Fnew-bestdose-api#1e4c6ca2fa34a91f4d9ac95fb898b67fb8e68e7f"
 dependencies = [
  "anyhow",
  "argmin",
