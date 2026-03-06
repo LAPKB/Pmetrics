@@ -9,9 +9,9 @@ name = 'pm_rs'
 
 [dependencies]
 extendr-api = '*'
-pmcore = { version = "=0.22.1", features = ["exa"] }
-# pmcore = { path = "../../../PMcore", features = ["exa"] }
-libloading = "0.8"
+pmcore = { path = "../../../PMcore", features = ["exa"] }
+# pmcore = { version = "=0.22.1", features = ["exa"] }
+libloading = "0.9"
 
 rayon = "1.10.0"
 anyhow = "1.0.97"

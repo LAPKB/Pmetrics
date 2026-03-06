@@ -1,6 +1,6 @@
 use crate::{logs::RFormatLayer, settings::settings};
 use extendr_api::prelude::*;
-use pmcore::bestdose::{BestDoseProblem, BestDoseResult, DoseRange, Target};
+use pmcore::bestdose::{BestDosePosterior, BestDoseResult, DoseRange, Target};
 use pmcore::prelude::{data, ODE};
 use pmcore::routines::initialization::parse_prior;
 use std::path::PathBuf;
@@ -113,25 +113,18 @@ pub(crate) fn convert_bestdose_result_to_r(
     Ok(output.into())
 }
 /// Opaque handle that keeps the dynamic model library alive while reusing the
-/// prepared `BestDoseProblem` for multiple optimization runs.
-pub struct BestDoseProblemHandle {
-    problem: BestDoseProblem,
+/// prepared `BestDosePosterior` for multiple optimization runs.
+pub struct BestDosePosteriorHandle {
+    posterior: BestDosePosterior,
     #[allow(dead_code)]
     library: libloading::Library,
 }
 
-impl BestDoseProblemHandle {
-    #[allow(clippy::too_many_arguments)]
+impl BestDosePosteriorHandle {
     pub fn new(
         model_path: PathBuf,
         prior_path: PathBuf,
         past_data_path: Option<PathBuf>,
-        target_data_path: PathBuf,
-        time_offset: Option<f64>,
-        dose_min: f64,
-        dose_max: f64,
-        bias_weight: f64,
-        target_type: &str,
         params: List,
     ) -> std::result::Result<Self, String> {
         let (library, (eq, meta)) =
@@ -159,6 +152,28 @@ impl BestDoseProblemHandle {
             None
         };
 
+        let posterior = BestDosePosterior::compute(
+            &population_theta,
+            &population_weights,
+            past_data,
+            eq,
+            settings,
+        )
+        .map_err(|e| format!("Failed to compute BestDose posterior: {}", e))?;
+
+        Ok(Self { posterior, library })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn optimize(
+        &self,
+        target_data_path: PathBuf,
+        time_offset: Option<f64>,
+        dose_min: f64,
+        dose_max: f64,
+        bias_weight: f64,
+        target_type: &str,
+    ) -> std::result::Result<BestDoseResult, String> {
         let target_data = {
             let data = data::read_pmetrics(target_data_path.to_str().unwrap())
                 .map_err(|e| format!("Failed to read target data: {}", e))?;
@@ -170,41 +185,15 @@ impl BestDoseProblemHandle {
         };
 
         let target_enum = parse_target_type(target_type)?;
-        let doserange = DoseRange::new(dose_min, dose_max);
+        let dose_range = DoseRange::new(dose_min, dose_max);
 
-        let problem = BestDoseProblem::new(
-            &population_theta,
-            &population_weights,
-            past_data,
-            target_data,
-            time_offset,
-            eq,
-            doserange,
-            bias_weight,
-            settings,
-            target_enum,
-        )
-        .map_err(|e| format!("Failed to create BestDose problem: {}", e))?;
-
-        Ok(Self { problem, library })
-    }
-
-    pub fn optimize(
-        &self,
-        bias_weight: Option<f64>,
-    ) -> std::result::Result<BestDoseResult, String> {
-        let configured_problem = match bias_weight {
-            Some(weight) => self.problem.clone().with_bias_weight(weight),
-            None => self.problem.clone(),
-        };
-
-        configured_problem
-            .optimize()
+        self.posterior
+            .optimize(target_data, time_offset, dose_range, bias_weight, target_enum)
             .map_err(|e| format!("Optimization failed: {}", e))
     }
 
-    pub fn problem(&self) -> &BestDoseProblem {
-        &self.problem
+    pub fn posterior(&self) -> &BestDosePosterior {
+        &self.posterior
     }
 }
 
@@ -220,20 +209,14 @@ pub(crate) fn bestdose_ode(
     target_type: &str,
     params: List,
 ) -> std::result::Result<BestDoseResult, String> {
-    let handle = BestDoseProblemHandle::new(
+    let handle = BestDosePosteriorHandle::new(
         model_path,
         prior_path,
         past_data_path,
-        target_data_path,
-        time_offset,
-        dose_min,
-        dose_max,
-        bias_weight,
-        target_type,
         params,
     )?;
 
-    handle.optimize(None)
+    handle.optimize(target_data_path, time_offset, dose_min, dose_max, bias_weight, target_type)
 }
 
 /// Execute bestdose optimization for analytical models (placeholder - not yet supported)
@@ -258,12 +241,10 @@ pub(crate) struct PosteriorSummary {
     param_names: Vec<String>,
     posterior_weights: Vec<f64>,
     population_weights: Vec<f64>,
-    bias_weight: f64,
-    target_type: Target,
 }
 
-fn summarize_problem(problem: &BestDoseProblem) -> PosteriorSummary {
-    let theta = problem.posterior_theta();
+fn summarize_handle(handle: &BestDosePosteriorHandle) -> PosteriorSummary {
+    let theta = handle.posterior().theta();
     let matrix = theta.matrix();
     let nrows = matrix.nrows() as i32;
     let ncols = matrix.ncols() as i32;
@@ -279,10 +260,8 @@ fn summarize_problem(problem: &BestDoseProblem) -> PosteriorSummary {
         theta_values,
         theta_dim: (nrows, ncols),
         param_names: theta.param_names(),
-        posterior_weights: problem.posterior_weights().to_vec(),
-        population_weights: problem.population_weights().to_vec(),
-        bias_weight: problem.bias_weight(),
-        target_type: problem.target_type(),
+        posterior_weights: handle.posterior().posterior_weights().to_vec(),
+        population_weights: handle.posterior().population_weights().to_vec(),
     }
 }
 
@@ -300,32 +279,20 @@ fn names_to_strings(names: &[String]) -> Strings {
     Strings::from_values(names.iter().map(|s| s.as_str()))
 }
 
-pub(crate) fn prepare_bestdose_problem(
+pub(crate) fn prepare_bestdose_posterior(
     model_path: PathBuf,
     prior_path: PathBuf,
     past_data_path: Option<PathBuf>,
-    target_data_path: PathBuf,
-    time_offset: Option<f64>,
-    dose_min: f64,
-    dose_max: f64,
-    bias_weight: f64,
-    target_type: &str,
     params: List,
-) -> std::result::Result<(BestDoseProblemHandle, PosteriorSummary), String> {
-    let handle = BestDoseProblemHandle::new(
+) -> std::result::Result<(BestDosePosteriorHandle, PosteriorSummary), String> {
+    let handle = BestDosePosteriorHandle::new(
         model_path,
         prior_path,
         past_data_path,
-        target_data_path,
-        time_offset,
-        dose_min,
-        dose_max,
-        bias_weight,
-        target_type,
         params,
     )?;
 
-    let summary = summarize_problem(handle.problem());
+    let summary = summarize_handle(&handle);
     Ok((handle, summary))
 }
 
@@ -333,12 +300,6 @@ pub(crate) fn bestdose_prepare_internal(
     model_path: &str,
     prior_path: &str,
     past_data_path: Nullable<String>,
-    target_data_path: &str,
-    time_offset: Nullable<f64>,
-    dose_min: f64,
-    dose_max: f64,
-    bias_weight: f64,
-    target_type: &str,
     params: List,
     kind: &str,
 ) -> Robj {
@@ -346,19 +307,12 @@ pub(crate) fn bestdose_prepare_internal(
     let _ = crate::setup_logs();
 
     let past_path = past_data_path.into_option().map(PathBuf::from);
-    let time_offset = time_offset.into_option();
 
     let preparation = match kind {
-        "ode" => prepare_bestdose_problem(
+        "ode" => prepare_bestdose_posterior(
             PathBuf::from(model_path),
             PathBuf::from(prior_path),
             past_path,
-            PathBuf::from(target_data_path),
-            time_offset,
-            dose_min,
-            dose_max,
-            bias_weight,
-            target_type,
             params.clone(),
         ),
         "analytical" => Err("BestDose for analytical models is not yet supported".to_string()),
@@ -395,8 +349,6 @@ pub(crate) fn bestdose_prepare_internal(
                 param_names = param_names,
                 posterior_weights = posterior_weights,
                 population_weights = population_weights,
-                bias_weight = summary.bias_weight,
-                target_type = format!("{:?}", summary.target_type),
                 nspp = summary.theta_dim.0,
                 n_parameters = summary.theta_dim.1
             );
@@ -408,13 +360,25 @@ pub(crate) fn bestdose_prepare_internal(
 }
 
 pub(crate) fn bestdose_optimize_internal(
-    handle: ExternalPtr<BestDoseProblemHandle>,
-    bias_weight: Nullable<f64>,
+    handle: ExternalPtr<BestDosePosteriorHandle>,
+    target_data_path: &str,
+    time_offset: Nullable<f64>,
+    dose_min: f64,
+    dose_max: f64,
+    bias_weight: f64,
+    target_type: &str,
 ) -> Robj {
-    let weight = bias_weight.into_option();
+    let time_offset = time_offset.into_option();
 
     match handle.try_addr() {
-        Ok(inner) => match inner.optimize(weight) {
+        Ok(inner) => match inner.optimize(
+            PathBuf::from(target_data_path),
+            time_offset,
+            dose_min,
+            dose_max,
+            bias_weight,
+            target_type,
+        ) {
             Ok(result) => match convert_bestdose_result_to_r(result) {
                 Ok(robj) => robj,
                 Err(e) => Robj::from(format!("Failed to convert result: {}", e)),

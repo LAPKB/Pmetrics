@@ -341,9 +341,9 @@ dependencies = [
 
 [[package]]
 name = "diffsol"
-version = "0.7.0"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcb280582d6bf3f01ad1bc197c38f0d88793e22e300ce96866381e237f5fc684"
+checksum = "31fd20d3173a897a4a016c7f320b82e81a4bae05f3616c1acd0d9da97d080ee7"
 dependencies = [
  "faer",
  "faer-traits",
@@ -934,9 +934,9 @@ checksum = "459427e2af2b9c839b132acb702a1c654d95e10f8c326bfc2ad11310e458b1c5"
 
 [[package]]
 name = "libloading"
-version = "0.8.9"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7c4b02199fee7c5d21a5ae7d8cfa79a6ef5bb2fc834d6e9058e89c825efdc55"
+checksum = "754ca22de805bb5744484a5b151a9e1a8e837d5dc232c2d7d8c2e3492edc8b60"
 dependencies = [
  "cfg-if",
  "windows-link",
@@ -1306,9 +1306,9 @@ dependencies = [
 
 [[package]]
 name = "pharmsol"
-version = "0.21.0"
+version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2fc25564d039d0cd5701013aa3785a339b14cf0b51409d7b817320bc360dc944"
+checksum = "8fbfd50c78d8848657bd38effdbaf404c8308e01d6956ba345a774f98ad7d938"
 dependencies = [
  "argmin",
  "argmin-math",
@@ -1349,9 +1349,7 @@ dependencies = [
 
 [[package]]
 name = "pmcore"
-version = "0.22.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3866100507aa3bcba475381af3102d84b5e503bce82cb82f56cf0fa46cc1e408"
+version = "0.22.2"
 dependencies = [
  "anyhow",
  "argmin",

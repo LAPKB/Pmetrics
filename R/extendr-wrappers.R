@@ -80,9 +80,9 @@ setup_logs <- function() .Call(wrap__setup_logs)
 #'@export
 bestdose <- function(model_path, prior_path, past_data_path, target_data_path, time_offset, dose_min, dose_max, bias_weight, target_type, params, kind) .Call(wrap__bestdose, model_path, prior_path, past_data_path, target_data_path, time_offset, dose_min, dose_max, bias_weight, target_type, params, kind)
 
-bestdose_prepare <- function(model_path, prior_path, past_data_path, target_data_path, time_offset, dose_min, dose_max, bias_weight, target_type, params, kind) .Call(wrap__bestdose_prepare, model_path, prior_path, past_data_path, target_data_path, time_offset, dose_min, dose_max, bias_weight, target_type, params, kind)
+bestdose_prepare <- function(model_path, prior_path, past_data_path, params, kind) .Call(wrap__bestdose_prepare, model_path, prior_path, past_data_path, params, kind)
 
-bestdose_optimize <- function(handle, bias_weight) .Call(wrap__bestdose_optimize, handle, bias_weight)
+bestdose_optimize <- function(handle, target_data_path, time_offset, dose_min, dose_max, bias_weight, target_type) .Call(wrap__bestdose_optimize, handle, target_data_path, time_offset, dose_min, dose_max, bias_weight, target_type)
 
 
 # nolint end
