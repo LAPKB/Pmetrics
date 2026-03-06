@@ -9,7 +9,8 @@ name = 'pm_rs'
 
 [dependencies]
 extendr-api = '*'
-pmcore = { path = "../../../PMcore", features = ["exa"] }
+# pmcore = { path = "../../../PMcore", features = ["exa"] }
+pmcore = { git = "https://github.com/LAPKB/PMcore", branch = "feat/new-bestdose-api", features = ["exa"] }
 # pmcore = { version = "=0.22.1", features = ["exa"] }
 libloading = "0.9"
 
