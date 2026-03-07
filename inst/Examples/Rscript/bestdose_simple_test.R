@@ -65,20 +65,6 @@ bd1 <- bd$new(
 
 bd1
 
-bd1b <- bd$new(
-    prior = prior_file,
-    model = mod_onecomp,
-    past_data = past_file,
-    max_cycles = 500,
-    target = target_file,
-    dose_range = list(min = 0, max = 5000),
-    bias_weight = 0,
-    target_type = "concentration",
-    time_offset = 12
-)
-
-bd1b
-
 
 bd2 <- bd$new(
     prior = prior_file,
