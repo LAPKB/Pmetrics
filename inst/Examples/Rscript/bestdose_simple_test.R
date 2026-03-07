@@ -26,7 +26,7 @@ prior_file <- "inst/Examples/src/bestdose_prior.csv"
 posterior <- bd_post$new(
     prior = prior_file,
     model = mod_onecomp,
-    past_data = past_file,
+    past_data = PM_data$new(past_file, quiet = TRUE),
     max_cycles = 500
 )
 
@@ -54,15 +54,30 @@ for (i in seq_along(results)) {
 bd1 <- bd$new(
     prior = prior_file,
     model = mod_onecomp,
-    past_data = past_file,
+    past_data = PM_data$new(past_file, quiet = TRUE),
     max_cycles = 500,
     target = target_file,
-    dose_range = list(min = 0, max = 300),
-    bias_weight = 0.5,
-    target_type = "concentration"
+    dose_range = list(min = 0, max = 5000),
+    bias_weight = 0,
+    target_type = "concentration",
+    time_offset = 0
 )
 
 bd1
+
+bd1b <- bd$new(
+    prior = prior_file,
+    model = mod_onecomp,
+    past_data = past_file,
+    max_cycles = 500,
+    target = target_file,
+    dose_range = list(min = 0, max = 5000),
+    bias_weight = 0,
+    target_type = "concentration",
+    time_offset = 12
+)
+
+bd1b
 
 
 bd2 <- bd$new(
@@ -78,3 +93,6 @@ bd2 <- bd$new(
 bd2
 
 
+plot(bd1)
+
+plot(bd2)
