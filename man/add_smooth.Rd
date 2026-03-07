@@ -35,10 +35,7 @@ linear regression, or "loess" for loess regression.}
 \item{span}{Only used for \code{method = "loess"}. The span parameter to control
 the degree of smoothing. Default is 0.75.}
 
-\item{line}{Controls characteristics of lines. This argument maps to plotly line attributes. \code{TRUE} will plot default lines. \code{FALSE} will suppress lines. If a list, can control many line characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > line to see all the ways the line can be formatted. Most common will be:  \itemize{ \item{\code{color}} Line color. \item{\code{dash}} Plotting character. See \code{plotly::schema()}, traces > scatter >  attributes > line > dash > values. \item{\code{width}} Thickness in points. }
-
-Example: \code{line = list(color = "red", dash = "longdash", width = 2)}
-Default is \code{list(color = "blue", width = 2)}.
+\item{line}{\verb{r template("line")} Default is \code{list(color = "blue", width = 2)}.
 The confidence interval will have the same color but at opacity 0.2.}
 
 \item{ci}{Confidence interval for regressions. Default is 0.95. It can be suppressed
