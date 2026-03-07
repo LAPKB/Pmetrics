@@ -1315,7 +1315,12 @@ PM_sim <- R6::R6Class(
       
       
       template <- PM_data$new(template, quiet = TRUE)
-      mod <- PM_model$new(arg_list) # now we compile
+      if (simWithCov) { # if simulating with covariates, we need to recompile the model with the new covariates
+        if (!quiet) cli::cli_inform("Recompiling model to include covariates...")
+        mod <- PM_model$new(arg_list, quiet = TRUE) # 
+      } else {
+        mod <- model
+      }
       
       if (length(postToUse) > 0) {
         # simulating from posteriors, each posterior matched to a subject
