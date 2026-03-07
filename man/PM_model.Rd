@@ -503,7 +503,8 @@ This is the main method to run a population analysis.
   seed = 23,
   overwrite = FALSE,
   algorithm = "NPAG",
-  report = getPMoptions("report_template")
+  report = getPMoptions("report_template"),
+  quiet = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -596,6 +597,8 @@ time = \code{tad} after the last dose}
 \item{\code{report}}{If missing, the default Pmetrics report template as specified in \link{getPMoptions}
 is used. Otherwise can be "plotly", "ggplot", or "none".}
 
+\item{\code{quiet}}{Boolean operator to suppress messages during the run.  Default is \code{FALSE}.}
+
 \item{\code{intern}}{Run NPAG in the R console without a batch script.  Default is TRUE.}
 }
 \if{html}{\out{</div>}}
@@ -661,7 +664,7 @@ and the \code{algorithm} argument is set to "POSTPROB" automatically.}
 \subsection{Method \code{sim()}}{
 Simulate data from the model using a set of parameter values.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$sim(data, theta)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$sim(data, theta, quiet = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -672,6 +675,8 @@ Simulate data from the model using a set of parameter values.
 \item{\code{theta}}{A matrix of parameter values to use for the simulation.
 The \code{theta} matrix should have the same number of columns as the number of primary parameters in the model.
 Each row of \code{theta} represents a different set of parameter values.}
+
+\item{\code{quiet}}{Logical, if TRUE, suppresses messages during simulation.}
 }
 \if{html}{\out{</div>}}
 }
@@ -688,14 +693,20 @@ the \code{data} object.
 \subsection{Method \code{compile()}}{
 Compile the model to a binary file.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$compile()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PM_model$compile(quiet = FALSE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{quiet}}{Logical, if TRUE, suppresses messages during compilation.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Details}{
 This method write the model to a Rust file in a temporary path,
 updates the \code{binary_path} field for the model, and compiles that
 file to a binary file that can be used for fitting or simulation.
-If the model is already compiled, the method does nothing.
 }
 
 }

@@ -447,7 +447,32 @@ bd <- R6::R6Class(
             }
 
 
+#' Plot BestDose predictions
+#' 
+#' @description 
+#' Plot observed and predicted concentrations over time for both past and target data, with options to include/exclude specific subjects, apply a multiplier to the concentrations, and customize the plot appearance.
+#' 
+#' @param x A `bd` object containing the best dose predictions.
+#' @param include Vector of subject IDs to include in the plot. If missing, all subjects will be included.
+#' @param exclude Vector of subject IDs to exclude from the plot. If missing, no subjects will be excluded.
+#' @param mult Numeric multiplier to apply to the concentrations (default: 1, no scaling).
+#' @param outeq Numeric value of outeq to filter observations for plotting (default: 1).
+#' @param quiet Logical indicating whether to suppress messages (default: FALSE).
+#' @param legend Logical indicating whether to display a legend (default: FALSE).
+#' @param log Logical indicating whether to use a logarithmic scale for the y-axis (default: TRUE).
+#' @param grid Logical indicating whether to display a grid (default: FALSE).
+#' @param xlab Label for the x-axis.
+#' @param ylab Label for the y-axis.
+#' @param title Title of the plot.
+#' @param xlim Limits for the x-axis.
+#' @param ylim Limits for the y-axis.
+#' @param print Logical indicating whether to print the plot (default: TRUE).
+#' @param ... Additional arguments passed to the plotting function.
+#' 
+#' @return Invisibly returns a plotly object.
+#' 
 #' @export
+#' @method plot bd
 plot.bd <- function(x, include, exclude, mult = 1, outeq = 1, 
                     quiet = FALSE, legend = FALSE, log = TRUE, 
                     grid = FALSE, xlab, ylab, title, xlim, ylim, print = TRUE, ...) {

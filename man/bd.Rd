@@ -19,6 +19,8 @@ or AUC values using Bayesian optimization.
 
 \item{\code{target}}{PM_data object containing target data used in the optimization}
 
+\item{\code{target_pred}}{PM_sim object containing model predictions for the target data}
+
 \item{\code{result}}{List containing optimization results, including optimal doses, predictions, and objective function value}
 
 \item{\code{posterior}}{The \code{bd_post} object used to compute the posterior distribution (if applicable)}
