@@ -25,6 +25,8 @@ times with different targets, dose ranges, or bias weights.
 
 \item{\code{population_weights}}{Weights of the population support points}
 
+\item{\code{past}}{PM_data object containing past patient data used in the posterior computation (if applicable)}
+
 \item{\code{model_info}}{Information about the model used}
 
 \item{\code{settings}}{Settings used for the posterior computation}
