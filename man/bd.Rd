@@ -13,6 +13,12 @@ or AUC values using Bayesian optimization.
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
+\item{\code{past}}{PM_data object containing past patient data used in the optimization (if applicable)}
+
+\item{\code{past_pred}}{PM_sim object containing model predictions for the past data}
+
+\item{\code{target}}{PM_data object containing target data used in the optimization}
+
 \item{\code{result}}{List containing optimization results, including optimal doses, predictions, and objective function value}
 
 \item{\code{posterior}}{The \code{bd_post} object used to compute the posterior distribution (if applicable)}
@@ -21,17 +27,24 @@ or AUC values using Bayesian optimization.
 }
 \if{html}{\out{</div>}}
 }
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{doses}}{Optimal doses found by BestDose optimization}
+
+\item{\code{objf}}{Objective function value at the optimal doses}
+
+\item{\code{method}}{Optimization method used}
+
+\item{\code{status}}{Status of the optimization run}
+}
+\if{html}{\out{</div>}}
+}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-bd-new}{\code{bd$new()}}
 \item \href{#method-bd-print}{\code{bd$print()}}
-\item \href{#method-bd-get_doses}{\code{bd$get_doses()}}
-\item \href{#method-bd-get_predictions}{\code{bd$get_predictions()}}
-\item \href{#method-bd-get_auc_predictions}{\code{bd$get_auc_predictions()}}
-\item \href{#method-bd-get_objf}{\code{bd$get_objf()}}
-\item \href{#method-bd-get_status}{\code{bd$get_status()}}
-\item \href{#method-bd-get_method}{\code{bd$get_method()}}
 \item \href{#method-bd-save}{\code{bd$save()}}
 \item \href{#method-bd-clone}{\code{bd$clone()}}
 }
@@ -54,7 +67,7 @@ Initialize a \code{bd} object by running optimization or loading from a previous
   max_cycles = 500,
   settings = NULL,
   result = NULL,
-  posterior_obj = NULL,
+  posterior = NULL,
   bias_override = NULL
 )}\if{html}{\out{</div>}}
 }
@@ -84,7 +97,7 @@ Initialize a \code{bd} object by running optimization or loading from a previous
 
 \item{\code{result}}{Raw result list from optimization to initialize from (optional)}
 
-\item{\code{posterior_obj}}{\code{bd_post} object to associate with this result (optional, used when initializing from a previous result)}
+\item{\code{posterior}}{\code{bd_post} object to associate with this result (optional, used when initializing from a previous result)}
 
 \item{\code{bias_override}}{Numeric bias weight to override the one in the result (optional, used when initializing from a previous result)}
 }
@@ -103,84 +116,6 @@ Print summary of BestDose results
 \if{html}{\out{<div class="r">}}\preformatted{bd$print()}\if{html}{\out{</div>}}
 }
 
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-bd-get_doses"></a>}}
-\if{latex}{\out{\hypertarget{method-bd-get_doses}{}}}
-\subsection{Method \code{get_doses()}}{
-Get optimal dose values
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{bd$get_doses()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Numeric vector of optimal doses
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-bd-get_predictions"></a>}}
-\if{latex}{\out{\hypertarget{method-bd-get_predictions}{}}}
-\subsection{Method \code{get_predictions()}}{
-Get concentration-time predictions
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{bd$get_predictions()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Data frame with predictions
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-bd-get_auc_predictions"></a>}}
-\if{latex}{\out{\hypertarget{method-bd-get_auc_predictions}{}}}
-\subsection{Method \code{get_auc_predictions()}}{
-Get AUC predictions (if available)
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{bd$get_auc_predictions()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Data frame with AUC predictions or NULL
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-bd-get_objf"></a>}}
-\if{latex}{\out{\hypertarget{method-bd-get_objf}{}}}
-\subsection{Method \code{get_objf()}}{
-Get objective function value
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{bd$get_objf()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Numeric objective function value
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-bd-get_status"></a>}}
-\if{latex}{\out{\hypertarget{method-bd-get_status}{}}}
-\subsection{Method \code{get_status()}}{
-Get optimization status
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{bd$get_status()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Character string with status
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-bd-get_method"></a>}}
-\if{latex}{\out{\hypertarget{method-bd-get_method}{}}}
-\subsection{Method \code{get_method()}}{
-Get optimization method used
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{bd$get_method()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Character string: "posterior" or "uniform"
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-bd-save"></a>}}
