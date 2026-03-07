@@ -9,7 +9,8 @@ PM_load(run, path = ".", file = "PMout.Rdata")
 \arguments{
 \item{run}{The numerical value of the folder in \code{path} containing run results}
 
-\item{path}{include \verb{r template("path")}.}
+\item{path}{include Path to the folder containing the raw results of the run. Default is the current working directory.
+.}
 
 \item{file}{Default is "PMout.Rdata", which is created after a Pmetrics run,
 but it could also be the name of an .Rdata file created by running the

@@ -18,9 +18,11 @@
 \arguments{
 \item{object}{The simulation object to summarize}
 
-\item{include}{\verb{r template("include")}.}
+\item{include}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)
+.}
 
-\item{exclude}{\verb{r template("exclude")}.}
+\item{exclude}{A vector of subject IDs to exclude in the plot, e.g. c(4,6:14,16:20)
+.}
 
 \item{field}{Quoted character value, one of
 \itemize{

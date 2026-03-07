@@ -4,7 +4,7 @@
 \alias{PMcheck}
 \title{Check Pmetrics Inputs for Errors}
 \usage{
-PMcheck(data, path, fix = FALSE, quiet = FALSE)
+PMcheck(data, path = ".", fix = FALSE, quiet = FALSE)
 }
 \arguments{
 \item{data}{The name of a Pmetrics .csv matrix file in the current working directory,
