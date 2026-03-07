@@ -563,6 +563,19 @@ PM_sim <- R6::R6Class(
             "i" = "Instead, use {.arg noise}. See {.help PM_sim}."
           ))
         }
+      
+        # check to make sure any arguments in ... are not misspelled or otherwise unrecognized
+        allArgs <- formals(PM_sim$public_methods$initialize) %>% names()
+        dotArgs <- names(dots)
+        unrecog <- setdiff(dotArgs, allArgs)
+        if (length(unrecog) > 0) {
+          cli::cli_abort(c(
+            "x" = "The following argument{?s} {?is/are} not recognized: {.val {unrecog}}.",
+            "i" = "Check for case erorrs or misspellings. Refer to {.help PM_sim} for a list of valid arguments."
+          ))
+        }
+      
+      
         
         if (missing(poppar)) {
           cli::cli_abort(c(
@@ -803,7 +816,7 @@ PM_sim <- R6::R6Class(
         )
         
         return(self)
-      }, # end initialize
+    }, # end initialize
       #'
       #' @description
       #' `r lifecycle::badge("stable")`
@@ -913,7 +926,9 @@ PM_sim <- R6::R6Class(
         
         ###### POPPAR
         
-        npar <- ncol(poppar$popPoints) - 1
+       
+        npar <- if (useTheta) {ncol(poppar$popPoints) - 1} else {length(poppar$popMean)}
+        
         
         
         ###### MODEL
@@ -989,7 +1004,6 @@ PM_sim <- R6::R6Class(
         
         
         # PARAMETER LIMITS --------------------------------------------------------
-        
         if (all(is.null(limits))) { # limits are omitted altogether
           parLimits <- tibble::tibble(par = 1:npar , min = rep(-Inf, npar), max = rep(Inf, npar))
         } else if (!any(is.na(limits)) & is.vector(limits)) { # no limit is NA and specified as vector of length 1 or 2
@@ -1009,7 +1023,14 @@ PM_sim <- R6::R6Class(
             max = max * limits[2]
           )
         } else if (length(limits) == 1 && is.na(limits)) { # limits specified as NA (use limits in model)
-          parLimits <- poppar$ab
+          if (inherits(poppar, "PM_final_data")) {
+            parLimits <- poppar$ab
+          } else {
+            parLimits <- tibble::tibble(par = model$model_list$parameters, 
+            min = purrr::map_dbl(model$model_list$pri, ~.x$min),
+            max = purrr::map_dbl(model$model_list$pri, ~.x$max)
+            )
+          }
         } else if (any(is.na(limits))) { # some NAs, causes error
           cli::cli_abort(c(
             "x" = "The {.arg limits} argument is malformed.",
@@ -1027,7 +1048,7 @@ PM_sim <- R6::R6Class(
         }
         
         
-        
+      
         
         # COVARIATES ----------------------------------------------------
         
@@ -2382,12 +2403,12 @@ plot.PM_sim <- function(x,
 #' @param statistics The summary statistics to report.
 #' Default is  `c("mean", "sd", "median", "min", "max")`, but
 #' can be any subset of these and can also include specific quantiles, e.g. `c(25, "median", 75)`.
-#' @param digits Integer, used for number of digits to print.
+#' @param digits Integer, used for number of digits to print. Default is value set with `setPMoptions()`.
 #' @param ... Not used.
-#' @return If `by` is omitted, a data frame with rows for each data element except ID,
-#' and columns labeled according to the selected `statistics`. If `by` is specified,
+#' @return If `group` is omitted, a data frame with rows for each data element except ID,
+#' and columns labeled according to the selected `statistics`. If `group` is specified,
 #' return will be a list with named elements according to the selected `statistics`,
-#' each containing a data frame with the summaries for each group in `by`.
+#' each containing a data frame with the summaries for each group in `group`.
 #' @author Michael Neely
 #' @examples
 #' \dontrun{
@@ -2400,15 +2421,19 @@ plot.PM_sim <- function(x,
 #' @export
 summary.PM_sim <- function(object, include, exclude, field = "obs", group = NULL,
 statistics = c("mean", "sd", "median", "min", "max"),
-digits = max(3, getOption("digits") - 3), ...) {
+digits = getPMoptions("digits"), ...) {
   # get the right data
   if (inherits(object, "PM_sim")) {
     dat <- object$data[[field]]
   } else if (inherits(object, "PM_sim_data")) {
-    # include/exclude template ids
-    if (missing(include)) include <- unique(object[[field]]$id)
-    if (missing(exclude)) exclude <- NA
-    dat <- object[[field]] %>% includeExclude(include, exclude)
+    dat <- object[[field]]
+    if ("id" %in% names(dat)){
+      # include/exclude template ids
+      if (missing(include)) include <- unique(dat$id)
+      if (missing(exclude)) exclude <- NA
+      dat <- dat %>% includeExclude(include, exclude)
+    }
+
   } else {
     cli::cli_abort(c("x" = "Object does not appear to be a simulation."))
   }
@@ -2576,7 +2601,7 @@ total_cov <- bind_rows(retained, discarded) %>%
 select(-prob) %>% cov()
 total_nsim <- sum(nrow(retained), nrow(discarded)) # sum will ignore NULL values
 
-return(list(
+  return(list(
   thetas = retained, total_means = total_means,
   total_cov = total_cov,
   total_nsim = total_nsim

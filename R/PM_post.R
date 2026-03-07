@@ -122,6 +122,7 @@ private = list(
     }
     
     post <- op_raw %>%
+    select(-pop_mean, -pop_median) %>%
     pivot_longer(
       cols = c(post_median, post_mean),
       values_to = "pred"
