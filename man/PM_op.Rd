@@ -91,11 +91,9 @@ Create new object populated with observed vs. predicted data
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
-.}
+\item{\code{PMdata}}{include \verb{r template("PMdata")}.}
 
-\item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
-.}
+\item{\code{path}}{include \verb{r template("path")}.}
 
 \item{\code{...}}{Not currently used.}
 }

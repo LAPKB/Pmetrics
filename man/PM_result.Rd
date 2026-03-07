@@ -91,8 +91,7 @@ Create new object populated with data from previous run
 \item{\code{out}}{The parsed output from \link{PM_load}, which is
 automatically generated. This is not a user-modifiable.}
 
-\item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
-.}
+\item{\code{path}}{include \verb{r template("path")}.}
 
 \item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
 }

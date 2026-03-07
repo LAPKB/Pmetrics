@@ -1,93 +1,3 @@
-bestdose_parse_prior <- function(prior) {
-    if (inherits(prior, "PM_result")) {
-        theta_path <- file.path(prior$rundir, "outputs", "theta.csv")
-        if (!file.exists(theta_path)) {
-            cli::cli_abort("theta.csv not found in PM_result outputs")
-        }
-        theta_path
-    } else if (inherits(prior, "PM_final")) {
-        temp_path <- tempfile(fileext = ".csv")
-        bestdose_write_prior_csv(prior, temp_path)
-        temp_path
-    } else if (is.character(prior)) {
-        if (!file.exists(prior)) {
-            cli::cli_abort("Prior file not found: {prior}")
-        }
-        prior
-    } else {
-        cli::cli_abort("prior must be PM_result, PM_final, or path to theta.csv")
-    }
-}
-
-bestdose_write_prior_csv <- function(prior, path) {
-    df <- as.data.frame(prior$popPoints)
-    df$prob <- prior$popProb
-    write.csv(df, path, row.names = FALSE, quote = FALSE)
-}
-
-bestdose_parse_model <- function(model) {
-    if (inherits(model, "PM_model")) {
-        compiled_path <- model$binary_path
-        if (is.null(compiled_path) || !file.exists(compiled_path)) {
-            cli::cli_abort("Model must be compiled first. Use model$compile()")
-        }
-
-        kind <- if (!is.null(model$model_list$analytical) && model$model_list$analytical) {
-            "analytical"
-        } else {
-            "ode"
-        }
-
-        list(path = compiled_path, kind = kind, model = model)
-    } else if (is.character(model)) {
-        if (!file.exists(model)) {
-            cli::cli_abort("Model file not found: {model}")
-        }
-        kind <- if (grepl("analytical", model, ignore.case = TRUE)) {
-            "analytical"
-        } else {
-            "ode"
-        }
-        list(path = model, kind = kind, model = NULL)
-    } else {
-        cli::cli_abort("model must be PM_model or path to compiled model")
-    }
-}
-
-bestdose_parse_data <- function(data) {
-    if (inherits(data, "PM_data")) {
-        temp_path <- tempfile(fileext = ".csv")
-        write.csv(data$standard_data, temp_path, row.names = FALSE, quote = FALSE)
-        temp_path
-    } else if (is.character(data)) {
-        if (!file.exists(data)) {
-            cli::cli_abort("Data file not found: {data}")
-        }
-        data
-    } else {
-        cli::cli_abort("data must be PM_data or path to CSV file")
-    }
-}
-
-bestdose_default_settings <- function(prior, model, max_cycles = 500) {
-    param_ranges <- lapply(model$model_list$pri, function(x) {
-        c(x$min, x$max)
-    })
-    names(param_ranges) <- tolower(names(param_ranges))
-
-    list(
-        algorithm = "NPAG",
-        ranges = param_ranges,
-        error_models = lapply(model$model_list$err, function(x) x$flatten()),
-        max_cycles = max_cycles,
-        points = 2028,
-        seed = 22,
-        prior = "prior.csv",
-        idelta = 0.25,
-        tad = 0.0
-    )
-}
-
 #' @title
 #' Object to contain BestDose optimization results
 #'
@@ -99,12 +9,32 @@ bestdose_default_settings <- function(prior, model, max_cycles = 500) {
 #' or AUC values using Bayesian optimization.
 #'
 #' @export
-PM_bestdose <- R6::R6Class(
-    "PM_bestdose",
+bd <- R6::R6Class(
+    "bd",
     public = list(
+        #' @field result List containing optimization results, including optimal doses, predictions, and objective function value
         result = NULL,
+        #' @field posterior The `bd_post` object used to compute the posterior distribution (if applicable)
         posterior = NULL,
+        #' @field bias_weight The bias weight (lambda) used in the optimization (if applicable)
         bias_weight = NULL,
+        #' @description
+        #' Initialize a `bd` object by running optimization or loading from a previous result
+        #' @param prior Prior information for the model, can be a PM_result, PM_final, or path to theta.csv
+        #' @param model PM_model object or path to compiled model
+        #' @param past_data PM_data object or path to CSV file with past patient data (optional)
+        #' @param target PM_data object or path to CSV file with target data (required for new optimization)
+        #' @param dose_range List with 'min' and 'max' elements defining the dose search range (default: 0 to 1000)
+        #' @param bias_weight Numeric between 0 and 1 indicating the weight of bias in the optimization (default: 0.5)
+        #' @param target_type Character string indicating the type of target: "concentration", "auc_from_zero", or "auc_from_last_dose" (default: "concentration")
+        #' @param time_offset Numeric time offset to apply to predictions (optional)
+        #' @param max_cycles Maximum number of optimization cycles for computing the posterior (default: 500)
+        #' @param settings List of additional settings for posterior computation (optional)
+        #' @param result Raw result list from optimization to initialize from (optional)
+        #' @param posterior_obj `bd_post` object to associate with this result (optional, used when initializing from a previous result)
+        #' @param bias_override Numeric bias weight to override the one in the result (optional, used when initializing from a previous result)
+        #' @return A `bd` object containing the optimization results and associated information
+
         initialize = function(prior = NULL,
                               model = NULL,
                               past_data = NULL,
@@ -127,7 +57,7 @@ PM_bestdose <- R6::R6Class(
                 cli::cli_abort("target must be supplied when computing a new BestDose result")
             }
 
-            posterior <- PM_bestdose_posterior$new(
+            posterior <- bd_post$new(
                 prior = prior,
                 model = model,
                 past_data = past_data,
@@ -232,22 +162,39 @@ PM_bestdose <- R6::R6Class(
 #' @description
 #' `r lifecycle::badge("experimental")`
 #'
-#' Use `PM_bestdose_posterior` to compute the Bayesian posterior once from
+#' Use `bd_post` to compute the Bayesian posterior once from
 #' prior population data and patient history, then call `$optimize()` multiple
 #' times with different targets, dose ranges, or bias weights.
 #'
 #' @export
-PM_bestdose_posterior <- R6::R6Class(
-    "PM_bestdose_posterior",
+bd_post <- R6::R6Class(
+    "bd_post",
     public = list(
+        #' @field handle Memory pointer to the computed posterior (opaque to users)
         handle = NULL,
+        #' @field theta Matrix of support points in the posterior distribution
         theta = NULL,
+        #' @field theta_dim Dimensions of the theta matrix
         theta_dim = NULL,
+        #' @field param_names Names of the parameters in the posterior
         param_names = NULL,
+        #' @field posterior_weights Weights of the posterior support points
         posterior_weights = NULL,
+        #' @field population_weights Weights of the population support points
         population_weights = NULL,
+        #' @field model_info Information about the model used
         model_info = NULL,
+        #' @field settings Settings used for the posterior computation
         settings = NULL,
+        #' @description
+        #' Initialize the `bd_post` object by computing the posterior distribution from the given prior, model, and past data
+        #' @param prior Prior information for the model, can be a PM_result, PM_final, or path to theta.csv
+        #' @param model PM_model object or path to compiled model
+        #' @param past_data PM_data object or path to CSV file with past patient data (optional)
+        #' @param max_cycles Maximum number of optimization cycles for computing the posterior (default: 500)
+        #' @param settings List of additional settings for posterior computation (optional)
+        #' @return A `bd_post` object containing the computed posterior distribution and associated information
+    
         initialize = function(prior,
                               model,
                               past_data = NULL,
@@ -289,20 +236,21 @@ PM_bestdose_posterior <- R6::R6Class(
 
             cli::cli_alert_success("BestDose posterior computed with {dim[1]} support points")
         },
-        finalize = function() {
-            self$handle <- NULL
-        },
-
-
         #' @description
-        #' Run optimization and return a `PM_bestdose` result object
+        #' Run optimization and return a `bd` result object
+        #' @param target PM_data object or path to CSV file with target data
+        #' @param dose_range List with 'min' and 'max' elements defining the dose search range (default: 0 to 1000)
+        #' @param bias_weight Numeric between 0 and 1 indicating the weight of bias in the optimization (default: 0.5)
+        #' @param target_type Character string indicating the type of target: "concentration", "auc_from_zero", or "auc_from_last_dose" (default: "concentration")
+        #' @param time_offset Numeric time offset to apply to predictions (optional)
+        #' @return A `bd` object containing the optimization results for the given target and settings
         optimize = function(target,
                             dose_range = list(min = 0, max = 1000),
                             bias_weight = 0.5,
                             target_type = "concentration",
                             time_offset = NULL) {
             raw <- private$.run_optimize(target, dose_range, bias_weight, target_type, time_offset)
-            PM_bestdose$new(
+            bd$new(
                 result = raw$result,
                 posterior_obj = self,
                 bias_override = raw$bias_weight
@@ -312,8 +260,8 @@ PM_bestdose_posterior <- R6::R6Class(
     private = list(
         .run_optimize = function(target, dose_range, bias_weight, target_type, time_offset) {
             if (is.null(self$handle)) {
-                cli::cli_abort(c( x = "PM_bestdose_posterior object is not properly initialized",
-                "i" = "Re-run `PM_bestdose$new()`."   ))
+                cli::cli_abort(c( x = "bd_post object is not properly initialized",
+                "i" = "Re-run `bd$new()`."   ))
             }
 
             if (!target_type %in% c("concentration", "auc_from_zero", "auc_from_last_dose")) {
@@ -348,14 +296,110 @@ PM_bestdose_posterior <- R6::R6Class(
             }
 
             list(result = res, bias_weight = bias_weight)
+        },
+        finalize = function() {
+            self$handle <- NULL
         }
     )
 )
 
 #' @export
-PM_bestdose$load <- function(filename = "bestdose_result.rds") {
+bd$load <- function(filename = "bestdose_result.rds") {
     if (!file.exists(filename)) {
         cli::cli_abort("File not found: {filename}")
     }
     readRDS(filename)
+}
+
+
+############ HELPER FUNCTIONS ############
+
+bestdose_parse_prior <- function(prior) {
+    if (inherits(prior, "PM_result")) {
+        theta_path <- file.path(prior$rundir, "outputs", "theta.csv")
+        if (!file.exists(theta_path)) {
+            cli::cli_abort("theta.csv not found in PM_result outputs")
+        }
+        theta_path
+    } else if (inherits(prior, "PM_final")) {
+        temp_path <- tempfile(fileext = ".csv")
+        bestdose_write_prior_csv(prior, temp_path)
+        temp_path
+    } else if (is.character(prior)) {
+        if (!file.exists(prior)) {
+            cli::cli_abort("Prior file not found: {prior}")
+        }
+        prior
+    } else {
+        cli::cli_abort("prior must be PM_result, PM_final, or path to theta.csv")
+    }
+}
+
+bestdose_write_prior_csv <- function(prior, path) {
+    df <- as.data.frame(prior$popPoints)
+    df$prob <- prior$popProb
+    write.csv(df, path, row.names = FALSE, quote = FALSE)
+}
+
+bestdose_parse_model <- function(model) {
+    if (inherits(model, "PM_model")) {
+        compiled_path <- model$binary_path
+        if (is.null(compiled_path) || !file.exists(compiled_path)) {
+            cli::cli_abort("Model must be compiled first. Use model$compile()")
+        }
+
+        kind <- if (!is.null(model$model_list$analytical) && model$model_list$analytical) {
+            "analytical"
+        } else {
+            "ode"
+        }
+
+        list(path = compiled_path, kind = kind, model = model)
+    } else if (is.character(model)) {
+        if (!file.exists(model)) {
+            cli::cli_abort("Model file not found: {model}")
+        }
+        kind <- if (grepl("analytical", model, ignore.case = TRUE)) {
+            "analytical"
+        } else {
+            "ode"
+        }
+        list(path = model, kind = kind, model = NULL)
+    } else {
+        cli::cli_abort("model must be PM_model or path to compiled model")
+    }
+}
+
+bestdose_parse_data <- function(data) {
+    if (inherits(data, "PM_data")) {
+        temp_path <- tempfile(fileext = ".csv")
+        write.csv(data$standard_data, temp_path, row.names = FALSE, quote = FALSE)
+        temp_path
+    } else if (is.character(data)) {
+        if (!file.exists(data)) {
+            cli::cli_abort("Data file not found: {data}")
+        }
+        data
+    } else {
+        cli::cli_abort("data must be PM_data or path to CSV file")
+    }
+}
+
+bestdose_default_settings <- function(prior, model, max_cycles = 500) {
+    param_ranges <- lapply(model$model_list$pri, function(x) {
+        c(x$min, x$max)
+    })
+    names(param_ranges) <- tolower(names(param_ranges))
+
+    list(
+        algorithm = "NPAG",
+        ranges = param_ranges,
+        error_models = lapply(model$model_list$err, function(x) x$flatten()),
+        max_cycles = max_cycles,
+        points = 2028,
+        seed = 22,
+        prior = "prior.csv",
+        idelta = 0.25,
+        tad = 0.0
+    )
 }
