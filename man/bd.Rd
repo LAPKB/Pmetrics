@@ -50,6 +50,7 @@ or AUC values using Bayesian optimization.
 \item \href{#method-bd-new}{\code{bd$new()}}
 \item \href{#method-bd-print}{\code{bd$print()}}
 \item \href{#method-bd-save}{\code{bd$save()}}
+\item \href{#method-bd-plot}{\code{bd$plot()}}
 \item \href{#method-bd-clone}{\code{bd$clone()}}
 }
 }
@@ -131,6 +132,23 @@ Save results to RDS file
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{filename}}{Path to save file. Default: "bestdose_result.rds"}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-bd-plot"></a>}}
+\if{latex}{\out{\hypertarget{method-bd-plot}{}}}
+\subsection{Method \code{plot()}}{
+Plot observed and predicted concentrations over time for both past and target data
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{bd$plot(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Additional arguments passed to plot.bd function}
 }
 \if{html}{\out{</div>}}
 }
