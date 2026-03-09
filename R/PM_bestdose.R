@@ -19,10 +19,10 @@ bd <- R6::R6Class(
         past = NULL,
         #' @field past_pred PM_sim object containing model predictions for the past data
         past_pred = NULL,
-        #' @field target PM_data object containing target data used in the optimization
-        target = NULL,
-        #' @field target_pred PM_sim object containing model predictions for the target data
-        target_pred = NULL,
+        #' @field future PM_data object containing future data used in the optimization
+        future = NULL,
+        #' @field future_pred PM_sim object containing model predictions for the future data
+        future_pred = NULL,
         #' @field result List containing optimization results, including optimal doses, predictions, and objective function value
         result = NULL,
         #' @field posterior The `bd_post` object used to compute the posterior distribution (if applicable)
@@ -34,7 +34,9 @@ bd <- R6::R6Class(
         #' @param prior Prior information for the model, can be a PM_result, PM_final, or path to theta.csv
         #' @param model PM_model object or path to compiled model
         #' @param past_data PM_data object or path to CSV file with past patient data (optional)
-        #' @param target PM_data object or path to CSV file with target data (required for new optimization)
+        #' @param future List describing future dosing/target setup with elements:
+        #' dose (required), frequency (default 24), route (default 0), number (default 1),
+        #' target (required), target_time (default 24), covariates (optional list)
         #' @param dose_range List with 'min' and 'max' elements defining the dose search range (default: 0 to 1000)
         #' @param bias_weight Numeric between 0 and 1 indicating the weight of bias in the optimization (default: 0.5)
         #' @param target_type Character string indicating the type of target: "concentration", "auc_from_zero", or "auc_from_last_dose" (default: "concentration")
@@ -50,7 +52,7 @@ bd <- R6::R6Class(
             prior = NULL,
             model = NULL,
             past_data = NULL,
-            target = NULL,
+            future = list(dose = 0, frequency = 24, route = 0, number = 1, target_time = 24),
             dose_range = list(min = 0, max = 1000),
             bias_weight = 0.5,
             target_type = "concentration",
@@ -61,13 +63,63 @@ bd <- R6::R6Class(
             posterior = NULL,
             bias_override = NULL) {
                 if (!is.null(result)) {
-                    private$.set_result(result, posterior, bias_override)
+                    private$.set_result(
+                        future = if (inherits(future, "PM_data") || is.character(future)) future else NULL,
+                        result = result,
+                        posterior = posterior,
+                        bias_weight = bias_override
+                    )
                     return(invisible(self))
                 }
                 
-                if (is.null(target)) {
-                    cli::cli_abort("Target must be supplied when computing a new BestDose.")
+                if (is.null(future$dose) || is.null(future$target)) {
+                    cli::cli_abort(c(
+                        "x" = "Future setup must include both {.code dose} and {.code target}.",
+                        "i" = "Provide {.code future = list(dose = ..., target = ...)}."
+                    ))
                 }
+
+                future_data <- PM_data$new()
+          
+                addl = as.integer(future$number) - 1
+                if (addl == 0) addl <- NA
+                ii = future$frequency
+                if (is.na(addl)) ii <- NA
+          
+                # add doses
+                dose_args <- list(
+                    id = 1,
+                    time = 0,
+                    evid = 1,
+                    dose = future$dose,
+                    out = NA,
+                    dur = future$route,
+                    addl = addl,
+                    ii = ii,
+                    validate = FALSE
+                )
+                do.call(future_data$addEvent, dose_args)
+
+                if (!is.null(future$covariates) && length(future$covariates) > 0) {
+                    cov_args <- c(list(id = 1, validate = FALSE), future$covariates)
+                    do.call(future_data$addEvent, cov_args)
+                }
+
+                # Add observation event target_time hours after each dose
+                for (i in 0:(as.integer(future$number) - 1)) {
+                    obs_time <- i * future$frequency + future$target_time
+                    future_target_args <- list(
+                        id = 1,
+                        time = obs_time,
+                        evid = 0,
+                        dose = NA,
+                        out = future$target,
+                        validate = (i == as.integer(future$number) - 1)  # Validate on last event only
+                    )
+                    do.call(future_data$addEvent, future_target_args)
+                }
+          
+                
                 
                 if (is.null(posterior)) {
                     posterior <- bd_post$new(
@@ -80,18 +132,18 @@ bd <- R6::R6Class(
                 }
                 
                 raw <- posterior$optimize(
-                    target = target,
+                    target = future_data,
                     dose_range = dose_range,
                     bias_weight = bias_weight,
                     target_type = target_type,
                     time_offset = time_offset
                 )
-       
+                
                 self$past <- posterior$past # always defined or NULL
                 
-                private$.set_result(target, raw$result, posterior, raw$bias_weight)
+                private$.set_result(future_data, raw$result, posterior, raw$bias_weight)
                 private$.sim_past()
-                private$.sim_target()
+                private$.sim_future()
                 
                 invisible(self)
         },
@@ -122,13 +174,21 @@ bd <- R6::R6Class(
                 saveRDS(self, filename)
                 cli::cli_alert_success("Results saved to {filename}")
                 invisible(self)
+            },
+            #' @description
+            #' Plot observed and predicted concentrations over time for both past and future data
+            #' @param ... Additional arguments passed to plot.bd function
+            plot = function(...) {
+                plot.bd(self, ...)
             }
             
         ),
         private = list(
-            .set_result = function(target, result, posterior, bias_weight) {
+            .set_result = function(future, result, posterior, bias_weight) {
                 
-                self$target <- PM_data$new(target, quiet = TRUE) 
+                if (!is.null(future)) {
+                    self$future <- if (inherits(future, "PM_data")) future else PM_data$new(future, quiet = TRUE)
+                }
                 self$result <- result
                 self$posterior <- posterior
                 self$bias_weight <- bias_weight
@@ -151,26 +211,26 @@ bd <- R6::R6Class(
                 self$past_pred <- sim1
                 return(invisible(self))
             },
-            .sim_target = function(){
+            .sim_future = function(){
                 # simulate concentrations in the future
-                if (is.null(self$target)) {
+                if (is.null(self$future)) {
                     return(invisible(NULL)) 
                 }
-                # replace the doses in the target with the optimal doses found by BestDose optimization
-                target_sim_data <- self$target$standard_data
-                target_sim_data$dose[target_sim_data$evid != 0] <- self$result$doses # replace doses with optimal doses for all dosing events
-                self$target$standard_data <- target_sim_data
+                # replace the doses in the future template with the optimal doses found by BestDose optimization
+                future_sim_data <- self$future$standard_data
+                future_sim_data$dose[future_sim_data$evid != 0] <- self$result$doses
+                self$future$standard_data <- future_sim_data
                 
-
+                
                 sim2 <- PM_sim$new(
                     poppar = as.data.frame(self$posterior$theta),
                     model = self$posterior$model_info$model,
-                    data = self$target,
+                    data = self$future,
                     predInt = 1,
                     limits = NA,
                     quiet = TRUE
                 )
-                self$target_pred <- sim2
+                self$future_pred <- sim2
                 return(invisible(self))
             }
         ),
@@ -206,7 +266,7 @@ bd <- R6::R6Class(
     #'
     #' @export
     bd_post <- R6::R6Class(
-        "bd_post",
+"bd_post",
         public = list(
             #' @field handle Memory pointer to the computed posterior (opaque to users)
             handle = NULL,
@@ -276,7 +336,7 @@ bd <- R6::R6Class(
                     self$settings <- settings
                     
                     cli::cli_alert_success("BestDose posterior computed with {dim[1]} support points")
-            },
+                },
                 #' @description
                 #' Run optimization and return a `bd` result object
                 #' @param target PM_data object or path to CSV file with target data
@@ -354,343 +414,333 @@ bd <- R6::R6Class(
             }
             
             
-            ############ HELPER FUNCTIONS ############
             
-            bestdose_parse_prior <- function(prior) {
-                if (inherits(prior, "PM_result")) {
-                    theta_path <- file.path(prior$rundir, "outputs", "theta.csv")
-                    if (!file.exists(theta_path)) {
-                        cli::cli_abort("theta.csv not found in PM_result outputs")
-                    }
-                    theta_path
-                } else if (inherits(prior, "PM_final")) {
-                    temp_path <- tempfile(fileext = ".csv")
-                    bestdose_write_prior_csv(prior, temp_path)
-                    temp_path
-                } else if (is.character(prior)) {
-                    if (!file.exists(prior)) {
-                        cli::cli_abort("Prior file not found: {prior}")
-                    }
-                    prior
-                } else {
-                    cli::cli_abort("prior must be PM_result, PM_final, or path to theta.csv")
-                }
-            }
             
-            bestdose_write_prior_csv <- function(prior, path) {
-                df <- as.data.frame(prior$popPoints)
-                df$prob <- prior$popProb
-                write.csv(df, path, row.names = FALSE, quote = FALSE)
-            }
             
-            bestdose_parse_model <- function(model) {
-                if (inherits(model, "PM_model")) {
-                    compiled_path <- model$binary_path
-                    if (is.null(compiled_path) || !file.exists(compiled_path)) {
-                        cli::cli_abort("Model must be compiled first. Use model$compile()")
-                    }
-                    
-                    kind <- if (!is.null(model$model_list$analytical) && model$model_list$analytical) {
-                        "analytical"
-                    } else {
-                        "ode"
+            #' Plot BestDose predictions
+            #' 
+            #' @description 
+            #' Plot observed and predicted concentrations over time for both past and future data, with options to include/exclude specific subjects, apply a multiplier to the concentrations, and customize the plot appearance.
+            #' 
+            #' @param x A `bd` object containing the best dose predictions.
+            #' @param include Vector of subject IDs to include in the plot. If missing, all subjects will be included.
+            #' @param exclude Vector of subject IDs to exclude from the plot. If missing, no subjects will be excluded.
+            #' @param mult Numeric multiplier to apply to the concentrations (default: 1, no scaling).
+            #' @param outeq Numeric value of outeq to filter observations for plotting (default: 1).
+            #' @param quiet Logical indicating whether to suppress messages (default: FALSE).
+            #' @param legend Logical indicating whether to display a legend (default: FALSE).
+            #' @param log Logical indicating whether to use a logarithmic scale for the y-axis (default: FALSE).
+            #' @param grid Logical indicating whether to display a grid (default: FALSE).
+            #' @param xlab Label for the x-axis.
+            #' @param ylab Label for the y-axis.
+            #' @param title Title of the plot.
+            #' @param xlim Limits for the x-axis.
+            #' @param ylim Limits for the y-axis.
+            #' @param print Logical indicating whether to print the plot (default: TRUE).
+            #' @param ... Additional arguments passed to the plotting function.
+            #' 
+            #' @return Invisibly returns a plotly object.
+            #' 
+            #' @export
+            #' @method plot bd
+            plot.bd <- function(x, include, exclude, mult = 1, outeq = 1, 
+                quiet = FALSE, legend = TRUE, log = FALSE, 
+                grid = FALSE, xlab = "Time", ylab = "Concentration",  title = NULL, xlim = NULL, ylim = NULL, print = TRUE, ...) {
+                    if (!inherits(x, "bd")) {
+                        stop("Object must be of class 'bd'")
                     }
                     
-                    list(path = compiled_path, kind = kind, model = model)
-                } else if (is.character(model)) {
-                    if (!file.exists(model)) {
-                        cli::cli_abort("Model file not found: {model}")
+                    # Check if we have future predictions (past is optional)
+                    if (is.null(x$future_pred)) {
+                        cli::cli_abort(c(
+                            "x" = "Future predictions are required for plotting.",
+                            "i" = "BestDose object must have {.code future_pred}."
+                        ))
                     }
-                    kind <- if (grepl("analytical", model, ignore.case = TRUE)) {
-                        "analytical"
+                    
+                    # Get starting date/time for x-axis datetime conversion
+                    if (!is.null(x$past) && !is.null(x$past$data)) {
+                        # Extract start date and time from past data
+                        start_row <- x$past$data[1, ]
+                        start_date_str <- as.character(start_row$date[1])
+                        start_time_str <- as.character(start_row$time[1])
+                        start_datetime <- as.POSIXct(
+                            paste(start_date_str, start_time_str),
+                            format = "%m/%d/%y %H:%M:%S",
+                            tz = "UTC"
+                        )
                     } else {
-                        "ode"
+                        # Use today's date and closest hour from now
+                        now <- Sys.time()
+                        next_hour <- ceiling(as.numeric(format(now, "%H")))
+                        if (next_hour > 23) next_hour <- 0
+                        start_datetime <- as.POSIXct(
+                            paste0(format(now, "%Y-%m-%d"), " ", sprintf("%02d", next_hour), ":00:00"),
+                            format = "%Y-%m-%d %H:%M:%S",
+                            tz = "UTC"
+                        )
+                        # If the ceiling hour is in the past, use it; otherwise use next hour
+                        if (start_datetime <= now) {
+                            start_datetime <- start_datetime + 3600  # Add 1 hour
+                        }
                     }
-                    list(path = model, kind = kind, model = NULL)
-                } else {
-                    cli::cli_abort("model must be PM_model or path to compiled model")
-                }
-            }
-            
-            bestdose_parse_data <- function(data) {
-                if (inherits(data, "PM_data")) {
-                    temp_path <- tempfile(fileext = ".csv")
-                    write.csv(data$standard_data, temp_path, row.names = FALSE, quote = FALSE)
-                    temp_path
-                } else if (is.character(data)) {
-                    if (!file.exists(data)) {
-                        cli::cli_abort("Data file not found: {data}")
+                    
+                    # Extract observation data from both simulations
+                    past_obs <- NULL
+                    if (!is.null(x$past_pred)) {
+                        past_obs <- x$past_pred$data$obs |>
+                        dplyr::filter(outeq == !!outeq)
                     }
-                    data
-                } else {
-                    cli::cli_abort("data must be PM_data or path to CSV file")
-                }
-            }
-            
-            bestdose_default_settings <- function(prior, model, max_cycles = 500) {
-                param_ranges <- lapply(model$model_list$pri, function(x) {
-                    c(x$min, x$max)
-                })
-                names(param_ranges) <- tolower(names(param_ranges))
-                
-                list(
-                    algorithm = "NPAG",
-                    ranges = param_ranges,
-                    error_models = lapply(model$model_list$err, function(x) x$flatten()),
-                    max_cycles = max_cycles,
-                    points = 2028,
-                    seed = 22,
-                    prior = "prior.csv",
-                    idelta = 0.25,
-                    tad = 0.0
-                )
-            }
+                    
+                    future_obs <- x$future_pred$data$obs |>
+                    dplyr::filter(outeq == !!outeq)
+                    
+                    # Handle include/exclude
+                    if (missing(include)) {
+                        if (!is.null(past_obs)) {
+                            include <- unique(c(past_obs$id, future_obs$id))
+                        } else {
+                            include <- unique(future_obs$id)
+                        }
+                    }
+                    if (missing(exclude)) exclude <- NA
+                    
+                    if (!is.null(past_obs)) {
+                        past_obs <- past_obs |> includeExclude(include, exclude)
+                    }
+                    future_obs <- future_obs |> includeExclude(include, exclude)
+                    
+                    # Get the last time in past_obs for each id (if past exists)
+                    last_past_times <- NULL
+                    if (!is.null(past_obs) && nrow(past_obs) > 0) {
+                        last_past_times <- past_obs |>
+                        dplyr::group_by(id, nsim) |>
+                        dplyr::slice_max(time, n = 1) |>
+                        dplyr::select(id, nsim, last_time = time) |>
+                        dplyr::ungroup()
+                    }
+                    
+                    # Adjust future times by adding to the last past time (if past exists)
+                    if (!is.null(last_past_times) && nrow(last_past_times) > 0) {
+                        future_obs_adjusted <- future_obs |>
+                        dplyr::left_join(last_past_times, by = c("id", "nsim")) |>
+                        dplyr::mutate(time = time + last_time) |>
+                        dplyr::select(-last_time)
+                    } else {
+                        future_obs_adjusted <- future_obs
+                    }
+                    
+                    # Combine past and future observations
+                    if (!is.null(past_obs) && nrow(past_obs) > 0) {
+                        combined_obs <- dplyr::bind_rows(
+                            past_obs |> dplyr::mutate(source = "past"),
+                            future_obs_adjusted |> dplyr::mutate(source = "future")
+                        ) |>
+                        dplyr::arrange(id, nsim, time) |>
+                        dplyr::mutate(datetime = start_datetime + time * 3600)  # Convert hours to seconds
+                    } else {
+                        combined_obs <- future_obs_adjusted |>
+                        dplyr::mutate(source = "future") |>
+                        dplyr::arrange(id, nsim, time) |>
+                        dplyr::mutate(datetime = start_datetime + time * 3600)
+                    }
+                    
+                    # Apply multiplier
+                    combined_obs$out <- combined_obs$out * mult
+                    
+                    # Handle log scale
+                    if (log) {
+                        if (any(combined_obs$out <= 0, na.rm = TRUE)) {
+                            if (!quiet) {
+                                cat("Values <= 0 omitted from log plot.\n")
+                            }
+                            combined_obs$out[combined_obs$out <= 0] <- NA
+                        }
+                    }
+                    
+                    # Remove NA values
+                    combined_obs <- combined_obs |> dplyr::filter(!is.na(out))
+                    
+                    # Extract actual observations from past and future data
+                    past_data_obs <- NULL
+                    future_data_obs <- NULL
+                    past_doses <- NULL
+                    future_doses <- NULL
+                    
+                    if (!is.null(x$past)) {
+                        past_data_obs <- x$past$standard_data |>
+                        dplyr::filter(evid == 0, outeq == !!outeq) |>
+                        dplyr::select(id, time, out) |>
+                        includeExclude(include, exclude)
+                        
+                        # Apply multiplier
+                        past_data_obs$out <- past_data_obs$out * mult
+                        
+                        # Handle log scale
+                        if (log && any(past_data_obs$out <= 0, na.rm = TRUE)) {
+                            past_data_obs$out[past_data_obs$out <= 0] <- NA
+                        }
+                        
+                        past_data_obs <- past_data_obs |> dplyr::filter(!is.na(out))
+                        
+                        # Extract dose events (evid == 1)
+                        past_doses <- x$past$standard_data |>
+                        dplyr::filter(evid == 1) |>
+                        dplyr::select(id, time, dur, dose) |>
+                        includeExclude(include, exclude)
+                    }
+                    
+                    if (!is.null(x$future)) {
+                        future_data_obs <- x$future$standard_data |>
+                        dplyr::filter(evid == 0, outeq == !!outeq) |>
+                        dplyr::select(id, time, out) |>
+                        includeExclude(include, exclude)
+                        
+                        # Get last time from past data for each id to adjust future times
+                        if (!is.null(x$past)) {
+                            last_times <- x$past$standard_data |>
+                            dplyr::filter(evid == 0) |>
+                            dplyr::group_by(id) |>
+                            dplyr::slice_max(time, n = 1) |>
+                            dplyr::select(id, last_time = time) |>
+                            dplyr::ungroup() |>
+                            includeExclude(include, exclude)
+                            
+                            future_data_obs <- future_data_obs |>
+                            dplyr::left_join(last_times, by = "id") |>
+                            dplyr::mutate(time = time + last_time) |>
+                            dplyr::select(-last_time)
+                        }
+                        
+                        # Apply multiplier
+                        future_data_obs$out <- future_data_obs$out * mult
+                        
+                        # Handle log scale
+                        if (log && any(future_data_obs$out <= 0, na.rm = TRUE)) {
+                            future_data_obs$out[future_data_obs$out <= 0] <- NA
+                        }
+                        
+                        future_data_obs <- future_data_obs |> dplyr::filter(!is.na(out))
+                        
+                        # Extract dose events (evid == 1)
+                        future_doses <- x$future$standard_data |>
+                        dplyr::filter(evid == 1) |>
+                        dplyr::select(id, time, dur, dose) |>
+                        includeExclude(include, exclude)
+                        
+                        # Adjust future dose times if past data exists
+                        if (!is.null(x$past)) {
+                            last_times_dose <- x$past$standard_data |>
+                            dplyr::group_by(id) |>
+                            dplyr::slice_max(time, n = 1) |>
+                            dplyr::select(id, last_time = time) |>
+                            dplyr::ungroup() |>
+                            includeExclude(include, exclude)
+                            
+                            future_doses <- future_doses |>
+                            dplyr::left_join(last_times_dose, by = "id") |>
+                            dplyr::mutate(time = time + last_time) |>
+                            dplyr::select(-last_time)
+                        }
+                    }
+                    
+                    # Initialize plot
+                    p <- plotly::plot_ly()
+                    
+    # Get posterior weights and robustly map them to nsim values
+    posterior_weights <- as.numeric(x$posterior$posterior_weights)
+    top5_colors <- c("#FF0000", "#0000FF", "#008000", "#800080", "#FFA500")
+    
+    unique_nsim <- sort(unique(combined_obs$nsim))
+    nsim_keys <- as.character(unique_nsim)
+    
+    # Map each observed nsim to a simulation index (1..N)
+    sim_index_by_nsim <- setNames(seq_along(unique_nsim), nsim_keys)
+    
+    # Weight by nsim key (default NA if no matching posterior weight index)
+    weight_by_nsim <- setNames(rep(NA_real_, length(nsim_keys)), nsim_keys)
+    for (k in nsim_keys) {
+        idx <- sim_index_by_nsim[[k]]
+        if (!is.na(idx) && idx >= 1 && idx <= length(posterior_weights)) {
+            weight_by_nsim[[k]] <- posterior_weights[idx]
+        }
+    }
+    
+    # Identify top 5 nsim keys by weight (largest to smallest)
+    ranked_keys <- names(sort(weight_by_nsim, decreasing = TRUE, na.last = NA))
+    top_keys <- ranked_keys[seq_len(min(5, length(ranked_keys)))]
+    
+    # Colors and legend labels for each nsim key
+    color_by_nsim <- setNames(rep("#cccccc", length(nsim_keys)), nsim_keys)
+    legend_name_by_nsim <- setNames(rep(NA_character_, length(nsim_keys)), nsim_keys)
+    for (i in seq_along(top_keys)) {
+        k <- top_keys[i]
+        color_by_nsim[[k]] <- top5_colors[i]
+        legend_name_by_nsim[[k]] <- sprintf("%.4e", weight_by_nsim[[k]])
+    }
+    
+    # Track which legend entries have been added
+    legend_added <- setNames(rep(FALSE, length(nsim_keys)), nsim_keys)
+    id_values <- unique(combined_obs$id)
+    non_top_keys <- setdiff(nsim_keys, top_keys)
 
-
-#' Plot BestDose predictions
-#' 
-#' @description 
-#' Plot observed and predicted concentrations over time for both past and target data, with options to include/exclude specific subjects, apply a multiplier to the concentrations, and customize the plot appearance.
-#' 
-#' @param x A `bd` object containing the best dose predictions.
-#' @param include Vector of subject IDs to include in the plot. If missing, all subjects will be included.
-#' @param exclude Vector of subject IDs to exclude from the plot. If missing, no subjects will be excluded.
-#' @param mult Numeric multiplier to apply to the concentrations (default: 1, no scaling).
-#' @param outeq Numeric value of outeq to filter observations for plotting (default: 1).
-#' @param quiet Logical indicating whether to suppress messages (default: FALSE).
-#' @param legend Logical indicating whether to display a legend (default: FALSE).
-#' @param log Logical indicating whether to use a logarithmic scale for the y-axis (default: TRUE).
-#' @param grid Logical indicating whether to display a grid (default: FALSE).
-#' @param xlab Label for the x-axis.
-#' @param ylab Label for the y-axis.
-#' @param title Title of the plot.
-#' @param xlim Limits for the x-axis.
-#' @param ylim Limits for the y-axis.
-#' @param print Logical indicating whether to print the plot (default: TRUE).
-#' @param ... Additional arguments passed to the plotting function.
-#' 
-#' @return Invisibly returns a plotly object.
-#' 
-#' @export
-#' @method plot bd
-plot.bd <- function(x, include, exclude, mult = 1, outeq = 1, 
-                    quiet = FALSE, legend = FALSE, log = TRUE, 
-                    grid = FALSE, xlab, ylab, title, xlim, ylim, print = TRUE, ...) {
-    if (!inherits(x, "bd")) {
-        stop("Object must be of class 'bd'")
-    }
-    
-    # Check if we have target predictions (past is optional)
-    if (is.null(x$target_pred)) {
-        cli::cli_abort(c(
-            "x" = "Target predictions are required for plotting.",
-            "i" = "BestDose object must have {.code target_pred}."
-        ))
-    }
-    
-    # Get starting date/time for x-axis datetime conversion
-    if (!is.null(x$past) && !is.null(x$past$data)) {
-        # Extract start date and time from past data
-        start_row <- x$past$data[1, ]
-        start_date_str <- as.character(start_row$date[1])
-        start_time_str <- as.character(start_row$time[1])
-        start_datetime <- as.POSIXct(
-            paste(start_date_str, start_time_str),
-            format = "%m/%d/%y %H:%M:%S",
-            tz = "UTC"
-        )
-    } else {
-        # Use today's date and closest hour from now
-        now <- Sys.time()
-        next_hour <- ceiling(as.numeric(format(now, "%H")))
-        if (next_hour > 23) next_hour <- 0
-        start_datetime <- as.POSIXct(
-            paste0(format(now, "%Y-%m-%d"), " ", sprintf("%02d", next_hour), ":00:00"),
-            format = "%Y-%m-%d %H:%M:%S",
-            tz = "UTC"
-        )
-        # If the ceiling hour is in the past, use it; otherwise use next hour
-        if (start_datetime <= now) {
-            start_datetime <- start_datetime + 3600  # Add 1 hour
-        }
-    }
-    
-    # Extract observation data from both simulations
-    past_obs <- NULL
-    if (!is.null(x$past_pred)) {
-        past_obs <- x$past_pred$data$obs |>
-            dplyr::filter(outeq == !!outeq)
-    }
-    
-    target_obs <- x$target_pred$data$obs |>
-        dplyr::filter(outeq == !!outeq)
-    
-    # Handle include/exclude
-    if (missing(include)) {
-        if (!is.null(past_obs)) {
-            include <- unique(c(past_obs$id, target_obs$id))
-        } else {
-            include <- unique(target_obs$id)
-        }
-    }
-    if (missing(exclude)) exclude <- NA
-    
-    if (!is.null(past_obs)) {
-        past_obs <- past_obs |> includeExclude(include, exclude)
-    }
-    target_obs <- target_obs |> includeExclude(include, exclude)
-    
-    # Get the last time in past_obs for each id (if past exists)
-    last_past_times <- NULL
-    if (!is.null(past_obs) && nrow(past_obs) > 0) {
-        last_past_times <- past_obs |>
-            dplyr::group_by(id, nsim) |>
-            dplyr::slice_max(time, n = 1) |>
-            dplyr::select(id, nsim, last_time = time) |>
-            dplyr::ungroup()
-    }
-    
-    # Adjust target times by adding to the last past time (if past exists)
-    if (!is.null(last_past_times) && nrow(last_past_times) > 0) {
-        target_obs_adjusted <- target_obs |>
-            dplyr::left_join(last_past_times, by = c("id", "nsim")) |>
-            dplyr::mutate(time = time + last_time) |>
-            dplyr::select(-last_time)
-    } else {
-        target_obs_adjusted <- target_obs
-    }
-    
-    # Combine past and target observations
-    if (!is.null(past_obs) && nrow(past_obs) > 0) {
-        combined_obs <- dplyr::bind_rows(
-            past_obs |> dplyr::mutate(source = "past"),
-            target_obs_adjusted |> dplyr::mutate(source = "target")
-        ) |>
-            dplyr::arrange(id, nsim, time) |>
-            dplyr::mutate(datetime = start_datetime + time * 3600)  # Convert hours to seconds
-    } else {
-        combined_obs <- target_obs_adjusted |>
-            dplyr::mutate(source = "target") |>
-            dplyr::arrange(id, nsim, time) |>
-            dplyr::mutate(datetime = start_datetime + time * 3600)
-    }
-    
-    # Apply multiplier
-    combined_obs$out <- combined_obs$out * mult
-    
-    # Handle log scale
-    if (log) {
-        if (any(combined_obs$out <= 0, na.rm = TRUE)) {
-            if (!quiet) {
-                cat("Values <= 0 omitted from log plot.\n")
-            }
-            combined_obs$out[combined_obs$out <= 0] <- NA
-        }
-    }
-    
-    # Remove NA values
-    combined_obs <- combined_obs |> dplyr::filter(!is.na(out))
-    
-    # Extract actual observations from past and target data
-    past_data_obs <- NULL
-    target_data_obs <- NULL
-    past_doses <- NULL
-    target_doses <- NULL
-    
-    if (!is.null(x$past)) {
-        past_data_obs <- x$past$standard_data |>
-            dplyr::filter(evid == 0, outeq == !!outeq) |>
-            dplyr::select(id, time, out) |>
-            includeExclude(include, exclude)
-        
-        # Apply multiplier
-        past_data_obs$out <- past_data_obs$out * mult
-        
-        # Handle log scale
-        if (log && any(past_data_obs$out <= 0, na.rm = TRUE)) {
-            past_data_obs$out[past_data_obs$out <= 0] <- NA
-        }
-        
-        past_data_obs <- past_data_obs |> dplyr::filter(!is.na(out))
-        
-        # Extract dose events (evid == 1)
-        past_doses <- x$past$standard_data |>
-            dplyr::filter(evid == 1) |>
-            dplyr::select(id, time, dur, dose) |>
-            includeExclude(include, exclude)
-    }
-    
-    if (!is.null(x$target)) {
-        target_data_obs <- x$target$standard_data |>
-            dplyr::filter(evid == 0, outeq == !!outeq) |>
-            dplyr::select(id, time, out) |>
-            includeExclude(include, exclude)
-        
-        # Get last time from past data for each id to adjust target times
-        if (!is.null(x$past)) {
-            last_times <- x$past$standard_data |>
-                dplyr::filter(evid == 0) |>
-                dplyr::group_by(id) |>
-                dplyr::slice_max(time, n = 1) |>
-                dplyr::select(id, last_time = time) |>
-                dplyr::ungroup() |>
-                includeExclude(include, exclude)
-            
-            target_data_obs <- target_data_obs |>
-                dplyr::left_join(last_times, by = "id") |>
-                dplyr::mutate(time = time + last_time) |>
-                dplyr::select(-last_time)
-        }
-        
-        # Apply multiplier
-        target_data_obs$out <- target_data_obs$out * mult
-        
-        # Handle log scale
-        if (log && any(target_data_obs$out <= 0, na.rm = TRUE)) {
-            target_data_obs$out[target_data_obs$out <= 0] <- NA
-        }
-        
-        target_data_obs <- target_data_obs |> dplyr::filter(!is.na(out))
-        
-        # Extract dose events (evid == 1)
-        target_doses <- x$target$standard_data |>
-            dplyr::filter(evid == 1) |>
-            dplyr::select(id, time, dur, dose) |>
-            includeExclude(include, exclude)
-        
-        # Adjust target dose times if past data exists
-        if (!is.null(x$past)) {
-            last_times_dose <- x$past$standard_data |>
-                dplyr::group_by(id) |>
-                dplyr::slice_max(time, n = 1) |>
-                dplyr::select(id, last_time = time) |>
-                dplyr::ungroup() |>
-                includeExclude(include, exclude)
-            
-            target_doses <- target_doses |>
-                dplyr::left_join(last_times_dose, by = "id") |>
-                dplyr::mutate(time = time + last_time) |>
-                dplyr::select(-last_time)
-        }
-    }
-    
-    # Initialize plot
-    p <- plotly::plot_ly()
-    
-    # Plot all individual simulation curves grouped by id and nsim
-    for (id_val in unique(combined_obs$id)) {
-        for (nsim_val in unique(combined_obs$nsim)) {
+    # 1) Plot non-top lines first (light grey, no legend)
+    for (nsim_key in non_top_keys) {
+        weight_val <- weight_by_nsim[[nsim_key]]
+        for (id_val in id_values) {
             this_sim <- combined_obs |>
-                dplyr::filter(id == id_val, nsim == nsim_val) |>
+                dplyr::filter(id == id_val, as.character(nsim) == nsim_key) |>
                 dplyr::arrange(datetime)
-            
+
             if (nrow(this_sim) > 0) {
                 p <- p |>
                     plotly::add_lines(
                         x = ~datetime, y = ~out, data = this_sim,
-                        line = list(color = "dodgerblue", width = 1),
-                        hovertemplate = "Time: %{x}<br>Out: %{y}<extra></extra>",
+                        line = list(color = "#cccccc", width = 0.8),
+                        opacity = 0.6,
+                        name = NULL,
+                        legendgroup = NULL,
+                        hovertemplate = sprintf(
+                            "Time: %%{x}<br>Out: %%{y}<br>Weight: %s<extra></extra>",
+                            ifelse(is.na(weight_val), "NA", sprintf("%.4e", weight_val))
+                        ),
                         showlegend = FALSE
+                    )
+            }
+        }
+    }
+
+    # 2) Plot top lines second (colored, legend in descending weight order)
+    for (nsim_key in top_keys) {
+        line_color <- color_by_nsim[[nsim_key]]
+        legend_name <- legend_name_by_nsim[[nsim_key]]
+        weight_val <- weight_by_nsim[[nsim_key]]
+
+        for (id_val in id_values) {
+            this_sim <- combined_obs |>
+                dplyr::filter(id == id_val, as.character(nsim) == nsim_key) |>
+                dplyr::arrange(datetime)
+
+            if (nrow(this_sim) > 0) {
+                show_in_legend <- !legend_added[[nsim_key]] && legend
+                if (show_in_legend) {
+                    legend_added[[nsim_key]] <- TRUE
+                }
+                legend_rank <- match(nsim_key, top_keys)
+
+                p <- p |>
+                    plotly::add_lines(
+                        x = ~datetime, y = ~out, data = this_sim,
+                        opacity = 0.6,
+                        line = list(color = line_color, width = 2),
+                        name = legend_name,
+                        legendgroup = legend_name,
+                        legendrank = legend_rank,
+                        hovertemplate = sprintf(
+                            "Time: %%{x}<br>Out: %%{y}<br>Weight: %s<extra></extra>",
+                            ifelse(is.na(weight_val), "NA", sprintf("%.4e", weight_val))
+                        ),
+                        showlegend = show_in_legend
                     )
             }
         }
@@ -700,26 +750,26 @@ plot.bd <- function(x, include, exclude, mult = 1, outeq = 1,
     if (!is.null(past_data_obs) && nrow(past_data_obs) > 0) {
         past_data_obs$datetime <- start_datetime + past_data_obs$time * 3600
         p <- p |>
-            plotly::add_markers(
-                x = ~datetime, y = ~out, data = past_data_obs,
-                marker = list(color = "black", size = 8, symbol = "circle"),
-                name = "Past Observations",
-                hovertemplate = "Time: %{x}<br>Out: %{y}<extra></extra>",
-                showlegend = legend
-            )
+        plotly::add_markers(
+            x = ~datetime, y = ~out, data = past_data_obs,
+            marker = list(color = "black", size = 8, symbol = "circle"),
+            name = "Past Observations",
+            hovertemplate = "Time: %{x}<br>Out: %{y}<extra></extra>",
+            showlegend = FALSE
+        )
     }
     
-    # Add target data observations as markers
-    if (!is.null(target_data_obs) && nrow(target_data_obs) > 0) {
-        target_data_obs$datetime <- start_datetime + target_data_obs$time * 3600
+    # Add future data observations as markers
+    if (!is.null(future_data_obs) && nrow(future_data_obs) > 0) {
+        future_data_obs$datetime <- start_datetime + future_data_obs$time * 3600
         p <- p |>
-            plotly::add_markers(
-                x = ~datetime, y = ~out, data = target_data_obs,
-                marker = list(color = "red", size = 8, symbol = "circle"),
-                name = "Target Observations",
-                hovertemplate = "Time: %{x}<br>Out: %{y}<extra></extra>",
-                showlegend = legend
-            )
+        plotly::add_markers(
+            x = ~datetime, y = ~out, data = future_data_obs,
+            marker = list(color = "red", size = 8, symbol = "circle"),
+            name = "Future Observations",
+            hovertemplate = "Time: %{x}<br>Out: %{y}<extra></extra>",
+            showlegend = FALSE
+        )
     }
     
     # Add dose indicators as markers/segments directly on the plot
@@ -738,125 +788,212 @@ plot.bd <- function(x, include, exclude, mult = 1, outeq = 1,
             # Add upward arrow marker at dose time
             dur_text <- if (is.na(dose_dur) || dose_dur == 0) "Bolus" else sprintf("Duration: %.1f", dose_dur)
             p <- p |>
+            plotly::add_markers(
+                x = dose_datetime,
+                y = y_min,
+                marker = list(
+                    symbol = "triangle-up",
+                    size = 10,
+                    color = "black",
+                    line = list(color = "black", width = 2)
+                ),
+                customdata = list(list(dose_amt, dur_text)),
+                hovertemplate = "Time: %{x}<br>Dose: %{customdata[0]}<br>%{customdata[1]}<extra></extra>",
+                showlegend = FALSE
+            )
+            
+            # If infusion, add marker at end time too
+            if (!is.na(dose_dur) && dose_dur > 0) {
+                p <- p |>
                 plotly::add_markers(
-                    x = dose_datetime,
+                    x = dose_datetime + dose_dur * 3600,
                     y = y_min,
                     marker = list(
-                        symbol = "triangle-up",
+                        symbol = "triangle-down",
                         size = 10,
                         color = "black",
                         line = list(color = "black", width = 2)
                     ),
-                    customdata = list(list(dose_amt, dur_text)),
-                    hovertemplate = "Time: %{x}<br>Dose: %{customdata[0]}<br>%{customdata[1]}<extra></extra>",
+                    text = "End infusion",
+                    hovertemplate = "Time: %{x}<br>%{text}<extra></extra>",
                     showlegend = FALSE
                 )
-            
-            # If infusion, add marker at end time too
-            if (!is.na(dose_dur) && dose_dur > 0) {
-                p <- p |>
-                    plotly::add_markers(
-                        x = dose_datetime + dose_dur * 3600,
-                        y = y_min,
-                        marker = list(
-                            symbol = "triangle-down",
-                            size = 10,
-                            color = "black",
-                            line = list(color = "black", width = 2)
-                        ),
-                        text = "End infusion",
-                        hovertemplate = "Time: %{x}<br>%{text}<extra></extra>",
-                        showlegend = FALSE
-                    )
             }
         }
     }
     
-    # Target doses (red)
-    if (!is.null(target_doses) && nrow(target_doses) > 0) {
+    # Future doses (red)
+    if (!is.null(future_doses) && nrow(future_doses) > 0) {
         # Get y-axis minimum for positioning
         y_min <- min(combined_obs$out, na.rm = TRUE)
         
         # Create data frame for dose segments
-        for (i in 1:nrow(target_doses)) {
-            dose_time <- target_doses$time[i]
+        for (i in 1:nrow(future_doses)) {
+            dose_time <- future_doses$time[i]
             dose_datetime <- start_datetime + dose_time * 3600
-            dose_dur <- target_doses$dur[i]
-            dose_amt <- target_doses$dose[i]
+            dose_dur <- future_doses$dur[i]
+            dose_amt <- future_doses$dose[i]
             
             # Add upward arrow marker at dose time
             dur_text <- if (is.na(dose_dur) || dose_dur == 0) "Bolus" else sprintf("Duration: %.1f", dose_dur)
             p <- p |>
-                plotly::add_markers(
-                    x = dose_datetime,
-                    y = y_min,
-                    marker = list(
-                        symbol = "triangle-up",
-                        size = 10,
-                        color = "red",
-                        line = list(color = "red", width = 2)
-                    ),
-                    customdata = list(list(dose_amt, dur_text)),
-                    hovertemplate = "Time: %{x}<br>Dose: %{customdata[0]}<br>%{customdata[1]}<extra></extra>",
-                    showlegend = FALSE
-                )
+            plotly::add_markers(
+                x = dose_datetime,
+                y = y_min,
+                marker = list(
+                    symbol = "triangle-up",
+                    size = 10,
+                    color = "red",
+                    line = list(color = "red", width = 2)
+                ),
+                customdata = list(list(dose_amt, dur_text)),
+                hovertemplate = "Time: %{x}<br>Dose: %{customdata[0]}<br>%{customdata[1]}<extra></extra>",
+                showlegend = FALSE
+            )
             
             # If infusion, add marker at end time too
             if (!is.na(dose_dur) && dose_dur > 0) {
                 p <- p |>
-                    plotly::add_markers(
-                        x = dose_datetime + dose_dur * 3600,
-                        y = y_min,
-                        marker = list(
-                            symbol = "triangle-down",
-                            size = 10,
-                            color = "red",
-                            line = list(color = "red", width = 2)
-                        ),
-                        text = "End infusion",
-                        hovertemplate = "Time: %{x}<br>%{text}<extra></extra>",
-                        showlegend = FALSE
-                    )
+                plotly::add_markers(
+                    x = dose_datetime + dose_dur * 3600,
+                    y = y_min,
+                    marker = list(
+                        symbol = "triangle-down",
+                        size = 10,
+                        color = "red",
+                        line = list(color = "red", width = 2)
+                    ),
+                    text = "End infusion",
+                    hovertemplate = "Time: %{x}<br>%{text}<extra></extra>",
+                    showlegend = FALSE
+                )
             }
         }
     }
     
     # Set axis labels
-    xlab_val <- if (missing(xlab)) "Time" else xlab
-    ylab_val <- if (missing(ylab)) "Concentration" else ylab
-    title_val <- if (missing(title)) "BestDose Predictions: Past and Target" else title
-    
-    # Prepare shapes for vertical dividing lines and background shading
-    shapes_list <- list()
-    annotations_list <- list()
-    
-    # Create layout
-    layout_list <- list(
-        title = list(text = title_val, font = list(size = 16)),
-        xaxis = list(title = xlab_val, zeroline = FALSE, showgrid = grid),
-        yaxis = list(
-            title = ylab_val,
-            type = if (log) "log" else "linear",
-            zeroline = FALSE,
-            showgrid = grid
-        ),
-        hovermode = "closest",
-        showlegend = legend,
-        shapes = shapes_list,
-        annotations = annotations_list
-    )
-    
-    # Set axis limits if provided
-    if (!missing(xlim)) {
-        layout_list$xaxis$range <- xlim
-    }
-    if (!missing(ylim)) {
-        layout_list$yaxis$range <- ylim
-    }
-    
-    # Apply layout
-    p <- p |> plotly::layout(layout_list)
-    
-    if (print) print(p)
-    return(invisible(p))
-}
+                    xlab_val <- if (missing(xlab)) "Time" else xlab
+                    ylab_val <- if (missing(ylab)) "Concentration" else ylab
+                    title_val <- if (missing(title)) "BestDose Predictions: Past and Future" else title
+                    
+                    # Set layout directly (avoids plotly default axis-title fallback to mapped columns)
+                    p$x$layout$title <- title_val
+                    p$x$layout$xaxis <- list(
+                        title = xlab_val,
+                        zeroline = FALSE,
+                        showgrid = grid
+                    )
+                    p$x$layout$yaxis <- list(
+                        title = ylab_val,
+                        type = if (log) "log" else "linear",
+                        zeroline = FALSE,
+                        showgrid = grid
+                    )
+                    p$x$layout$hovermode <- "closest"
+                    p$x$layout$showlegend <- legend
+                    p$x$layout$legend <- list(traceorder = "normal")
+                    
+                    # Set axis limits if provided
+                    if (!missing(xlim)) {
+                        p$x$layout$xaxis$range <- xlim
+                    }
+                    if (!missing(ylim)) {
+                        p$x$layout$yaxis$range <- ylim
+                    }
+                    
+                    if (print) print(p)
+                    return(invisible(p))
+                }
+                
+                
+                ############ HELPER FUNCTIONS ############
+                
+                bestdose_parse_prior <- function(prior) {
+                    if (inherits(prior, "PM_result")) {
+                        theta_path <- file.path(prior$rundir, "outputs", "theta.csv")
+                        if (!file.exists(theta_path)) {
+                            cli::cli_abort("theta.csv not found in PM_result outputs")
+                        }
+                        theta_path
+                    } else if (inherits(prior, "PM_final")) {
+                        temp_path <- tempfile(fileext = ".csv")
+                        bestdose_write_prior_csv(prior, temp_path)
+                        temp_path
+                    } else if (is.character(prior)) {
+                        if (!file.exists(prior)) {
+                            cli::cli_abort("Prior file not found: {prior}")
+                        }
+                        prior
+                    } else {
+                        cli::cli_abort("prior must be PM_result, PM_final, or path to theta.csv")
+                    }
+                }
+                
+                bestdose_write_prior_csv <- function(prior, path) {
+                    df <- as.data.frame(prior$popPoints)
+                    df$prob <- prior$popProb
+                    write.csv(df, path, row.names = FALSE, quote = FALSE)
+                }
+                
+                bestdose_parse_model <- function(model) {
+                    if (inherits(model, "PM_model")) {
+                        compiled_path <- model$binary_path
+                        if (is.null(compiled_path) || !file.exists(compiled_path)) {
+                            cli::cli_abort("Model must be compiled first. Use model$compile()")
+                        }
+                        
+                        kind <- if (!is.null(model$model_list$analytical) && model$model_list$analytical) {
+                            "analytical"
+                        } else {
+                            "ode"
+                        }
+                        
+                        list(path = compiled_path, kind = kind, model = model)
+                    } else if (is.character(model)) {
+                        if (!file.exists(model)) {
+                            cli::cli_abort("Model file not found: {model}")
+                        }
+                        kind <- if (grepl("analytical", model, ignore.case = TRUE)) {
+                            "analytical"
+                        } else {
+                            "ode"
+                        }
+                        list(path = model, kind = kind, model = NULL)
+                    } else {
+                        cli::cli_abort("model must be PM_model or path to compiled model")
+                    }
+                }
+                
+                bestdose_parse_data <- function(data) {
+                    if (inherits(data, "PM_data")) {
+                        temp_path <- tempfile(fileext = ".csv")
+                        write.csv(data$standard_data, temp_path, row.names = FALSE, quote = FALSE)
+                        temp_path
+                    } else if (is.character(data)) {
+                        if (!file.exists(data)) {
+                            cli::cli_abort("Data file not found: {data}")
+                        }
+                        data
+                    } else {
+                        cli::cli_abort("data must be PM_data or path to CSV file")
+                    }
+                }
+                
+                bestdose_default_settings <- function(prior, model, max_cycles = 500) {
+                    param_ranges <- lapply(model$model_list$pri, function(x) {
+                        c(x$min, x$max)
+                    })
+                    names(param_ranges) <- tolower(names(param_ranges))
+                    
+                    list(
+                        algorithm = "NPAG",
+                        ranges = param_ranges,
+                        error_models = lapply(model$model_list$err, function(x) x$flatten()),
+                        max_cycles = max_cycles,
+                        points = 2028,
+                        seed = 22,
+                        prior = "prior.csv",
+                        idelta = 0.25,
+                        tad = 0.0
+                    )
+                }

@@ -79,6 +79,27 @@ bd2 <- bd$new(
 bd2
 
 
+bd1$plot()
+
+bd2$plot()
+
 plot(bd1)
 
-plot(bd2)
+
+## adding ability to specify future as argument to bd$new() instead of target file. This will allow for more flexible future specifications and avoid the need for a separate target file.
+
+future_list <- list(dose = 0, frequency = 12, route = 0, number = 3, target_time = 12, target = 0.3)
+
+bd_new <- bd$new(
+  prior = prior_file,
+  model = mod_onecomp,
+  past_data = PM_data$new(past_file, quiet = TRUE),
+  max_cycles = 50,
+  future = future_list,
+  dose_range = list(min = 0, max = 5000),
+  bias_weight = 0,
+  target_type = "concentration",
+  time_offset = 0
+)
+
+bd_new$plot()
