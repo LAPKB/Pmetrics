@@ -188,51 +188,19 @@ impl BestDosePosteriorHandle {
         let dose_range = DoseRange::new(dose_min, dose_max);
 
         self.posterior
-            .optimize(target_data, time_offset, dose_range, bias_weight, target_enum)
+            .optimize(
+                target_data,
+                time_offset,
+                dose_range,
+                bias_weight,
+                target_enum,
+            )
             .map_err(|e| format!("Optimization failed: {}", e))
     }
 
     pub fn posterior(&self) -> &BestDosePosterior {
         &self.posterior
     }
-}
-
-pub(crate) fn bestdose_ode(
-    model_path: PathBuf,
-    prior_path: PathBuf,
-    past_data_path: Option<PathBuf>,
-    target_data_path: PathBuf,
-    time_offset: Option<f64>,
-    dose_min: f64,
-    dose_max: f64,
-    bias_weight: f64,
-    target_type: &str,
-    params: List,
-) -> std::result::Result<BestDoseResult, String> {
-    let handle = BestDosePosteriorHandle::new(
-        model_path,
-        prior_path,
-        past_data_path,
-        params,
-    )?;
-
-    handle.optimize(target_data_path, time_offset, dose_min, dose_max, bias_weight, target_type)
-}
-
-/// Execute bestdose optimization for analytical models (placeholder - not yet supported)
-pub(crate) fn bestdose_analytical(
-    _model_path: PathBuf,
-    _prior_path: PathBuf,
-    _past_data_path: Option<PathBuf>,
-    _target_data_path: PathBuf,
-    _time_offset: Option<f64>,
-    _dose_min: f64,
-    _dose_max: f64,
-    _bias_weight: f64,
-    _target_type: &str,
-    _params: List,
-) -> std::result::Result<BestDoseResult, String> {
-    Err("BestDose for analytical models is not yet supported".to_string())
 }
 
 pub(crate) struct PosteriorSummary {
@@ -285,12 +253,7 @@ pub(crate) fn prepare_bestdose_posterior(
     past_data_path: Option<PathBuf>,
     params: List,
 ) -> std::result::Result<(BestDosePosteriorHandle, PosteriorSummary), String> {
-    let handle = BestDosePosteriorHandle::new(
-        model_path,
-        prior_path,
-        past_data_path,
-        params,
-    )?;
+    let handle = BestDosePosteriorHandle::new(model_path, prior_path, past_data_path, params)?;
 
     let summary = summarize_handle(&handle);
     Ok((handle, summary))

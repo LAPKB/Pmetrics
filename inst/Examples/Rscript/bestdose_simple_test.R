@@ -22,6 +22,7 @@ target_file <- "inst/Examples/src/bestdose_target.csv"
 prior_file <- "inst/Examples/src/bestdose_prior.csv"
 
 
+# ===== Two-stage API =====
 # Step 1: Compute the posterior once (expensive step)
 posterior <- bd_post$new(
     prior = prior_file,
@@ -33,24 +34,24 @@ posterior <- bd_post$new(
 cat("\nPosterior support points:\n")
 print(head(posterior$theta))
 
-# Step 2: Reuse the posterior for different bias weights
+# Step 2: Reuse the posterior for different bias weights (cheap)
 bias_weights <- seq(0, 1, by = 0.25)
 results <- lapply(bias_weights, function(lambda) {
-    bd$new(
+    posterior$optimize(
         target = target_file,
         dose_range = list(min = 0, max = 300),
         bias_weight = lambda,
-        posterior = posterior,
         target_type = "concentration"
     )
 })
-
+# bd_post$optimize(...) returns a bd object too.
 for (i in seq_along(results)) {
     cat("\n=== Bias weight:", bias_weights[i], "===\n")
     results[[i]]$print()
 }
 
 
+# ===== One-shot API =====
 bd1 <- bd$new(
     prior = prior_file,
     model = mod_onecomp,
