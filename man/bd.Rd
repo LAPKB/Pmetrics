@@ -26,6 +26,8 @@ or AUC values using Bayesian optimization.
 \item{\code{posterior}}{The \code{bd_post} object used to compute the posterior distribution (if applicable)}
 
 \item{\code{bias_weight}}{The bias weight (lambda) used in the optimization (if applicable)}
+
+\item{\code{time_offset}}{The time offset applied to predictions (if applicable)}
 }
 \if{html}{\out{</div>}}
 }
@@ -55,7 +57,9 @@ or AUC values using Bayesian optimization.
 \if{html}{\out{<a id="method-bd-new"></a>}}
 \if{latex}{\out{\hypertarget{method-bd-new}{}}}
 \subsection{Method \code{new()}}{
-Initialize a \code{bd} object by running optimization or loading from a previous result
+Initialize a \code{bd} object by running a one-shot BestDose optimization.
+Creates the posterior internally, then optimizes. For reusing the posterior
+across multiple optimizations, use \code{bd_post$new()} followed by \verb{$optimize()}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{bd$new(
   prior = NULL,
@@ -68,9 +72,7 @@ Initialize a \code{bd} object by running optimization or loading from a previous
   time_offset = NULL,
   max_cycles = 500,
   settings = NULL,
-  result = NULL,
-  posterior = NULL,
-  bias_override = NULL
+  posterior = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -83,7 +85,7 @@ Initialize a \code{bd} object by running optimization or loading from a previous
 
 \item{\code{past_data}}{PM_data object or path to CSV file with past patient data (optional)}
 
-\item{\code{target}}{PM_data object or path to CSV file with target data (required for new optimization)}
+\item{\code{target}}{PM_data object or path to CSV file with target data}
 
 \item{\code{dose_range}}{List with 'min' and 'max' elements defining the dose search range (default: 0 to 1000)}
 
@@ -97,11 +99,8 @@ Initialize a \code{bd} object by running optimization or loading from a previous
 
 \item{\code{settings}}{List of additional settings for posterior computation (optional)}
 
-\item{\code{result}}{Raw result list from optimization to initialize from (optional)}
-
-\item{\code{posterior}}{\code{bd_post} object to associate with this result (optional, used when initializing from a previous result)}
-
-\item{\code{bias_override}}{Numeric bias weight to override the one in the result (optional, used when initializing from a previous result)}
+\item{\code{posterior}}{\code{bd_post} object to use instead of computing a new one (optional).
+When provided, \code{prior}, \code{model}, \code{past_data}, \code{max_cycles}, and \code{settings} are ignored.}
 }
 \if{html}{\out{</div>}}
 }

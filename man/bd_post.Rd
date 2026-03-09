@@ -100,7 +100,7 @@ Run optimization and return a \code{bd} result object
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A \code{bd} object containing the optimization results for the given target and settings
+A \code{bd} object containing the optimization results
 }
 }
 \if{html}{\out{<hr>}}
