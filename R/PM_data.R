@@ -430,10 +430,14 @@ private = list(
     cli::cli_h1("DATA STANDARDIZATION")
     cat(msg)
   }
+    
+  # sort by id, time, dose
+  dataObj_orig <- dataObj_orig %>% arrange(id, time, dose)
+  dataObj <- dataObj %>% arrange(id, time, dose)
   
   validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), path = path, fix = TRUE, quiet = quiet)
   return(validData)
-} # end validate function
+  } # end validate function
 ) # end private
 ) # end PM_data
 
