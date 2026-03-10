@@ -115,11 +115,12 @@ future_list <- list(dose = 0, frequency = 12, route = 0, number = 3, target_time
 bd_new <- bd$new(
     prior = prior_file,
     model = mod_onecomp,
-    past_data = PM_data$new(past_file, quiet = TRUE),
+    # past_data = PM_data$new(past_file, quiet = TRUE),
     max_cycles = 50,
     future = future_list,
     dose_range = list(min = 0, max = 5000),
     prior_weight = 0,
+    time_offset = 0,
     target_type = "concentration",
 )
 
