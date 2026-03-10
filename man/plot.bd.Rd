@@ -6,14 +6,13 @@
 \usage{
 \method{plot}{bd}(
   x,
-  include,
-  exclude,
   mult = 1,
   outeq = 1,
   quiet = FALSE,
   legend = TRUE,
   log = FALSE,
   grid = FALSE,
+  future_region = FALSE,
   xlab = "Time",
   ylab = "Concentration",
   title = NULL,
@@ -26,10 +25,6 @@
 \arguments{
 \item{x}{A \code{bd} object containing the best dose predictions.}
 
-\item{include}{Vector of subject IDs to include in the plot. If missing, all subjects will be included.}
-
-\item{exclude}{Vector of subject IDs to exclude from the plot. If missing, no subjects will be excluded.}
-
 \item{mult}{Numeric multiplier to apply to the concentrations (default: 1, no scaling).}
 
 \item{outeq}{Numeric value of outeq to filter observations for plotting (default: 1).}
@@ -41,6 +36,8 @@
 \item{log}{Logical indicating whether to use a logarithmic scale for the y-axis (default: FALSE).}
 
 \item{grid}{Logical indicating whether to display a grid (default: FALSE).}
+
+\item{future_region}{Logical indicating whether to display the divider line and shaded region for future data (default: FALSE).}
 
 \item{xlab}{Label for the x-axis.}
 
@@ -61,7 +58,6 @@ Invisibly returns a plotly object.
 }
 \description{
 Plot observed and predicted concentrations over time for both past and future data,
-with options to include/exclude specific subjects, apply a multiplier to the
-concentrations, and customize the plot appearance. The top 5 posterior support
+with options to apply a multiplier to the concentrations, and customize the plot appearance. The top 5 posterior support
 points are highlighted with distinct colors.
 }

@@ -245,12 +245,20 @@ setPMoptions <- function(launch.app = TRUE) {
                   "date_format",
                   bslib::tooltip(
                     shiny::tags$span("Date format", shiny::icon("circle-question", class = "ms-1 text-muted")),
+<<<<<<< HEAD
                     "Format used to parse date strings"
                   ),
                   choices = c(
                     "MM/DD/YY (United States)" = "%m/%d/%y",
                     "DD/MM/YY (International)" = "%d/%m/%y",
                     "YYYY-MM-DD (ISO 8601)" = "%Y-%m-%d"
+=======
+                    "Date format used to parse date-time strings, e.g. the 'start' argument in BestDose"
+                  ),
+                  choices = c(
+                    "MM/DD/YY \u2014 United States" = "%m/%d/%y",
+                    "DD/MM/YY \u2014 International" = "%d/%m/%y"
+>>>>>>> f9e7a00b (feat: add default date format to PMoptions based on user locale)
                   ),
                   selected = "%m/%d/%y"
                 )
@@ -512,9 +520,13 @@ setPMoptions <- function(launch.app = TRUE) {
         }
         if (!is.null(settings$ic_method)) shiny::updateSelectInput(session, "ic_method", selected = settings$ic_method)
         if (!is.null(settings$date_format)) shiny::updateSelectInput(session, "date_format", selected = settings$date_format)
+<<<<<<< HEAD
         if (!is.null(settings$update_check)) shiny::updateSelectInput(session, "update_check", selected = settings$update_check)
         if (!is.null(settings$update_timeout)) shiny::updateNumericInput(session, "update_timeout", value = settings$update_timeout)
 
+=======
+        
+>>>>>>> f9e7a00b (feat: add default date format to PMoptions based on user locale)
         # Bias/imprecision methods - strip percent_ prefix for display
         if (!is.null(settings$bias_method)) {
           shiny::updateSelectInput(session, "bias_method", selected = stringr::str_remove(settings$bias_method, "^percent_"))
@@ -559,7 +571,10 @@ setPMoptions <- function(launch.app = TRUE) {
         input$sep, input$dec, input$digits, input$show_metrics,
         input$bias_method, input$imp_method, input$use_percent,
         input$ic_method, input$report_template, input$date_format,
+<<<<<<< HEAD
         input$update_check, input$update_timeout,
+=======
+>>>>>>> f9e7a00b (feat: add default date format to PMoptions based on user locale)
         ignoreInit = TRUE
       )
 
@@ -600,6 +615,7 @@ setPMoptions <- function(launch.app = TRUE) {
           imp_method = glue::glue(c("", "percent_")[1 + as.numeric(input$use_percent)], input$imp_method),
           ic_method = input$ic_method,
           report_template = input$report_template,
+<<<<<<< HEAD
           date_format = input$date_format,
           update_check = input$update_check,
           update_timeout = as.numeric(input$update_timeout)
@@ -622,6 +638,11 @@ setPMoptions <- function(launch.app = TRUE) {
               duration = 5
             )
           }
+=======
+          date_format = input$date_format
+          # backend = input$backend, 
+          # model_template_path = input$model_template_path
+>>>>>>> f9e7a00b (feat: add default date format to PMoptions based on user locale)
         )
       })
 

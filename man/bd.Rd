@@ -25,9 +25,11 @@ or AUC values using Bayesian optimization.
 
 \item{\code{posterior}}{The \code{bd_post} object used to compute the posterior distribution (if applicable)}
 
-\item{\code{bias_weight}}{The bias weight (lambda) used in the optimization (if applicable)}
+\item{\code{prior_weight}}{The prior weight (lambda) used in the optimization (if applicable)}
 
-\item{\code{time_offset}}{The time offset applied to predictions (if applicable)}
+\item{\code{start}}{Start specification provided by user (numeric hours or datetime string)}
+
+\item{\code{start_offset}}{Resolved numeric offset (hours) used internally}
 }
 \if{html}{\out{</div>}}
 }
@@ -63,15 +65,14 @@ Creates the posterior internally, then optimizes. For reusing the posterior
 across multiple optimizations, use \code{bd_post$new()} followed by \verb{$optimize()}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{bd$new(
-  prior = NULL,
   model = NULL,
+  prior = NULL,
   past_data = NULL,
-  target = NULL,
   future = NULL,
   dose_range = list(min = 0, max = 1000),
-  bias_weight = 0.5,
+  prior_weight = 0.5,
   target_type = "concentration",
-  time_offset = NULL,
+  start = 0,
   max_cycles = 500,
   settings = NULL,
   posterior = NULL,
@@ -82,34 +83,58 @@ across multiple optimizations, use \code{bd_post$new()} followed by \verb{$optim
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{prior}}{Prior information for the model, can be a PM_result, PM_final, or path to theta.csv}
-
 \item{\code{model}}{PM_model object or path to compiled model}
 
-\item{\code{past_data}}{PM_data object or path to CSV file with past patient data (optional)}
+\item{\code{prior}}{Prior parameter value distributions for the model, can be a \link{PM_result}, \link{PM_final}, or path to \code{theta.csv} file.}
 
-\item{\code{target}}{PM_data object or path to CSV file with target data (optional).
-Provide either \code{target} or \code{future}, not both.}
+\item{\code{past_data}}{PM_data object or path to CSV file with past patient data (optional). Omitting this will plan a new regimen for the patient
+based on the population prior without any individualization other than inclusion of any covariates which are in the model.}
 
-\item{\code{future}}{List describing future dosing/target setup with elements:
-dose (required), frequency (default 24), route (default 0), number (default 1),
-target (required), target_time (default 24), covariates (optional list).
-Provide either \code{target} or \code{future}, not both.}
+\item{\code{future}}{The future regimen to optimize. It can be one of three things:
+\itemize{
+\item A list describing future dosing/target setup with elements:
+\itemize{
+\item `dose`` The amount to administer (required). Use '0' to optimize the dose to achieve the target. Any other value will be used as fixed dose.
+\item \code{frequency}  How often to administer the dose(s). If unspecified, default every 24 hours. Maps to the II value in \link{PM_data}.
+\item \code{route} Either 0 for oral/bolus, or a value >0 to indicate the length of the infusion. If unspecified, defaults to 0. Maps to the DUR value in \link{PM_data}
+\item \code{number} The total number of doses to administer in the future, default 1 if unspecified. Maps to the ADDL value in \link{PM_data}.
+\item \code{target} The target value to achieve after every dose (required). Will be a concentration or AUC, depending on the \code{target_type} argument.
+\item \code{target_time} The time at which to achieve the target after each dose, default 24 hours if unspecified.
+\item \code{covariates} Named list of covariates in the model with values to use. If there are no covariates in the model, this can be omitted.
+}
+\item A \code{PM_data} object containing the future regimen and target observations. Dose events should be included with \code{evid=1} and target observations should be included with \code{evid=0} and \code{out} equal to the target value.
+\item A path to a CSV file containing the future regimen and target observations in the same format as described for the \code{PM_data} object above.
+}}
 
 \item{\code{dose_range}}{List with 'min' and 'max' elements defining the dose search range (default: 0 to 1000)}
 
-\item{\code{bias_weight}}{Numeric between 0 and 1 indicating the weight of bias in the optimization (default: 0.5)}
+\item{\code{prior_weight}}{Numeric between 0 and 1 indicating the balance between the prior and the posterior in the optimization (default: 0.5).
+If 1, the model prior parameter
+value distribution will be used as the sole basis for optimization. If 0, only the Bayesian posterior parameter distribution will be used,
+which incorporates the patient history. Values between 0 and 1 will weight the contribution of the prior vs posterior parameter distributions in the optimization.
+Choose values closer to 1 when the patient history is sparse or not believed to be very informative, and values closer to 0 when the patient history is rich and believed to be highly informative.}
 
 \item{\code{target_type}}{Character string indicating the type of target: "concentration", "auc_from_zero", or "auc_from_last_dose" (default: "concentration")}
 
-\item{\code{time_offset}}{Numeric time offset to apply to predictions (optional)}
+\item{\code{start}}{Start time for the future regimen. Can be either:
+\itemize{
+\item Numeric hours (default \code{0}): relative to the last event date/time in past data, or if no past data,
+relative to the next local clock hour.
+\item Date-time character string: interpreted as an absolute start date/time and converted to an internal hour offset.
+Accepted formats include:
+\itemize{
+\item \verb{YYYY-mm-dd HH:MM[:SS]}
+\item \verb{mm/dd/[YY]YY HH:MM[:SS]} or \verb{mm-dd-[YY]YY HH:MM[:SS]}
+\item \verb{dd/mm/[YY]YY HH:MM[:SS]} or \verb{dd-mm-[YY]YY HH:MM[:SS]}
+}
+}}
 
 \item{\code{max_cycles}}{Maximum number of optimization cycles for computing the posterior (default: 500)}
 
 \item{\code{settings}}{List of additional settings for posterior computation (optional)}
 
 \item{\code{posterior}}{\code{bd_post} object to use instead of computing a new one (optional).
-When provided, \code{prior}, \code{model}, \code{past_data}, \code{max_cycles}, and \code{settings} are ignored.}
+When provided, \code{prior}, \code{model}, \code{past_data}, \code{max_cycles}, and \code{settings} are ignored, as they are already included in the \code{posterior} object.}
 
 \item{\code{quiet}}{Logical indicating whether to suppress verbose simulation output (default: FALSE)}
 }

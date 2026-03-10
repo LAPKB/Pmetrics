@@ -9,5 +9,7 @@
   "report_template": "app",
   "date_format": "%m/%d/%y",
   "update_check": "weekly",
-  "update_timeout": 1
+  "update_timeout": 1,
+  "backend": "rust",
+  "model_template_path": ""
 }

@@ -81,7 +81,7 @@ bd1 <- bd$new(
     dose_range = list(min = 0, max = 5000),
     prior_weight = 0,
     target_type = "concentration",
-    time_offset = 0
+    start = 0
 )
 
 bd1
@@ -92,7 +92,7 @@ bd2 <- bd$new(
     prior = prior_file,
     model = mod_onecomp,
     max_cycles = 500,
-    target = target_file,
+    future = target_file,
     dose_range = list(min = 0, max = 300),
     prior_weight = 0.0,
     target_type = "concentration"
@@ -115,12 +115,12 @@ future_list <- list(dose = 0, frequency = 12, route = 0, number = 3, target_time
 bd_new <- bd$new(
     prior = prior_file,
     model = mod_onecomp,
-    # past_data = PM_data$new(past_file, quiet = TRUE),
+    past_data = PM_data$new(past_file, quiet = TRUE),
     max_cycles = 50,
     future = future_list,
     dose_range = list(min = 0, max = 5000),
     prior_weight = 0,
-    time_offset = 0,
+    start = "02/02/26 00:00",
     target_type = "concentration",
 )
 

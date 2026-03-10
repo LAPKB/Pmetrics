@@ -29,8 +29,10 @@ bd <- R6::R6Class(
         posterior = NULL,
         #' @field prior_weight The prior weight (lambda) used in the optimization (if applicable)
         prior_weight = NULL,
-        #' @field time_offset The time offset applied to predictions (if applicable)
-        time_offset = NULL,
+        #' @field start Start specification provided by user (numeric hours or datetime string)
+        start = NULL,
+        #' @field start_offset Resolved numeric offset (hours) used internally
+        start_offset = 0,
         #' @description
         #' Initialize a `bd` object by running a one-shot BestDose optimization.
         #' Creates the posterior internally, then optimizes. For reusing the posterior
@@ -57,8 +59,16 @@ bd <- R6::R6Class(
         #' which incorporates the patient history. Values between 0 and 1 will weight the contribution of the prior vs posterior parameter distributions in the optimization.
         #' Choose values closer to 1 when the patient history is sparse or not believed to be very informative, and values closer to 0 when the patient history is rich and believed to be highly informative.
         #' @param target_type Character string indicating the type of target: "concentration", "auc_from_zero", or "auc_from_last_dose" (default: "concentration")
-        #' @param time_offset Numeric time offset to apply to the start of the future, which defaults to 0. For plotting purposes, 
-        #' this corresponds to the last time in the past data, or the next hour if there are no past data.
+        #' @param start Start time for the future regimen. Can be either:
+        #' * Numeric hours (default `0`): relative to the last event date/time in past data, or if no past data,
+        #'   relative to the next local clock hour.
+        #' * Date-time character string: interpreted as an absolute start date/time and converted to an internal hour offset.
+        #'   Ambiguous formats (e.g. `01/02/26`) are resolved using the `date_format` Pmetrics option
+        #'   (set via [setPMoptions]), which defaults to `%m/%d/%y` for US locales and `%d/%m/%y` otherwise.
+        #'   Accepted formats include:
+        #'   - `YYYY-mm-dd HH:MM[:SS]`
+        #'   - `mm/dd/[YY]YY HH:MM[:SS]` or `mm-dd-[YY]YY HH:MM[:SS]`
+        #'   - `dd/mm/[YY]YY HH:MM[:SS]` or `dd-mm-[YY]YY HH:MM[:SS]`
         #' @param max_cycles Maximum number of optimization cycles for computing the posterior (default: 500)
         #' @param settings List of additional settings for posterior computation (optional)
         #' @param posterior `bd_post` object to use instead of computing a new one (optional).
@@ -73,7 +83,7 @@ bd <- R6::R6Class(
             dose_range = list(min = 0, max = 1000),
             prior_weight = 0.5,
             target_type = "concentration",
-            time_offset = NULL,
+            start = 0,
             max_cycles = 500,
             settings = NULL,
             posterior = NULL,
@@ -105,11 +115,18 @@ bd <- R6::R6Class(
                     )
                 }
                 
-                raw <- private$.optimize(posterior, future_data, dose_range, prior_weight, target_type, time_offset, quiet)
+                start_info <- private$.resolve_start(start, posterior$past)
+
+                raw <- private$.optimize(posterior, future_data, dose_range, prior_weight, target_type, start_info$start_offset, quiet)
                 
                 private$.set_result(future_data, raw, posterior, prior_weight)
                 self$past <- posterior$past
-                self$time_offset <- time_offset
+                self$start <- start_info$start
+                self$start_offset <- start_info$start_offset
+
+                if (!is.null(self$past) && self$start_offset > 0) {
+                    private$.extend_past_to_start(self$start_offset)
+                }
                 
                 private$.sim_past()
                 private$.sim_future()
@@ -129,10 +146,14 @@ bd <- R6::R6Class(
                 cat(sprintf("Method: %s\n", self$method))
                 cat(sprintf("Status: %s\n", self$status))
                 if (!is.null(self$prior_weight)) {
-                    cat(sprintf("Bias weight (lambda): %.2f\n", self$prior_weight))
+                    cat(sprintf("Prior weight: %.2f\n", self$prior_weight))
                 }
-                if (!is.null(self$time_offset)) {
-                    cat(sprintf("Time offset: %.2f\n", self$time_offset))
+                if (!is.null(self$start)) {
+                    if (is.character(self$start)) {
+                        cat(sprintf("Start: %s\n", self$start))
+                    } else {
+                        cat(sprintf("Start offset (h): %.2f\n", self$start_offset))
+                    }
                 }
                 cat(sprintf("\nNumber of predictions: %d\n", nrow(self$result$predictions)))
                 if (!is.null(self$result$auc_predictions)) {
@@ -205,7 +226,7 @@ bd <- R6::R6Class(
                 }
                 future_data
             },
-            .optimize = function(posterior, future_data, dose_range, prior_weight, target_type, time_offset, quiet = FALSE) {
+            .optimize = function(posterior, future_data, dose_range, prior_weight, target_type, start_offset, quiet = FALSE) {
                 if (is.null(posterior$handle)) {
                     cli::cli_abort(c(
                         "x" = "bd_post object is not properly initialized.",
@@ -234,7 +255,7 @@ bd <- R6::R6Class(
                 res <- bestdose_optimize(
                     posterior$handle,
                     future_data_path,
-                    time_offset,
+                    start_offset,
                     dose_range$min,
                     dose_range$max,
                     bias_weight = prior_weight,
@@ -254,6 +275,122 @@ bd <- R6::R6Class(
                 self$result <- result
                 self$posterior <- posterior
                 self$prior_weight <- prior_weight
+                invisible(self)
+            },
+            .resolve_start = function(start, past) {
+                if (is.numeric(start) && length(start) == 1 && !is.na(start)) {
+                    start_offset <- as.numeric(start)
+                } else if (is.character(start) && length(start) == 1 && nzchar(start)) {
+                    ref_datetime <- private$.reference_datetime(past)
+                    start_datetime <- private$.parse_datetime(start)
+                    if (is.na(start_datetime)) {
+                        cli::cli_abort(c(
+                            "x" = "Unable to parse {.arg start} datetime string.",
+                            "i" = "Use an ISO-like value such as {.code '2026-02-01 14:00:00'}."
+                        ))
+                    }
+                    start_offset <- as.numeric(difftime(start_datetime, ref_datetime, units = "hours"))
+                } else {
+                    cli::cli_abort("{.arg start} must be a single numeric value or a date-time character string.")
+                }
+
+                if (!is.finite(start_offset) || start_offset < 0) {
+                    cli::cli_abort("{.arg start} resolves to a negative or invalid offset relative to the reference time.")
+                }
+
+                list(start = start, start_offset = start_offset)
+            },
+            .reference_datetime = function(past) {
+                if (!is.null(past) && !is.null(past$data) && nrow(past$data) > 0 &&
+                    all(c("date", "time") %in% names(past$data))) {
+                    dt_raw <- paste(as.character(past$data$date), as.character(past$data$time))
+                    dt_vals <- vapply(
+                        dt_raw,
+                        function(x) private$.parse_datetime(x),
+                        FUN.VALUE = as.POSIXct(NA_real_, origin = "1970-01-01", tz = Sys.timezone())
+                    )
+
+                    if (!all(is.na(dt_vals))) {
+                        if (!is.null(past$standard_data) && "time" %in% names(past$standard_data) &&
+                            nrow(past$standard_data) == length(dt_vals)) {
+                            idx <- which.max(past$standard_data$time)
+                            if (length(idx) == 1 && !is.na(dt_vals[idx])) {
+                                return(dt_vals[idx])
+                            }
+                        }
+                        return(max(dt_vals, na.rm = TRUE))
+                    }
+                }
+
+                now <- Sys.time()
+                ceiling_hour <- as.POSIXct(
+                    format(now, "%Y-%m-%d %H:00:00"),
+                    format = "%Y-%m-%d %H:%M:%S",
+                    tz = Sys.timezone()
+                )
+                if (ceiling_hour <= now) ceiling_hour <- ceiling_hour + 3600
+                ceiling_hour
+            },
+            .parse_datetime = function(x) {
+                # Get user-preferred date format from Pmetrics options; fall back to locale
+                user_date_fmt <- getPMoptions("date_format", warn = FALSE, quiet = TRUE)
+                if (!is.character(user_date_fmt) || !nzchar(user_date_fmt)) {
+                    user_date_fmt <- if (grepl("en_US", Sys.getlocale("LC_TIME"), fixed = TRUE)) "%m/%d/%y" else "%d/%m/%y"
+                }
+                user_4yr <- sub("%y", "%Y", user_date_fmt, fixed = TRUE)
+                formats <- unique(c(
+                    paste(user_4yr,      "%H:%M:%S"),
+                    paste(user_4yr,      "%H:%M"),
+                    paste(user_date_fmt, "%H:%M:%S"),
+                    paste(user_date_fmt, "%H:%M"),
+                    "%Y-%m-%d %H:%M:%S",
+                    "%Y-%m-%d %H:%M",
+                    "%m/%d/%Y %H:%M:%S",
+                    "%m/%d/%Y %H:%M",
+                    "%m/%d/%y %H:%M:%S",
+                    "%m/%d/%y %H:%M",
+                    "%m-%d-%Y %H:%M",
+                    "%m-%d-%Y %H:%M:%S",
+                    "%m-%d-%y %H:%M",
+                    "%m-%d-%y %H:%M:%S",
+                    "%d/%m/%Y %H:%M:%S",
+                    "%d/%m/%Y %H:%M",
+                    "%d/%m/%y %H:%M:%S",
+                    "%d/%m/%y %H:%M",
+                    "%d-%m-%Y %H:%M:%S",
+                    "%d-%m-%Y %H:%M",
+                    "%d-%m-%y %H:%M:%S",
+                    "%d-%m-%y %H:%M"
+                ))
+                for (fmt in formats) {
+                    dt <- suppressWarnings(as.POSIXct(x, format = fmt, tz = Sys.timezone()))
+                    if (!is.na(dt)) return(dt)
+                }
+                suppressWarnings(as.POSIXct(x, tz = Sys.timezone()))
+            },
+            .extend_past_to_start = function(start_offset) {
+                if (is.null(self$past) || is.null(self$past$standard_data) || nrow(self$past$standard_data) == 0) {
+                    return(invisible(NULL))
+                }
+
+                past_std <- self$past$standard_data
+                last_rows <- past_std |>
+                    dplyr::group_by(id) |>
+                    dplyr::slice_max(time, n = 1, with_ties = FALSE) |>
+                    dplyr::ungroup()
+
+                new_rows <- last_rows
+                new_rows$time <- new_rows$time + start_offset
+                if ("evid" %in% names(new_rows)) new_rows$evid <- 0
+                if ("dose" %in% names(new_rows)) new_rows$dose <- NA_real_
+                if ("dur" %in% names(new_rows)) new_rows$dur <- NA_real_
+                if ("addl" %in% names(new_rows)) new_rows$addl <- NA_real_
+                if ("ii" %in% names(new_rows)) new_rows$ii <- NA_real_
+                if ("out" %in% names(new_rows)) new_rows$out <- NA_real_
+
+                self$past$standard_data <- dplyr::bind_rows(past_std, new_rows) |>
+                    dplyr::arrange(id, time)
+
                 invisible(self)
             },
             .sim_past = function() {
@@ -405,14 +542,19 @@ bd <- R6::R6Class(
                 #' @param dose_range List with 'min' and 'max' elements defining the dose search range (default: 0 to 1000)
                 #' @param prior_weight Numeric between 0 and 1 indicating the weight of bias in the optimization (default: 0.5)
                 #' @param target_type Character string indicating the type of target: "concentration", "auc_from_zero", or "auc_from_last_dose" (default: "concentration")
-                #' @param time_offset Numeric time offset to apply to predictions (optional)
+                #' @param start Start time for future regimen. Can be either numeric hours (default: `0`) or a date-time
+                #'   character string. Ambiguous formats are resolved using the `date_format` Pmetrics option
+                #'   (see [setPMoptions]). Accepted string formats:
+                #'   - `YYYY-mm-dd HH:MM[:SS]`
+                #'   - `mm/dd/[YY]YY HH:MM[:SS]` or `mm-dd-[YY]YY HH:MM[:SS]`
+                #'   - `dd/mm/[YY]YY HH:MM[:SS]` or `dd-mm-[YY]YY HH:MM[:SS]`
                 #' @param quiet Logical indicating whether to suppress verbose simulation output. If NULL, uses the quiet setting from posterior computation (default: NULL)
                 #' @return A `bd` object containing the optimization results
                 optimize = function(target,
                     dose_range = list(min = 0, max = 1000),
                     prior_weight = 0.5,
                     target_type = "concentration",
-                    time_offset = NULL,
+                    start = 0,
                     quiet = NULL) {
                         if (is.null(quiet)) quiet <- private$.quiet
                         bd$new(
@@ -420,7 +562,7 @@ bd <- R6::R6Class(
                             dose_range = dose_range,
                             prior_weight = prior_weight,
                             target_type = target_type,
-                            time_offset = time_offset,
+                            start = start,
                             posterior = self,
                             quiet = quiet
                         )
@@ -616,25 +758,18 @@ bd <- R6::R6Class(
                     
                     # Compute a single, consistent future_time_offset (in hours) for plotting.
                     # This mirrors the Rust optimization logic:
-                    #   time_offset = NULL  → independent timelines (visual gap)
-                    #   time_offset = 0     → future starts at last past event
-                    #   time_offset = N     → future starts N hours after last past event
+                    #   with past: future starts at max past time (past is optionally extended to start)
+                    #   without past: future starts at start_offset hours from plot origin
                     future_time_offset <- 0
                     has_past <- !is.null(x$past) && !is.null(x$past$standard_data) && nrow(x$past$standard_data) > 0
                     if (has_past) {
-                        max_past_time <- max(x$past$standard_data$time, na.rm = TRUE)
-                        if (!is.null(x$time_offset)) {
-                            future_time_offset <- max_past_time + x$time_offset
-                        } else {
-                            # Independent timelines: add a visible gap
-                            max_future_time <- max(x$future$standard_data$time, na.rm = TRUE)
-                            visual_gap <- max(max_future_time * 0.15, 2)
-                            future_time_offset <- max_past_time + visual_gap
-                        }
+                        future_time_offset <- max(x$past$standard_data$time, na.rm = TRUE)
+                    } else {
+                        future_time_offset <- x$start_offset %||% 0
                     }
                     
                     if (!quiet) {
-                        cli::cli_alert_info("time_offset = {deparse(x$time_offset)}, future_time_offset = {future_time_offset} h")
+                        cli::cli_alert_info("start = {deparse(x$start)}, start_offset = {x$start_offset %||% 0}, future_time_offset = {future_time_offset} h")
                     }
                     
                     # Extract observation data from both simulations
@@ -661,23 +796,6 @@ bd <- R6::R6Class(
                         dplyr::arrange(id, nsim, time) |>
                         dplyr::mutate(datetime = start_datetime + time * 3600)
                         
-                        # When time_offset is NULL (independent timelines), insert NA break rows
-                        # between past and future for each (id, nsim) group so plotly breaks the line.
-                        if (is.null(x$time_offset)) {
-                            break_rows <- combined_obs |>
-                            dplyr::filter(source == "past") |>
-                            dplyr::group_by(id, nsim) |>
-                            dplyr::slice_max(time, n = 1) |>
-                            dplyr::ungroup() |>
-                            dplyr::mutate(
-                                time = time + 0.01,
-                                datetime = start_datetime + time * 3600,
-                                out = NA_real_,
-                                source = "break"
-                            )
-                            combined_obs <- dplyr::bind_rows(combined_obs, break_rows) |>
-                            dplyr::arrange(id, nsim, time)
-                        }
                     } else {
                         combined_obs <- future_obs_adjusted |>
                         dplyr::mutate(source = "future") |>
@@ -892,10 +1010,10 @@ bd <- R6::R6Class(
                                 x = dose_datetime,
                                 y = y_min,
                                 marker = list(
-                                    symbol = "triangle-up",
+                                    symbol = "triangle-up-open",
                                     size = 10,
                                     color = "black",
-                                    line = list(color = "black", width = 2)
+                                    line = list(color = "black", width = 1)
                                 ),
                                 customdata = list(list(dose_amt, dur_text)),
                                 hovertemplate = "Time: %{x}<br>Dose: %{customdata[0]}<br>%{customdata[1]}<extra></extra>",
@@ -909,10 +1027,10 @@ bd <- R6::R6Class(
                                     x = dose_datetime + dose_dur * 3600,
                                     y = y_min,
                                     marker = list(
-                                        symbol = "triangle-down",
+                                        symbol = "triangle-down-open",
                                         size = 10,
                                         color = "black",
-                                        line = list(color = "black", width = 2)
+                                        line = list(color = "black", width = 1)
                                     ),
                                     text = "End infusion",
                                     hovertemplate = "Time: %{x}<br>%{text}<extra></extra>",
@@ -938,10 +1056,10 @@ bd <- R6::R6Class(
                                 x = dose_datetime,
                                 y = y_min,
                                 marker = list(
-                                    symbol = "triangle-up",
+                                    symbol = "triangle-up-open",
                                     size = 10,
                                     color = "red",
-                                    line = list(color = "red", width = 2)
+                                    line = list(color = "red", width = 1)
                                 ),
                                 customdata = list(list(dose_amt, dur_text)),
                                 hovertemplate = "Time: %{x}<br>Dose: %{customdata[0]}<br>%{customdata[1]}<extra></extra>",
@@ -954,10 +1072,10 @@ bd <- R6::R6Class(
                                     x = dose_datetime + dose_dur * 3600,
                                     y = y_min,
                                     marker = list(
-                                        symbol = "triangle-down",
+                                        symbol = "triangle-down-open",
                                         size = 10,
                                         color = "red",
-                                        line = list(color = "red", width = 2)
+                                        line = list(color = "red", width = 1)
                                     ),
                                     text = "End infusion",
                                     hovertemplate = "Time: %{x}<br>%{text}<extra></extra>",
