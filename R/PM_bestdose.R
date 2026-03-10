@@ -90,7 +90,6 @@ bd <- R6::R6Class(
                     settings = settings
                 )
             }
-
             raw <- private$.optimize(posterior, future_data, dose_range, bias_weight, target_type, time_offset)
 
             private$.set_result(future_data, raw, posterior, bias_weight)
@@ -189,7 +188,6 @@ bd <- R6::R6Class(
                 )
                 do.call(future_data$addEvent, obs_args)
             }
-
             future_data
         },
         .optimize = function(posterior, target, dose_range, bias_weight, target_type, time_offset) {
@@ -217,7 +215,7 @@ bd <- R6::R6Class(
             }
 
             target_data_path <- bestdose_parse_data(target)
-
+          
             res <- bestdose_optimize(
                 posterior$handle,
                 target_data_path,

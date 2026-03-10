@@ -309,9 +309,9 @@ addEvent = function(..., dt = NULL, quiet = FALSE, validate = FALSE) {
   new_data <- dplyr::bind_rows(self$data, to_add) %>% dplyr::arrange(id, time)
   
   
-  self$data <- new_data
+  self$data <- new_data 
   if (validate) {
-    self$data <- self$data %>% dplyr::select(where(~ !all(is.na(.x))))
+    self$data <- self$data %>% dplyr::select(where(~ !all(is.na(.x)))) %>% arrange(id, time, out)
     self$standard_data <- private$validate(self$data, path = getwd(), dt = dt, quiet = quiet)
   } else {
     self$standard_data <- NULL
@@ -432,8 +432,8 @@ private = list(
   }
     
   # sort by id, time, dose
-  dataObj_orig <- dataObj_orig %>% arrange(id, time, dose)
-  dataObj <- dataObj %>% arrange(id, time, dose)
+  dataObj_orig <- dataObj_orig %>% arrange(id, time, out) # for any out at same time as dose, out will come first
+  dataObj <- dataObj %>% arrange(id, time, out)
   
   validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), path = path, fix = TRUE, quiet = quiet)
   return(validData)
