@@ -11,14 +11,14 @@
   mult = 1,
   outeq = 1,
   quiet = FALSE,
-  legend = FALSE,
-  log = TRUE,
+  legend = TRUE,
+  log = FALSE,
   grid = FALSE,
-  xlab,
-  ylab,
-  title,
-  xlim,
-  ylim,
+  xlab = "Time",
+  ylab = "Concentration",
+  title = NULL,
+  xlim = NULL,
+  ylim = NULL,
   print = TRUE,
   ...
 )
@@ -36,9 +36,9 @@
 
 \item{quiet}{Logical indicating whether to suppress messages (default: FALSE).}
 
-\item{legend}{Logical indicating whether to display a legend (default: FALSE).}
+\item{legend}{Logical indicating whether to display a legend (default: TRUE).}
 
-\item{log}{Logical indicating whether to use a logarithmic scale for the y-axis (default: TRUE).}
+\item{log}{Logical indicating whether to use a logarithmic scale for the y-axis (default: FALSE).}
 
 \item{grid}{Logical indicating whether to display a grid (default: FALSE).}
 
@@ -60,5 +60,8 @@
 Invisibly returns a plotly object.
 }
 \description{
-Plot observed and predicted concentrations over time for both past and target data, with options to include/exclude specific subjects, apply a multiplier to the concentrations, and customize the plot appearance.
+Plot observed and predicted concentrations over time for both past and future data,
+with options to include/exclude specific subjects, apply a multiplier to the
+concentrations, and customize the plot appearance. The top 5 posterior support
+points are highlighted with distinct colors.
 }

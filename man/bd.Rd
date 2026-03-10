@@ -17,9 +17,9 @@ or AUC values using Bayesian optimization.
 
 \item{\code{past_pred}}{PM_sim object containing model predictions for the past data}
 
-\item{\code{target}}{PM_data object containing target data used in the optimization}
+\item{\code{future}}{PM_data object containing future data used in the optimization}
 
-\item{\code{target_pred}}{PM_sim object containing model predictions for the target data}
+\item{\code{future_pred}}{PM_sim object containing model predictions for the future data}
 
 \item{\code{result}}{List containing optimization results, including optimal doses, predictions, and objective function value}
 
@@ -67,13 +67,15 @@ across multiple optimizations, use \code{bd_post$new()} followed by \verb{$optim
   model = NULL,
   past_data = NULL,
   target = NULL,
+  future = NULL,
   dose_range = list(min = 0, max = 1000),
   bias_weight = 0.5,
   target_type = "concentration",
   time_offset = NULL,
   max_cycles = 500,
   settings = NULL,
-  posterior = NULL
+  posterior = NULL,
+  quiet = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -86,7 +88,13 @@ across multiple optimizations, use \code{bd_post$new()} followed by \verb{$optim
 
 \item{\code{past_data}}{PM_data object or path to CSV file with past patient data (optional)}
 
-\item{\code{target}}{PM_data object or path to CSV file with target data}
+\item{\code{target}}{PM_data object or path to CSV file with target data (optional).
+Provide either \code{target} or \code{future}, not both.}
+
+\item{\code{future}}{List describing future dosing/target setup with elements:
+dose (required), frequency (default 24), route (default 0), number (default 1),
+target (required), target_time (default 24), covariates (optional list).
+Provide either \code{target} or \code{future}, not both.}
 
 \item{\code{dose_range}}{List with 'min' and 'max' elements defining the dose search range (default: 0 to 1000)}
 
@@ -102,6 +110,8 @@ across multiple optimizations, use \code{bd_post$new()} followed by \verb{$optim
 
 \item{\code{posterior}}{\code{bd_post} object to use instead of computing a new one (optional).
 When provided, \code{prior}, \code{model}, \code{past_data}, \code{max_cycles}, and \code{settings} are ignored.}
+
+\item{\code{quiet}}{Logical indicating whether to suppress verbose simulation output (default: FALSE)}
 }
 \if{html}{\out{</div>}}
 }
@@ -140,7 +150,7 @@ Save results to RDS file
 \if{html}{\out{<a id="method-bd-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-bd-plot}{}}}
 \subsection{Method \code{plot()}}{
-Plot observed and predicted concentrations over time for both past and target data
+Plot observed and predicted concentrations over time for both past and future data
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{bd$plot(...)}\if{html}{\out{</div>}}
 }
