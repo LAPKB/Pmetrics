@@ -93,7 +93,7 @@ bd2 <- bd$new(
     max_cycles = 500,
     target = target_file,
     dose_range = list(min = 0, max = 300),
-    bias_weight = 0.5,
+    bias_weight = 0.0,
     target_type = "concentration"
 )
 
@@ -121,7 +121,6 @@ bd_new <- bd$new(
     dose_range = list(min = 0, max = 5000),
     bias_weight = 0,
     target_type = "concentration",
-    time_offset = 0
 )
 
 bd_new$plot()
