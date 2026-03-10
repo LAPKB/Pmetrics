@@ -17,8 +17,8 @@ mod_onecomp <- PM_model$new(
 )
 
 past_file <- "inst/Examples/src/bestdose_past.csv"
-target_file <- "inst/Examples/src/bestdose_target_pmcore.csv"
-prior_file <- "inst/Examples/src/bestdose_prior_pmcore.csv"
+target_file <- "inst/Examples/src/bestdose_target.csv"
+prior_file <- "inst/Examples/src/bestdose_prior.csv"
 
 cat("Using PMcore prior file\n")
 
@@ -35,12 +35,12 @@ print(head(posterior$theta, 5))
 cat("\nPosterior weights (first 10):\n")
 print(head(posterior$posterior_weights, 10))
 
-bias_weights <- seq(0, 1, by = 0.1)
-for (lambda in bias_weights) {
+prior_weights <- seq(0, 1, by = 0.1)
+for (lambda in prior_weights) {
     r <- posterior$optimize(
         target = target_file,
         dose_range = list(min = 0, max = 300),
-        bias_weight = lambda, # ought to be called "prior_weight"
+        prior_weight = lambda, # ought to be called "prior_weight"
         target_type = "concentration"
     )
     cat(sprintf(
@@ -57,10 +57,10 @@ for (lambda in bias_weights) {
 r <- posterior$optimize(
     target = target_file,
     dose_range = list(min = 0, max = 300),
-    bias_weight = 0.0,
+    prior_weight = 0.0,
     target_type = "concentration"
 )
-cat("\nConcentration-time predictions for bias_weight=0.0:\n")
+cat("\nConcentration-time predictions for prior_weight=0.0:\n")
 preds <- r$result$predictions
 for (j in seq_len(nrow(preds))) {
     p <- preds[j, ]
@@ -79,13 +79,14 @@ bd1 <- bd$new(
     max_cycles = 500,
     future = PM_data$new(target_file, quiet = TRUE),
     dose_range = list(min = 0, max = 5000),
-    bias_weight = 0,
+    prior_weight = 0,
     target_type = "concentration",
     time_offset = 0
 )
 
 bd1
 
+bd1$plot()
 
 bd2 <- bd$new(
     prior = prior_file,
@@ -93,14 +94,13 @@ bd2 <- bd$new(
     max_cycles = 500,
     target = target_file,
     dose_range = list(min = 0, max = 300),
-    bias_weight = 0.0,
+    prior_weight = 0.0,
     target_type = "concentration"
 )
 
 bd2
 
 
-bd1$plot()
 
 bd2$plot()
 
@@ -119,7 +119,7 @@ bd_new <- bd$new(
     max_cycles = 50,
     future = future_list,
     dose_range = list(min = 0, max = 5000),
-    bias_weight = 0,
+    prior_weight = 0,
     target_type = "concentration",
 )
 
