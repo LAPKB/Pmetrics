@@ -540,19 +540,17 @@ bd <- R6::R6Class(
             #'
             #' @description
             #' Plot observed and predicted concentrations over time for both past and future data,
-            #' with options to include/exclude specific subjects, apply a multiplier to the
-            #' concentrations, and customize the plot appearance. The top 5 posterior support
+            #' with options to apply a multiplier to the concentrations, and customize the plot appearance. The top 5 posterior support 
             #' points are highlighted with distinct colors.
             #'
             #' @param x A `bd` object containing the best dose predictions.
-            #' @param include Vector of subject IDs to include in the plot. If missing, all subjects will be included.
-            #' @param exclude Vector of subject IDs to exclude from the plot. If missing, no subjects will be excluded.
             #' @param mult Numeric multiplier to apply to the concentrations (default: 1, no scaling).
             #' @param outeq Numeric value of outeq to filter observations for plotting (default: 1).
             #' @param quiet Logical indicating whether to suppress messages (default: FALSE).
             #' @param legend Logical indicating whether to display a legend (default: TRUE).
             #' @param log Logical indicating whether to use a logarithmic scale for the y-axis (default: FALSE).
             #' @param grid Logical indicating whether to display a grid (default: FALSE).
+            #' @param future_region Logical indicating whether to display the divider line and shaded region for future data (default: FALSE).
             #' @param xlab Label for the x-axis.
             #' @param ylab Label for the y-axis.
             #' @param title Title of the plot.
@@ -565,9 +563,10 @@ bd <- R6::R6Class(
             #'
             #' @export
             #' @method plot bd
-            plot.bd <- function(x, include, exclude, mult = 1, outeq = 1,
+            plot.bd <- function(x, mult = 1, outeq = 1,
                 quiet = FALSE, legend = TRUE, log = FALSE,
-                grid = FALSE, xlab = "Time", ylab = "Concentration",
+                grid = FALSE, future_region = FALSE,
+                xlab = "Time", ylab = "Concentration",
                 title = NULL, xlim = NULL, ylim = NULL, print = TRUE, ...) {
                     if (!inherits(x, "bd")) {
                         stop("Object must be of class 'bd'")
@@ -647,21 +646,7 @@ bd <- R6::R6Class(
                     
                     future_obs <- x$future_pred$data$obs |>
                     dplyr::filter(outeq == !!outeq)
-                    
-                    # Handle include/exclude
-                    if (missing(include)) {
-                        if (!is.null(past_obs)) {
-                            include <- unique(c(past_obs$id, future_obs$id))
-                        } else {
-                            include <- unique(future_obs$id)
-                        }
-                    }
-                    if (missing(exclude)) exclude <- NA
-                    
-                    if (!is.null(past_obs)) {
-                        past_obs <- past_obs |> includeExclude(include, exclude)
-                    }
-                    future_obs <- future_obs |> includeExclude(include, exclude)
+
                     
                     # Adjust future simulation prediction times using the unified offset
                     future_obs_adjusted <- future_obs |>
@@ -725,8 +710,7 @@ bd <- R6::R6Class(
                     if (!is.null(x$past)) {
                         past_data_obs <- x$past$standard_data |>
                         dplyr::filter(evid == 0, outeq == !!outeq) |>
-                        dplyr::select(id, time, out) |>
-                        includeExclude(include, exclude)
+                        dplyr::select(id, time, out) 
                         
                         past_data_obs$out <- past_data_obs$out * mult
                         
@@ -738,15 +722,13 @@ bd <- R6::R6Class(
                         
                         past_doses <- x$past$standard_data |>
                         dplyr::filter(evid == 1) |>
-                        dplyr::select(id, time, dur, dose) |>
-                        includeExclude(include, exclude)
+                        dplyr::select(id, time, dur, dose) 
                     }
                     
                     if (!is.null(x$future)) {
                         future_data_obs <- x$future$standard_data |>
                         dplyr::filter(evid == 0, outeq == !!outeq) |>
-                        dplyr::select(id, time, out) |>
-                        includeExclude(include, exclude)
+                        dplyr::select(id, time, out) 
                         
                         # Use the same unified future_time_offset for consistency
                         future_data_obs <- future_data_obs |>
@@ -762,8 +744,7 @@ bd <- R6::R6Class(
                         
                         future_doses <- x$future$standard_data |>
                         dplyr::filter(evid == 1) |>
-                        dplyr::select(id, time, dur, dose) |>
-                        includeExclude(include, exclude)
+                        dplyr::select(id, time, dur, dose) 
                         
                         # Use the same unified future_time_offset for consistency
                         future_doses <- future_doses |>
@@ -988,7 +969,7 @@ bd <- R6::R6Class(
                     
                     # Add vertical dashed line and background shading for the future region
                     future_boundary_datetime <- NULL
-                    if (has_past && any(combined_obs$source == "future")) {
+                    if (future_region && has_past && any(combined_obs$source == "future")) {
                         # Use future_time_offset directly for exact alignment with doses/obs
                         future_boundary_datetime <- start_datetime + future_time_offset * 3600
                         x_max <- max(combined_obs$datetime)
