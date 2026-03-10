@@ -110,7 +110,7 @@ plot(bd1)
 ## adding ability to specify future as argument to bd$new() instead of target file.
 ## This will allow for more flexible future specifications and avoid the need for a separate target file.
 
-future_list <- list(dose = 0, frequency = 12, route = 0, number = 3, target_time = 12, target = 0.3)
+future_list <- list(dose = 0, frequency = 12, route = 0, number = 3, target_time = 11.5, target = 0.3)
 
 bd_new <- bd$new(
     prior = prior_file,
