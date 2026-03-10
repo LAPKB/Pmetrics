@@ -52,6 +52,7 @@ bd <- R6::R6Class(
         #' @param settings List of additional settings for posterior computation (optional)
         #' @param posterior `bd_post` object to use instead of computing a new one (optional).
         #'   When provided, `prior`, `model`, `past_data`, `max_cycles`, and `settings` are ignored.
+        #' @param quiet Logical indicating whether to suppress verbose simulation output (default: FALSE)
         #' @return A `bd` object containing the optimization results and associated information
 
         initialize = function(prior = NULL,
@@ -65,7 +66,8 @@ bd <- R6::R6Class(
                               time_offset = NULL,
                               max_cycles = 500,
                               settings = NULL,
-                              posterior = NULL) {
+                              posterior = NULL,
+                              quiet = FALSE) {
             # Resolve target data: either `target` (file/PM_data) or `future` (inline list)
             future_data <- NULL
             if (!is.null(target) && !is.null(future)) {
@@ -87,10 +89,12 @@ bd <- R6::R6Class(
                     model = model,
                     past_data = past_data,
                     max_cycles = max_cycles,
-                    settings = settings
+                    settings = settings,
+                    quiet = quiet
                 )
             }
-            raw <- private$.optimize(posterior, future_data, dose_range, bias_weight, target_type, time_offset)
+
+            raw <- private$.optimize(posterior, future_data, dose_range, bias_weight, target_type, time_offset, quiet)
 
             private$.set_result(future_data, raw, posterior, bias_weight)
             self$past <- posterior$past
@@ -190,7 +194,7 @@ bd <- R6::R6Class(
             }
             future_data
         },
-        .optimize = function(posterior, target, dose_range, bias_weight, target_type, time_offset) {
+        .optimize = function(posterior, target, dose_range, bias_weight, target_type, time_offset, quiet = FALSE) {
             if (is.null(posterior$handle)) {
                 cli::cli_abort(c(
                     "x" = "bd_post object is not properly initialized.",
@@ -337,13 +341,15 @@ bd_post <- R6::R6Class(
         #' @param past_data PM_data object or path to CSV file with past patient data (optional)
         #' @param max_cycles Maximum number of optimization cycles for computing the posterior (default: 500)
         #' @param settings List of additional settings for posterior computation (optional)
+        #' @param quiet Logical indicating whether to suppress verbose simulation output (default: FALSE)
         #' @return A `bd_post` object containing the computed posterior distribution and associated information
 
         initialize = function(prior,
                               model,
                               past_data = NULL,
                               max_cycles = 500,
-                              settings = NULL) {
+                              settings = NULL,
+                              quiet = FALSE) {
             prior_path <- bestdose_parse_prior(prior)
             model_info <- bestdose_parse_model(model)
             past_data_path <- if (!is.null(past_data)) bestdose_parse_data(past_data) else NULL
@@ -378,6 +384,7 @@ bd_post <- R6::R6Class(
             self$past <- if (!is.null(past_data)) PM_data$new(past_data, quiet = TRUE) else NULL
             self$model_info <- model_info
             self$settings <- settings
+            private$.quiet <- quiet
 
             cli::cli_alert_success("BestDose posterior computed with {dim[1]} support points")
         },
@@ -388,23 +395,28 @@ bd_post <- R6::R6Class(
         #' @param bias_weight Numeric between 0 and 1 indicating the weight of bias in the optimization (default: 0.5)
         #' @param target_type Character string indicating the type of target: "concentration", "auc_from_zero", or "auc_from_last_dose" (default: "concentration")
         #' @param time_offset Numeric time offset to apply to predictions (optional)
+        #' @param quiet Logical indicating whether to suppress verbose simulation output. If NULL, uses the quiet setting from posterior computation (default: NULL)
         #' @return A `bd` object containing the optimization results
         optimize = function(target,
                             dose_range = list(min = 0, max = 1000),
                             bias_weight = 0.5,
                             target_type = "concentration",
-                            time_offset = NULL) {
+                            time_offset = NULL,
+                            quiet = NULL) {
+            if (is.null(quiet)) quiet <- private$.quiet
             bd$new(
                 target = target,
                 dose_range = dose_range,
                 bias_weight = bias_weight,
                 target_type = target_type,
                 time_offset = time_offset,
-                posterior = self
+                posterior = self,
+                quiet = quiet
             )
         }
     ),
     private = list(
+        .quiet = FALSE,
         finalize = function() {
             self$handle <- NULL
         }
@@ -550,6 +562,16 @@ plot.bd <- function(x, include, exclude, mult = 1, outeq = 1,
         stop("Object must be of class 'bd'")
     }
 
+    # Print target/future data for debugging
+    if (!quiet) {
+        cli::cli_h3("Target/Future data (for debugging)")
+        if (!is.null(x$future) && !is.null(x$future$standard_data)) {
+            print(x$future$standard_data)
+        } else {
+            cli::cli_alert_info("No future data available.")
+        }
+    }
+
     # Check if we have future predictions (past is optional)
     if (is.null(x$future_pred)) {
         cli::cli_abort(c(
@@ -582,6 +604,29 @@ plot.bd <- function(x, include, exclude, mult = 1, outeq = 1,
         }
     }
 
+    # Compute a single, consistent future_time_offset (in hours) for plotting.
+    # This mirrors the Rust optimization logic:
+    #   time_offset = NULL  → independent timelines (visual gap)
+    #   time_offset = 0     → future starts at last past event
+    #   time_offset = N     → future starts N hours after last past event
+    future_time_offset <- 0
+    has_past <- !is.null(x$past) && !is.null(x$past$standard_data) && nrow(x$past$standard_data) > 0
+    if (has_past) {
+        max_past_time <- max(x$past$standard_data$time, na.rm = TRUE)
+        if (!is.null(x$time_offset)) {
+            future_time_offset <- max_past_time + x$time_offset
+        } else {
+            # Independent timelines: add a visible gap
+            max_future_time <- max(x$future$standard_data$time, na.rm = TRUE)
+            visual_gap <- max(max_future_time * 0.15, 2)
+            future_time_offset <- max_past_time + visual_gap
+        }
+    }
+
+    if (!quiet) {
+        cli::cli_alert_info("time_offset = {deparse(x$time_offset)}, future_time_offset = {future_time_offset} h")
+    }
+
     # Extract observation data from both simulations
     past_obs <- NULL
     if (!is.null(x$past_pred)) {
@@ -607,25 +652,9 @@ plot.bd <- function(x, include, exclude, mult = 1, outeq = 1,
     }
     future_obs <- future_obs |> includeExclude(include, exclude)
 
-    # Get the last time in past_obs for each id (if past exists)
-    last_past_times <- NULL
-    if (!is.null(past_obs) && nrow(past_obs) > 0) {
-        last_past_times <- past_obs |>
-            dplyr::group_by(id, nsim) |>
-            dplyr::slice_max(time, n = 1) |>
-            dplyr::select(id, nsim, last_time = time) |>
-            dplyr::ungroup()
-    }
-
-    # Adjust future times by adding to the last past time (if past exists)
-    if (!is.null(last_past_times) && nrow(last_past_times) > 0) {
-        future_obs_adjusted <- future_obs |>
-            dplyr::left_join(last_past_times, by = c("id", "nsim")) |>
-            dplyr::mutate(time = time + last_time) |>
-            dplyr::select(-last_time)
-    } else {
-        future_obs_adjusted <- future_obs
-    }
+    # Adjust future simulation prediction times using the unified offset
+    future_obs_adjusted <- future_obs |>
+        dplyr::mutate(time = time + future_time_offset)
 
     # Combine past and future observations
     if (!is.null(past_obs) && nrow(past_obs) > 0) {
@@ -635,6 +664,24 @@ plot.bd <- function(x, include, exclude, mult = 1, outeq = 1,
         ) |>
             dplyr::arrange(id, nsim, time) |>
             dplyr::mutate(datetime = start_datetime + time * 3600)
+
+        # When time_offset is NULL (independent timelines), insert NA break rows
+        # between past and future for each (id, nsim) group so plotly breaks the line.
+        if (is.null(x$time_offset)) {
+            break_rows <- combined_obs |>
+                dplyr::filter(source == "past") |>
+                dplyr::group_by(id, nsim) |>
+                dplyr::slice_max(time, n = 1) |>
+                dplyr::ungroup() |>
+                dplyr::mutate(
+                    time = time + 0.01,
+                    datetime = start_datetime + time * 3600,
+                    out = NA_real_,
+                    source = "break"
+                )
+            combined_obs <- dplyr::bind_rows(combined_obs, break_rows) |>
+                dplyr::arrange(id, nsim, time)
+        }
     } else {
         combined_obs <- future_obs_adjusted |>
             dplyr::mutate(source = "future") |>
@@ -655,8 +702,8 @@ plot.bd <- function(x, include, exclude, mult = 1, outeq = 1,
         }
     }
 
-    # Remove NA values
-    combined_obs <- combined_obs |> dplyr::filter(!is.na(out))
+    # Remove NA values (but keep intentional break rows for gap rendering)
+    combined_obs <- combined_obs |> dplyr::filter(!is.na(out) | source == "break")
 
     # Extract actual observations from past and future data
     past_data_obs <- NULL
@@ -690,21 +737,9 @@ plot.bd <- function(x, include, exclude, mult = 1, outeq = 1,
             dplyr::select(id, time, out) |>
             includeExclude(include, exclude)
 
-        # Adjust future times if past data exists
-        if (!is.null(x$past)) {
-            last_times <- x$past$standard_data |>
-                dplyr::filter(evid == 0) |>
-                dplyr::group_by(id) |>
-                dplyr::slice_max(time, n = 1) |>
-                dplyr::select(id, last_time = time) |>
-                dplyr::ungroup() |>
-                includeExclude(include, exclude)
-
-            future_data_obs <- future_data_obs |>
-                dplyr::left_join(last_times, by = "id") |>
-                dplyr::mutate(time = time + last_time) |>
-                dplyr::select(-last_time)
-        }
+        # Use the same unified future_time_offset for consistency
+        future_data_obs <- future_data_obs |>
+            dplyr::mutate(time = time + future_time_offset)
 
         future_data_obs$out <- future_data_obs$out * mult
 
@@ -719,20 +754,9 @@ plot.bd <- function(x, include, exclude, mult = 1, outeq = 1,
             dplyr::select(id, time, dur, dose) |>
             includeExclude(include, exclude)
 
-        # Adjust future dose times if past data exists
-        if (!is.null(x$past)) {
-            last_times_dose <- x$past$standard_data |>
-                dplyr::group_by(id) |>
-                dplyr::slice_max(time, n = 1) |>
-                dplyr::select(id, last_time = time) |>
-                dplyr::ungroup() |>
-                includeExclude(include, exclude)
-
-            future_doses <- future_doses |>
-                dplyr::left_join(last_times_dose, by = "id") |>
-                dplyr::mutate(time = time + last_time) |>
-                dplyr::select(-last_time)
-        }
+        # Use the same unified future_time_offset for consistency
+        future_doses <- future_doses |>
+            dplyr::mutate(time = time + future_time_offset)
     }
 
     # Initialize plot
@@ -949,6 +973,59 @@ plot.bd <- function(x, include, exclude, mult = 1, outeq = 1,
                     )
             }
         }
+    }
+
+    # Add vertical dashed line and background shading for the future region
+    future_boundary_datetime <- NULL
+    if (has_past && any(combined_obs$source == "future")) {
+        # Use future_time_offset directly for exact alignment with doses/obs
+        future_boundary_datetime <- start_datetime + future_time_offset * 3600
+        x_max <- max(combined_obs$datetime)
+        y_range <- range(combined_obs$out, na.rm = TRUE)
+
+        # Add light background rectangle for the future region
+        p <- p |>
+            plotly::layout(
+                shapes = list(
+                    list(
+                        type = "rect",
+                        x0 = future_boundary_datetime,
+                        x1 = x_max,
+                        y0 = 0,
+                        y1 = 1,
+                        xref = "x",
+                        yref = "paper",
+                        fillcolor = "rgba(255, 200, 200, 0.15)",
+                        line = list(width = 0),
+                        layer = "below"
+                    ),
+                    list(
+                        type = "line",
+                        x0 = future_boundary_datetime,
+                        x1 = future_boundary_datetime,
+                        y0 = 0,
+                        y1 = 1,
+                        xref = "x",
+                        yref = "paper",
+                        line = list(
+                            color = "rgba(180, 0, 0, 0.6)",
+                            width = 2,
+                            dash = "dash"
+                        )
+                    )
+                ),
+                annotations = list(
+                    list(
+                        x = future_boundary_datetime,
+                        y = 1.02,
+                        xref = "x",
+                        yref = "paper",
+                        text = "Future starts",
+                        showarrow = FALSE,
+                        font = list(color = "rgba(180, 0, 0, 0.8)", size = 11)
+                    )
+                )
+            )
     }
 
     # Set axis labels and layout

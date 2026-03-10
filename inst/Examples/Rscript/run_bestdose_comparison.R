@@ -40,7 +40,7 @@ for (lambda in bias_weights) {
     r <- posterior$optimize(
         target = target_file,
         dose_range = list(min = 0, max = 300),
-        bias_weight = lambda, # ought to be called "prior_weight"
+        bias_weight = lambda,
         target_type = "concentration"
     )
     cat(sprintf(
@@ -57,10 +57,10 @@ for (lambda in bias_weights) {
 r <- posterior$optimize(
     target = target_file,
     dose_range = list(min = 0, max = 300),
-    bias_weight = 0.0,
+    bias_weight = 1.0,
     target_type = "concentration"
 )
-cat("\nConcentration-time predictions for bias_weight=0.0:\n")
+cat("\nConcentration-time predictions for bias_weight=1.0:\n")
 preds <- r$result$predictions
 for (j in seq_len(nrow(preds))) {
     p <- preds[j, ]
@@ -69,58 +69,3 @@ for (j in seq_len(nrow(preds))) {
         p$time, p$obs, p$pop_mean, p$pop_median, p$post_mean, p$post_median
     ))
 }
-
-
-# ===== One-shot API =====
-bd1 <- bd$new(
-    prior = prior_file,
-    model = mod_onecomp,
-    past_data = PM_data$new(past_file, quiet = TRUE),
-    max_cycles = 500,
-    future = PM_data$new(target_file, quiet = TRUE),
-    dose_range = list(min = 0, max = 5000),
-    bias_weight = 0,
-    target_type = "concentration",
-    time_offset = 0
-)
-
-bd1
-
-
-bd2 <- bd$new(
-    prior = prior_file,
-    model = mod_onecomp,
-    max_cycles = 500,
-    target = target_file,
-    dose_range = list(min = 0, max = 300),
-    bias_weight = 0.0,
-    target_type = "concentration"
-)
-
-bd2
-
-
-bd1$plot()
-
-bd2$plot()
-
-plot(bd1)
-
-
-## adding ability to specify future as argument to bd$new() instead of target file.
-## This will allow for more flexible future specifications and avoid the need for a separate target file.
-
-future_list <- list(dose = 0, frequency = 12, route = 0, number = 3, target_time = 11.5, target = 0.3)
-
-bd_new <- bd$new(
-    prior = prior_file,
-    model = mod_onecomp,
-    past_data = PM_data$new(past_file, quiet = TRUE),
-    max_cycles = 50,
-    future = future_list,
-    dose_range = list(min = 0, max = 5000),
-    bias_weight = 0,
-    target_type = "concentration",
-)
-
-bd_new$plot()
