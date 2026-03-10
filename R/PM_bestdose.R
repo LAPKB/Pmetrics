@@ -52,6 +52,7 @@ bd <- R6::R6Class(
         #' @param settings List of additional settings for posterior computation (optional)
         #' @param posterior `bd_post` object to use instead of computing a new one (optional).
         #'   When provided, `prior`, `model`, `past_data`, `max_cycles`, and `settings` are ignored.
+        #' @param quiet Logical indicating whether to suppress verbose simulation output (default: FALSE)
         #' @return A `bd` object containing the optimization results and associated information
 
         initialize = function(prior = NULL,
@@ -65,7 +66,8 @@ bd <- R6::R6Class(
                               time_offset = NULL,
                               max_cycles = 500,
                               settings = NULL,
-                              posterior = NULL) {
+                              posterior = NULL,
+                              quiet = FALSE) {
             # Resolve target data: either `target` (file/PM_data) or `future` (inline list)
             future_data <- NULL
             if (!is.null(target) && !is.null(future)) {
@@ -87,11 +89,12 @@ bd <- R6::R6Class(
                     model = model,
                     past_data = past_data,
                     max_cycles = max_cycles,
-                    settings = settings
+                    settings = settings,
+                    quiet = quiet
                 )
             }
 
-            raw <- private$.optimize(posterior, future_data, dose_range, bias_weight, target_type, time_offset)
+            raw <- private$.optimize(posterior, future_data, dose_range, bias_weight, target_type, time_offset, quiet)
 
             private$.set_result(future_data, raw, posterior, bias_weight)
             self$past <- posterior$past
@@ -192,7 +195,7 @@ bd <- R6::R6Class(
 
             future_data
         },
-        .optimize = function(posterior, target, dose_range, bias_weight, target_type, time_offset) {
+        .optimize = function(posterior, target, dose_range, bias_weight, target_type, time_offset, quiet = FALSE) {
             if (is.null(posterior$handle)) {
                 cli::cli_abort(c(
                     "x" = "bd_post object is not properly initialized.",
@@ -339,13 +342,15 @@ bd_post <- R6::R6Class(
         #' @param past_data PM_data object or path to CSV file with past patient data (optional)
         #' @param max_cycles Maximum number of optimization cycles for computing the posterior (default: 500)
         #' @param settings List of additional settings for posterior computation (optional)
+        #' @param quiet Logical indicating whether to suppress verbose simulation output (default: FALSE)
         #' @return A `bd_post` object containing the computed posterior distribution and associated information
 
         initialize = function(prior,
                               model,
                               past_data = NULL,
                               max_cycles = 500,
-                              settings = NULL) {
+                              settings = NULL,
+                              quiet = FALSE) {
             prior_path <- bestdose_parse_prior(prior)
             model_info <- bestdose_parse_model(model)
             past_data_path <- if (!is.null(past_data)) bestdose_parse_data(past_data) else NULL
@@ -380,6 +385,7 @@ bd_post <- R6::R6Class(
             self$past <- if (!is.null(past_data)) PM_data$new(past_data, quiet = TRUE) else NULL
             self$model_info <- model_info
             self$settings <- settings
+            private$.quiet <- quiet
 
             cli::cli_alert_success("BestDose posterior computed with {dim[1]} support points")
         },
@@ -390,23 +396,28 @@ bd_post <- R6::R6Class(
         #' @param bias_weight Numeric between 0 and 1 indicating the weight of bias in the optimization (default: 0.5)
         #' @param target_type Character string indicating the type of target: "concentration", "auc_from_zero", or "auc_from_last_dose" (default: "concentration")
         #' @param time_offset Numeric time offset to apply to predictions (optional)
+        #' @param quiet Logical indicating whether to suppress verbose simulation output. If NULL, uses the quiet setting from posterior computation (default: NULL)
         #' @return A `bd` object containing the optimization results
         optimize = function(target,
                             dose_range = list(min = 0, max = 1000),
                             bias_weight = 0.5,
                             target_type = "concentration",
-                            time_offset = NULL) {
+                            time_offset = NULL,
+                            quiet = NULL) {
+            if (is.null(quiet)) quiet <- private$.quiet
             bd$new(
                 target = target,
                 dose_range = dose_range,
                 bias_weight = bias_weight,
                 target_type = target_type,
                 time_offset = time_offset,
-                posterior = self
+                posterior = self,
+                quiet = quiet
             )
         }
     ),
     private = list(
+        .quiet = FALSE,
         finalize = function() {
             self$handle <- NULL
         }

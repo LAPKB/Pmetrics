@@ -47,7 +47,14 @@ times with different targets, dose ranges, or bias weights.
 \subsection{Method \code{new()}}{
 Initialize the \code{bd_post} object by computing the posterior distribution from the given prior, model, and past data
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{bd_post$new(prior, model, past_data = NULL, max_cycles = 500, settings = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{bd_post$new(
+  prior,
+  model,
+  past_data = NULL,
+  max_cycles = 500,
+  settings = NULL,
+  quiet = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -62,6 +69,8 @@ Initialize the \code{bd_post} object by computing the posterior distribution fro
 \item{\code{max_cycles}}{Maximum number of optimization cycles for computing the posterior (default: 500)}
 
 \item{\code{settings}}{List of additional settings for posterior computation (optional)}
+
+\item{\code{quiet}}{Logical indicating whether to suppress verbose simulation output (default: FALSE)}
 }
 \if{html}{\out{</div>}}
 }
@@ -80,7 +89,8 @@ Run optimization and return a \code{bd} result object
   dose_range = list(min = 0, max = 1000),
   bias_weight = 0.5,
   target_type = "concentration",
-  time_offset = NULL
+  time_offset = NULL,
+  quiet = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -96,6 +106,8 @@ Run optimization and return a \code{bd} result object
 \item{\code{target_type}}{Character string indicating the type of target: "concentration", "auc_from_zero", or "auc_from_last_dose" (default: "concentration")}
 
 \item{\code{time_offset}}{Numeric time offset to apply to predictions (optional)}
+
+\item{\code{quiet}}{Logical indicating whether to suppress verbose simulation output. If NULL, uses the quiet setting from posterior computation (default: NULL)}
 }
 \if{html}{\out{</div>}}
 }
