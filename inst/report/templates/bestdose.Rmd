@@ -401,34 +401,12 @@ render_pd_table <- function(pd_tbl, page_length = 10) {
       `Dose number` = dose_number,
       Date = if (has_datetime) fmt_date_col(datetime) else NA_character_,
       Time = if (has_datetime) fmt_time_col(datetime) else NA_character_,
-      Hours = time,
-      `Probability` = cumulative_probability,
-      .source = source
+      `Cumulative probability` = cumulative_probability
     ) |>
-    dplyr::select(`Dose number`, Date, Time, Hours, `Probability`, .source) |>
-    dplyr::mutate(`Probability` = fmt_num(`Probability`))
+    dplyr::select(`Dose number`, Date, Time, `Cumulative probability`) |>
+    dplyr::mutate(`Cumulative probability` = fmt_num(`Cumulative probability`))
 
-  DT::datatable(
-    tbl,
-    class = "compact nowrap",
-    width = "auto",
-    rownames = FALSE,
-    options = list(
-      pageLength = page_length,
-      lengthChange = FALSE,
-      searching = FALSE,
-      info = FALSE,
-      autoWidth = FALSE,
-      columnDefs = list(
-        list(visible = FALSE, targets = 5)
-      )
-    )
-  ) |>
-    DT::formatStyle(
-      ".source",
-      target = "row",
-      color = DT::styleEqual(c("Past", "Future"), c("black", "red"))
-    )
+  render_dt(tbl, page_length = page_length)
 }
 
 fit_note <- function(metrics) {
@@ -559,44 +537,11 @@ render_auc_table(report$auc_table, page_length = 10)
 
 ### PD
 
-```{r pd-summary, results = 'asis'}
-if (!is.null(report$pd_target_summary) && nzchar(report$pd_target_summary)) {
-  cat("<p style='font-style:italic; color:#444; margin-bottom:8px;'>",
-      report$pd_target_summary, "</p>")
-}
-```
-
 ```{r pd-table}
 render_pd_table(report$pd_table, page_length = 10)
 ```
 
 ### Parameters {.tabset .tabset-pills}
-
-#### Prior vs posterior shift
-
-```{r parameter-shift-note, results = 'asis'}
-cat("<p style='font-style:italic; color:#444; margin-bottom:8px;'>",
-  "Marginal prior distribution is shown with gray circle markers.",
-  "Posterior marginal distribution is superimposed with red circle markers at 50% opacity.",
-  "Each parameter panel uses its own x-axis value range; y-axis shows linear probability.",
-    "</p>")
-```
-
-```{r parameter-shift-plot}
-if (!is.null(report$parameter_shift_plot)) {
-  resize_plot(report$parameter_shift_plot, scale = 1.0)
-} else {
-  "No prior/posterior parameter shift plot available."
-}
-```
-
-```{r parameter-shift-summary}
-if (!is.null(report$parameter_shift_summary)) {
-  render_dt(report$parameter_shift_summary, page_length = 10)
-} else {
-  "No prior/posterior parameter shift summary available."
-}
-```
 
 #### Weighted summary
 

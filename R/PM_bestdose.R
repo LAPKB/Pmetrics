@@ -33,6 +33,8 @@ bd <- R6::R6Class(
         start = NULL,
         #' @field start_offset Resolved numeric offset (hours) used internally
         start_offset = 0,
+        #' @field future_requested_doses Numeric vector of originally requested future doses (0 = optimize, non-zero = fixed)
+        future_requested_doses = NULL,
         #' @description
         #' Initialize a `bd` object by running a one-shot BestDose optimization.
         #' Creates the posterior internally, then optimizes. For reusing the posterior
@@ -99,6 +101,12 @@ bd <- R6::R6Class(
                     }
                 } else {
                     cli::cli_abort("A {.arg future} plan must be supplied.")
+                }
+
+                # Capture originally requested doses before optimization may mutate the PM_data object
+                if (!is.null(future_data$standard_data)) {
+                    orig_evid1 <- future_data$standard_data |> dplyr::filter(evid == 1)
+                    self$future_requested_doses <- if (nrow(orig_evid1) > 0) orig_evid1$dose else numeric(0)
                 }
                 
                 if (is.null(posterior)) {
@@ -174,6 +182,12 @@ bd <- R6::R6Class(
             #' @param ... Additional arguments passed to plot.bd function
             plot = function(...) {
                 plot.bd(self, ...)
+            },
+            #' @description
+            #' Generate an HTML report for a BestDose result
+            #' @param ... Parameters passed to the internal BestDose report generator.
+            report = function(...) {
+                bd_report(self, ...)
             }
         ),
         private = list(
@@ -191,22 +205,47 @@ bd <- R6::R6Class(
                 future$number <- future$number %||% 1
                 future$target_time <- future$target_time %||% 24
                 
+                # Determine effective number from vector lengths of dose, frequency, route
+                n_from_vectors <- max(
+                    length(future$dose),
+                    length(future$frequency),
+                    length(future$route)
+                )
+                if (future$number < n_from_vectors) {
+                    cli::cli_inform(c(
+                        "!" = "{.arg number} ({future$number}) is less than the maximum length of
+                               {.code dose}, {.code frequency}, or {.code route} ({n_from_vectors}).",
+                        ">" = "Setting {.arg number} to {n_from_vectors}."
+                    ))
+                    future$number <- n_from_vectors
+                }
+                n <- as.integer(future$number)
+                
+                # Recycle the last element of x to reach length n
+                recycle_last <- function(x, n) {
+                    len <- length(x)
+                    if (len >= n) return(x[seq_len(n)])
+                    c(x, rep(x[len], n - len))
+                }
+                doses  <- recycle_last(future$dose, n)
+                freqs  <- recycle_last(future$frequency, n)
+                routes <- recycle_last(future$route, n)
+                
+                # Cumulative dose times: dose 1 at t=0, dose i at sum of preceding frequencies
+                dose_times <- c(0, cumsum(head(freqs, n - 1)))
+                
                 future_data <- PM_data$new()
                 
-                addl <- as.integer(future$number) - 1L
-                if (addl == 0) addl <- NA
-                ii <- future$frequency
-                if (is.na(addl)) ii <- NA
-                
-                # Add doses
-                dose_args <- list(
-                    id = 1, time = 0, evid = 1,
-                    dose = future$dose, out = NA,
-                    dur = future$route,
-                    addl = addl, ii = ii,
-                    validate = FALSE
-                )
-                do.call(future_data$addEvent, dose_args)
+                # Add each dose event individually
+                for (i in seq_len(n)) {
+                    dose_args <- list(
+                        id = 1, time = dose_times[i], evid = 1,
+                        dose = doses[i], out = NA,
+                        dur = routes[i],
+                        validate = FALSE
+                    )
+                    do.call(future_data$addEvent, dose_args)
+                }
                 
                 # Add covariates if specified
                 if (!is.null(future$covariates) && length(future$covariates) > 0) {
@@ -215,12 +254,12 @@ bd <- R6::R6Class(
                 }
                 
                 # Add observation events at target_time after each dose
-                for (i in 0:(as.integer(future$number) - 1)) {
-                    obs_time <- i * future$frequency + future$target_time
+                for (i in seq_len(n)) {
+                    obs_time <- dose_times[i] + future$target_time
                     obs_args <- list(
                         id = 1, time = obs_time, evid = 0,
                         dose = NA, out = future$target,
-                        validate = (i == as.integer(future$number) - 1)
+                        validate = (i == n)
                     )
                     do.call(future_data$addEvent, obs_args)
                 }
@@ -281,7 +320,6 @@ bd <- R6::R6Class(
                 if (is.numeric(start) && length(start) == 1 && !is.na(start)) {
                     start_offset <- as.numeric(start)
                 } else if (is.character(start) && length(start) == 1 && nzchar(start)) {
-                    ref_datetime <- private$.reference_datetime(past)
                     start_datetime <- private$.parse_datetime(start)
                     if (is.na(start_datetime)) {
                         cli::cli_abort(c(
@@ -289,7 +327,16 @@ bd <- R6::R6Class(
                             "i" = "Use an ISO-like value such as {.code '2026-02-01 14:00:00'}."
                         ))
                     }
-                    start_offset <- as.numeric(difftime(start_datetime, ref_datetime, units = "hours"))
+
+                    has_past <- !is.null(past) && !is.null(past$data) && nrow(past$data) > 0
+                    if (has_past) {
+                        ref_datetime <- private$.reference_datetime(past)
+                        start_offset <- as.numeric(difftime(start_datetime, ref_datetime, units = "hours"))
+                    } else {
+                        # Without past data, a datetime string defines the plotting origin itself.
+                        # Keep optimization on the future timeline by using a zero internal offset.
+                        start_offset <- 0
+                    }
                 } else {
                     cli::cli_abort("{.arg start} must be a single numeric value or a date-time character string.")
                 }
@@ -733,40 +780,14 @@ bd <- R6::R6Class(
                     }
                     
                     # Get starting date/time for x-axis datetime conversion
-                    if (!is.null(x$past) && !is.null(x$past$data)) {
-                        start_row <- x$past$data[1, ]
-                        start_date_str <- as.character(start_row$date[1])
-                        start_time_str <- as.character(start_row$time[1])
-                        start_datetime <- as.POSIXct(
-                            paste(start_date_str, start_time_str),
-                            format = "%m/%d/%y %H:%M:%S",
-                            tz = "UTC"
-                        )
-                    } else {
-                        now <- Sys.time()
-                        next_hour <- ceiling(as.numeric(format(now, "%H")))
-                        if (next_hour > 23) next_hour <- 0
-                        start_datetime <- as.POSIXct(
-                            paste0(format(now, "%Y-%m-%d"), " ", sprintf("%02d", next_hour), ":00:00"),
-                            format = "%Y-%m-%d %H:%M:%S",
-                            tz = "UTC"
-                        )
-                        if (start_datetime <= now) {
-                            start_datetime <- start_datetime + 3600
-                        }
-                    }
+                    start_datetime <- bd_plot_start_datetime(x)
                     
                     # Compute a single, consistent future_time_offset (in hours) for plotting.
                     # This mirrors the Rust optimization logic:
                     #   with past: future starts at max past time (past is optionally extended to start)
                     #   without past: future starts at start_offset hours from plot origin
-                    future_time_offset <- 0
+                    future_time_offset <- bd_future_time_offset(x)
                     has_past <- !is.null(x$past) && !is.null(x$past$standard_data) && nrow(x$past$standard_data) > 0
-                    if (has_past) {
-                        future_time_offset <- max(x$past$standard_data$time, na.rm = TRUE)
-                    } else {
-                        future_time_offset <- x$start_offset %||% 0
-                    }
                     
                     if (!quiet) {
                         cli::cli_alert_info("start = {deparse(x$start)}, start_offset = {x$start_offset %||% 0}, future_time_offset = {future_time_offset} h")
@@ -860,13 +881,11 @@ bd <- R6::R6Class(
                         
                         future_data_obs <- future_data_obs |> dplyr::filter(!is.na(out))
                         
-                        future_doses <- x$future$standard_data |>
-                        dplyr::filter(evid == 1) |>
-                        dplyr::select(id, time, dur, dose) 
-                        
-                        # Use the same unified future_time_offset for consistency
-                        future_doses <- future_doses |>
-                        dplyr::mutate(time = time + future_time_offset)
+                        future_doses <- bd_future_dose_events(x)
+                        if (!is.null(future_doses) && nrow(future_doses) > 0) {
+                            future_doses <- future_doses |>
+                            dplyr::select(id, time, dur, dose)
+                        }
                     }
                     
                     # Initialize plot

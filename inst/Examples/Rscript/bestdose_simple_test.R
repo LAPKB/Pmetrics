@@ -44,7 +44,7 @@ for (lambda in prior_weights) {
         target_type = "concentration"
     )
     cat(sprintf(
-        "Bias weight: %.2f\t\tOptimal dose: [%.4f, %.4f]\t\tCost: %.6f\t\tln Cost: %.4f\t\tMethod: %s\n",
+        "Prior weight: %.2f\t\tOptimal dose: [%.4f, %.4f]\t\tCost: %.6f\t\tln Cost: %.4f\t\tMethod: %s\n",
         lambda,
         r$doses[1], r$doses[2],
         r$objf,
@@ -112,6 +112,7 @@ plot(bd1)
 
 future_list <- list(dose = 0, frequency = 12, route = 0, number = 3, target_time = 11.5, target = 0.3)
 
+
 bd_new <- bd$new(
     prior = prior_file,
     model = mod_onecomp,
@@ -124,4 +125,5 @@ bd_new <- bd$new(
     target_type = "concentration",
 )
 
-bd_new$plot()
+# bd_new$plot()
+bd_new$report()
