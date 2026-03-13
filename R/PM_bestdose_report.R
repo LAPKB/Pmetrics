@@ -877,6 +877,7 @@ bd_pd_table <- function(x, outeq = 1, start_datetime = NULL) {
     dplyr::transmute(
       dose_number = dplyr::row_number(),
       time = time,
+      source = source,
       cumulative_probability = cum_prob
     )
 
@@ -966,6 +967,28 @@ bd_report_build <- function(x, outeq = 1) {
   auc_plot <- bd_auc_plot(auc_table)
   pd_table <- bd_pd_table(x, outeq = outeq, start_datetime = start_datetime)
 
+  pd_target_summary <- NULL
+  if (!is.null(x$future_target_info)) {
+    ti <- x$future_target_info
+    tt  <- ti$target_type %||% "concentration"
+    tgt <- ti$target
+    ttm <- ti$target_time
+    if (!is.null(tt) && tt == "time") {
+      pct <- if (!is.null(ttm) && is.numeric(ttm) && !is.na(ttm)) round(ttm * 100) else NA
+      pd_target_summary <- paste0(
+        "Therapeutic target: Time above ", tgt,
+        " for ", pct, "% of each dosing interval."
+      )
+    } else {
+      type_label <- if (!is.null(tt) && tt == "auc") "AUC" else "Concentration"
+      ttm_display <- if (!is.null(ttm) && length(ttm) == 1 && is.numeric(ttm) && !is.na(ttm)) ttm else 24
+      pd_target_summary <- paste0(
+        "Therapeutic target: ", type_label, " of ", tgt,
+        ", ", ttm_display, " hours after each dose."
+      )
+    }
+  }
+
   past_fit <- bd_fit_data(x, source = "past", outeq = outeq)
   future_fit <- bd_fit_data(x, source = "future", outeq = outeq)
 
@@ -1012,6 +1035,7 @@ bd_report_build <- function(x, outeq = 1) {
     auc_plot = auc_plot,
     auc_table = auc_table,
     pd_table = pd_table,
+    pd_target_summary = pd_target_summary,
     past_fit = past_fit,
     future_fit = future_fit,
     past_fit_metrics = past_fit_metrics,

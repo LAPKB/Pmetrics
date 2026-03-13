@@ -88,7 +88,6 @@ Run optimization and return a \code{bd} result object
   target,
   dose_range = list(min = 0, max = 1000),
   prior_weight = 0.5,
-  target_type = "concentration",
   start = 0,
   quiet = NULL
 )}\if{html}{\out{</div>}}
@@ -97,24 +96,21 @@ Run optimization and return a \code{bd} result object
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{target}}{PM_data object or path to CSV file with target data}
+\item{\code{target}}{Future regimen/target specification. Accepts the same forms as the \code{future} argument to \code{bd$new()}:
+a list with elements such as \code{dose}, \code{frequency}, \code{route}, \code{number}, \code{target}, \code{target_type}, and \code{target_time};
+a \code{PM_data} object; or a path to a CSV file.}
 
 \item{\code{dose_range}}{List with 'min' and 'max' elements defining the dose search range (default: 0 to 1000)}
 
 \item{\code{prior_weight}}{Numeric between 0 and 1 indicating the weight of bias in the optimization (default: 0.5)}
 
-\item{\code{target_type}}{Character string indicating the type of target: "concentration", "auc_from_zero", or "auc_from_last_dose" (default: "concentration")}
-
 \item{\code{start}}{Start time for future regimen. Can be either numeric hours (default: \code{0}) or a date-time
-character string. Accepted string formats:
+character string. Ambiguous formats are resolved using the \code{date_format} Pmetrics option
+(see \link{setPMoptions}). Accepted string formats:
 \itemize{
 \item \verb{YYYY-mm-dd HH:MM[:SS]}
-\item \verb{mm/dd/YYYY HH:MM[:SS]}
-\item \verb{mm/dd/YY HH:MM[:SS]}
-\item \verb{dd/mm/YYYY HH:MM[:SS]}
-\item \verb{dd/mm/YY HH:MM[:SS]}
-\item \verb{dd-mm-YYYY HH:MM[:SS]}
-\item \verb{dd-mm-YY HH:MM[:SS]}
+\item \verb{mm/dd/[YY]YY HH:MM[:SS]} or \verb{mm-dd-[YY]YY HH:MM[:SS]}
+\item \verb{dd/mm/[YY]YY HH:MM[:SS]} or \verb{dd-mm-[YY]YY HH:MM[:SS]}
 }}
 
 \item{\code{quiet}}{Logical indicating whether to suppress verbose simulation output. If NULL, uses the quiet setting from posterior computation (default: NULL)}

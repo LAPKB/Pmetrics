@@ -40,8 +40,7 @@ for (lambda in bias_weights) {
     r <- posterior$optimize(
         target = target_file,
         dose_range = list(min = 0, max = 300),
-        bias_weight = lambda,
-        target_type = "concentration"
+        bias_weight = lambda
     )
     cat(sprintf(
         "Bias weight: %.2f\t\tOptimal dose: [%.4f, %.4f]\t\tCost: %.6f\t\tln Cost: %.4f\t\tMethod: %s\n",
@@ -57,8 +56,7 @@ for (lambda in bias_weights) {
 r <- posterior$optimize(
     target = target_file,
     dose_range = list(min = 0, max = 300),
-    bias_weight = 1.0,
-    target_type = "concentration"
+    bias_weight = 1.0
 )
 cat("\nConcentration-time predictions for bias_weight=1.0:\n")
 preds <- r$result$predictions

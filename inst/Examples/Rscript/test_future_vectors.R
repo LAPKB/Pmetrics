@@ -14,9 +14,9 @@ bd1 <- bd$new(
   model = mod_onecomp,
   past_data = PM_data$new("inst/Examples/src/bestdose_past.csv", quiet = TRUE),
   max_cycles = 5,
-  future = list(dose = 1000, frequency = 12, route = 0, number = 3, target_time = 11.5, target = 0.3),
+  future = list(dose = 1000, frequency = 12, route = 0, number = 3, target_time = 11.5, target = 0.3, target_type = "concentration"),
   dose_range = list(min = 0, max = 5000), prior_weight = 0, start = "02/02/26 00:00",
-  target_type = "concentration", quiet = TRUE
+  quiet = TRUE
 )
 cat("doses:", paste(bd1$future$data$dose[!is.na(bd1$future$data$dose)], collapse = ","), "\n")
 cat("times:", paste(bd1$future$data$time[!is.na(bd1$future$data$dose)], collapse = ","), "\n\n")
@@ -28,9 +28,9 @@ bd2 <- bd$new(
   model = mod_onecomp,
   past_data = PM_data$new("inst/Examples/src/bestdose_past.csv", quiet = TRUE),
   max_cycles = 5,
-  future = list(dose = c(500, 750, 1000), frequency = 12, route = 0, number = 3, target_time = 11.5, target = 0.3),
+  future = list(dose = c(500, 750, 1000), frequency = 12, route = 0, number = 3, target_time = 11.5, target = 0.3, target_type = "concentration"),
   dose_range = list(min = 0, max = 5000), prior_weight = 0, start = "02/02/26 00:00",
-  target_type = "concentration", quiet = TRUE
+  quiet = TRUE
 )
 cat("doses:", paste(bd2$future$data$dose[!is.na(bd2$future$data$dose)], collapse = ","), "\n")
 cat("times:", paste(bd2$future$data$time[!is.na(bd2$future$data$dose)], collapse = ","), "\n\n")
@@ -42,9 +42,9 @@ bd3 <- bd$new(
   model = mod_onecomp,
   past_data = PM_data$new("inst/Examples/src/bestdose_past.csv", quiet = TRUE),
   max_cycles = 5,
-  future = list(dose = c(500, 750, 1000), frequency = 12, route = 0, number = 2, target_time = 11.5, target = 0.3),
+  future = list(dose = c(500, 750, 1000), frequency = 12, route = 0, number = 2, target_time = 11.5, target = 0.3, target_type = "concentration"),
   dose_range = list(min = 0, max = 5000), prior_weight = 0, start = "02/02/26 00:00",
-  target_type = "concentration", quiet = TRUE
+  quiet = TRUE
 )
 cat("doses:", paste(bd3$future$data$dose[!is.na(bd3$future$data$dose)], collapse = ","), "\n\n")
 
@@ -55,9 +55,9 @@ bd4 <- bd$new(
   model = mod_onecomp,
   past_data = PM_data$new("inst/Examples/src/bestdose_past.csv", quiet = TRUE),
   max_cycles = 5,
-  future = list(dose = c(500, 1000), frequency = 12, route = 0, number = 4, target_time = 11.5, target = 0.3),
+  future = list(dose = c(500, 1000), frequency = 12, route = 0, number = 4, target_time = 11.5, target = 0.3, target_type = "concentration"),
   dose_range = list(min = 0, max = 5000), prior_weight = 0, start = "02/02/26 00:00",
-  target_type = "concentration", quiet = TRUE
+  quiet = TRUE
 )
 cat("doses:", paste(bd4$future$data$dose[!is.na(bd4$future$data$dose)], collapse = ","), "\n\n")
 
@@ -68,11 +68,24 @@ bd5 <- bd$new(
   model = mod_onecomp,
   past_data = PM_data$new("inst/Examples/src/bestdose_past.csv", quiet = TRUE),
   max_cycles = 5,
-  future = list(dose = 1000, frequency = c(8, 12, 24), route = 0, number = 3, target_time = 7.5, target = 0.3),
+  future = list(dose = 1000, frequency = c(8, 12, 24), route = 0, number = 3, target_time = 7.5, target = 0.3, target_type = "concentration"),
   dose_range = list(min = 0, max = 5000), prior_weight = 0, start = "02/02/26 00:00",
-  target_type = "concentration", quiet = TRUE
+  quiet = TRUE
 )
 cat("doses:", paste(bd5$future$data$dose[!is.na(bd5$future$data$dose)], collapse = ","), "\n")
 cat("times:", paste(bd5$future$data$time[!is.na(bd5$future$data$dose)], collapse = ","), "\n\n")
+
+# Test 6: target_type = time (proportional target_time per interval)
+cat("--- Test 6: target_type='time', freq=c(8,12,24), target_time=0.5 ---\n")
+bd6 <- bd$new(
+  prior = "inst/Examples/src/bestdose_prior.csv",
+  model = mod_onecomp,
+  past_data = PM_data$new("inst/Examples/src/bestdose_past.csv", quiet = TRUE),
+  max_cycles = 5,
+  future = list(dose = 1000, frequency = c(8, 12, 24), route = 0, number = 3, target_time = 0.5, target = 0.3, target_type = "time"),
+  dose_range = list(min = 0, max = 5000), prior_weight = 0, start = "02/02/26 00:00",
+  quiet = TRUE
+)
+cat("obs times:", paste(bd6$future$data$time[is.na(bd6$future$data$dose)], collapse = ","), "\n\n")
 
 cat("All tests completed.\n")

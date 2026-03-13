@@ -30,6 +30,10 @@ or AUC values using Bayesian optimization.
 \item{\code{start}}{Start specification provided by user (numeric hours or datetime string)}
 
 \item{\code{start_offset}}{Resolved numeric offset (hours) used internally}
+
+\item{\code{future_requested_doses}}{Numeric vector of originally requested future doses (0 = optimize, non-zero = fixed)}
+
+\item{\code{future_target_info}}{List with target_type, target, and target_time from the original future specification}
 }
 \if{html}{\out{</div>}}
 }
@@ -53,6 +57,7 @@ or AUC values using Bayesian optimization.
 \item \href{#method-bd-print}{\code{bd$print()}}
 \item \href{#method-bd-save}{\code{bd$save()}}
 \item \href{#method-bd-plot}{\code{bd$plot()}}
+\item \href{#method-bd-report}{\code{bd$report()}}
 \item \href{#method-bd-clone}{\code{bd$clone()}}
 }
 }
@@ -71,7 +76,6 @@ across multiple optimizations, use \code{bd_post$new()} followed by \verb{$optim
   future = NULL,
   dose_range = list(min = 0, max = 1000),
   prior_weight = 0.5,
-  target_type = "concentration",
   start = 0,
   max_cycles = 500,
   settings = NULL,
@@ -94,16 +98,28 @@ based on the population prior without any individualization other than inclusion
 \itemize{
 \item A list describing future dosing/target setup with elements:
 \itemize{
-\item `dose`` The amount to administer (required). Use '0' to optimize the dose to achieve the target. Any other value will be used as fixed dose.
-\item \code{frequency}  How often to administer the dose(s). If unspecified, default every 24 hours. Maps to the II value in \link{PM_data}.
-\item \code{route} Either 0 for oral/bolus, or a value >0 to indicate the length of the infusion. If unspecified, defaults to 0. Maps to the DUR value in \link{PM_data}
-\item \code{number} The total number of doses to administer in the future, default 1 if unspecified. Maps to the ADDL value in \link{PM_data}.
-\item \code{target} The target value to achieve after every dose (required). Will be a concentration or AUC, depending on the \code{target_type} argument.
-\item \code{target_time} The time at which to achieve the target after each dose, default 24 hours if unspecified.
+\item \code{dose} The amount to administer (required). Use \code{0} to optimize that dose to achieve the target; any other value is treated as fixed.
+Can be a scalar or a numeric vector. If a vector is provided, each element corresponds to each dose event in order.
+\item \code{frequency} How often to administer dose(s) (default 24 hours). Can be a scalar or numeric vector; when vectorized,
+element \code{i} is the interval after dose \code{i} and before dose \code{i+1}.
+\item \code{route} Either 0 for oral/bolus, or a value >0 indicating infusion duration. Can be a scalar or numeric vector;
+when vectorized, element \code{i} applies to dose \code{i}.
+\item \code{number} The total number of doses to administer in the future (default 1).
+If \code{number} is smaller than \code{max(length(dose), length(frequency), length(route))}, it is increased to that maximum and an informational message is shown.
+If any of \code{dose}, \code{frequency}, or \code{route} are shorter than \code{number}, their last value is recycled to length \code{number}.
+\item \code{target} The target value to achieve after every dose (required).
+\item \code{target_type} The target type (default \code{"concentration"}). Must be one of \code{"concentration"}, \code{"auc"}, or \code{"time"}.
+\code{"concentration"} targets a concentration at \code{target_time}; \code{"auc"} targets an AUC from dose time to \code{target_time};
+\code{"time"} uses \code{target_time} as a proportion between 0 and 1 of each dose interval.
+\item \code{target_time} For \code{target_type = "concentration"} or \code{"auc"}, the time after each dose at which to evaluate the target,
+default 24 hours if unspecified. For \code{target_type = "time"}, this must be a single numeric proportion between 0 and 1,
+and each target observation time is set to \code{round(frequency[i] * target_time)} hours after dose \code{i}.
 \item \code{covariates} Named list of covariates in the model with values to use. If there are no covariates in the model, this can be omitted.
 }
 \item A \code{PM_data} object containing the future regimen and target observations. Dose events should be included with \code{evid=1} and target observations should be included with \code{evid=0} and \code{out} equal to the target value.
+When \code{future} is supplied this way, concentration targets are assumed.
 \item A path to a CSV file containing the future regimen and target observations in the same format as described for the \code{PM_data} object above.
+When \code{future} is supplied this way, concentration targets are assumed.
 }}
 
 \item{\code{dose_range}}{List with 'min' and 'max' elements defining the dose search range (default: 0 to 1000)}
@@ -114,13 +130,13 @@ value distribution will be used as the sole basis for optimization. If 0, only t
 which incorporates the patient history. Values between 0 and 1 will weight the contribution of the prior vs posterior parameter distributions in the optimization.
 Choose values closer to 1 when the patient history is sparse or not believed to be very informative, and values closer to 0 when the patient history is rich and believed to be highly informative.}
 
-\item{\code{target_type}}{Character string indicating the type of target: "concentration", "auc_from_zero", or "auc_from_last_dose" (default: "concentration")}
-
 \item{\code{start}}{Start time for the future regimen. Can be either:
 \itemize{
 \item Numeric hours (default \code{0}): relative to the last event date/time in past data, or if no past data,
 relative to the next local clock hour.
 \item Date-time character string: interpreted as an absolute start date/time and converted to an internal hour offset.
+Ambiguous formats (e.g. \code{01/02/26}) are resolved using the \code{date_format} Pmetrics option
+(set via \link{setPMoptions}), which defaults to \verb{\%m/\%d/\%y} for US locales and \verb{\%d/\%m/\%y} otherwise.
 Accepted formats include:
 \itemize{
 \item \verb{YYYY-mm-dd HH:MM[:SS]}
@@ -184,6 +200,23 @@ Plot observed and predicted concentrations over time for both past and future da
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{...}}{Additional arguments passed to plot.bd function}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-bd-report"></a>}}
+\if{latex}{\out{\hypertarget{method-bd-report}{}}}
+\subsection{Method \code{report()}}{
+Generate an HTML report for a BestDose result
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{bd$report(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Parameters passed to the internal BestDose report generator.}
 }
 \if{html}{\out{</div>}}
 }
