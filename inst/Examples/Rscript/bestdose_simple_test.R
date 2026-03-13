@@ -122,6 +122,7 @@ future_list <- list(dose = 320,
     target = 0.3,
     target_type = "time")
 
+#AUC target - crashing as of 3/13/26
 future_list <- list(dose = 320, 
     frequency = 12, 
     route = 0, 
