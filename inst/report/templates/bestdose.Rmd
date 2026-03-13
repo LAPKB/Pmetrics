@@ -1,0 +1,562 @@
+---
+title: "`r params$title`"
+author: "Laboratory of Applied Pharmacokinetics and Bioinformatics (LAPKB)"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: false
+params:
+  bd: null
+  title: "BestDose Report"
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(Pmetrics)
+library(dplyr)
+library(DT)
+library(htmltools)
+
+obj <- params$bd
+report <- Pmetrics:::bd_report_build(obj)
+digits <- getPMoptions("digits")
+if (is.null(digits) || length(digits) == 0 || is.na(digits)) digits <- 2
+date_fmt <- getPMoptions("date_format", warn = FALSE, quiet = TRUE)
+if (!is.character(date_fmt) || length(date_fmt) != 1 || !nzchar(date_fmt)) {
+  date_fmt <- if (grepl("en_US", Sys.getlocale("LC_TIME"), fixed = TRUE)) "%m/%d/%y" else "%d/%m/%y"
+}
+fmt_num <- function(x) {
+  if (is.numeric(x)) round(x, digits) else x
+}
+
+parse_dt_col <- function(x) {
+  suppressWarnings(as.POSIXct(x, tz = Sys.timezone()))
+}
+
+fmt_date_col <- function(x) {
+  dt <- parse_dt_col(x)
+  ifelse(is.na(dt), as.character(x), format(dt, date_fmt))
+}
+
+fmt_time_col <- function(x) {
+  dt <- parse_dt_col(x)
+  ifelse(is.na(dt), NA_character_, format(dt, "%H:%M:%S"))
+}
+
+fmt_datetime_col <- function(x) {
+  d <- fmt_date_col(x)
+  t <- fmt_time_col(x)
+  ifelse(is.na(t), d, paste(d, t))
+}
+
+resize_plot <- function(p, scale = 0.8, base_height = 450, square = FALSE, no_title = FALSE, bottom_margin = NULL) {
+  if (is.null(p)) return(NULL)
+  h <- as.integer(base_height * scale)
+  p <- if (square) plotly::layout(p, height = h, width = h) else plotly::layout(p, height = h)
+  if (no_title) p <- plotly::layout(p, title = list(text = ""))
+  if (!is.null(bottom_margin)) p <- plotly::layout(p, margin = list(b = bottom_margin))
+  p
+}
+
+render_dt <- function(x, page_length = 10) {
+  if (is.null(x) || nrow(x) == 0) {
+    return("None")
+  }
+  if ("datetime" %in% names(x)) {
+    x <- x |>
+      dplyr::mutate(datetime = fmt_datetime_col(datetime))
+  }
+  x <- x |> mutate(across(where(is.numeric), fmt_num))
+  DT::datatable(
+    x,
+    rownames = FALSE,
+    options = list(
+      pageLength = page_length,
+      lengthChange = FALSE,
+      searching = FALSE,
+      info = FALSE,
+      autoWidth = TRUE
+    )
+  )
+}
+render_dose_table <- function(doses) {
+  if (is.null(doses) || nrow(doses) == 0) return("None")
+  status_vals <- if ("status" %in% names(doses)) doses$status else rep(NA_character_, nrow(doses))
+  df <- doses |>
+    dplyr::mutate(
+      Date = fmt_date_col(datetime),
+      Time = fmt_time_col(datetime),
+      `Relative Hours` = time,
+      Dose = dose,
+      Route = dplyr::if_else(is.na(dur) | dur == 0, "Bolus", paste0("Infusion, ", dur, " hours")),
+      Status = status_vals
+    ) |>
+    dplyr::select(Date, Time, `Relative Hours`, Dose, Route, Status)
+
+  render_dt(df, page_length = 10)
+}
+render_metrics <- function(x) {
+  if (is.null(x$metric_info)) {
+    return("None")
+  }
+  metric_vals <- x$metric_info$metric_vals
+  if (stringr::str_detect(getPMoptions("bias_method"), "percent_")) {
+    metric_vals <- metric_vals |>
+      mutate(across(everything(), ~ paste0(fmt_num(.x), "%")))
+  } else {
+    metric_vals <- metric_vals |>
+      mutate(across(everything(), fmt_num))
+  }
+
+  tibble::tibble(
+    Metric = c(x$metric_info$metric_types$bias, x$metric_info$metric_types$imprecision),
+    Value = c(metric_vals$Bias, metric_vals$Imprecision)
+  ) |>
+    DT::datatable(
+      rownames = FALSE,
+      options = list(dom = "t", paging = FALSE, searching = FALSE, info = FALSE)
+    )
+}
+
+render_percent_metrics <- function(x) {
+  if (is.null(x$pe) || nrow(x$pe) == 0) {
+    return("None")
+  }
+
+  bias_method <- stringr::str_replace(getPMoptions("bias_method"), "^percent_", "")
+  imp_method <- stringr::str_replace(getPMoptions("imp_method"), "^percent_", "")
+
+  bias_val <- x$pe |>
+    dplyr::filter(type == bias_method) |>
+    dplyr::pull(percent)
+  imp_val <- x$pe |>
+    dplyr::filter(type == imp_method) |>
+    dplyr::pull(percent)
+
+  bias_val <- if (length(bias_val) == 0) NA_real_ else bias_val[1]
+  imp_val <- if (length(imp_val) == 0) NA_real_ else imp_val[1]
+
+  tibble::tibble(
+    Metric = c("%Bias", "%Imprecision"),
+    Value = c(paste0(fmt_num(bias_val), "%"), paste0(fmt_num(imp_val), "%"))
+  ) |>
+    DT::datatable(
+      rownames = FALSE,
+      width = "auto",
+      options = list(dom = "t", paging = FALSE, searching = FALSE, info = FALSE)
+    )
+}
+
+render_fit_table <- function(fit_tbl, page_length = 10) {
+  if (is.null(fit_tbl) || nrow(fit_tbl) == 0) {
+    return("None")
+  }
+
+  has_datetime <- "datetime" %in% names(fit_tbl)
+
+  tbl <- fit_tbl |>
+    dplyr::mutate(
+      Date = if (has_datetime) fmt_date_col(datetime) else NA_character_,
+      Time = if (has_datetime) fmt_time_col(datetime) else NA_character_,
+      `Relative Time` = time,
+      Observed = obs,
+      Predicted = pred,
+      Error = pred - obs,
+      `%Error` = (pred - obs) / obs * 100
+    ) |>
+    dplyr::select(Date, Time, `Relative Time`, Observed, Predicted, Error, `%Error`)
+
+  render_dt(tbl, page_length = page_length)
+}
+
+render_auc_table <- function(auc_tbl, page_length = 10) {
+  if (is.null(auc_tbl) || nrow(auc_tbl) == 0) {
+    return("None")
+  }
+
+  has_datetime <- "datetime" %in% names(auc_tbl)
+
+  tbl <- auc_tbl |>
+    dplyr::mutate(
+      Number = dplyr::row_number(),
+      Date = if (has_datetime) fmt_date_col(datetime) else NA_character_,
+      Time = if (has_datetime) fmt_time_col(datetime) else NA_character_,
+      Hours = time,
+      Amount = dose,
+      `Post-dose` = postdose_auc,
+      `Cumulative` = cumulative_auc,
+      .source = source
+    ) |>
+    dplyr::select(Number, Date, Time, Hours, Amount, `Post-dose`, `Cumulative`, .source) |>
+    dplyr::mutate(across(c(Hours, Amount, `Post-dose`, `Cumulative`), fmt_num))
+
+  hdr <- htmltools::withTags(table(
+    class = 'display',
+    thead(
+      tr(
+        th(colspan = 5, style = "text-align:center; background:#f1f3f5; border-bottom:1px solid #d9d9d9;", "Dose"),
+        th(colspan = 2, style = "text-align:center; background:#e8f1ff; border-left:2px solid #9bbcff; border-bottom:1px solid #d9d9d9;", "AUC"),
+        th(style = "display:none;", "")
+      ),
+      tr(
+        th(style = "background:#f8f9fa;", "Number"),
+        th(style = "background:#f8f9fa;", "Date"),
+        th(style = "background:#f8f9fa;", "Time"),
+        th(style = "background:#f8f9fa;", "Hours"),
+        th(style = "background:#f8f9fa;", "Amount"),
+        th(style = "background:#f1f6ff; border-left:2px solid #9bbcff;", "Post-dose"),
+        th(style = "background:#f1f6ff;", "Cumulative"),
+        th("")
+      )
+    )
+  ))
+
+  DT::datatable(
+    tbl,
+    container = hdr,
+    class = "compact nowrap",
+    width = "auto",
+    rownames = FALSE,
+    options = list(
+      pageLength = page_length,
+      lengthChange = FALSE,
+      searching = FALSE,
+      info = FALSE,
+      autoWidth = FALSE,
+      columnDefs = list(
+        list(visible = FALSE, targets = 7)
+      )
+    )
+  ) |>
+    DT::formatStyle(
+      c("Number", "Date", "Time", "Hours", "Amount"),
+      backgroundColor = "#fbfbfb"
+    ) |>
+    DT::formatStyle(
+      c("Post-dose", "Cumulative"),
+      backgroundColor = "#f5f9ff"
+    ) |>
+    DT::formatStyle(
+      "Post-dose",
+      borderLeft = "2px solid #9bbcff"
+    ) |>
+    DT::formatStyle(
+      ".source",
+      target = "row",
+      color = DT::styleEqual(c("Past", "Future"), c("black", "red"))
+    )
+}
+
+render_auc_plot <- function(auc_tbl, auc_plot = NULL) {
+  if (!is.null(auc_plot)) {
+    return(resize_plot(auc_plot, scale = 0.9))
+  }
+  if (is.null(auc_tbl) || nrow(auc_tbl) == 0) {
+    return("No AUC plot available.")
+  }
+
+  has_datetime <- "datetime" %in% names(auc_tbl)
+  if (!has_datetime) {
+    return("No AUC plot available.")
+  }
+
+  date_fmt <- getPMoptions("date_format", warn = FALSE, quiet = TRUE)
+  if (!is.character(date_fmt) || length(date_fmt) != 1 || !nzchar(date_fmt)) {
+    date_fmt <- if (grepl("en_US", Sys.getlocale("LC_TIME"), fixed = TRUE)) "%m/%d/%y" else "%d/%m/%y"
+  }
+
+  df <- auc_tbl |>
+    dplyr::mutate(
+      datetime = suppressWarnings(as.POSIXct(datetime, tz = Sys.timezone())),
+      dose_idx = dplyr::row_number(),
+      dose_amt = ifelse(is.na(dose), NA_character_, formatC(as.numeric(dose), format = "f", digits = 2)),
+      date_label = format(datetime, date_fmt),
+      time_label = format(datetime, "%H:%M:%S")
+    ) |>
+    dplyr::filter(!is.na(datetime))
+
+  if (nrow(df) == 0) {
+    return("No AUC plot available.")
+  }
+
+  bar_cols <- ifelse(df$source == "Past", "black", "red")
+
+  p <- plotly::plot_ly() |>
+    plotly::add_bars(
+      x = ~df$datetime,
+      y = ~df$postdose_auc,
+      marker = list(color = bar_cols),
+      opacity = 0.5,
+      name = "Post-dose AUC",
+      showlegend = FALSE,
+      text = paste0(
+        "Dose: ", df$dose_idx,
+        "<br>Amount: ", df$dose_amt,
+        "<br>Date: ", df$date_label,
+        "<br>Time: ", df$time_label,
+        "<br>Post-dose AUC: ", sprintf("%.2f", df$postdose_auc)
+      ),
+      hoverinfo = "text",
+      textposition = "none"
+    )
+
+  past_idx <- which(df$source == "Past")
+  future_idx <- which(df$source != "Past")
+
+  if (length(past_idx) > 0) {
+    p <- p |>
+      plotly::add_trace(
+        x = df$datetime[past_idx],
+        y = df$cumulative_auc[past_idx],
+        type = "scatter",
+        mode = "lines+markers",
+        name = "Cumulative (Past)",
+        yaxis = "y2",
+        line = list(color = "black"),
+        marker = list(color = "black"),
+        showlegend = FALSE,
+        text = paste0(
+          "Dose: ", df$dose_idx[past_idx],
+          "<br>Amount: ", df$dose_amt[past_idx],
+          "<br>Date: ", df$date_label[past_idx],
+          "<br>Time: ", df$time_label[past_idx],
+          "<br>Cumulative AUC: ", sprintf("%.2f", df$cumulative_auc[past_idx])
+        ),
+        hoverinfo = "text"
+      )
+  }
+
+  if (length(future_idx) > 0) {
+    p <- p |>
+      plotly::add_trace(
+        x = df$datetime[future_idx],
+        y = df$cumulative_auc[future_idx],
+        type = "scatter",
+        mode = "lines+markers",
+        name = "Cumulative (Future)",
+        yaxis = "y2",
+        line = list(color = "red"),
+        marker = list(color = "red"),
+        showlegend = FALSE,
+        text = paste0(
+          "Dose: ", df$dose_idx[future_idx],
+          "<br>Amount: ", df$dose_amt[future_idx],
+          "<br>Date: ", df$date_label[future_idx],
+          "<br>Time: ", df$time_label[future_idx],
+          "<br>Cumulative AUC: ", sprintf("%.2f", df$cumulative_auc[future_idx])
+        ),
+        hoverinfo = "text"
+      )
+  }
+
+  if (length(past_idx) > 0 && length(future_idx) > 0) {
+    i_last_past <- max(past_idx)
+    i_first_future <- min(future_idx)
+    p <- p |>
+      plotly::add_trace(
+        x = c(df$datetime[i_last_past], df$datetime[i_first_future]),
+        y = c(df$cumulative_auc[i_last_past], df$cumulative_auc[i_first_future]),
+        type = "scatter",
+        mode = "lines",
+        yaxis = "y2",
+        line = list(color = "black", width = 2),
+        showlegend = FALSE,
+        hoverinfo = "skip"
+      )
+  }
+
+  ticktext <- paste0("Dose ", df$dose_idx)
+
+  p |>
+    plotly::layout(
+      xaxis = list(
+        title = "",
+        tickvals = df$datetime,
+        ticktext = ticktext
+      ),
+      yaxis = list(title = "Post-dose AUC", zeroline = FALSE),
+      yaxis2 = list(
+        overlaying = "y",
+        side = "right",
+        title = list(text = "Cumulative AUC", standoff = 40),
+        automargin = TRUE,
+        zeroline = FALSE
+      ),
+      margin = list(t = 90),
+      bargap = 0.2,
+      showlegend = FALSE
+    ) |>
+    resize_plot(scale = 0.9)
+}
+
+render_pd_table <- function(pd_tbl, page_length = 10) {
+  if (is.null(pd_tbl) || nrow(pd_tbl) == 0) {
+    return("None")
+  }
+
+  has_datetime <- "datetime" %in% names(pd_tbl)
+
+  tbl <- pd_tbl |>
+    dplyr::mutate(
+      `Dose number` = dose_number,
+      Date = if (has_datetime) fmt_date_col(datetime) else NA_character_,
+      Time = if (has_datetime) fmt_time_col(datetime) else NA_character_,
+      `Cumulative probability` = cumulative_probability
+    ) |>
+    dplyr::select(`Dose number`, Date, Time, `Cumulative probability`) |>
+    dplyr::mutate(`Cumulative probability` = fmt_num(`Cumulative probability`))
+
+  render_dt(tbl, page_length = page_length)
+}
+
+fit_note <- function(metrics) {
+  metric_types <- metrics$metric_info$metric_types
+  paste0(
+    "Bias is (pred - obs) ", metric_types$bias,
+    ". Imprecision is ", metric_types$imprecision,
+    ". Change these with `setPMoptions()`."
+  )
+}
+```
+
+## Sections {.tabset .tabset-pills}
+
+### Overview
+
+```{r main-plot}
+plotly::layout(report$plot, title = list(text = ""))
+```
+
+#### Future Doses
+```{r optimized-doses}
+render_dose_table(report$future_doses)
+```
+
+### Fit {.tabset .tabset-pills}
+
+#### Past observations
+
+<details>
+<summary style="cursor:pointer; font-weight:bold; margin-bottom:8px;">Average</summary>
+
+<div style="text-align:center;">
+
+```{r fit-past-rainbow}
+if (!is.null(report$past_rainbow_plot)) resize_plot(report$past_rainbow_plot, bottom_margin = 5)
+```
+
+</div>
+
+<div style="margin-top:-60px;">
+
+```{r fit-past-metrics}
+render_percent_metrics(report$past_fit_metrics)
+```
+
+</div>
+```{r fit-past-notes-1, results = 'asis'}
+cat(fit_note(report$past_fit_metrics))
+```
+
+</details>
+
+<details>
+<summary style="cursor:pointer; font-weight:bold; margin-top:12px; margin-bottom:8px;">Detailed</summary>
+
+<div style="display:flex; flex-direction:column; align-items:center;">
+
+```{r fit-past-plot}
+if (!is.null(report$past_fit_plot)) resize_plot(report$past_fit_plot, scale = 0.9, square = TRUE, no_title = TRUE) else "No past observations available."
+```
+
+```{r fit-past-table}
+render_fit_table(report$past_fit, page_length = 10)
+```
+
+</div>
+```{r fit-past-notes-2, results = 'asis'}
+cat(fit_note(report$past_fit_metrics))
+```
+
+</details>
+
+
+#### Future targets
+
+<details>
+<summary style="cursor:pointer; font-weight:bold; margin-bottom:8px;">Average</summary>
+
+<div style="text-align:center;">
+
+
+```{r fit-future-rainbow}
+if (!is.null(report$future_rainbow_plot)) resize_plot(report$future_rainbow_plot)
+```
+
+</div>
+
+<div style="margin-top:-60px;">
+
+```{r fit-future-metrics}
+render_percent_metrics(report$future_fit_metrics)
+```
+
+```{r fit-future-notes-1, results = 'asis'}
+cat(fit_note(report$future_fit_metrics))
+```
+
+</div>
+</details>
+
+<details>
+<summary style="cursor:pointer; font-weight:bold; margin-top:12px; margin-bottom:8px;">Detailed</summary>
+
+```{r fit-future-table}
+render_fit_table(report$future_fit, page_length = 10)
+```
+
+```{r fit-future-notes-2, results = 'asis'}
+cat(fit_note(report$future_fit_metrics))
+```
+
+</details>
+
+### AUC
+
+```{r auc-plot}
+render_auc_plot(report$auc_table, report$auc_plot)
+```
+
+<div style="margin-top:-60px;">
+
+```{r auc-table}
+render_auc_table(report$auc_table, page_length = 10)
+```
+
+</div>
+
+### PD
+
+```{r pd-table}
+render_pd_table(report$pd_table, page_length = 10)
+```
+
+### Parameters {.tabset .tabset-pills}
+
+#### Weighted summary
+
+```{r posterior-summary}
+render_dt(report$posterior_summary, page_length = 10)
+```
+
+#### Full posterior support
+
+```{r posterior-table}
+render_dt(report$posterior_table, page_length = 15)
+```
+
+### Summary
+
+```{r overview}
+render_dt(report$overview, page_length = 20)
+```
