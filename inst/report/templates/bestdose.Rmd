@@ -401,12 +401,34 @@ render_pd_table <- function(pd_tbl, page_length = 10) {
       `Dose number` = dose_number,
       Date = if (has_datetime) fmt_date_col(datetime) else NA_character_,
       Time = if (has_datetime) fmt_time_col(datetime) else NA_character_,
-      `Cumulative probability` = cumulative_probability
+      Hours = time,
+      `Probability` = cumulative_probability,
+      .source = source
     ) |>
-    dplyr::select(`Dose number`, Date, Time, `Cumulative probability`) |>
-    dplyr::mutate(`Cumulative probability` = fmt_num(`Cumulative probability`))
+    dplyr::select(`Dose number`, Date, Time, Hours, `Probability`, .source) |>
+    dplyr::mutate(`Probability` = fmt_num(`Probability`))
 
-  render_dt(tbl, page_length = page_length)
+  DT::datatable(
+    tbl,
+    class = "compact nowrap",
+    width = "auto",
+    rownames = FALSE,
+    options = list(
+      pageLength = page_length,
+      lengthChange = FALSE,
+      searching = FALSE,
+      info = FALSE,
+      autoWidth = FALSE,
+      columnDefs = list(
+        list(visible = FALSE, targets = 5)
+      )
+    )
+  ) |>
+    DT::formatStyle(
+      ".source",
+      target = "row",
+      color = DT::styleEqual(c("Past", "Future"), c("black", "red"))
+    )
 }
 
 fit_note <- function(metrics) {
@@ -536,6 +558,13 @@ render_auc_table(report$auc_table, page_length = 10)
 </div>
 
 ### PD
+
+```{r pd-summary, results = 'asis'}
+if (!is.null(report$pd_target_summary) && nzchar(report$pd_target_summary)) {
+  cat("<p style='font-style:italic; color:#444; margin-bottom:8px;'>",
+      report$pd_target_summary, "</p>")
+}
+```
 
 ```{r pd-table}
 render_pd_table(report$pd_table, page_length = 10)

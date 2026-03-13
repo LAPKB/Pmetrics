@@ -14,9 +14,9 @@ bd_obj <- bd$new(
   past_data = PM_data$new("inst/Examples/src/bestdose_past.csv", quiet = TRUE),
   max_cycles = 5,
   future = list(dose = c(1000, 0, 1500), frequency = 12, route = 0, number = 3,
-                target_time = 11.5, target = 0.3),
+                target_time = 11.5, target = 0.3, target_type = "concentration"),
   dose_range = list(min = 0, max = 5000), prior_weight = 0, start = "02/02/26 00:00",
-  target_type = "concentration", quiet = TRUE
+  quiet = TRUE
 )
 
 # Debug: check what standard_data looks like for future evid==1 rows

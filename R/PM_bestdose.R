@@ -35,6 +35,8 @@ bd <- R6::R6Class(
         start_offset = 0,
         #' @field future_requested_doses Numeric vector of originally requested future doses (0 = optimize, non-zero = fixed)
         future_requested_doses = NULL,
+        #' @field future_target_info List with target_type, target, and target_time from the original future specification
+        future_target_info = NULL,
         #' @description
         #' Initialize a `bd` object by running a one-shot BestDose optimization.
         #' Creates the posterior internally, then optimizes. For reusing the posterior
@@ -45,22 +47,33 @@ bd <- R6::R6Class(
         #' based on the population prior without any individualization other than inclusion of any covariates which are in the model.
         #' @param future The future regimen to optimize. It can be one of three things:
         #' * A list describing future dosing/target setup with elements:
-        #'   - `dose`` The amount to administer (required). Use '0' to optimize the dose to achieve the target. Any other value will be used as fixed dose.
-        #'   - `frequency`  How often to administer the dose(s). If unspecified, default every 24 hours. Maps to the II value in [PM_data].
-        #'   - `route` Either 0 for oral/bolus, or a value >0 to indicate the length of the infusion. If unspecified, defaults to 0. Maps to the DUR value in [PM_data]
-        #'   - `number` The total number of doses to administer in the future, default 1 if unspecified. Maps to the ADDL value in [PM_data].
-        #'   - `target` The target value to achieve after every dose (required). Will be a concentration or AUC, depending on the `target_type` argument.
-        #'   - `target_time` The time at which to achieve the target after each dose, default 24 hours if unspecified.
+        #'   - `dose` The amount to administer (required). Use `0` to optimize that dose to achieve the target; any other value is treated as fixed.
+        #'     Can be a scalar or a numeric vector. If a vector is provided, each element corresponds to each dose event in order.
+        #'   - `frequency` How often to administer dose(s) (default 24 hours). Can be a scalar or numeric vector; when vectorized,
+        #'     element `i` is the interval after dose `i` and before dose `i+1`.
+        #'   - `route` Either 0 for oral/bolus, or a value >0 indicating infusion duration. Can be a scalar or numeric vector;
+        #'     when vectorized, element `i` applies to dose `i`.
+        #'   - `number` The total number of doses to administer in the future (default 1).
+        #'     If `number` is smaller than `max(length(dose), length(frequency), length(route))`, it is increased to that maximum and an informational message is shown.
+        #'     If any of `dose`, `frequency`, or `route` are shorter than `number`, their last value is recycled to length `number`.
+        #'   - `target` The target value to achieve after every dose (required).
+        #'   - `target_type` The target type (default `"concentration"`). Must be one of `"concentration"`, `"auc"`, or `"time"`.
+        #'     `"concentration"` targets a concentration at `target_time`; `"auc"` targets an AUC from dose time to `target_time`;
+        #'     `"time"` uses `target_time` as a proportion between 0 and 1 of each dose interval.
+        #'   - `target_time` For `target_type = "concentration"` or `"auc"`, the time after each dose at which to evaluate the target,
+        #'     default 24 hours if unspecified. For `target_type = "time"`, this must be a single numeric proportion between 0 and 1,
+        #'     and each target observation time is set to `round(frequency[i] * target_time)` hours after dose `i`.
         #'   - `covariates` Named list of covariates in the model with values to use. If there are no covariates in the model, this can be omitted.
         #' * A `PM_data` object containing the future regimen and target observations. Dose events should be included with `evid=1` and target observations should be included with `evid=0` and `out` equal to the target value.
+        #'   When `future` is supplied this way, concentration targets are assumed.
         #' * A path to a CSV file containing the future regimen and target observations in the same format as described for the `PM_data` object above.
+        #'   When `future` is supplied this way, concentration targets are assumed.
         #' @param dose_range List with 'min' and 'max' elements defining the dose search range (default: 0 to 1000)
         #' @param prior_weight Numeric between 0 and 1 indicating the balance between the prior and the posterior in the optimization (default: 0.5). 
         #' If 1, the model prior parameter
         #' value distribution will be used as the sole basis for optimization. If 0, only the Bayesian posterior parameter distribution will be used, 
         #' which incorporates the patient history. Values between 0 and 1 will weight the contribution of the prior vs posterior parameter distributions in the optimization.
         #' Choose values closer to 1 when the patient history is sparse or not believed to be very informative, and values closer to 0 when the patient history is rich and believed to be highly informative.
-        #' @param target_type Character string indicating the type of target: "concentration", "auc_from_zero", or "auc_from_last_dose" (default: "concentration")
         #' @param start Start time for the future regimen. Can be either:
         #' * Numeric hours (default `0`): relative to the last event date/time in past data, or if no past data,
         #'   relative to the next local clock hour.
@@ -84,7 +97,6 @@ bd <- R6::R6Class(
             future = NULL,
             dose_range = list(min = 0, max = 1000),
             prior_weight = 0.5,
-            target_type = "concentration",
             start = 0,
             max_cycles = 500,
             settings = NULL,
@@ -93,9 +105,18 @@ bd <- R6::R6Class(
                 
                 if (!is.null(future)) {
                     if (is.list(future)) {
-                        future_data <- private$.build_future_data(future)
+                        future_spec <- private$.build_future_data(future)
+                        future_data <- future_spec$data
+                        target_type <- future_spec$target_type
+                        self$future_target_info <- list(
+                            target_type = tolower(as.character(future$target_type %||% "concentration")),
+                            target = future$target,
+                            target_time = future$target_time
+                        )
                     } else if (inherits(future, "PM_data") || is.character(future)) {
                         future_data <- PM_data$new(future, quiet = TRUE)
+                        target_type <- "concentration"
+                        self$future_target_info <- list(target_type = "concentration", target = NA, target_time = NA)
                     } else {
                         cli::cli_abort("{.arg future} must be either a list describing the future setup, a PM_data object, or a path to a CSV file.")
                     }
@@ -200,10 +221,10 @@ bd <- R6::R6Class(
                 }
                 
                 # Apply defaults
+                future$target_type <- future$target_type %||% "concentration"
                 future$frequency <- future$frequency %||% 24
                 future$route <- future$route %||% 0
                 future$number <- future$number %||% 1
-                future$target_time <- future$target_time %||% 24
                 
                 # Determine effective number from vector lengths of dose, frequency, route
                 n_from_vectors <- max(
@@ -230,6 +251,34 @@ bd <- R6::R6Class(
                 doses  <- recycle_last(future$dose, n)
                 freqs  <- recycle_last(future$frequency, n)
                 routes <- recycle_last(future$route, n)
+                target_type <- tolower(as.character(future$target_type[[1]]))
+
+                if (!target_type %in% c("concentration", "auc", "time")) {
+                    cli::cli_abort("{.arg future$target_type} must be one of: concentration, auc, time")
+                }
+
+                if (target_type == "time") {
+                    if (is.null(future$target_time) ||
+                        length(future$target_time) != 1 ||
+                        !is.numeric(future$target_time) ||
+                        is.na(future$target_time) ||
+                        future$target_time < 0 ||
+                        future$target_time > 1) {
+                        cli::cli_abort("For {.code future$target_type = 'time'}, {.arg future$target_time} must be a single numeric value between 0 and 1.")
+                    }
+                    target_offsets <- round(freqs * future$target_time)
+                    rust_target_type <- "concentration"
+                } else {
+                    future$target_time <- future$target_time %||% 24
+                    if (length(future$target_time) != 1 ||
+                        !is.numeric(future$target_time) ||
+                        is.na(future$target_time) ||
+                        future$target_time < 0) {
+                        cli::cli_abort("{.arg future$target_time} must be a single non-negative numeric value.")
+                    }
+                    target_offsets <- rep(as.numeric(future$target_time), n)
+                    rust_target_type <- if (target_type == "auc") "auc_from_zero" else "concentration"
+                }
                 
                 # Cumulative dose times: dose 1 at t=0, dose i at sum of preceding frequencies
                 dose_times <- c(0, cumsum(head(freqs, n - 1)))
@@ -255,7 +304,7 @@ bd <- R6::R6Class(
                 
                 # Add observation events at target_time after each dose
                 for (i in seq_len(n)) {
-                    obs_time <- dose_times[i] + future$target_time
+                    obs_time <- dose_times[i] + target_offsets[i]
                     obs_args <- list(
                         id = 1, time = obs_time, evid = 0,
                         dose = NA, out = future$target,
@@ -263,7 +312,7 @@ bd <- R6::R6Class(
                     )
                     do.call(future_data$addEvent, obs_args)
                 }
-                future_data
+                list(data = future_data, target_type = rust_target_type)
             },
             .optimize = function(posterior, future_data, dose_range, prior_weight, target_type, start_offset, quiet = FALSE) {
                 if (is.null(posterior$handle)) {
@@ -273,8 +322,8 @@ bd <- R6::R6Class(
                     ))
                 }
                 
-                if (!target_type %in% c("concentration", "auc_from_zero", "auc_from_last_dose")) {
-                    cli::cli_abort("{.arg target_type} must be one of: concentration, auc_from_zero, auc_from_last_dose")
+                if (!target_type %in% c("concentration", "auc_from_zero")) {
+                    cli::cli_abort("Internal {.arg target_type} must be one of: concentration, auc_from_zero")
                 }
                 
                 if (prior_weight < 0 || prior_weight > 1) {
@@ -585,10 +634,11 @@ bd <- R6::R6Class(
                 },
                 #' @description
                 #' Run optimization and return a `bd` result object
-                #' @param target PM_data object or path to CSV file with target data
+                #' @param target Future regimen/target specification. Accepts the same forms as the `future` argument to `bd$new()`:
+                #'   a list with elements such as `dose`, `frequency`, `route`, `number`, `target`, `target_type`, and `target_time`;
+                #'   a `PM_data` object; or a path to a CSV file.
                 #' @param dose_range List with 'min' and 'max' elements defining the dose search range (default: 0 to 1000)
                 #' @param prior_weight Numeric between 0 and 1 indicating the weight of bias in the optimization (default: 0.5)
-                #' @param target_type Character string indicating the type of target: "concentration", "auc_from_zero", or "auc_from_last_dose" (default: "concentration")
                 #' @param start Start time for future regimen. Can be either numeric hours (default: `0`) or a date-time
                 #'   character string. Ambiguous formats are resolved using the `date_format` Pmetrics option
                 #'   (see [setPMoptions]). Accepted string formats:
@@ -600,7 +650,6 @@ bd <- R6::R6Class(
                 optimize = function(target,
                     dose_range = list(min = 0, max = 1000),
                     prior_weight = 0.5,
-                    target_type = "concentration",
                     start = 0,
                     quiet = NULL) {
                         if (is.null(quiet)) quiet <- private$.quiet
@@ -608,7 +657,6 @@ bd <- R6::R6Class(
                             future = target,
                             dose_range = dose_range,
                             prior_weight = prior_weight,
-                            target_type = target_type,
                             start = start,
                             posterior = self,
                             quiet = quiet

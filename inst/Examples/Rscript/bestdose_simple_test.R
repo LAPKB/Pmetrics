@@ -40,8 +40,7 @@ for (lambda in prior_weights) {
     r <- posterior$optimize(
         target = target_file,
         dose_range = list(min = 0, max = 300),
-        prior_weight = lambda, # ought to be called "prior_weight"
-        target_type = "concentration"
+        prior_weight = lambda # ought to be called "prior_weight"
     )
     cat(sprintf(
         "Prior weight: %.2f\t\tOptimal dose: [%.4f, %.4f]\t\tCost: %.6f\t\tln Cost: %.4f\t\tMethod: %s\n",
@@ -57,8 +56,7 @@ for (lambda in prior_weights) {
 r <- posterior$optimize(
     target = target_file,
     dose_range = list(min = 0, max = 300),
-    prior_weight = 0.0,
-    target_type = "concentration"
+    prior_weight = 0.0
 )
 cat("\nConcentration-time predictions for prior_weight=0.0:\n")
 preds <- r$result$predictions
@@ -80,7 +78,6 @@ bd1 <- bd$new(
     future = PM_data$new(target_file, quiet = TRUE),
     dose_range = list(min = 0, max = 5000),
     prior_weight = 0,
-    target_type = "concentration",
     start = 0
 )
 
@@ -94,8 +91,7 @@ bd2 <- bd$new(
     max_cycles = 500,
     future = target_file,
     dose_range = list(min = 0, max = 300),
-    prior_weight = 0.0,
-    target_type = "concentration"
+    prior_weight = 0.0
 )
 
 bd2
@@ -110,7 +106,29 @@ plot(bd1)
 ## adding ability to specify future as argument to bd$new() instead of target file.
 ## This will allow for more flexible future specifications and avoid the need for a separate target file.
 
-future_list <- list(dose = 0, frequency = 12, route = 0, number = 3, target_time = 11.5, target = 0.3)
+future_list <- list(dose = c(120,0), 
+    frequency = 12, 
+    route = 0, 
+    number = 3, 
+    target_time = 11.5, 
+    target = 0.3,
+    target_type = "concentration")
+
+future_list <- list(dose = 320, 
+    frequency = 12, 
+    route = 0, 
+    number = 3, 
+    target_time = 0.6, 
+    target = 0.3,
+    target_type = "time")
+
+future_list <- list(dose = 320, 
+    frequency = 12, 
+    route = 0, 
+    number = 3, 
+    target_time = 11.5, 
+    target = 10,
+    target_type = "auc")
 
 
 bd_new <- bd$new(
@@ -122,7 +140,6 @@ bd_new <- bd$new(
     dose_range = list(min = 0, max = 5000),
     prior_weight = 0,
     start = "02/02/26 00:00",
-    target_type = "concentration",
 )
 
 # bd_new$plot()
