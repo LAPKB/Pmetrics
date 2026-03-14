@@ -1652,3 +1652,54 @@ modifyList2 <- function (x, val, keep.null = FALSE)
 clear_build <- function(){
   fs::dir_delete(system.file("template", package = "Pmetrics"))
 }
+
+
+#' @title Get latest platform-specific R release metadata
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Retrieves metadata for the latest R release available for the current
+#' platform from the r-hub rversions API.
+#' @return A list containing all fields returned by the API response.
+#' @export
+latestR <- function() {
+  sysname <- tolower(Sys.info()[["sysname"]])
+  r_arch <- tolower(R.version$arch)
+  r_release_endpoint <- switch(
+    sysname,
+    windows = "r-release-win",
+    darwin = if (grepl("arm64|aarch64", r_arch)) "r-release-macos-arm64" else "r-release-macos",
+    linux = "r-release-tarball",
+    "r-release"
+  )
+
+  jsonlite::fromJSON(sprintf("https://api.r-hub.io/rversions/%s", r_release_endpoint))
+}
+
+
+#' @title Download the latest platform-specific R installer
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Downloads the latest R installer (or source tarball on Linux) for the current
+#' platform to the user's Downloads folder.
+#' @param r_info Optional API response list. Defaults to [latestR()].
+#' @param destdir Destination directory. Defaults to the user's Downloads folder.
+#' @return The file path of the downloaded installer/tarball.
+#' @export
+downloadR <- function(r_info = latestR(), destdir = path.expand("~/Downloads")) {
+  download_url <- r_info$URL
+  if (is.null(download_url) || length(download_url) == 0 || is.na(download_url)) {
+    download_url <- r_info$url
+  }
+
+  if (is.null(download_url) || length(download_url) == 0 || is.na(download_url)) {
+    cli::cli_abort("No downloadable URL was returned by the rversions API for this platform.")
+  }
+
+  if (!dir.exists(destdir)) {
+    dir.create(destdir, recursive = TRUE)
+  }
+
+  destfile <- file.path(destdir, basename(download_url))
+  utils::download.file(download_url, destfile = destfile, mode = "wb")
+  destfile
+}
