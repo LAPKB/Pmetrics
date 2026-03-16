@@ -894,6 +894,187 @@ bd_add_datetime_column <- function(data, start_datetime) {
     dplyr::relocate(datetime, .after = time)
 }
 
+bd_normalize_weights <- function(w) {
+  w <- as.numeric(w)
+  w[!is.finite(w)] <- 0
+  s <- sum(w, na.rm = TRUE)
+  if (!is.finite(s) || s <= 0) {
+    return(rep(0, length(w)))
+  }
+  w / s
+}
+
+bd_parameter_shift_data <- function(x, bins = 25) {
+  if (is.null(x$posterior) || is.null(x$posterior$theta)) {
+    return(NULL)
+  }
+
+  theta <- as.data.frame(x$posterior$theta)
+  if (nrow(theta) == 0 || ncol(theta) == 0) {
+    return(NULL)
+  }
+
+  param_names <- colnames(theta)
+  if (is.null(param_names) || !length(param_names)) {
+    param_names <- x$posterior$param_names
+    colnames(theta) <- param_names
+  }
+
+  prior_w <- bd_normalize_weights(x$posterior$population_weights)
+  post_w <- bd_normalize_weights(x$posterior$posterior_weights)
+
+  n_points <- nrow(theta)
+  if (length(prior_w) != n_points) prior_w <- rep(1 / n_points, n_points)
+  if (length(post_w) != n_points) post_w <- rep(1 / n_points, n_points)
+
+  bins <- max(5L, as.integer(bins))
+
+  long <- lapply(seq_along(param_names), function(i) {
+    p <- param_names[i]
+    vals <- as.numeric(theta[[p]])
+
+    ok <- is.finite(vals)
+    if (!any(ok)) {
+      return(NULL)
+    }
+
+    vals_ok <- vals[ok]
+    prior_ok <- bd_normalize_weights(prior_w[ok])
+    post_ok <- bd_normalize_weights(post_w[ok])
+
+    if (length(vals_ok) == 1 || diff(range(vals_ok, na.rm = TRUE)) == 0) {
+      bin_idx <- rep(1L, length(vals_ok))
+      breaks <- range(vals_ok, na.rm = TRUE)
+      if (length(breaks) < 2 || !is.finite(diff(breaks)) || diff(breaks) == 0) {
+        breaks <- c(vals_ok[1] - 0.5, vals_ok[1] + 0.5)
+      }
+      bins_use <- 1L
+    } else {
+      breaks <- seq(min(vals_ok, na.rm = TRUE), max(vals_ok, na.rm = TRUE), length.out = bins + 1L)
+      bin_idx <- cut(vals_ok, breaks = breaks, include.lowest = TRUE, labels = FALSE)
+      bins_use <- bins
+    }
+
+    bin_tbl <- tibble::tibble(
+      parameter = p,
+      bin = as.integer(bin_idx),
+      value = vals_ok,
+      prior_weight = prior_ok,
+      post_weight = post_ok
+    ) |>
+      dplyr::group_by(parameter, bin) |>
+      dplyr::summarise(
+        value_low = min(value, na.rm = TRUE),
+        value_high = max(value, na.rm = TRUE),
+        value_mid = stats::weighted.mean(value, w = post_weight, na.rm = TRUE),
+        prior_prob = sum(prior_weight, na.rm = TRUE),
+        post_prob = sum(post_weight, na.rm = TRUE),
+        .groups = "drop"
+      )
+
+    all_bins <- tibble::tibble(bin = seq_len(bins_use))
+    out <- all_bins |>
+      dplyr::left_join(bin_tbl, by = dplyr::join_by(bin)) |>
+      dplyr::mutate(
+        parameter = p,
+        prior_prob = dplyr::coalesce(prior_prob, 0),
+        post_prob = dplyr::coalesce(post_prob, 0),
+        delta_prob = post_prob - prior_prob,
+        bin_pct = (bin - 0.5) / bins_use * 100,
+        q_label = sprintf("Q%02d", bin)
+      )
+
+    out
+  }) |>
+    dplyr::bind_rows()
+
+  if (is.null(long) || nrow(long) == 0) {
+    return(NULL)
+  }
+
+  summary_tbl <- long |>
+    dplyr::group_by(parameter) |>
+    dplyr::summarise(
+      total_variation = 0.5 * sum(abs(delta_prob), na.rm = TRUE),
+      max_shift = max(abs(delta_prob), na.rm = TRUE),
+      .groups = "drop"
+    ) |>
+    dplyr::arrange(dplyr::desc(total_variation), dplyr::desc(max_shift))
+
+  means_tbl <- tibble::tibble(
+    parameter = param_names,
+    prior_mean = vapply(seq_along(param_names), function(i) {
+      stats::weighted.mean(as.numeric(theta[[i]]), w = prior_w, na.rm = TRUE)
+    }, numeric(1)),
+    posterior_mean = vapply(seq_along(param_names), function(i) {
+      stats::weighted.mean(as.numeric(theta[[i]]), w = post_w, na.rm = TRUE)
+    }, numeric(1))
+  ) |>
+    dplyr::mutate(mean_shift = posterior_mean - prior_mean)
+
+  summary_tbl <- summary_tbl |>
+    dplyr::left_join(means_tbl, by = dplyr::join_by(parameter))
+
+  long <- long |>
+    dplyr::mutate(
+      parameter = factor(parameter, levels = summary_tbl$parameter)
+    )
+
+  list(long = long, summary = summary_tbl, bins = bins)
+}
+
+bd_parameter_shift_heatmap <- function(shift_data) {
+  if (is.null(shift_data) || is.null(shift_data$long) || nrow(shift_data$long) == 0) {
+    return(NULL)
+  }
+
+  df <- shift_data$long |>
+    dplyr::arrange(parameter, bin)
+
+  df <- df |>
+    dplyr::mutate(
+      x_value = dplyr::coalesce(value_mid, (value_low + value_high) / 2)
+    )
+
+  df_prior <- df |>
+    dplyr::filter(is.finite(x_value), is.finite(prior_prob), prior_prob > 0)
+
+  df_post <- df |>
+    dplyr::filter(is.finite(x_value), is.finite(post_prob), post_prob > 0)
+
+  gg <- ggplot2::ggplot() +
+    ggplot2::geom_point(
+      data = df_prior,
+      ggplot2::aes(x = x_value, y = prior_prob),
+      color = "grey55",
+      size = 2.3,
+      shape = 16
+    ) +
+    ggplot2::geom_point(
+      data = df_post,
+      ggplot2::aes(x = x_value, y = post_prob),
+      color = "red",
+      alpha = 0.5,
+      size = 2.3,
+      shape = 16
+    ) +
+    ggplot2::facet_wrap(~parameter, scales = "free") +
+    ggplot2::scale_x_continuous(breaks = scales::pretty_breaks(n = 6)) +
+    ggplot2::scale_y_continuous(breaks = scales::pretty_breaks(n = 5)) +
+    ggplot2::labs(
+      title = "Marginal parameter distributions: prior (gray) vs posterior (red)",
+      x = "Parameter value",
+      y = "Probability"
+    ) +
+    ggplot2::theme_minimal(base_size = 12) +
+    ggplot2::theme(
+      legend.position = "none",
+      panel.grid.minor = ggplot2::element_blank()
+    )
+
+  plotly::ggplotly(gg)
+}
+
 bd_report_build <- function(x, outeq = 1) {
   start_datetime <- bd_plot_start_datetime(x)
   future_offset <- bd_future_time_offset(x)
@@ -1022,6 +1203,8 @@ bd_report_build <- function(x, outeq = 1) {
     }, numeric(1))
   )
 
+  shift_data <- bd_parameter_shift_data(x, bins = 25)
+
   list(
     overview = overview,
     plot = plot.bd(x, quiet = TRUE, print = FALSE, future_region = FALSE),
@@ -1044,6 +1227,8 @@ bd_report_build <- function(x, outeq = 1) {
     future_fit_plot = bd_fit_plot(future_fit, "Future targets vs predictions"),
     posterior_summary = posterior_summary,
     posterior_table = posterior_table,
+    parameter_shift_plot = bd_parameter_shift_heatmap(shift_data),
+    parameter_shift_summary = if (!is.null(shift_data)) shift_data$summary else NULL,
     model_summary = paste(capture.output(print(x$posterior$model_info$model)), collapse = "\n")
   )
 }
