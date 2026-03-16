@@ -437,7 +437,7 @@ results <- data.frame(
   nvar = purrr::map_int(allObj, \(x) length(names(x$final$popMean))),
   # par = purrr::map_chr(allObj, \(x) paste(names(x$final$popMean), collapse = ", ")),
   converged = purrr::map_lgl(allObj, \(x) {
-    x$cycle$data$status == "Converged"
+    grepl("Converged", x$cycle$data$status)
   }),
   ll = purrr::map_dbl(allObj, \(x) {
     tail(x$cycle$data$objective$neg2ll, 1) 
