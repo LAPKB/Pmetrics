@@ -90,10 +90,14 @@ setPMoptions <- function(launch.app = TRUE) {
   fs::dir_create(opt_dir)  # ensure directory exists
   PMoptionsUserFile <- file.path(opt_dir, "PMoptions.json")
   
-  # If file doesn't exist in user space, copy default
+  # If file doesn't exist in user space, copy default and apply locale-based defaults
   if (!fs::file_exists(PMoptionsUserFile)) {
     PMoptionsFile <- glue::glue(system.file("options", package = "Pmetrics"), "/PMoptions.json")
     fs::file_copy(PMoptionsFile, PMoptionsUserFile, overwrite = TRUE)
+    opts <- jsonlite::fromJSON(PMoptionsUserFile)
+    lc <- Sys.getlocale("LC_TIME")
+    opts$date_format <- if (grepl("en_US", lc, fixed = TRUE)) "%m/%d/%y" else "%d/%m/%y"
+    jsonlite::write_json(opts, PMoptionsUserFile, pretty = TRUE, auto_unbox = TRUE)
   }
   
   app <- shiny::shinyApp(
@@ -160,6 +164,18 @@ setPMoptions <- function(launch.app = TRUE) {
                       selected = "."
                     )
                   )
+                ),
+                shiny::selectInput(
+                  "date_format",
+                  bslib::tooltip(
+                    shiny::tags$span("Date format", shiny::icon("circle-question", class = "ms-1 text-muted")),
+                    "Date format used to parse date-time strings, e.g. the 'start' argument in BestDose"
+                  ),
+                  choices = c(
+                    "MM/DD/YY \u2014 United States" = "%m/%d/%y",
+                    "DD/MM/YY \u2014 International" = "%d/%m/%y"
+                  ),
+                  selected = "%m/%d/%y"
                 )
               )
             ),
@@ -379,6 +395,7 @@ setPMoptions <- function(launch.app = TRUE) {
         if (!is.null(settings$digits)) shiny::updateNumericInput(session, "digits", value = settings$digits)
         if (!is.null(settings$report_template)) shiny::updateSelectInput(session, "report_template", selected = settings$report_template)
         if (!is.null(settings$ic_method)) shiny::updateSelectInput(session, "ic_method", selected = settings$ic_method)
+        if (!is.null(settings$date_format)) shiny::updateSelectInput(session, "date_format", selected = settings$date_format)
         
         # Bias/imprecision methods - strip percent_ prefix for display
         if (!is.null(settings$bias_method)) {
@@ -419,7 +436,7 @@ setPMoptions <- function(launch.app = TRUE) {
       }) |> shiny::bindEvent(
         input$sep, input$dec, input$digits, input$show_metrics,
         input$bias_method, input$imp_method, input$use_percent,
-        input$ic_method, input$report_template,
+        input$ic_method, input$report_template, input$date_format,
         ignoreInit = TRUE
       )
       
@@ -459,7 +476,8 @@ setPMoptions <- function(launch.app = TRUE) {
           bias_method = glue::glue(c("", "percent_")[1 + as.numeric(input$use_percent)], input$bias_method), 
           imp_method = glue::glue(c("", "percent_")[1 + as.numeric(input$use_percent)], input$imp_method),
           ic_method = input$ic_method,
-          report_template = input$report_template
+          report_template = input$report_template,
+          date_format = input$date_format
           # backend = input$backend, 
           # model_template_path = input$model_template_path
         )

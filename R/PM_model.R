@@ -437,25 +437,7 @@ PM_model <- R6::R6Class(
               "i" = "It must be a filename, list, or current {.code PM_model} object."
             ))
           }
-        } else { # x is NULL, check if other arguments are NULL
-          named_args <- list(
-            pri = pri,
-            cov = cov,
-            sec = sec,
-            eqn = eqn,
-            lag = lag,
-            fa = fa,
-            ini = ini,
-            out = out,
-            err = err
-          )
-          other_args <- list(...)
-          all_args <- c(named_args, other_args)
-          if (all(sapply(all_args, is.null))) { # everything is NULL
-            self <- build_model() # launch the shiny app
-            return(invisible(self))
-          }
-        } # no, some arguments were not NULL, so keep going
+        } 
         
         msg <- NULL
         
@@ -736,14 +718,22 @@ PM_model <- R6::R6Class(
         
         
         extra_args <- list(...)
+      
+          
+        if ("quiet" %in% names(extra_args) && extra_args$quiet) {
+          quiet <- TRUE
+        } else {
+          quiet <- FALSE
+        }
+      
         if (!is.null(purrr::pluck(extra_args, "compile"))) {
           if (extra_args$compile) {
-            self$compile()
+            self$compile(quiet)
           }
         } else { # default is to compile
-          self$compile()
+          self$compile(quiet = quiet)
         }
-      },
+    },
       
       #' @description
       #' Print the model summary.
@@ -962,6 +952,7 @@ PM_model <- R6::R6Class(
       #' @param algorithm The algorithm to use for the run.  Default is "NPAG" for the **N**on-**P**arametric **A**daptive **G**rid. Alternatives: "NPOD".
       #' @param report If missing, the default Pmetrics report template as specified in [getPMoptions]
       #' is used. Otherwise can be "plotly", "ggplot", or "none".
+      #' @param quiet Boolean operator to suppress messages during the run.  Default is `FALSE`.
       #' @return A successful run will result in creation of a new folder in the working
       #' directory with the results inside the folder.
       #'
@@ -980,7 +971,8 @@ PM_model <- R6::R6Class(
         seed = 23,
         overwrite = FALSE,
         algorithm = "NPAG", # POSTPROB for posteriors, select when cycles = 0, allow for "NPOD"
-        report = getPMoptions("report_template")) {
+        report = getPMoptions("report_template"),
+        quiet = FALSE) {
           msg <- NULL # status message at end of run
           run_error <- 0
           
@@ -1142,7 +1134,7 @@ PM_model <- R6::R6Class(
           #### Continue with fit ####
           
           # check if model compiled and if not, do so
-          self$compile()
+          self$compile(quiet = quiet)
           
           intern <- TRUE # always true until (if) rust can run separately from R
           
@@ -1250,7 +1242,7 @@ PM_model <- R6::R6Class(
             }
             
             
-            if (length(msg) > 1) {
+            if (length(msg) > 1 & !quiet) {
               cli::cli_h1("Notes:")
               cli::cli_ul()
               purrr::walk(msg[-1], ~ cli::cli_li(.x))
@@ -1319,8 +1311,9 @@ PM_model <- R6::R6Class(
         #' @param theta A matrix of parameter values to use for the simulation.
         #' The `theta` matrix should have the same number of columns as the number of primary parameters in the model.
         #' Each row of `theta` represents a different set of parameter values.
+        #' @param quiet Logical, if TRUE, suppresses messages during simulation.
         #'
-        sim = function(data, theta) {
+        sim = function(data, theta, quiet = FALSE) {
           if (!inherits(data, "PM_data")) {
             cli::cli_abort(c("x" = "Data must be a PM_data object."))
           }
@@ -1339,7 +1332,7 @@ PM_model <- R6::R6Class(
           data$save(temp_csv, header = FALSE)
           
           if (is.null(self$binary_path)) {
-            self$compile()
+            self$compile(quiet = quiet)
             if (is.null(self$binary_path)) {
               cli::cli_abort(c("x" = "Model must be compiled before simulating."))
             }
@@ -1354,9 +1347,9 @@ PM_model <- R6::R6Class(
         #' This method write the model to a Rust file in a temporary path,
         #' updates the `binary_path` field for the model, and compiles that
         #' file to a binary file that can be used for fitting or simulation.
-        #' If the model is already compiled, the method does nothing.
+        #' @param quiet Logical, if TRUE, suppresses messages during compilation.
         #'
-        compile = function() {
+        compile = function(quiet = FALSE) {
           if (!is.null(self$binary_path) && file.exists(self$binary_path)) {
             # model is compiled
             return(invisible(NULL))
@@ -1365,23 +1358,23 @@ PM_model <- R6::R6Class(
           model_path <- file.path(tempdir(), "model.rs")
           private$write_model_to_rust(model_path)
           output_path <- tempfile(pattern = "model_", fileext = ".pmx")
-          cli::cli_inform(c("i" = "Compiling model..."))
+          if (!quiet) cli::cli_inform(c("i" = "Compiling model..."))
           # path inside Pmetrics package
           template_path <- if (Sys.getenv("env") == "Development") { file.path(temporary_path(), "template") } else { system.file(package = "Pmetrics")}
-        if (Sys.getenv("env") == "Development") {cat("Using template path:", template_path, "\n")}
-        tryCatch(
-          {
-            compile_model(model_path, output_path, private$get_primary(), template_path, kind = tolower(self$model_list$type))
-            self$binary_path <- output_path
-          },
-          error = function(e) {
-            cli::cli_abort(
-              c("x" = "Model compilation failed: {e$message}", "i" = "Please check the model file and try again.")
-            )
-          }
-        )
-        
-        return(invisible(self))
+          if (Sys.getenv("env") == "Development") {cat("Using template path:", template_path, "\n")}
+          tryCatch(
+            {
+              compile_model(model_path, output_path, private$get_primary(), template_path, kind = tolower(self$model_list$type))
+              self$binary_path <- output_path
+            },
+            error = function(e) {
+              cli::cli_abort(
+                c("x" = "Model compilation failed: {e$message}", "i" = "Please check the model file and try again.")
+              )
+            }
+          )
+          
+          return(invisible(self))
       }, # end compile method
       #' @description
       #' Save model to file (deprecated).

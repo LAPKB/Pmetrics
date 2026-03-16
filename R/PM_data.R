@@ -309,9 +309,9 @@ addEvent = function(..., dt = NULL, quiet = FALSE, validate = FALSE) {
   new_data <- dplyr::bind_rows(self$data, to_add) %>% dplyr::arrange(id, time)
   
   
-  self$data <- new_data
+  self$data <- new_data 
   if (validate) {
-    self$data <- self$data %>% dplyr::select(where(~ !all(is.na(.x))))
+    self$data <- self$data %>% dplyr::select(where(~ !all(is.na(.x)))) %>% arrange(id, time, out)
     self$standard_data <- private$validate(self$data, path = getwd(), dt = dt, quiet = quiet)
   } else {
     self$standard_data <- NULL
@@ -430,10 +430,14 @@ private = list(
     cli::cli_h1("DATA STANDARDIZATION")
     cat(msg)
   }
+    
+  # sort by id, time, dose
+  dataObj_orig <- dataObj_orig %>% arrange(id, time, out) # for any out at same time as dose, out will come first
+  dataObj <- dataObj %>% arrange(id, time, out)
   
   validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), path = path, fix = TRUE, quiet = quiet)
   return(validData)
-} # end validate function
+  } # end validate function
 ) # end private
 ) # end PM_data
 
@@ -592,7 +596,18 @@ PMmatrixRelTime <- function(
     if (is.numeric(timeCol)) timeCol <- dataCols[timeCol]
     if (is.numeric(evidCol)) evidCol <- dataCols[evidCol]
     
-    # all reasonable combinations
+    # Get preferred date format from PMoptions; derive lubridate order string (e.g. "%m/%d/%y" -> "mdy")
+    opt_date_fmt <- getPMoptions("date_format", warn = FALSE, quiet = TRUE)
+    if (!is.character(opt_date_fmt) || !nzchar(opt_date_fmt)) {
+      opt_date_fmt <- if (grepl("en_US", Sys.getlocale("LC_TIME"), fixed = TRUE)) "%m/%d/%y" else "%d/%m/%y"
+    }
+    opt_date_order <- paste(
+      tolower(gsub("Y", "y", regmatches(opt_date_fmt, gregexpr("(?<=%)[a-zA-Z]", opt_date_fmt, perl = TRUE))[[1]])),
+      collapse = ""
+    )
+    opt_formats <- paste(opt_date_order, c("HM", "HMS", "IMOp", "IMSOp"))
+    
+    # all reasonable combinations (fallback)
     dt_df <- tidyr::crossing(date = c("dmy", "mdy", "ymd", "ydm"), time = c("HM", "HMS", "IMOp", "IMSOp"))
     dt_formats <- paste(dt_df$date, dt_df$time)
     
@@ -615,22 +630,53 @@ PMmatrixRelTime <- function(
       return(the_format)
     }
     
-    
     dt <- NA
+    found_format <- character(0)
+    
+    # Step 1: explicit format argument takes priority
     if (!missing(format) && !is.null(format)) {
       if (format[2] == "HM") format[2] <- "HMS"
       format <- paste(format, collapse = " ")
-      dt <- tryCatch(suppressWarnings(lubridate::parse_date_time(paste(temp$date, temp$time), quiet = TRUE, format)),
-      error = function(e) e
-    ) # try with specific format
-    found_format <- get_dt_format(format)
-  }
-  if (all(is.na(dt))) { # didn't parse yet, try automatic parsing
-    dt <- tryCatch(suppressWarnings(lubridate::parse_date_time(paste(temp$date, temp$time), quiet = TRUE, dt_formats)),
-    error = function(e) e
-  )
-  found_format <- get_dt_format(dt_formats)
-}
+      dt <- tryCatch(
+        suppressWarnings(lubridate::parse_date_time(paste(temp$date, temp$time), quiet = TRUE, format)),
+        error = function(e) NA
+      )
+      found_format <- get_dt_format(format)
+    }
+    
+    # Step 2: try PMoptions date_format
+    if (all(is.na(dt))) {
+      dt <- tryCatch(
+        suppressWarnings(lubridate::parse_date_time(paste(temp$date, temp$time), quiet = TRUE, opt_formats)),
+        error = function(e) NA
+      )
+      if (!all(is.na(dt))) {
+        found_format <- get_dt_format(opt_formats)
+      }
+    }
+    
+    # Step 3: fall back to automatic detection across all reasonable formats
+    if (all(is.na(dt))) {
+      dt <- tryCatch(
+        suppressWarnings(lubridate::parse_date_time(paste(temp$date, temp$time), quiet = TRUE, dt_formats)),
+        error = function(e) NA
+      )
+      found_format <- get_dt_format(dt_formats)
+      # Report if the detected format differs from the configured PMoptions format
+      if (!all(is.na(dt)) && length(found_format) > 0) {
+        found_date_orders <- unique(
+          tolower(gsub("Y", "y", gsub("[^a-zA-Z]", "", sub(" .*", "", found_format))))
+        )
+        if (!any(grepl(opt_date_order, found_date_orders, fixed = TRUE))) {
+          cli::cli_warn(c(
+            "!" = "Date format in data does not match the configured Pmetrics date format.",
+            "i" = "Configured: {.val {opt_date_fmt}}",
+            "i" = "Detected: {.val {paste(found_format, collapse = ', ')}}",
+            "i" = "Update your preference with {.fn setPMoptions}."
+          ))
+        }
+      }
+    }
 
 if (all(is.na(dt))) {
   cli::cli_abort(c("x" = "All dates/times failed to parse. Please specify correct format. "))

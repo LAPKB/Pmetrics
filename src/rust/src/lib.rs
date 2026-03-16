@@ -1,4 +1,5 @@
 // mod build;
+mod bestdose_executor;
 mod executor;
 mod logs;
 mod settings;
@@ -11,6 +12,7 @@ use simulation::SimulationRow;
 use std::process::Command;
 use tracing_subscriber::layer::SubscriberExt;
 
+use crate::bestdose_executor::BestDosePosteriorHandle;
 use crate::logs::RFormatLayer;
 
 fn validate_paths(data_path: &str, model_path: &str) {
@@ -116,7 +118,6 @@ fn simulate_all(
 
     rows.into_dataframe().unwrap()
 }
-
 
 /// Fits the model at the given path to the data at the given path using the provided parameters.
 /// @param model_path Path to the compiled model file.
@@ -276,10 +277,10 @@ fn setup_logs() -> anyhow::Result<()> {
     use tracing_subscriber::filter::LevelFilter;
 
     // Create a subscriber with our custom layer using the global timer
-    // Filter to show only INFO and above (INFO, WARN, ERROR)
+    // Filter to show only WARN and above (WARN, ERROR) by default
     let subscriber = tracing_subscriber::registry()
         .with(RFormatLayer::new())
-        .with(LevelFilter::from_level(Level::INFO));
+        .with(LevelFilter::from_level(Level::WARN));
 
     // Set as global default - this will fail if already set, which is fine
     // We just ignore the error
@@ -291,6 +292,44 @@ fn setup_logs() -> anyhow::Result<()> {
 // Macro to generate exports.
 // This ensures exported functions are registered with R.
 // See corresponding C code in `entrypoint.c`.
+#[extendr]
+fn bestdose_prepare(
+    model_path: &str,
+    prior_path: &str,
+    past_data_path: Nullable<String>,
+    params: List,
+    kind: &str,
+) -> Robj {
+    bestdose_executor::bestdose_prepare_internal(
+        model_path,
+        prior_path,
+        past_data_path,
+        params,
+        kind,
+    )
+}
+
+#[extendr]
+fn bestdose_optimize(
+    handle: ExternalPtr<BestDosePosteriorHandle>,
+    target_data_path: &str,
+    time_offset: Nullable<f64>,
+    dose_min: f64,
+    dose_max: f64,
+    bias_weight: f64,
+    target_type: &str,
+) -> Robj {
+    bestdose_executor::bestdose_optimize_internal(
+        handle,
+        target_data_path,
+        time_offset,
+        dose_min,
+        dose_max,
+        bias_weight,
+        target_type,
+    )
+}
+
 extendr_module! {
     mod Pmetrics;
     fn simulate_one;
@@ -302,6 +341,8 @@ extendr_module! {
     fn model_parameters;
     fn temporary_path;
     fn setup_logs;
+    fn bestdose_prepare;
+    fn bestdose_optimize;
 }
 
 // To generate the exported function in R, run the following command:

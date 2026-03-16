@@ -63,6 +63,7 @@ inst/Learn/_freeze/
 data-raw/Runs/
 tests/testthat/Runs/
 Examples
+!inst/Examples/
 Experimental
 other/
 1
@@ -71,6 +72,7 @@ other/
 
 # Misc project outputs
 *_test.R
+!inst/Examples/Rscript/*_test.R
 docs/
 docs
 src/rust/vendor
