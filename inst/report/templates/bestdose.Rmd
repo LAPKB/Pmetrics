@@ -572,6 +572,32 @@ render_pd_table(report$pd_table, page_length = 10)
 
 ### Parameters {.tabset .tabset-pills}
 
+#### Prior vs posterior shift
+
+```{r parameter-shift-note, results = 'asis'}
+cat("<p style='font-style:italic; color:#444; margin-bottom:8px;'>",
+  "Marginal prior distribution is shown with gray circle markers.",
+  "Posterior marginal distribution is superimposed with red circle markers at 50% opacity.",
+  "Each parameter panel uses its own x-axis value range; y-axis shows linear probability.",
+    "</p>")
+```
+
+```{r parameter-shift-plot}
+if (!is.null(report$parameter_shift_plot)) {
+  resize_plot(report$parameter_shift_plot, scale = 1.0)
+} else {
+  "No prior/posterior parameter shift plot available."
+}
+```
+
+```{r parameter-shift-summary}
+if (!is.null(report$parameter_shift_summary)) {
+  render_dt(report$parameter_shift_summary, page_length = 10)
+} else {
+  "No prior/posterior parameter shift summary available."
+}
+```
+
 #### Weighted summary
 
 ```{r posterior-summary}
