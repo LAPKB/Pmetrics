@@ -23,8 +23,9 @@
 #' @param outeq Number of the output equation to compare; default is 1.
 #' @param plot Boolean indicating whether to generate and open the comparison report; default is FALSE
 #' @return A highlighted table comparing the selected models with the following columns. In each metric column,
-#' the best (lowest) value is highlighted in red. In the final best column, the red highlighting applies to the model 
-#' with the most "best" metrics.
+#' the best value is highlighted in red. In the final best column, the red highlighting applies to the model 
+#' with the most "best" metrics. For bias, imprecision, and regression intercept, the best value is the one closest to zero. 
+#' For regression slope and R-squared, the best value is the one closest to 1. For -2*LL, AIC, and BIC, the best value is the lowest.
 #' * **run** The run number of the data
 # #' * **nsub** Number of subjects in the model
 #' * **nvar** Number of random parameters in the model

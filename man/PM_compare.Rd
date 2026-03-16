@@ -18,8 +18,9 @@ PM_compare(..., icen = "median", outeq = 1, plot = FALSE)
 }
 \value{
 A highlighted table comparing the selected models with the following columns. In each metric column,
-the best (lowest) value is highlighted in red. In the final best column, the red highlighting applies to the model
-with the most "best" metrics.
+the best value is highlighted in red. In the final best column, the red highlighting applies to the model
+with the most "best" metrics. For bias, imprecision, and regression intercept, the best value is the one closest to zero.
+For regression slope and R-squared, the best value is the one closest to 1. For -2*LL, AIC, and BIC, the best value is the lowest.
 \itemize{
 \item \strong{run} The run number of the data
 \item \strong{nvar} Number of random parameters in the model
