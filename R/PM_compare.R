@@ -128,7 +128,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
   sumobjPop <- purrr::map(op, \(x) summary.PM_op(x, outeq = outeq, pred.type = "pop", icen = icen)) 
   sumobjPost <- purrr::map(op, \(x) summary.PM_op(x, outeq = outeq, pred.type = "post", icen = icen)) 
   
-
+  
   #### MAKE BIAS AND IMPRECISION PLOT ####
   
   
@@ -430,6 +430,7 @@ flextable::autofit()
 
 # make results table
 results <- data.frame(
+  
   run = objNames[1:nobj],
   # nsub = purrr::map_int(allObj, \(x) {
   #   x$final$nsub
@@ -479,8 +480,34 @@ pivot_wider(id_cols = c(run), names_from = c(pred.type), names_glue = "{pred.typ
 results <- bind_cols(results, op_tbl %>% select(-run))
 results$pval <- t
 
-results$best <- results %>% select(c(-run, -nvar, -converged, -pval)) %>% map(~ which(.x == min(.x))) %>% unlist()  %>% table()
-attr(results, "highlight") <- TRUE
+
+# calculate the best in each metric column:
+# for -2*LL, AIC/BIC, bias, imprecision, and regression intercept the best is the value closest to zero;
+# for slope and R2, best is the closest to 1
+metric_cols <- names(results)[!names(results) %in% c("run", "nvar", "converged", "pval")]
+
+best_idx <- purrr::map(metric_cols, function(col) {
+  x <- suppressWarnings(as.numeric(results[[col]]))
+  valid <- which(!is.na(x))
+  if (length(valid) == 0) {
+    return(integer(0))
+  }
+  target <- ifelse(grepl("Sl|R2", col), 1, 0)
+  valid[which(abs(x[valid] - target) == min(abs(x[valid] - target)))]
+})
+
+best_counts <- integer(nobj)
+for (idx in best_idx) {
+  if (length(idx) > 0) {
+    best_counts[idx] <- best_counts[idx] + 1L
+  }
+}
+
+results$best <- best_counts
+attr(results, "highlight") <- list(
+  metric_cols = setdiff(metric_cols, "best"),
+  best_col = "best"
+)
 
 class(results) <- c("PM_compare", "data.frame")
 

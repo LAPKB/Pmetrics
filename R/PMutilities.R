@@ -1446,38 +1446,82 @@ wtd.var <- function(x, weights = NULL,
   cli_df <- function(df) {
     
     highlight <- attr(df, "highlight") # get columns to highlight minimums from attributes
+    has_highlight <- !is.null(highlight) && !identical(highlight, FALSE)
 
+    resolve_cols <- function(spec, names_df) {
+      if (is.null(spec)) return(character(0))
+      if (is.numeric(spec)) return(names_df[spec])
+      if (is.character(spec)) return(spec[spec %in% names_df])
+      character(0)
+    }
+    
     # Convert all columns to character for uniform formatting
     df_chr <- df %>% mutate(across(where(is.double), ~round2(.x))) %>%
     mutate(across(everything(), ~as.character(.x, stringsAsFactors = FALSE))) 
- 
     
-    if (highlight){ # highlight minimums in requested columns
-      # first replace minima with special formatting
-      # mins <- df %>% summarize(across(c(-run, -nvar, -converged, -pval, -best), ~round2(min(.x, na.rm = TRUE)))) # get minima for each column
-      mins <- df %>% summarize(across(c(-run, -nvar, -converged, -pval, -best), ~ which(.x == min(.x, na.rm = TRUE)))) %>% unlist() # get minima for each column
+    
+    if (has_highlight){ # highlight best in requested columns
+      metric_cols <- character(0)
+      best_col <- character(0)
 
-      best <- df %>% summarize(across(best, ~ which(.x == max(.x, na.rm = TRUE)))) %>% unlist() # get best for best column
+      if (is.list(highlight)) {
+        metric_cols <- resolve_cols(highlight$metric_cols, names(df))
+        best_col <- resolve_cols(highlight$best_col, names(df))
+      } else if (isTRUE(highlight)) {
+        metric_cols <- names(df)[vapply(df, is.numeric, logical(1))]
+      } else {
+        metric_cols <- resolve_cols(highlight, names(df))
+      }
 
+      metric_cols <- setdiff(metric_cols, best_col)
+
+      metric_best <- purrr::map(metric_cols, function(col) {
+        x_num <- suppressWarnings(as.numeric(df[[col]]))
+        valid <- which(!is.na(x_num))
+        if (length(valid) == 0) return(integer(0))
+        target <- ifelse(grepl("Sl|R2", col), 1, 0)
+        valid[which(abs(x_num[valid] - target) == min(abs(x_num[valid] - target)))]
+      })
+      names(metric_best) <- metric_cols
+
+      best_best <- NA_integer_
+      if (length(best_col) == 1) {
+        x_num <- suppressWarnings(as.numeric(df[[best_col]]))
+        valid <- which(!is.na(x_num))
+        if (length(valid) > 0) {
+          best_best <- valid[which.max(x_num[valid])]
+        }
+      }
+      
+      
+      
       # create table to get the spacing
       df_tab <- knitr::kable(df_chr, format = "simple") 
-
+      
       # rebuild the data frame
       df2 <- map_vec(df_tab, \(x) str_split(x, "(?<=\\s)(?=\\S)")) 
       df2 <- as.data.frame(do.call(rbind, df2))
-
-      # replace minima with highlighted versions
+      
+      # replace best with highlighted versions
       # first 2 rows are headers and spacers, so need to add 2 to the mins row index
-      for (p in 1:length(mins)){
-        df2[mins[p]+2, p+3] <- stringr::str_replace_all(df2[mins[p]+2, p+3], "(\\d+(?:\\.\\d+)?)(\\s+)", "{.red \\1}\\2")
+      for (p in seq_along(metric_best)){
+        row_idx <- metric_best[[p]]
+        col_name <- names(metric_best)[p]
+        col_idx <- match(col_name, names(df_chr))
+        if (length(row_idx) > 0 && !is.na(col_idx)) {
+          for (r in row_idx) {
+            df2[r + 2, col_idx] <- stringr::str_replace_all(df2[r + 2, col_idx], "(-?\\d+(?:\\.\\d+)?)(\\s+)", "{.red \\1}\\2")
+          }
+        }
       }
-
-      # for(p in 1:length(mins)){
-      #   df2[, p+3] <- stringr::str_replace_all(df2[, p+3], as.character(mins[p]), paste0("{.strong ", as.character(mins[p]), "}"))
-      # }
-      # df2$V18 <- stringr::str_replace(df2$V18, as.character(best), paste0("{.red ", as.character(best), "}"))
-      df2$V17[best+2] <- stringr::str_replace(df2$V17[best+2], "(\\d+(?:\\.\\d+)?)(\\s+)", "{.red \\1}\\2")
-
+      
+      if (!is.na(best_best) && length(best_col) == 1) {
+        best_col_idx <- match(best_col, names(df_chr))
+        if (!is.na(best_col_idx)) {
+          df2[best_best + 2, best_col_idx] <- stringr::str_replace_all(df2[best_best + 2, best_col_idx], "(-?\\d+(?:\\.\\d+)?)(\\s+)", "{.red \\1}\\2")
+        }
+      }
+      
       # print header
       header <- df2[1,] %>% stringr::str_replace_all(" ", "\u00A0" ) %>% paste(collapse = "")
       cli::cli_text("{.strong {header}}")
@@ -1496,17 +1540,17 @@ wtd.var <- function(x, weights = NULL,
       } 
       cli::cli_end()
     } else { # no highlighting
-
+      
       # create table
       df_tab <- knitr::kable(df_chr, format = "simple")
-
+      
       # print header
       header <- df_tab[1] %>% stringr::str_replace_all(" ", "\u00A0" )
       cli::cli_text("{.strong {header}}")
-
+      
       # print each row
       for (i in 2:length(df_tab)) {
-      cli::cli_text(df_tab[i] %>% stringr::str_replace_all(" ", "\u00A0" ))
+        cli::cli_text(df_tab[i] %>% stringr::str_replace_all(" ", "\u00A0" ))
       }
     }
     
@@ -1671,7 +1715,7 @@ latestR <- function() {
     linux = "r-release-tarball",
     "r-release"
   )
-
+  
   jsonlite::fromJSON(sprintf("https://api.r-hub.io/rversions/%s", r_release_endpoint))
 }
 
@@ -1690,15 +1734,15 @@ downloadR <- function(r_info = latestR(), destdir = path.expand("~/Downloads")) 
   if (is.null(download_url) || length(download_url) == 0 || is.na(download_url)) {
     download_url <- r_info$url
   }
-
+  
   if (is.null(download_url) || length(download_url) == 0 || is.na(download_url)) {
     cli::cli_abort("No downloadable URL was returned by the rversions API for this platform.")
   }
-
+  
   if (!dir.exists(destdir)) {
     dir.create(destdir, recursive = TRUE)
   }
-
+  
   destfile <- file.path(destdir, basename(download_url))
   utils::download.file(download_url, destfile = destfile, mode = "wb")
   destfile
