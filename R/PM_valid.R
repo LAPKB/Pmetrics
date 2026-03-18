@@ -1175,7 +1175,8 @@ plot.PMvalid <- function(x, type = "vpc", tad = FALSE, icen = "median", outeq = 
   }
 
   x$opDF <- x$opDF[x$opDF$icen == icen & x$opDF$outeq == outeq, ] # filter to icen & outeq
-  x$simdata$obs <- x$simdata$obs[x$simdat$obs$outeq == outeq, ] # filter to outeq
+  # Fix: subset simulation output from the correct x$simdata object.
+  x$simdata$obs <- x$simdata$obs[x$simdata$obs$outeq == outeq, ] # filter to outeq
 
   # select correct time
   if (!tad) {
@@ -1192,8 +1193,9 @@ plot.PMvalid <- function(x, type = "vpc", tad = FALSE, icen = "median", outeq = 
       use.opTimeBinMedian <- x$opDF$tadBinMedian
       use.opTimeBinNum <- x$opDF$tadBinNum
       use.simBinNum <- x$simdata$obs$tadBinNum
+      # Fix: relabel the x-axis, not the y-axis, when plotting time after dose.
       if (axis.x$name == "Time") {
-        axis.y$name <- "Time after dose"
+        axis.x$name <- "Time after dose"
       }
     } else {
       stop("Rerun makePMvalid and set tad argument to TRUE.\n")

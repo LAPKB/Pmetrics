@@ -23,8 +23,10 @@
 #' @keywords internal 
 
 PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
- 
-  if (is.character(fit) && file.exists(file.path(path, "../inputs", fit))) {
+  # Fix: accept a PM_fit object directly and tolerate a missing fit.rds file.
+  if (inherits(fit, "PM_fit")) {
+    fit_object <- fit
+  } else if (is.character(fit) && file.exists(file.path(path, "../inputs", fit))) {
     # fit is a character string pointing to a file, load it
     fit_object <- readRDS(file.path(path, "../inputs", fit))
   } else {
@@ -84,9 +86,22 @@ error = function(e) {
 }
 )
 
+config <- rlang::try_fetch(
+  jsonlite::fromJSON(suppressWarnings(readLines(file.path(path, "settings.json"), warn = FALSE))),
+  error = function(e) {
+    cli::cli_warn(c("!" = "Unable to read {.file {file.path(path, 'settings.json')}}"))
+    return(NULL)
+  }
+)
+
+# Fix: keep system info outside try_fetch so it is stored on the result, not passed as an argument.
+sys_info <- as.list(Sys.info()) %>%
+  purrr::keep(names(.) %in% c("sysname", "machine")) %>%
+  paste(collapse = " ")
+
 core <- list(
-  data = fit_object$data,
-  model = fit_object$model,
+  data = if (is.null(fit_object)) NULL else fit_object$data,
+  model = if (is.null(fit_object)) NULL else fit_object$model,
   op = op,
   cov = cov,
   post = post,
@@ -96,15 +111,10 @@ core <- list(
   backend = "rust",
   algorithm = "NPAG",
   numeqt = 1,
-  converge = cycle$data$converged,
-  config = rlang::try_fetch(jsonlite::fromJSON(suppressWarnings(readLines(file.path(path, "settings.json"), warn = FALSE))),
-  sys = as.list(Sys.info()) %>% keep(names(.) %in% c("sysname", "machine")) %>% paste(collapse = " "),
-  
-  error = function(e) {
-    cli::cli_warn(c("!" = "Unable to read {.file {file.path(path, 'settings.json')}}"))
-    return(NULL)
-  }
-)
+  # Fix: avoid dereferencing cycle$data when PM_cycle creation failed.
+  converge = if (is.null(cycle) || is.null(cycle$data$converged)) NULL else cycle$data$converged,
+  config = config,
+  sys = sys_info
 )
 
 class(core) <- "PM_result"

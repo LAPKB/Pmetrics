@@ -43,7 +43,8 @@ PM_fit <- R6::R6Class(
     #' in the current working directory. Again, if created on the fly,
     #' the object will not be available to other
     #' methods or other instances of [PM_fit].
-    initialize = function(data = data, model = model) {
+    # Fix: declare ... so forwarded PM_data/PM_model arguments do not error.
+    initialize = function(data = data, model = model, ...) {
       if (is.character(data)) {
         data <- PM_data$new(data, ...)
       }
@@ -129,13 +130,24 @@ PM_fit <- R6::R6Class(
     #' @description
     #' Checks for errors in data and model objects and agreement between them.
     check = function() {
-      if (inherits(self$model, "PM_model_list")) {
-        cat(sprintf("Checking...\n"))
-        file_name <- random_name()
-        self$model$save(file_name)
-        Pmetrics::PMcheck(self$data$standard_data, file_name)
-        system(sprintf("rm %s", file_name))
+      if (!inherits(self$model, "PM_model") || !inherits(self$data, "PM_data")) {
+        return(invisible(NULL))
       }
+
+      cat("Checking...\n")
+      # Fix: run the check path for PM_model objects instead of the unreachable PM_model_list branch.
+      self$model$compile()
+      cat("Excellent - there were no errors found in your model file.\n")
+
+      check_path <- tempdir()
+      data_check <- Pmetrics::PMcheck(self$data$standard_data, path = check_path)
+      # Fix: clean up the temporary PMcheck workbook created in tempdir().
+      err_file <- file.path(check_path, "errors.xlsx")
+      if (file.exists(err_file)) {
+        unlink(err_file)
+      }
+
+      invisible(data_check)
     }
   )
 ) # end PM_fit

@@ -299,7 +299,15 @@ plot.PM_cov <- function(x,
     }
     
     # final data, calling columns x and y
-    dat <- x %>% select(id, x = vars[2], y = vars[1]) %>% mutate(across(c(x, y), \(i) ifelse(floor(i) == i, i, round(i, 2))))
+    dat <- x %>% select(id, x = vars[2], y = vars[1])
+    # Fix: fail early with a clear message when either plotted variable is non-numeric.
+    if (!all(vapply(dat[c("x", "y")], is.numeric, logical(1)))) {
+      cli::cli_abort(c(
+        "x" = "{.fn plot.PM_cov} requires numeric variables for both axes.",
+        "i" = "Received {.var {vars[1]}} and {.var {vars[2]}}."
+      ))
+    }
+    dat <- dat %>% mutate(across(c(x, y), \(i) ifelse(floor(i) == i, i, round(i, 2))))
     
     
     # process reference lines
@@ -459,7 +467,8 @@ plot.PM_cov <- function(x,
         title = layout$title
       )
       
-      print(p)
+      # Fix: honor print = FALSE in the non-time plotting branch.
+      if (print) print(p)
       return(invisible(p))
     } else { # timearg plot
       marker$color <- NULL

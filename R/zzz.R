@@ -39,8 +39,20 @@
   }
   
   # Set user options for the session
-  setPMoptions(launch.app = FALSE)
+  # Fix: warn instead of failing package attach when user option setup is blocked.
+  tryCatch(
+    setPMoptions(launch.app = FALSE),
+    error = function(e) {
+      cli::cli_warn(c("!" = "Unable to initialize Pmetrics user options.", "i" = e$message))
+    }
+  )
   
   # Build model library
-  build_model_lib()
+  # Fix: warn instead of failing package attach when model library setup is blocked.
+  tryCatch(
+    build_model_lib(),
+    error = function(e) {
+      cli::cli_warn(c("!" = "Unable to build the model library during package attach.", "i" = e$message))
+    }
+  )
 }

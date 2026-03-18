@@ -1150,9 +1150,9 @@ PM_model <- R6::R6Class(
           # make new output directory
           
           if (is.null(run)) {
-            olddir <- list.dirs(path, recursive = FALSE)
-            olddir <- olddir[grep("^\\./[[:digit:]]+", olddir)]
-            olddir <- sub("^\\./", "", olddir)
+            # Fix: detect prior numeric run folders in a way that works on Windows and Unix paths.
+            olddir <- basename(list.dirs(path, recursive = FALSE))
+            olddir <- olddir[grepl("^[[:digit:]]+$", olddir)]
             if (length(olddir) > 0) {
               run <- as.character(max(as.numeric(olddir)) + 1)
             } else {

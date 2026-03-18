@@ -871,8 +871,11 @@ build_plot <- function(x, ...) {
       makeAxisControls <- function() {
         ############### Axis: all but PM_data #####################
 
-        if (!is.null(input$data) && inherits(get(input$data), "PM_sim") |
-          (inherits(get(input$data), "PM_result") && input$res_sub %in% c("cov", "op", "fin"))) {
+        # Fix: guard get(input$data) behind a single NULL check to avoid Shiny evaluation errors.
+        if (!is.null(input$data) && (
+          inherits(get(input$data), "PM_sim") ||
+          (inherits(get(input$data), "PM_result") && input$res_sub %in% c("cov", "op", "fin"))
+        )) {
           # if(inherits(get(input$data),c("PMcov","PMfinal","PMop", "PMsim"))){
           return(list(
             h3("Axes"),
