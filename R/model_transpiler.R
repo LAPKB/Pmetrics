@@ -243,21 +243,34 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
     # map model name from R to rust
     rust_tem <- dplyr::case_when(
       tem == "one_comp_iv" ~ "one_compartment",
-      tem == "one_comp_iv_cl" ~ "", # TBD in rust
+      tem == "one_comp_iv_cl" ~ "CL", # TBD in rust
       tem == "two_comp_iv" ~ "two_compartments",
-      tem == "two_comp_iv_cl" ~ "", # TBD in rust
+      tem == "two_comp_iv_cl" ~ "CL", # TBD in rust
       tem == "two_comp_bolus" ~ "one_compartment_with_absorption",
-      tem == "two_comp_bolus_cl" ~ "", # TBD in rust
+      tem == "two_comp_bolus_cl" ~ "CL", # TBD in rust
       tem == "three_comp_iv" ~ "three_compartments", # TBD in R
       tem == "three_comp_iv_cl" ~ "", # TBD in rust
       tem == "three_comp_bolus" ~ "two_compartments_with_absorption",
-      tem == "three_comp_bolus_cl" ~ "", # TBD in rust
+      tem == "three_comp_bolus_cl" ~ "CL", # TBD in rust
       tem == "four_comp_bolus" ~ "three_compartments_with_absorption", # TBD in R
-      tem == "four_comp_bolus_cl" ~ "" # TBD in rust
+      tem == "four_comp_bolus_cl" ~ "CL", # TBD in rust
+      .default = ""
     )
-    
+    if (rust_tem == "CL") {
+      cli::cli_abort(c(
+        "x" = "Clearance models are not yet supported in Rust.",
+        "i" = "Re-parameterize as a Ke model template or use ODEs directly in the EQN block."
+      ))
+    } else if (rust_tem == "") {
+      cli::cli_abort(c(
+        "x" = "Model template not recognized or not supported in Rust.",
+        "i" = "Supported templates: one_comp_iv, two_comp_iv, two_comp_bolus, three_comp_iv, three_comp_bolus, four_comp_bolus.",
+        "i" = "See {.fn model_lib} for details on supported templates."
+      ))
+    } 
+
     header <- sprintf(
-      " %s,\n |p, t, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(&p, %s);",
+      " %s ,\n |p, t, cov| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(&p, %s);",
       rust_tem,
       paste(covs, collapse = ", "),
       paste(params, collapse = ", ")
