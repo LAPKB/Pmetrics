@@ -571,7 +571,7 @@ PM_sim <- R6::R6Class(
         if (length(unrecog) > 0) {
           cli::cli_abort(c(
             "x" = "The following argument{?s} {?is/are} not recognized: {.val {unrecog}}.",
-            "i" = "Check for case erorrs or misspellings. Refer to {.help PM_sim} for a list of valid arguments."
+            "i" = "Check for case errors or misspellings. Refer to {.help PM_sim} for a list of valid arguments."
           ))
         }
       
