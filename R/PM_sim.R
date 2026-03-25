@@ -566,12 +566,16 @@ PM_sim <- R6::R6Class(
       
         # check to make sure any arguments in ... are not misspelled or otherwise unrecognized
         allArgs <- formals(PM_sim$public_methods$initialize) %>% names()
+        # exclude the variadic placeholder from validation
+        allArgs <- setdiff(allArgs, "...")
         dotArgs <- names(dots)
+        # only validate truly named arguments (non-NA, non-empty names)
+        dotArgs <- dotArgs[!is.null(dotArgs) & !is.na(dotArgs) & nzchar(dotArgs)]
         unrecog <- setdiff(dotArgs, allArgs)
         if (length(unrecog) > 0) {
           cli::cli_abort(c(
             "x" = "The following argument{?s} {?is/are} not recognized: {.val {unrecog}}.",
-            "i" = "Check for case erorrs or misspellings. Refer to {.help PM_sim} for a list of valid arguments."
+            "i" = "Check for case errors or misspellings. Refer to {.help PM_sim} for a list of valid arguments."
           ))
         }
       
