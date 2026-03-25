@@ -293,9 +293,10 @@ addEvent = function(..., dt = NULL, quiet = FALSE, validate = FALSE) {
   if ("addl" %in% arg_names) {
     addl_lines <- to_add %>% dplyr::filter(!is.na(addl) & addl > 0)
     if (nrow(addl_lines) > 0) {
+      if (!"input" %in% names(addl_lines)) addl_lines$input <- 1
       new_lines <- addl_lines %>%
       tidyr::uncount(addl, .remove = F) %>%
-      dplyr::group_by(id) %>%
+      dplyr::group_by(id, time, input) %>%
       dplyr::mutate(time = ii * dplyr::row_number() + time)
       
       to_add <- dplyr::bind_rows(to_add, new_lines) %>%
@@ -405,7 +406,7 @@ private = list(
   if (nrow(addl_lines) > 0) {
     new_lines <- addl_lines %>%
     tidyr::uncount(addl, .remove = FALSE) %>%
-    group_by(id, time) %>%
+    group_by(id, time, input) %>%
     mutate(time = ii * row_number() + time) %>%
     ungroup()
     
