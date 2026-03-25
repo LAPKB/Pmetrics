@@ -82,3 +82,6 @@ src/Makevars.win
 
 /.quarto/
 **/*.quarto_ipynb
+
+# Old files
+Archived
