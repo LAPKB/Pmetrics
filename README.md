@@ -49,6 +49,14 @@ With this setup, you can install or update Pmetrics using the
 standard command `install.packages("Pmetrics")` without specifying
 the repository each time.
 
+Note: if you are a Windows user and experience an error while installing Pmetrics that mentions `Linker.exe`. That means the Rust toolchain is missconfigured to your system.
+To fix it, open a terminal (CMD or PowerShell) and execute the following two lines:
+
+```bash
+rustup toolchain install stable-x86_64-pc-windows-gnu
+rustup default stable-x86_64-pc-windows-gnu
+```
+
 
 ### IDE (optional)
 
