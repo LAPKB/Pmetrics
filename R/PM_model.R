@@ -461,7 +461,7 @@ PM_model <- R6::R6Class(
         
         # Get model template name if present (NA if absent) and set type
         model_template <- get_found_model(self$arg_list$eqn) # function defined below, returns 0 if not found, -1 if error
-        browser()
+       
         # change logic; need to accomodate library models that are ODEs
         if (length(model_template) > 1 && model_template$analytical) {
           type <- "Analytical"
