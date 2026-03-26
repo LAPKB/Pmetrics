@@ -7,6 +7,9 @@
   "imp_method": "percent_rmbawse",
   "ic_method": "aic",
   "report_template": "plotly",
+  "date_format": "%m/%d/%y",
+  "update_check": "weekly",
+  "update_timeout": 1,
   "backend": "rust",
   "model_template_path": ""
 }

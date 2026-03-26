@@ -89,12 +89,54 @@ setPMoptions <- function(launch.app = TRUE) {
   
   fs::dir_create(opt_dir)  # ensure directory exists
   PMoptionsUserFile <- file.path(opt_dir, "PMoptions.json")
-  
-  # If file doesn't exist in user space, copy default
-  if (!fs::file_exists(PMoptionsUserFile)) {
-    PMoptionsFile <- glue::glue(system.file("options", package = "Pmetrics"), "/PMoptions.json")
-    fs::file_copy(PMoptionsFile, PMoptionsUserFile, overwrite = TRUE)
+
+  PMoptionsDefaultsFile <- file.path(system.file("options", package = "Pmetrics"), "PMoptions.json")
+
+  sync_pmoptions <- function() {
+    default_opts <- tryCatch(
+      jsonlite::fromJSON(PMoptionsDefaultsFile, simplifyVector = TRUE),
+      error = function(e) list()
+    )
+
+    user_opts <- if (fs::file_exists(PMoptionsUserFile)) {
+      tryCatch(jsonlite::fromJSON(PMoptionsUserFile, simplifyVector = TRUE), error = function(e) list())
+    } else {
+      list()
+    }
+
+    # Apply locale-aware default for date format when missing
+    lc <- Sys.getlocale("LC_TIME")
+    locale_date <- if (grepl("en_US", lc, fixed = TRUE)) "%m/%d/%y" else "%d/%m/%y"
+    if (is.null(user_opts$date_format) || is.na(user_opts$date_format) || !nzchar(user_opts$date_format)) {
+      default_opts$date_format <- locale_date
+    }
+
+    # Keep only current defaults; fill missing values from defaults
+    synced_opts <- default_opts
+    shared_names <- intersect(names(default_opts), names(user_opts))
+    for (nm in shared_names) {
+      synced_opts[[nm]] <- user_opts[[nm]]
+    }
+
+    # Validate update settings
+    valid_update_check <- c("manual", "never", "daily", "weekly", "monthly")
+    update_check <- tolower(as.character(synced_opts$update_check))
+    if (!(update_check %in% valid_update_check)) {
+      update_check <- "weekly"
+    }
+    synced_opts$update_check <- update_check
+
+    update_timeout <- suppressWarnings(as.numeric(synced_opts$update_timeout))
+    if (!is.finite(update_timeout) || update_timeout <= 0) {
+      update_timeout <- 1
+    }
+    synced_opts$update_timeout <- update_timeout
+
+    jsonlite::write_json(synced_opts, PMoptionsUserFile, pretty = TRUE, auto_unbox = TRUE)
+    synced_opts
   }
+
+  opts <- sync_pmoptions()
   
   app <- shiny::shinyApp(
     
@@ -160,6 +202,18 @@ setPMoptions <- function(launch.app = TRUE) {
                       selected = "."
                     )
                   )
+                ),
+                shiny::selectInput(
+                  "date_format",
+                  bslib::tooltip(
+                    shiny::tags$span("Date format", shiny::icon("circle-question", class = "ms-1 text-muted")),
+                    "Date format used to parse date-time strings, e.g. the 'start' argument in BestDose"
+                  ),
+                  choices = c(
+                    "MM/DD/YY \u2014 United States" = "%m/%d/%y",
+                    "DD/MM/YY \u2014 International" = "%d/%m/%y"
+                  ),
+                  selected = "%m/%d/%y"
                 )
               )
             ),
@@ -204,6 +258,44 @@ setPMoptions <- function(launch.app = TRUE) {
                     "Static (ggplot2)" = "ggplot2"
                   ),
                   selected = "plotly"
+                )
+              )
+            ),
+
+            # Update Notifications Card
+            bslib::card(
+              class = "mb-3",
+              bslib::card_header(
+                class = "bg-primary text-white",
+                shiny::icon("bell", class = "me-2"),
+                "Update Notifications"
+              ),
+              bslib::card_body(
+                shiny::selectInput(
+                  "update_check",
+                  bslib::tooltip(
+                    shiny::tags$span("Startup check frequency", shiny::icon("circle-question", class = "ms-1 text-muted")),
+                    "How often Pmetrics should check for R/Pmetrics updates when the package is attached"
+                  ),
+                  choices = c(
+                    "Manual only" = "manual",
+                    "Never" = "never",
+                    "Daily" = "daily",
+                    "Weekly" = "weekly",
+                    "Monthly" = "monthly"
+                  ),
+                  selected = "weekly"
+                ),
+                shiny::numericInput(
+                  "update_timeout",
+                  bslib::tooltip(
+                    shiny::tags$span("Network timeout (seconds)", shiny::icon("circle-question", class = "ms-1 text-muted")),
+                    "Maximum seconds spent on automatic startup update checks"
+                  ),
+                  value = 1,
+                  min = 1,
+                  max = 30,
+                  step = 1
                 )
               )
             )
@@ -379,6 +471,9 @@ setPMoptions <- function(launch.app = TRUE) {
         if (!is.null(settings$digits)) shiny::updateNumericInput(session, "digits", value = settings$digits)
         if (!is.null(settings$report_template)) shiny::updateSelectInput(session, "report_template", selected = settings$report_template)
         if (!is.null(settings$ic_method)) shiny::updateSelectInput(session, "ic_method", selected = settings$ic_method)
+        if (!is.null(settings$date_format)) shiny::updateSelectInput(session, "date_format", selected = settings$date_format)
+        if (!is.null(settings$update_check)) shiny::updateSelectInput(session, "update_check", selected = settings$update_check)
+        if (!is.null(settings$update_timeout)) shiny::updateNumericInput(session, "update_timeout", value = settings$update_timeout)
         
         # Bias/imprecision methods - strip percent_ prefix for display
         if (!is.null(settings$bias_method)) {
@@ -419,7 +514,8 @@ setPMoptions <- function(launch.app = TRUE) {
       }) |> shiny::bindEvent(
         input$sep, input$dec, input$digits, input$show_metrics,
         input$bias_method, input$imp_method, input$use_percent,
-        input$ic_method, input$report_template,
+        input$ic_method, input$report_template, input$date_format,
+        input$update_check, input$update_timeout,
         ignoreInit = TRUE
       )
       
@@ -459,7 +555,10 @@ setPMoptions <- function(launch.app = TRUE) {
           bias_method = glue::glue(c("", "percent_")[1 + as.numeric(input$use_percent)], input$bias_method), 
           imp_method = glue::glue(c("", "percent_")[1 + as.numeric(input$use_percent)], input$imp_method),
           ic_method = input$ic_method,
-          report_template = input$report_template
+          report_template = input$report_template,
+          date_format = input$date_format,
+          update_check = input$update_check,
+          update_timeout = as.numeric(input$update_timeout)
           # backend = input$backend, 
           # model_template_path = input$model_template_path
         )
@@ -541,6 +640,14 @@ setPMoptions <- function(launch.app = TRUE) {
   if(launch.app){
     shiny::runApp(app, launch.browser = TRUE)
   }
+
+  # Re-sync in case app/user edits introduced missing or obsolete keys
+  opts <- sync_pmoptions()
+
+  pm_option_values <- unname(as.list(opts))
+  names(pm_option_values) <- paste0("Pmetrics.", names(opts))
+  do.call(options, pm_option_values)
+  options(Pmetrics.user_options = opts)
   
   return(invisible(NULL))
     

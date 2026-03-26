@@ -1,4 +1,5 @@
 // mod build;
+
 mod executor;
 mod logs;
 mod settings;
@@ -116,7 +117,6 @@ fn simulate_all(
 
     rows.into_dataframe().unwrap()
 }
-
 
 /// Fits the model at the given path to the data at the given path using the provided parameters.
 /// @param model_path Path to the compiled model file.
@@ -276,10 +276,10 @@ fn setup_logs() -> anyhow::Result<()> {
     use tracing_subscriber::filter::LevelFilter;
 
     // Create a subscriber with our custom layer using the global timer
-    // Filter to show only INFO and above (INFO, WARN, ERROR)
+    // Filter to show only WARN and above (WARN, ERROR) by default
     let subscriber = tracing_subscriber::registry()
         .with(RFormatLayer::new())
-        .with(LevelFilter::from_level(Level::INFO));
+        .with(LevelFilter::from_level(Level::WARN));
 
     // Set as global default - this will fail if already set, which is fine
     // We just ignore the error
@@ -288,9 +288,10 @@ fn setup_logs() -> anyhow::Result<()> {
     Ok(())
 }
 
-// Macro to generate exports.
-// This ensures exported functions are registered with R.
-// See corresponding C code in `entrypoint.c`.
+
+
+
+
 extendr_module! {
     mod Pmetrics;
     fn simulate_one;
@@ -302,6 +303,7 @@ extendr_module! {
     fn model_parameters;
     fn temporary_path;
     fn setup_logs;
+
 }
 
 // To generate the exported function in R, run the following command:

@@ -23,8 +23,9 @@
 #' @param outeq Number of the output equation to compare; default is 1.
 #' @param plot Boolean indicating whether to generate and open the comparison report; default is FALSE
 #' @return A highlighted table comparing the selected models with the following columns. In each metric column,
-#' the best (lowest) value is highlighted in red. In the final best column, the red highlighting applies to the model 
-#' with the most "best" metrics.
+#' the best value is highlighted in red. In the final best column, the red highlighting applies to the model 
+#' with the most "best" metrics. For bias, imprecision, and regression intercept, the best value is the one closest to zero. 
+#' For regression slope and R-squared, the best value is the one closest to 1. For -2*LL, AIC, and BIC, the best value is the lowest.
 #' * **run** The run number of the data
 # #' * **nsub** Number of subjects in the model
 #' * **nvar** Number of random parameters in the model
@@ -128,7 +129,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
   sumobjPop <- purrr::map(op, \(x) summary.PM_op(x, outeq = outeq, pred.type = "pop", icen = icen)) 
   sumobjPost <- purrr::map(op, \(x) summary.PM_op(x, outeq = outeq, pred.type = "post", icen = icen)) 
   
-
+  
   #### MAKE BIAS AND IMPRECISION PLOT ####
   
   
@@ -430,6 +431,7 @@ flextable::autofit()
 
 # make results table
 results <- data.frame(
+  
   run = objNames[1:nobj],
   # nsub = purrr::map_int(allObj, \(x) {
   #   x$final$nsub
@@ -437,7 +439,7 @@ results <- data.frame(
   nvar = purrr::map_int(allObj, \(x) length(names(x$final$popMean))),
   # par = purrr::map_chr(allObj, \(x) paste(names(x$final$popMean), collapse = ", ")),
   converged = purrr::map_lgl(allObj, \(x) {
-    x$cycle$data$status == "Converged"
+    grepl("Converged", x$cycle$data$status)
   }),
   ll = purrr::map_dbl(allObj, \(x) {
     tail(x$cycle$data$objective$neg2ll, 1) 
@@ -479,8 +481,34 @@ pivot_wider(id_cols = c(run), names_from = c(pred.type), names_glue = "{pred.typ
 results <- bind_cols(results, op_tbl %>% select(-run))
 results$pval <- t
 
-results$best <- results %>% select(c(-run, -nvar, -converged, -pval)) %>% map(~ which(.x == min(.x))) %>% unlist()  %>% table()
-attr(results, "highlight") <- TRUE
+
+# calculate the best in each metric column:
+# for -2*LL, AIC/BIC, bias, imprecision, and regression intercept the best is the value closest to zero;
+# for slope and R2, best is the closest to 1
+metric_cols <- names(results)[!names(results) %in% c("run", "nvar", "converged", "pval")]
+
+best_idx <- purrr::map(metric_cols, function(col) {
+  x <- suppressWarnings(as.numeric(results[[col]]))
+  valid <- which(!is.na(x))
+  if (length(valid) == 0) {
+    return(integer(0))
+  }
+  target <- ifelse(grepl("Sl|R2", col), 1, 0)
+  valid[which(abs(x[valid] - target) == min(abs(x[valid] - target)))]
+})
+
+best_counts <- integer(nobj)
+for (idx in best_idx) {
+  if (length(idx) > 0) {
+    best_counts[idx] <- best_counts[idx] + 1L
+  }
+}
+
+results$best <- best_counts
+attr(results, "highlight") <- list(
+  metric_cols = setdiff(metric_cols, "best"),
+  best_col = "best"
+)
 
 class(results) <- c("PM_compare", "data.frame")
 
