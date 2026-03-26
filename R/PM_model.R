@@ -1688,7 +1688,7 @@ PM_model <- R6::R6Class(
         if (self$model_list$type %in% c("Analytical", "ODE")) {
           placeholders <- c("eqn", "lag", "fa", "ini", "out", "n_eqn", "n_out")
           base <- paste0(
-            "#[allow(unused_mut)]\nequation::",
+            "#[allow(unused_assignments)]\n#[allow(unused_mut)]\nequation::",
             self$model_list$type,
             "::new(\n",
             paste("<", placeholders[1:5], ">", sep = "", collapse = ",\n "),
