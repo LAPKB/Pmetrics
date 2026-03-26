@@ -224,7 +224,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
       tem <- found$name
       eqns <- as.list(body(fun)[-1])
       if (length(eqns) > 0) {
-        eqns_char <- map_chr(eqns, deparse)
+        eqns_char <- map_chr(eqns, \(x) paste(deparse(x, width.cutoff = 500L), collapse = "\n"))
         # check for ODE, which should not be present
         if (any(stringr::str_detect(eqns_char, regex("dx\\[\\d+\\]", ignore_case = FALSE)))) {
           cli::cli_abort(c(
