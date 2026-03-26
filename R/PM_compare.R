@@ -483,8 +483,9 @@ results$pval <- t
 
 
 # calculate the best in each metric column:
-# for -2*LL, AIC/BIC, bias, imprecision, and regression intercept the best is the value closest to zero;
-# for slope and R2, best is the closest to 1
+# for -2*LL, AIC/BIC the best is the minimum value;
+# for slope and R2, best is the closest to 1;
+# for bias, imprecision, and regression intercept the best is the value closest to zero
 metric_cols <- names(results)[!names(results) %in% c("run", "nvar", "converged", "pval")]
 
 best_idx <- purrr::map(metric_cols, function(col) {
@@ -493,8 +494,18 @@ best_idx <- purrr::map(metric_cols, function(col) {
   if (length(valid) == 0) {
     return(integer(0))
   }
-  target <- ifelse(grepl("Sl|R2", col), 1, 0)
-  valid[which(abs(x[valid] - target) == min(abs(x[valid] - target)))]
+  if (grepl("LL$|AIC$|BIC$", col, ignore.case = TRUE)) {
+    # Information criteria / likelihood: smaller is better
+    valid[which(x[valid] == min(x[valid]))]
+  } else if (grepl("Sl|R2", col)) {
+    # Slopes and R2: closer to 1 is better
+    diffs <- abs(x[valid] - 1)
+    valid[which(diffs == min(diffs))]
+  } else {
+    # Bias, imprecision, intercepts: closer to 0 is better
+    diffs <- abs(x[valid])
+    valid[which(diffs == min(diffs))]
+  }
 })
 
 best_counts <- integer(nobj)

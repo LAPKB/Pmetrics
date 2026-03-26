@@ -119,7 +119,7 @@ setPMoptions <- function(launch.app = TRUE) {
     }
 
     # Validate update settings
-    valid_update_check <- c("manual", "never", "daily", "weekly", "monthly")
+    valid_update_check <- c("always", "manual", "never", "daily", "weekly", "monthly")
     update_check <- tolower(as.character(synced_opts$update_check))
     if (!(update_check %in% valid_update_check)) {
       update_check <- "weekly"
@@ -278,6 +278,7 @@ setPMoptions <- function(launch.app = TRUE) {
                     "How often Pmetrics should check for R/Pmetrics updates when the package is attached"
                   ),
                   choices = c(
+                    "Always" = "always",
                     "Manual only" = "manual",
                     "Never" = "never",
                     "Daily" = "daily",

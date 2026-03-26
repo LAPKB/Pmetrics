@@ -1479,8 +1479,18 @@ wtd.var <- function(x, weights = NULL,
         x_num <- suppressWarnings(as.numeric(df[[col]]))
         valid <- which(!is.na(x_num))
         if (length(valid) == 0) return(integer(0))
-        target <- ifelse(grepl("Sl|R2", col), 1, 0)
-        valid[which(abs(x_num[valid] - target) == min(abs(x_num[valid] - target)))]
+        if (grepl("LL$|AIC$|BIC$", col, ignore.case = TRUE)) {
+          # Information criteria / likelihood: smaller is better
+          valid[which(x_num[valid] == min(x_num[valid]))]
+        } else if (grepl("Sl|R2", col)) {
+          # Slopes and R2: closer to 1 is better
+          diffs <- abs(x_num[valid] - 1)
+          valid[which(diffs == min(diffs))]
+        } else {
+          # Bias, imprecision, intercepts: closer to 0 is better
+          diffs <- abs(x_num[valid])
+          valid[which(diffs == min(diffs))]
+        }
       })
       names(metric_best) <- metric_cols
 
