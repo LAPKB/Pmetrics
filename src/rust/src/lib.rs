@@ -1,4 +1,5 @@
 // mod build;
+mod bestdose_executor;
 mod executor;
 mod logs;
 mod settings;
@@ -8,9 +9,11 @@ use anyhow::Result;
 use extendr_api::prelude::*;
 use pmcore::prelude::{data::read_pmetrics, pharmsol::exa::build, Analytical, ODE};
 use simulation::SimulationRow;
+use std::path::PathBuf;
 use std::process::Command;
 use tracing_subscriber::layer::SubscriberExt;
 
+use crate::bestdose_executor::BestDosePosteriorHandle;
 use crate::logs::RFormatLayer;
 
 fn validate_paths(data_path: &str, model_path: &str) {
@@ -291,6 +294,111 @@ fn setup_logs() -> anyhow::Result<()> {
 // Macro to generate exports.
 // This ensures exported functions are registered with R.
 // See corresponding C code in `entrypoint.c`.
+/// Run BestDose optimization to find optimal doses
+///@export
+#[extendr]
+fn bestdose(
+    model_path: &str,
+    prior_path: &str,
+    past_data_path: Nullable<String>,
+    target_data_path: &str,
+    time_offset: Nullable<f64>,
+    dose_min: f64,
+    dose_max: f64,
+    bias_weight: f64,
+    target_type: &str,
+    params: List,
+    kind: &str,
+) -> Robj {
+    RFormatLayer::reset_global_timer();
+    let _ = setup_logs();
+
+    println!("Starting BestDose optimization...");
+
+    let past_path = match past_data_path.into_option() {
+        Some(p) => Some(PathBuf::from(p)),
+        None => None,
+    };
+
+    let time_offset_opt = time_offset.into_option();
+
+    let result = match kind {
+        "ode" => bestdose_executor::bestdose_ode(
+            model_path.into(),
+            prior_path.into(),
+            past_path,
+            target_data_path.into(),
+            time_offset_opt,
+            dose_min,
+            dose_max,
+            bias_weight,
+            target_type,
+            params.clone(),
+        ),
+        "analytical" => bestdose_executor::bestdose_analytical(
+            model_path.into(),
+            prior_path.into(),
+            past_path,
+            target_data_path.into(),
+            time_offset_opt,
+            dose_min,
+            dose_max,
+            bias_weight,
+            target_type,
+            params.clone(),
+        ),
+        _ => {
+            return Robj::from(format!("{} is not a supported model type", kind));
+        }
+    };
+
+    match result {
+        Ok(bd_result) => match bestdose_executor::convert_bestdose_result_to_r(bd_result) {
+            Ok(r) => r,
+            Err(e) => Robj::from(format!("Failed to convert result: {}", e)),
+        },
+        Err(e) => Robj::from(format!("BestDose failed: {}", e)),
+    }
+}
+
+#[extendr]
+fn bestdose_prepare(
+    model_path: &str,
+    prior_path: &str,
+    past_data_path: Nullable<String>,
+    params: List,
+    kind: &str,
+) -> Robj {
+    bestdose_executor::bestdose_prepare_internal(
+        model_path,
+        prior_path,
+        past_data_path,
+        params,
+        kind,
+    )
+}
+
+#[extendr]
+fn bestdose_optimize(
+    handle: ExternalPtr<BestDosePosteriorHandle>,
+    target_data_path: &str,
+    time_offset: Nullable<f64>,
+    dose_min: f64,
+    dose_max: f64,
+    bias_weight: f64,
+    target_type: &str,
+) -> Robj {
+    bestdose_executor::bestdose_optimize_internal(
+        handle,
+        target_data_path,
+        time_offset,
+        dose_min,
+        dose_max,
+        bias_weight,
+        target_type,
+    )
+}
+
 extendr_module! {
     mod Pmetrics;
     fn simulate_one;
@@ -302,6 +410,9 @@ extendr_module! {
     fn model_parameters;
     fn temporary_path;
     fn setup_logs;
+    fn bestdose;
+    fn bestdose_prepare;
+    fn bestdose_optimize;
 }
 
 // To generate the exported function in R, run the following command:
