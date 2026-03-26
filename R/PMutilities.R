@@ -1720,6 +1720,183 @@ latestR <- function() {
 }
 
 
+pm_updates_cache_file <- function() {
+  file.path(tools::R_user_dir("Pmetrics", which = "cache"), "updates.rds")
+}
+
+
+pm_read_updates_cache <- function() {
+  cache_file <- pm_updates_cache_file()
+  if (!file.exists(cache_file)) {
+    return(NULL)
+  }
+
+  tryCatch(readRDS(cache_file), error = function(e) NULL)
+}
+
+
+pm_write_updates_cache <- function(result) {
+  cache_file <- pm_updates_cache_file()
+  cache_dir <- dirname(cache_file)
+  if (!dir.exists(cache_dir)) {
+    dir.create(cache_dir, recursive = TRUE)
+  }
+
+  tryCatch(saveRDS(result, cache_file), error = function(e) invisible(NULL))
+  invisible(result)
+}
+
+
+pm_update_interval_days <- function() {
+  mode <- getPMoptions("update_check", warn = FALSE, quiet = TRUE)
+  if (is.null(mode)) {
+    mode <- getOption("Pmetrics.update_check", "weekly")
+  }
+  mode <- tolower(as.character(mode))
+
+  switch(
+    mode,
+    always = 0,
+    daily = 1,
+    weekly = 7,
+    monthly = 30,
+    manual = Inf,
+    never = Inf,
+    Inf
+  )
+}
+
+
+pm_notify_outdated <- function(result) {
+  if (is.null(result)) {
+    return(invisible(NULL))
+  }
+
+  pmetrics_outdated <- isTRUE(result$pmetrics_outdated)
+  r_outdated <- isTRUE(result$r_outdated)
+
+  if (!pmetrics_outdated && !r_outdated) {
+    return(invisible(NULL))
+  }
+
+  ul <- cli::cli_ul()
+
+  if (pmetrics_outdated) {
+    cli::cli_li("{.red Update available:} Pmetrics {result$latest_pmetrics} (installed: {result$installed_pmetrics}).")
+  }
+
+  if (r_outdated) {
+    cli::cli_li("{.red Update available:} R {result$latest_r} (installed: {result$current_r}). Use {.help downloadR}.")
+  }
+
+  cli::cli_end(ul)
+  invisible(result)
+}
+
+
+pm_maybe_notify_updates <- function() {
+  if (!interactive()) {
+    return(invisible(NULL))
+  }
+
+  cache <- pm_read_updates_cache()
+  interval_days <- pm_update_interval_days()
+
+  needs_refresh <- is.null(cache) ||
+    is.null(cache$checked_at) ||
+    (is.finite(interval_days) &&
+      as.numeric(difftime(Sys.time(), cache$checked_at, units = "days")) >= interval_days)
+
+  if (is.finite(interval_days) && isTRUE(needs_refresh)) {
+    timeout <- getPMoptions("update_timeout", warn = FALSE, quiet = TRUE)
+    if (is.null(timeout)) {
+      timeout <- getOption("Pmetrics.update_timeout", 1)
+    }
+    cache <- tryCatch(check_updates(verbose = FALSE, timeout = timeout), error = function(e) cache)
+  }
+
+  pm_notify_outdated(cache)
+  invisible(cache)
+}
+
+
+#' @title Check for Pmetrics and R updates
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Performs an on-demand check for newer Pmetrics and R releases.
+#' This function is intended for interactive use and avoids running network
+#' checks automatically during package attach.
+#' @param verbose Logical. If `TRUE`, emits a user-facing CLI summary.
+#' @param timeout Numeric scalar. Network timeout in seconds used for this check.
+#' @return An invisible list with installed/latest versions and outdated flags.
+#' @export
+check_updates <- function(verbose = interactive(), timeout = 2) {
+  timeout <- as.numeric(timeout)
+  if (!is.finite(timeout) || timeout <= 0) {
+    timeout <- 2
+  }
+
+  old_timeout <- getOption("timeout")
+  on.exit(options(timeout = old_timeout), add = TRUE)
+  options(timeout = timeout)
+
+  installed_pmetrics <- packageVersion("Pmetrics")
+  latest_pmetrics <- tryCatch(
+    package_version(
+      jsonlite::fromJSON("https://lapkb.r-universe.dev/api/packages/Pmetrics")$Version
+    ),
+    error = function(e) NA
+  )
+
+  current_r <- getRversion()
+  latest_r_info <- tryCatch(latestR(), error = function(e) NULL)
+  latest_r <- if (!is.null(latest_r_info) && !is.null(latest_r_info$version)) {
+    package_version(latest_r_info$version)
+  } else {
+    NA
+  }
+
+  pmetrics_outdated <- !is.na(latest_pmetrics) && installed_pmetrics < latest_pmetrics
+  r_outdated <- !is.na(latest_r) && current_r < latest_r
+
+  result <- list(
+    installed_pmetrics = installed_pmetrics,
+    latest_pmetrics = latest_pmetrics,
+    pmetrics_outdated = pmetrics_outdated,
+    current_r = current_r,
+    latest_r = latest_r,
+    r_outdated = r_outdated,
+    checked_at = Sys.time()
+  )
+
+  pm_write_updates_cache(result)
+
+  if (isTRUE(verbose)) {
+    ul <- cli::cli_ul()
+
+    if (is.na(latest_pmetrics)) {
+      cli::cli_li("Unable to check latest Pmetrics version (network unavailable or endpoint unreachable).")
+    } else if (pmetrics_outdated) {
+      cli::cli_li("{.red Warning:} Your Pmetrics version ({installed_pmetrics}) is older than the latest release ({latest_pmetrics}). Update instructions are at https://github.com/LAPKB/Pmetrics.")
+    } else {
+      cli::cli_li("You are using the latest Pmetrics version: {installed_pmetrics}.")
+    }
+
+    if (is.na(latest_r)) {
+      cli::cli_li("Unable to check latest R version (network unavailable or endpoint unreachable).")
+    } else if (r_outdated) {
+      cli::cli_li("{.red Warning:} Your R version ({current_r}) is older than the latest release ({latest_r}). Use {.help downloadR} to download the latest platform-specific installer.")
+    } else {
+      cli::cli_li("You are using the latest R version: {current_r}.")
+    }
+
+    cli::cli_end(ul)
+  }
+
+  invisible(result)
+}
+
+
 #' @title Download the latest platform-specific R installer
 #' @description
 #' `r lifecycle::badge("stable")`
