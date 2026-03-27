@@ -94,13 +94,15 @@ model_lib <- function(show = TRUE) {
       ul <- cli::cli_ul()
       cli::cli_li("Use the {.code PM_model$new()} function to create a model from a template in the library.")
       cli::cli_li("Include the unquoted model {.emph Name} or one of the {.emph Alt Names} in the {.code EQN} block of the model")
-      cli::cli_li("Ensure the model {.emph Parameters} are defined as named (case-insensitive) in the appropriate model blocks, e.g. {.code PRI}, {.code SEC}, {.code EQN}, or {.code OUT}.")
+      cli::cli_li("Model names exclude the bolus compartment per convention, e.g. {.code one_comp_bolus} rather than {.code two_comp_bolus}.")
+      cli::cli_li("Ensure the model parameters are defined in the {.code PRI} block {.emph in the same order} and with the {.emph same names} as in the library.")
+      cli::cli_li("Define secondary parameters in the {.code SEC} block as needed, preserving the names in the {.code PRI} block,  e.g. V = V * wt.")
       cli::cli_li("Additional parameters and blocks, e.g. lag, bioavailaiblity, initial conditions, and covariates may be added.")
       cli::cli_li("The model {.emph Compartments} are numbered and can be referenced in the {.code OUT} block to define outputs.")
       cli::cli_li("Model inputs are indicated in the {.emph Corresponding ODE}, i.e. bolus (B[1]) and infusion (R[1]). These cannot be changed.")
       cli::cli_li("{.emph ODE} are used only for plotting purposes.")
       cli::cli_end(ul)
-    }
+  }
     
     
     return(invisible(mod_table))
@@ -213,7 +215,7 @@ model_lib <- function(show = TRUE) {
       list(
         name = "one_comp_iv_cl", 
         alt_names = "advan1_trans2", 
-        description = c("One compartment", "Infusion into central compartment #1", "CLearance from central compartment #1"), 
+        description = c("Infusion into central compartment #1", "CLearance from central compartment #1"), 
         compartments = "1 = Central", 
         analytical = TRUE,
         arg_list = list(
@@ -222,7 +224,8 @@ model_lib <- function(show = TRUE) {
             V = ab(0, 100)
           ),
           eqn = function(){
-            dX[1] = R[1] - CL/V*X[1]
+            Ke = CL/V
+            dX[1] = R[1] - Ke*X[1]
           },
           out = function(){
             Y[1] = X[1]/V
@@ -234,9 +237,9 @@ model_lib <- function(show = TRUE) {
       ),
       
       list(
-        name = "two_comp_bolus", 
+        name = "one_comp_bolus", 
         alt_names = c("advan2", "advan2_trans1"), 
-        description = c("Two compartments", "Bolus input to compartment #1, infusion to central compartment #2", "Ke elimination from central compartment #2"), 
+        description = c("Bolus input to compartment #1, infusion to central compartment #2", "Ke elimination from central compartment #2"), 
         compartments = c("1 = Bolus", "2 = Central"), 
         analytical = TRUE,
         arg_list = list(
@@ -260,9 +263,9 @@ model_lib <- function(show = TRUE) {
       
       
       list(
-        name = "two_comp_bolus_cl", 
+        name = "one_comp_bolus_cl", 
         alt_names = "advan2_trans2", 
-        description = c("Two compartments", "Bolus input to compartment #1, infusion to central compartment #2", "CLearance from central compartment #2"), 
+        description = c("Bolus input to compartment #1, infusion to central compartment #2", "CLearance from central compartment #2"), 
         compartments = c("1 = Bolus", "2 = Central"), 
         analytical = TRUE,
         arg_list = list(
@@ -272,8 +275,9 @@ model_lib <- function(show = TRUE) {
             V = ab(0, 100)
           ),
           eqn = function(){
+            Ke = CL/V
             dX[1] = B[1] - Ka*X[1]
-            dX[2] = R[1] + Ka*X[1] - CL/V*X[2]
+            dX[2] = R[1] + Ka*X[1] - Ke*X[2]
           },
           out = function(){
             Y[1] = X[2]/V
@@ -288,19 +292,19 @@ model_lib <- function(show = TRUE) {
       list(
         name = "two_comp_iv",
         alt_names = c("advan3", "advan3_trans1"),
-        description = c("Two compartments", "Infusion into central compartment #1", "Distribution to/from peripheral compartment #2", "Ke elimination from central compartment #1"),
+        description = c("Infusion into central compartment #1", "Distribution to/from peripheral compartment #2", "Ke elimination from central compartment #1"),
         compartments = c("1 = Central", "2 = Peripheral"),
         analytical = TRUE,
         arg_list = list(
           pri = c(
             Ke = ab(0, 5),
-            Kcp = ab(0, 5),
-            Kpc = ab(0, 5),
+            K12 = ab(0, 5),
+            K21= ab(0, 5),
             V = ab(0, 100)
           ),
           eqn = function(){
-            dX[1] = R[1] - (Ke + Kcp)*X[1] + Kpc*X[2]
-            dX[2] = Kcp*X[1] - Kpc*X[2]
+            dX[1] = R[1] - (Ke + K12)*X[1] + K21*X[2]
+            dX[2] = K12*X[1] - K21*X[2]
           },
           out = function(){
             Y[1] = X[1]/V
@@ -315,22 +319,25 @@ model_lib <- function(show = TRUE) {
       list(
         name = "two_comp_iv_cl",
         alt_names = "advan3_trans4",
-        description = c("Two compartments", "Infusion into central compartment #1", "Distribution to/from peripheral compartment #2", "CLearance from central compartment #1"),
+        description = c("Infusion into central compartment #1", "Distribution to/from peripheral compartment #2", "CLearance from central compartment #1"),
         compartments = c("1 = Central", "2 = Peripheral"),
         analytical = TRUE,
         arg_list = list(
           pri = c(
             CL = ab(0, 500),
             Q = ab(0, 100),
-            Vc = ab(0, 100),
-            Vp = ab(0, 100)
+            V1 = ab(0, 100),
+            V2 = ab(0, 100)
           ),
           eqn = function(){
-            dX[1] = R[1] - (CL + Q)/Vc*X[1] + Q/Vp*X[2]
-            dX[2] = Q/Vc*X[1] - Q/Vp*X[2]
+            Ke = CL/V1
+            K12 = Q/V1
+            K21 = Q/V2
+            dX[1] = R[1] - (Ke + K12)*X[1] + K21*X[2]
+            dX[2] = K12*X[1] - K21*X[2]
           },
           out = function(){
-            Y[1] = X[1]/Vc
+            Y[1] = X[1]/V1
           },
           err = c(
             proportional(5, c(0.1, 0.1, 0, 0))
@@ -339,23 +346,23 @@ model_lib <- function(show = TRUE) {
       ),
       
       list(
-        name = "three_comp_bolus",
+        name = "two_comp_bolus",
         alt_names = c("advan4", "advan4_trans1"),
-        description = c("Three compartments", "Bolus input to compartment #1, infusion into central compartment #2", "Distribution to/from peripheral compartment #3", "Ke elimination from central compartment #2"),
+        description = c("Bolus input to compartment #1, infusion into central compartment #2", "Distribution to/from peripheral compartment #3", "Ke elimination from central compartment #2"),
         compartments = c("1 = Bolus", "2 = Central", "3 = Peripheral"),
         analytical = TRUE,
         arg_list = list(
           pri = c(
-            Ka = ab(0, 5),
             Ke = ab(0, 5),
-            Kcp = ab(0, 5),
-            Kpc = ab(0, 5),
+            Ka = ab(0, 5),
+            K12 = ab(0, 5),
+            K21 = ab(0, 5),
             V = ab(0, 100)
           ),
           eqn = function(){
             dX[1] = B[1] - Ka*X[1]
-            dX[2] = R[1] + Ka*X[1] - (Ke + Kcp)*X[2] + Kpc*X[3]
-            dX[3] = Kcp*X[2] - Kpc*X[3]
+            dX[2] = R[1] + Ka*X[1] - (Ke + K12)*X[2] + K21*X[3]
+            dX[3] = K12*X[2] - K21*X[3]
           },
           out = function(){
             Y[1] = X[2]/V
@@ -368,9 +375,9 @@ model_lib <- function(show = TRUE) {
       
       
       list(
-        name = "three_comp_bolus_cl",
+        name = "two_comp_bolus_cl",
         alt_names = "advan4_trans4",
-        description = c("Three compartments", "Bolus input to compartment #1, infusion into central compartment #2", "Distribution to/from peripheral compartment #3", "CLearance from central compartment #2"),
+        description = c("Bolus input to compartment #1, infusion into central compartment #2", "Distribution to/from peripheral compartment #3", "CLearance from central compartment #2"),
         compartments = c("1 = Bolus", "2 = Central", "3 = Peripheral"),
         analytical = TRUE,
         arg_list = list(
@@ -378,23 +385,160 @@ model_lib <- function(show = TRUE) {
             Ka = ab(0, 5),
             CL = ab(0, 500),
             Q = ab(0, 100),
-            Vc = ab(0, 100),
-            Vp = ab(0, 100)
+            V2 = ab(0, 100),
+            V3 = ab(0, 100)
+          ),
+          eqn = function(){
+            Ke = CL/V2
+            K23 = Q/V2
+            K32 = Q/V3
+            dX[1] = B[1] - Ka*X[1]
+            dX[2] = R[1] + Ka*X[1] - (Ke + K23)*X[2] + K32*X[3]
+            dX[3] = K23*X[2] - K32*X[3]
+          },
+          out = function(){
+            Y[1] = X[2]/V2
+          },
+          err = c(
+            proportional(5, c(0.1, 0.1, 0, 0))
+          )
+        )
+      ),
+
+      list(
+        name = "three_comp_iv",
+        alt_names = c("advan11", "advan11_trans1"),
+        description = c("Infusion into central compartment #1", "Distribution to/from peripheral compartments #2 and #3", "Elimination from central compartment #1"),
+        compartments = c("1 = Central", "2 = Peripheral 1", "3 = Peripheral 2"),
+        analytical = TRUE,
+        arg_list = list(
+          pri = c(
+            Ke = ab(0, 5),
+            K12 = ab(0, 5),
+            K13 = ab(0, 5),
+            K21 = ab(0, 5),
+            K31 = ab(0, 5),
+            V = ab(0, 100)
+          ),
+          eqn = function(){
+            dX[1] = R[1] - (Ke + K12 + K13)*X[1] + K21*X[2] + K31*X[3]
+            dX[2] = K12*X[1] - K21*X[2]
+            dX[3] = K13*X[1] - K31*X[3]
+
+          },
+          out = function(){
+            Y[1] = X[1]/V
+          },
+          err = c(
+            proportional(5, c(0.1, 0.1, 0, 0))
+          )
+        )
+      ),
+
+      list(
+        name = "three_comp_iv_cl",
+        alt_names = "advan11_trans4",
+        description = c("Infusion into central compartment #1", "Distribution to/from peripheral compartments #2 and #3", "CLearance from central compartment #1"),
+        compartments = c("1 = Central", "2 = Peripheral 1", "3 = Peripheral 2"),
+        analytical = TRUE,
+        arg_list = list(
+          pri = c(
+            CL = ab(0, 500),
+            Q2 = ab(0, 100),
+            Q3 = ab(0, 100),
+            V1 = ab(0, 100),
+            V2 = ab(0, 100),
+            V3 = ab(0, 100)
+          ),
+          eqn = function(){
+            Ke = CL/V1
+            K12 = Q2/V1
+            K21 = Q2/V2
+            K13 = Q3/V1
+            K31 = Q3/V3
+            dX[1] = R[1] - (Ke + K12 + K13)*X[1] + K21*X[2] + K31*X[3]
+            dX[2] = K12*X[1] - K21*X[2]
+            dX[3] = K13*X[1] - K31*X[3]
+
+          },
+          out = function(){
+            Y[1] = X[1]/V1
+          },
+          err = c(
+            proportional(5, c(0.1, 0.1, 0, 0))
+          )
+        )
+      ),
+      list(
+        name = "three_comp_bolus",
+        alt_names = c("advan12", "advan12_trans1"),
+        description = c("Bolus into compartment #1", "Infusion into central compartment #2", "Distribution to/from peripheral compartments #3 and #4", "Elimination from central compartment #2"),
+        compartments = c("1 = Bolus", "2 = Central", "3 = Peripheral 1", "4 = Peripheral 2"),
+        analytical = TRUE,
+        arg_list = list(
+          pri = c(
+            Ka = ab(0, 5),
+            Ke = ab(0, 5),
+            K23 = ab(0, 5),
+            K24 = ab(0, 5),
+            K32 = ab(0, 5),
+            K42 = ab(0, 5),
+            V = ab(0, 100)
           ),
           eqn = function(){
             dX[1] = B[1] - Ka*X[1]
-            dX[2] = R[1] + Ka*X[1] - (CL + Q)/Vc*X[2] + Q/Vp*X[3]
-            dX[3] = Q/Vc*X[2] - Q/Vp*X[3]
+            dX[2] = R[1] + Ka*X[1] - (Ke + K23 + K24)*X[2] + K32*X[3] + K42*X[4]
+            dX[3] = K23*X[2] - K32*X[3]
+            dX[4] = K24*X[2] - K42*X[4]
+
           },
           out = function(){
-            Y[1] = X[2]/Vc
+            Y[1] = X[2]/V
+          },
+          err = c(
+            proportional(5, c(0.1, 0.1, 0, 0))
+          )
+        )
+      ),
+
+      list(
+        name = "three_comp_bolus_cl",
+        alt_names = "advan12_trans4",
+        description = c("Bolus into compartment #1", "Infusion into central compartment #2", "Distribution to/from peripheral compartments #3 and #4", "CLearance from central compartment #2"),
+        compartments = c("1 = Bolus", "2 = Central", "3 = Peripheral 1", "4 = Peripheral 2"),
+        analytical = TRUE,
+        arg_list = list(
+          pri = c(
+            Ka = ab(0, 5),
+            CL = ab(0, 500),
+            Q3 = ab(0, 100),
+            Q4 = ab(0, 100),
+            V2 = ab(0, 100),
+            V3 = ab(0, 100),
+            V4 = ab(0, 100)
+          ),
+          eqn = function(){
+            Ke = CL/V2
+            K23 = Q3/V2
+            K32 = Q3/V3
+            K24 = Q4/V2
+            K42 = Q4/V4
+            dX[1] = B[1] - Ka*X[1]
+            dX[2] = R[1] + Ka*X[1] - (Ke + K23 + K24)*X[2] + K32*X[3] + K42*X[4]
+            dX[3] = K23*X[2] - K32*X[3]
+            dX[4] = K24*X[2] - K42*X[4]
+
+          },
+          out = function(){
+            Y[1] = X[2]/V2
           },
           err = c(
             proportional(5, c(0.1, 0.1, 0, 0))
           )
         )
       )
-    )
+
+    ) # end mod_list
     
     
     
