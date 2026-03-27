@@ -1,29 +1,28 @@
 ####### INTERNAL FUNCTIONS ########
-# Returns a list of names of all Pmetrics model library objects in the global environment.
+# Returns a list of names of all models in mod_list
 mod_lib_names <- function(){
-  ls(envir = .GlobalEnv) %>% purrr::map(\(x) x[inherits(get(x), "PM_lib")]) %>% purrr::discard(\(x) length(x) == 0) 
+  purrr::map_chr(mod_list, \(x) x$name)
 }
 
-# Returns a list of alt names of all Pmetrics model library objects in the global environment.
+# Returns a tibble of primary model names and their alternative names from mod_list
 alt_mod_lib_names <- function(){
-  mod_names <- mod_lib_names()
-  if (length(mod_names) > 0){
-    alt_map <- tibble(primary = unlist(mod_names)) %>% 
-    rowwise() %>%
-    mutate(alt = list(get(primary)$alt_names)) %>% 
+  alt_map <- purrr::map_df(mod_list, \(x) {
+    tibble(primary = x$name, alt = x$alt_names)
+  }) %>%
     tidyr::unnest_longer(alt)
-    return(alt_map)
-  } else {
-    return(0)
-  }
+  return(alt_map)
 }
 
-# returns model from detected template, 0 if none, and -1 if more than one
+# returns model definition from mod_list based on detected template name, 0 if none, and -1 if more than one
 get_found_model <- function(fun){
   eqns <- as.list(body(fun)[-1])
   expr_to_char <- \(x) paste(deparse(x, width.cutoff = 500L), collapse = "\n")
-  found_pri <- map_lgl(eqns, \(x) expr_to_char(x) %in% mod_lib_names())
-  found_alt <- map_lgl(eqns, \(x) expr_to_char(x) %in% alt_mod_lib_names()$alt)
+  
+  primary_names <- mod_lib_names()
+  alt_map <- alt_mod_lib_names()
+  
+  found_pri <- map_lgl(eqns, \(x) expr_to_char(x) %in% primary_names)
+  found_alt <- map_lgl(eqns, \(x) expr_to_char(x) %in% alt_map$alt)
   all_found <- sum(found_pri, found_alt)
   
   if(all_found > 1){
@@ -41,13 +40,20 @@ get_found_model <- function(fun){
   if (any(found_pri)) { # found a primary model name
     found_model_name <- expr_to_char(eqns[[which(found_pri)]])
   } else { # found an alternative model name
-    found_model_name <- alt_mod_lib_names() %>%
+    found_model_name <- alt_map %>%
     filter(alt == expr_to_char(eqns[[which(found_alt)]])) %>%
-    pull(primary)
+    pull(primary) %>%
+    unique() %>%
+    head(1)
   }
   
-  if(length(found_model_name)>0) {
-    found_model <- get(found_model_name)
+  if(length(found_model_name) > 0) {
+    found_model <- purrr::detect(mod_list, \(x) x$name == found_model_name)
+    if (is.null(found_model)) {
+      found_model <- 0
+    } else {
+      found_model$name <- found_model_name
+    }
   } else {
     found_model <- 0
   }
@@ -55,12 +61,12 @@ get_found_model <- function(fun){
 }
 
 # assemble library and load into global environment
-build_model_lib <- function(){
-  purrr::walk(mod_list, \(x) {
-    PM_lib$new(x) -> mod
-    assign(tolower(mod$name), mod, envir = .GlobalEnv)
-  })
-}
+# build_model_lib <- function(){
+#   purrr::walk(mod_list, \(x) {
+#     PM_lib$new(x) -> mod
+#     assign(tolower(mod$name), mod, envir = .GlobalEnv)
+#   })
+# }
 
 ####################################
 
@@ -102,7 +108,7 @@ model_lib <- function(show = TRUE) {
       cli::cli_li("Model inputs are indicated in the {.emph Corresponding ODE}, i.e. bolus (B[1]) and infusion (R[1]). These cannot be changed.")
       cli::cli_li("{.emph ODE} are used only for plotting purposes.")
       cli::cli_end(ul)
-  }
+    }
     
     
     return(invisible(mod_table))
@@ -129,6 +135,8 @@ model_lib <- function(show = TRUE) {
       analytical = NULL,
       #' @field arg_list List of model blocks with token values
       arg_list = NULL,
+      #' @field export Character vector with code that can be pasted to create PM_model
+      export = NULL,
       
       initialize = function(x){
         self$name <- x[[1]]
@@ -137,33 +145,168 @@ model_lib <- function(show = TRUE) {
         self$compartments <- x[[4]]
         self$analytical <- x[[5]]
         self$arg_list <- x[[6]]
+        self$export <- self$export_model()
       },
       print = function(){
-        cli::cli_div(theme = list(
-          span.tip = list(color = "dodgerblue", "font-style" = "italic")))
-          cli::cli_h1("Model summary")
-          cli::cli_h3("Primary Name")
-          cli::cli_text("{.tip Use this name in the {.code EQN} block}")
-          cli::cli_text(self$name)
-          cli::cli_h3("Alternative Names")
-          cli::cli_text("{.tip These names may also be used in the {.code EQN} block}")
-          purrr::walk(self$alt_names, cli::cli_text)
-          cli::cli_h3("Description")
-          purrr::walk(self$description, \(x) cli::cli_bullets(c(">" = "{x}")))
-          cli::cli_h3("Compartments")      
-          cli::cli_text("{.tip Any compartment can have outputs defined in the {.code OUT} block}")
-          purrr::walk(self$compartments, cli::cli_text)
-          cli::cli_h3("Parameters")
-          cli::cli_text("{.tip Ensure these exact names appear in any of the {.code PRI}, {.code SEC}, {.code EQN}, or {.code OUT} blocks}")
-          purrr::walk(self$parameters, cli::cli_text)
-          cli::cli_h3("Equations")
-          if(self$analytical){
-            cli::cli_text("{.tip These are shown to describe the model structure, but the model can be fitted analytically, without a differential equation solver}")
+          if (requireNamespace("clipr", quietly = TRUE)) {
+            clipr::write_clip(self$export)
+            cli::cli_inform(c(
+              ">" = "Model code copied to clipboard.",
+              ">" = "Paste the code into your script to create a PM_model based on this template.",
+              ">" = "Edit the model as needed, ensuring parameter names and order are preserved in the {.code PRI} block."
+            ))
           } else {
-            cli::cli_text("{.tip These describe the model structure, and the model is fitted with a differential equation solver}")
+            cli::cli_inform(c(
+              "i" = "Please install the {.pkg clipr} package to enable clipboard functionality.",
+              ">" = "Model code generated, but clipboard copy is unavailable.",
+              ">" = "Copy and paste the code below to create a PM_model based on this template.",
+              ">" = "Edit the model as needed, ensuring parameter names and order are preserved in the {.code PRI} block."
+            ))
+            cat("\n", self$export, "\n")
           }
-          purrr::walk(func_to_char(self$arg_list$eqn), cli::cli_text)
-          cli::cli_end()
+          return(invisible(self))
+ 
+        },
+        notes = function(){
+          cli::cli_div(theme = list(
+            span.tip = list(color = "dodgerblue", "font-style" = "italic")))
+            cli::cli_h1("Model summary")
+            cli::cli_h3("Primary Name")
+            cli::cli_text("{.tip Use this name in the {.code EQN} block}")
+            cli::cli_text(self$name)
+            cli::cli_h3("Alternative Names")
+            cli::cli_text("{.tip These names may also be used in the {.code EQN} block}")
+            purrr::walk(self$alt_names, cli::cli_text)
+            cli::cli_h3("Description")
+            purrr::walk(self$description, \(x) cli::cli_bullets(c(">" = "{x}")))
+            cli::cli_h3("Compartments")      
+            cli::cli_text("{.tip Any compartment can have outputs defined in the {.code OUT} block}")
+            purrr::walk(self$compartments, cli::cli_text)
+            cli::cli_h3("Parameters")
+            cli::cli_text("{.tip Ensure these exact names appear in any of the {.code PRI}, {.code SEC}, {.code EQN}, or {.code OUT} blocks}")
+            purrr::walk(self$parameters, cli::cli_text)
+            cli::cli_h3("Equations")
+            if(self$analytical){
+              cli::cli_text("{.tip These are shown to describe the model structure, but the model can be fitted analytically, without a differential equation solver}")
+            } else {
+              cli::cli_text("{.tip These describe the model structure, and the model is fitted with a differential equation solver}")
+            }
+            purrr::walk(func_to_char(self$arg_list$eqn), cli::cli_text)
+            cli::cli_end()
+            return(invisible(self))
+        },
+        
+        export_model = function() {
+          arg_list <- self$arg_list
+          
+          fmt_num <- function(x) {
+            format(x, scientific = FALSE, trim = TRUE, digits = 15)
+          }
+          
+          pri <- c(
+            "    pri = list(\n",
+            purrr::map_chr(names(arg_list$pri), \(i) {
+              sprintf(
+                "        %s = ab(%s,%s)",
+                i,
+                fmt_num(arg_list$pri[[i]]$min),
+                fmt_num(arg_list$pri[[i]]$max)
+              )
+            }) |>
+            paste(collapse = ",\n"),
+            "\n    ),"
+          )
+          
+          if ("cov" %in% names(arg_list)) {
+            cov <- c(
+              "\n    cov = list(\n",
+              purrr::map_chr(names(arg_list$cov), \(i) {
+                sprintf("        %s = interp(%s)", i, ifelse(arg_list$cov[[i]] == 0, "\"none\"", ""))
+              }) |>
+              paste(collapse = ",\n"),
+              "\n    ),"
+            )
+          } else {
+            cov <- NULL
+          }
+          
+          if (!is.null(arg_list$sec)) {
+            sec <- c(
+              "\n    sec = ",
+              paste0(deparse(arg_list$sec), collapse = "\n    "),
+              ","
+            )
+          } else {
+            sec <- NULL
+          }
+          
+          if (!is.null(arg_list$fa)) {
+            fa <- c(
+              "\n    fa = ",
+              paste0(deparse(arg_list$fa), collapse = "\n    "),
+              ","
+            )
+          } else {
+            fa <- NULL
+          }
+          
+          if (!is.null(arg_list$ini)) {
+            ini <- c(
+              "\n    ini = ",
+              paste0(deparse(arg_list$ini), collapse = "\n    "),
+              ","
+            )
+          } else {
+            ini <- NULL
+          }
+          
+          if (!is.null(arg_list$lag)) {
+            lag <- c(
+              "\n    lag = ",
+              paste0(deparse(arg_list$lag), collapse = "\n    "),
+              ","
+            )
+          } else {
+            lag <- NULL
+          }
+          
+          eqn <- c(
+            "\n    eqn = function(){\n",
+            sprintf("        %s", self$name),
+            "\n    },"
+          )
+          
+          out <- c(
+            "\n    out = ",
+            paste0(deparse(arg_list$out), collapse = "\n    "),
+            ","
+          )
+          
+          err <- c(
+            "\n    err = list(\n",
+            purrr::map_chr((arg_list$err), \(i) {
+              sprintf(
+                "        %s(%s, c(%s,%s,%s,%s)%s)",
+                i$type,
+                fmt_num(i$initial),
+                fmt_num(ifelse(length(i$coeff) >= 1, i$coeff[1], 0)),
+                fmt_num(ifelse(length(i$coeff) >= 2, i$coeff[2], 0)),
+                fmt_num(ifelse(length(i$coeff) >= 3, i$coeff[3], 0)),
+                fmt_num(ifelse(length(i$coeff) >= 4, i$coeff[4], 0)),
+                ifelse(i$fixed, ", fixed = TRUE", "")
+              )
+            }) |>
+            paste(collapse = ",\n"),
+            "\n    )"
+          )
+          
+          model_export <- c(
+            "PM_model$new(\n",
+            paste0(c(pri, cov, sec, fa, ini, lag, eqn, out, err), collapse = ""),
+            "\n)"
+          )
+          
+          return(invisible(model_export))
         },
         plot = function(...){
           plot.PM_model(self,...)
@@ -186,7 +329,7 @@ model_lib <- function(show = TRUE) {
     ) # end PM_lib class definition
     
     
-##### default models in the library
+    ##### default models in the library
     mod_list <- list(
       
       list(
@@ -404,7 +547,7 @@ model_lib <- function(show = TRUE) {
           )
         )
       ),
-
+      
       list(
         name = "three_comp_iv",
         alt_names = c("advan11", "advan11_trans1"),
@@ -424,7 +567,7 @@ model_lib <- function(show = TRUE) {
             dX[1] = R[1] - (Ke + K12 + K13)*X[1] + K21*X[2] + K31*X[3]
             dX[2] = K12*X[1] - K21*X[2]
             dX[3] = K13*X[1] - K31*X[3]
-
+            
           },
           out = function(){
             Y[1] = X[1]/V
@@ -434,7 +577,7 @@ model_lib <- function(show = TRUE) {
           )
         )
       ),
-
+      
       list(
         name = "three_comp_iv_cl",
         alt_names = "advan11_trans4",
@@ -459,7 +602,7 @@ model_lib <- function(show = TRUE) {
             dX[1] = R[1] - (Ke + K12 + K13)*X[1] + K21*X[2] + K31*X[3]
             dX[2] = K12*X[1] - K21*X[2]
             dX[3] = K13*X[1] - K31*X[3]
-
+            
           },
           out = function(){
             Y[1] = X[1]/V1
@@ -490,7 +633,7 @@ model_lib <- function(show = TRUE) {
             dX[2] = R[1] + Ka*X[1] - (Ke + K23 + K24)*X[2] + K32*X[3] + K42*X[4]
             dX[3] = K23*X[2] - K32*X[3]
             dX[4] = K24*X[2] - K42*X[4]
-
+            
           },
           out = function(){
             Y[1] = X[2]/V
@@ -500,7 +643,7 @@ model_lib <- function(show = TRUE) {
           )
         )
       ),
-
+      
       list(
         name = "three_comp_bolus_cl",
         alt_names = "advan12_trans4",
@@ -527,7 +670,7 @@ model_lib <- function(show = TRUE) {
             dX[2] = R[1] + Ka*X[1] - (Ke + K23 + K24)*X[2] + K32*X[3] + K42*X[4]
             dX[3] = K23*X[2] - K32*X[3]
             dX[4] = K24*X[2] - K42*X[4]
-
+            
           },
           out = function(){
             Y[1] = X[2]/V2
@@ -537,8 +680,120 @@ model_lib <- function(show = TRUE) {
           )
         )
       )
-
+      
     ) # end mod_list
+    
+    
+    # model creator helpers -----------------------------------------------------
+    
+    new_pm_lib_model <- function(model_name) {
+      mod_idx <- purrr::detect_index(mod_list, \(x) x$name == model_name)
+      
+      if (mod_idx == 0) {
+        cli::cli_abort(c(
+          "x" = "Model template {.val {model_name}} not found in the model library."
+        ))
+      }
+      
+      PM_lib$new(mod_list[[mod_idx]])
+    }
+    
+    
+    #' @title One-compartment IV model template
+    #' @description Create a `PM_lib` object for the `one_comp_iv` model template.
+    #' @return A `PM_lib` object.
+    #' @export
+    one_comp_iv <- function() {
+      new_pm_lib_model("one_comp_iv")
+    }
+    
+    #' @title One-compartment IV clearance model template
+    #' @description Create a `PM_lib` object for the `one_comp_iv_cl` model template.
+    #' @return A `PM_lib` object.
+    #' @export
+    one_comp_iv_cl <- function() {
+      new_pm_lib_model("one_comp_iv_cl")
+    }
+    
+    #' @title One-compartment bolus model template
+    #' @description Create a `PM_lib` object for the `one_comp_bolus` model template.
+    #' @return A `PM_lib` object.
+    #' @export
+    one_comp_bolus <- function() {
+      new_pm_lib_model("one_comp_bolus")
+    }
+    
+    #' @title One-compartment bolus clearance model template
+    #' @description Create a `PM_lib` object for the `one_comp_bolus_cl` model template.
+    #' @return A `PM_lib` object.
+    #' @export
+    one_comp_bolus_cl <- function() {
+      new_pm_lib_model("one_comp_bolus_cl")
+    }
+    
+    #' @title Two-compartment IV model template
+    #' @description Create a `PM_lib` object for the `two_comp_iv` model template.
+    #' @return A `PM_lib` object.
+    #' @export
+    two_comp_iv <- function() {
+      new_pm_lib_model("two_comp_iv")
+    }
+    
+    #' @title Two-compartment IV clearance model template
+    #' @description Create a `PM_lib` object for the `two_comp_iv_cl` model template.
+    #' @return A `PM_lib` object.
+    #' @export
+    two_comp_iv_cl <- function() {
+      new_pm_lib_model("two_comp_iv_cl")
+    }
+    
+    #' @title Two-compartment bolus model template
+    #' @description Create a `PM_lib` object for the `two_comp_bolus` model template.
+    #' @return A `PM_lib` object.
+    #' @export
+    two_comp_bolus <- function() {
+      new_pm_lib_model("two_comp_bolus")
+    }
+    
+    #' @title Two-compartment bolus clearance model template
+    #' @description Create a `PM_lib` object for the `two_comp_bolus_cl` model template.
+    #' @return A `PM_lib` object.
+    #' @export
+    two_comp_bolus_cl <- function() {
+      new_pm_lib_model("two_comp_bolus_cl")
+    }
+    
+    #' @title Three-compartment IV model template
+    #' @description Create a `PM_lib` object for the `three_comp_iv` model template.
+    #' @return A `PM_lib` object.
+    #' @export
+    three_comp_iv <- function() {
+      new_pm_lib_model("three_comp_iv")
+    }
+    
+    #' @title Three-compartment IV clearance model template
+    #' @description Create a `PM_lib` object for the `three_comp_iv_cl` model template.
+    #' @return A `PM_lib` object.
+    #' @export
+    three_comp_iv_cl <- function() {
+      new_pm_lib_model("three_comp_iv_cl")
+    }
+    
+    #' @title Three-compartment bolus model template
+    #' @description Create a `PM_lib` object for the `three_comp_bolus` model template.
+    #' @return A `PM_lib` object.
+    #' @export
+    three_comp_bolus <- function() {
+      new_pm_lib_model("three_comp_bolus")
+    }
+    
+    #' @title Three-compartment bolus clearance model template
+    #' @description Create a `PM_lib` object for the `three_comp_bolus_cl` model template.
+    #' @return A `PM_lib` object.
+    #' @export
+    three_comp_bolus_cl <- function() {
+      new_pm_lib_model("three_comp_bolus_cl")
+    }
     
     
     
