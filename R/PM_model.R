@@ -461,7 +461,7 @@ PM_model <- R6::R6Class(
         
         # Get model template name if present (NA if absent) and set type
         model_template <- get_found_model(self$arg_list$eqn) # function defined in mod_lib.R, returns 0 if not found, -1 if error
-       
+
         # change logic; need to accomodate library models that are ODEs
         if (length(model_template) > 1 && model_template$analytical) {
           type <- "Analytical"
@@ -474,10 +474,10 @@ PM_model <- R6::R6Class(
           # length was 1, value 0
           type <- "ODE"
         }
-        
+      
         # Number of equations
         n_eqn <- if (type == "Analytical") {
-          model_template$ncomp
+          length(model_template$compartments)
         } else {
           get_assignments(self$arg_list$eqn, "dx")
         }
@@ -517,7 +517,7 @@ PM_model <- R6::R6Class(
           } else {
             sec_list <- rep(FALSE, length(required_parameters))
           }
-          
+     
           eqn_list <- map_lgl(required_parameters, \(x){
             any(
               stringr::str_detect(
@@ -601,8 +601,7 @@ PM_model <- R6::R6Class(
             )
           }
         } # end parameter checks for Analytical model
-        
-        
+     
         # if Analytical, need to combine sec and eqn
         if (type == "Analytical") {
           # shell function
@@ -626,14 +625,14 @@ PM_model <- R6::R6Class(
         } else {
           sec <- ""
         }
-        
+   
         # eqn
         if (type == "ODE") {
           eqn <- transpile_ode_eqn(self$arg_list$eqn, parameters, covariates, sec)
         } else if (type == "Analytical") {
           eqn <- transpile_analytic_eqn(sec_eqn, parameters, covariates)
         }
-        
+
         # fa
         if (!is.null(self$arg_list$fa)) {
           fa <- transpile_fa(self$arg_list$fa, parameters, covariates, sec)
@@ -1273,7 +1272,7 @@ PM_model <- R6::R6Class(
         #' @param ... Arguments passed to the `fit` method. Note that the `cycles` argument is set to 0,
         #' and the `algorithm` argument is set to "POSTPROB" automatically.
         map = function(...) {
-          # browser()
+        
           args <- list(...)
           
           if (!is.null(purrr::pluck(args, "cycles")) && purrr::pluck(args, "cycles") != 0) {
@@ -1700,7 +1699,7 @@ PM_model <- R6::R6Class(
           cli::cli_abort(c("x" = "Invalid model type.", "i" = "Please provide a valid model type."))
         }
         
-        
+
         # Replace placeholders in the base string with actual values from model_list
         base <- placeholders %>%
         purrr::reduce(\(x, y) stringr::str_replace(x, stringr::str_c("<", y, ">"), as.character(self$model_list[[y]])), .init = base)
@@ -1976,7 +1975,7 @@ PM_model <- R6::R6Class(
     } else {
       FALSE
     }
-    
+
     if (inherits(model, "PM_lib")) {
       eqns <- model$arg_list$eqn
       outs <- model$arg_list$out
@@ -1985,8 +1984,8 @@ PM_model <- R6::R6Class(
         eqns <- model$arg_list$eqn
         outs <- model$arg_list$out
       } else {
-        eqns <- get(model$model_list$name)$arg_list$eqn
-        outs <- get(model$model_list$name)$arg_list$out
+        eqns <- get_found_model(model$arg_list$eqn)$arg_list$eqn
+        outs <- get_found_model(model$arg_list$eqn)$arg_list$out
       }
     } else {
       cli::cli_abort(c(

@@ -151,16 +151,20 @@ model_lib <- function(show = TRUE) {
           if (requireNamespace("clipr", quietly = TRUE)) {
             clipr::write_clip(self$export)
             cli::cli_inform(c(
-              ">" = "Model code copied to clipboard.",
+              "i" = "Model code copied to clipboard.",
               ">" = "Paste the code into your script to create a PM_model based on this template.",
-              ">" = "Edit the model as needed, ensuring parameter names and order are preserved in the {.code PRI} block."
+              ">" = "Edit the model as needed, ensuring parameter names and order are preserved in the {.code PRI} block.",
+              ">" = "You can add parameters to the {.code PRI} block to define any used in {.code LAG}, {.code FA}, or {.code INI} blocks.",
+              ">" = "You can add a {.code SEC} block but preserve {.code PRI} names, e.g. v = v * wt."
             ))
           } else {
             cli::cli_inform(c(
               "i" = "Please install the {.pkg clipr} package to enable clipboard functionality.",
               ">" = "Model code generated, but clipboard copy is unavailable.",
               ">" = "Copy and paste the code below to create a PM_model based on this template.",
-              ">" = "Edit the model as needed, ensuring parameter names and order are preserved in the {.code PRI} block."
+              ">" = "Edit the model as needed, ensuring parameter names and order are preserved in the {.code PRI} block.",
+              ">" = "You can add parameters to the {.code PRI} block to define any used in {.code LAG}, {.code FA}, or {.code INI} blocks.",
+              ">" = "You can add a {.code SEC} block but preserve {.code PRI} names, e.g. v = v * wt."
             ))
             cat("\n", self$export, "\n")
           }
@@ -301,7 +305,7 @@ model_lib <- function(show = TRUE) {
           )
           
           model_export <- c(
-            "PM_model$new(\n",
+            "mod <- PM_model$new(\n",
             paste0(c(pri, cov, sec, fa, ini, lag, eqn, out, err), collapse = ""),
             "\n)"
           )
@@ -498,14 +502,14 @@ model_lib <- function(show = TRUE) {
           pri = c(
             Ke = ab(0, 5),
             Ka = ab(0, 5),
-            K12 = ab(0, 5),
-            K21 = ab(0, 5),
+            K23 = ab(0, 5),
+            K32 = ab(0, 5),
             V = ab(0, 100)
           ),
           eqn = function(){
             dX[1] = B[1] - Ka*X[1]
-            dX[2] = R[1] + Ka*X[1] - (Ke + K12)*X[2] + K21*X[3]
-            dX[3] = K12*X[2] - K21*X[3]
+            dX[2] = R[1] + Ka*X[1] - (Ke + K23)*X[2] + K32*X[3]
+            dX[3] = K23*X[2] - K32*X[3]
           },
           out = function(){
             Y[1] = X[2]/V

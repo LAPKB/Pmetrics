@@ -213,6 +213,7 @@ expr_to_rust <- function(expr, params = NULL, covs = NULL,
   
   
   transpile_analytic_eqn <- function(fun, params, covs) {
+ 
     if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
       found <- get_found_model(fun)
       if (length(found) == 1) { # NA
