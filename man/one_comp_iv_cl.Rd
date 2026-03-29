@@ -7,8 +7,8 @@
 one_comp_iv_cl()
 }
 \value{
-A \code{PM_lib} object.
+A \code{PM_model} object.
 }
 \description{
-Create a \code{PM_lib} object for the \code{one_comp_iv_cl} model template.
+Create a \code{PM_model} object for the \code{one_comp_iv_cl} model template.
 }

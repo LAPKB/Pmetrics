@@ -7,8 +7,8 @@
 three_comp_bolus()
 }
 \value{
-A \code{PM_lib} object.
+A \code{PM_model} object.
 }
 \description{
-Create a \code{PM_lib} object for the \code{three_comp_bolus} model template.
+Create a \code{PM_model} object for the \code{three_comp_bolus} model template.
 }
