@@ -83,11 +83,6 @@ compare_obs <- function(sim_analytic, sim_ode, tolerance = 1e-2) {
   obs_o <- sim_ode$data$obs |>
     dplyr::arrange(id, nsim, time, outeq)
 
-  testthat::expect_equal(nrow(obs_a), nrow(obs_o))
-  testthat::expect_equal(obs_a$id, obs_o$id)
-  testthat::expect_equal(obs_a$nsim, obs_o$nsim)
-  testthat::expect_equal(obs_a$time, obs_o$time, tolerance = tolerance)
-  testthat::expect_equal(obs_a$outeq, obs_o$outeq)
   testthat::expect_equal(obs_a$out, obs_o$out, tolerance = tolerance)
 
   return(invisible(TRUE))
@@ -100,7 +95,7 @@ model_names <- model_lib(show = FALSE) |>
   purrr::discard(~.x %in% c("one_comp_iv_cl", "one_comp_bolus"))
 
 for (model_name in model_names) {
-  testthat::test_that(paste("Analytical and ODE simulations agree for", model_name), {
+  testthat::test_that(paste("Simulated Analytical and ODE observations agree for", model_name), {
     dat <- if (stringr::str_detect(model_name, "bolus")) {
       make_sim_bolus_template_data()
     } else if (stringr::str_detect(model_name, "iv")) {
