@@ -38,38 +38,39 @@ build_model_from_library <- function(model_name, mode = c("analytical", "ode")) 
   mode <- match.arg(mode)
 
   lib_model <- get(model_name, mode = "function")()
+  lib_entry <- Pmetrics:::get_model_library_entry(model_name)
 
   eqn_block <- if (mode == "analytical") {
     eval(parse(text = sprintf("function(){ %s }", model_name)))
   } else {
-    lib_model$arg_list$eqn
+    lib_entry$arg_list$eqn
   }
 
   args <- list(
-    pri = as.list(lib_model$arg_list$pri),
+    pri = as.list(lib_entry$arg_list$pri),
     eqn = eqn_block,
-    out = lib_model$arg_list$out,
-    err = lib_model$arg_list$err
+    out = lib_entry$arg_list$out,
+    err = lib_entry$arg_list$err
   )
 
-  if ("cov" %in% names(lib_model$arg_list)) {
-    args$cov <- lib_model$arg_list$cov
+  if ("cov" %in% names(lib_entry$arg_list)) {
+    args$cov <- lib_entry$arg_list$cov
   }
 
-  if ("sec" %in% names(lib_model$arg_list)) {
-    args$sec <- lib_model$arg_list$sec
+  if ("sec" %in% names(lib_entry$arg_list)) {
+    args$sec <- lib_entry$arg_list$sec
   }
 
-  if ("lag" %in% names(lib_model$arg_list)) {
-    args$lag <- lib_model$arg_list$lag
+  if ("lag" %in% names(lib_entry$arg_list)) {
+    args$lag <- lib_entry$arg_list$lag
   }
 
-  if ("fa" %in% names(lib_model$arg_list)) {
-    args$fa <- lib_model$arg_list$fa
+  if ("fa" %in% names(lib_entry$arg_list)) {
+    args$fa <- lib_entry$arg_list$fa
   }
 
-  if ("ini" %in% names(lib_model$arg_list)) {
-    args$ini <- lib_model$arg_list$ini
+  if ("ini" %in% names(lib_entry$arg_list)) {
+    args$ini <- lib_entry$arg_list$ini
   }
 
   do.call(PM_model$new, args)
@@ -121,4 +122,3 @@ for (model_name in model_names) {
 }
 
 
-run1 <- modEx$fit(data = dataEx, path = "~/Downloads", run = 1, overwrite = TRUE)

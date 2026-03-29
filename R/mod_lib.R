@@ -98,9 +98,8 @@ model_lib <- function(show = TRUE) {
       
       cli::cli_h1("Model Library Notes")
       ul <- cli::cli_ul()
-      cli::cli_li("Use the {.code PM_model$new()} function to create a model from a template in the library.")
-      cli::cli_li("Include the unquoted model {.emph Name} or one of the {.emph Alt Names} in the {.code EQN} block of the model")
       cli::cli_li("Model names exclude the bolus compartment per convention, e.g. {.code one_comp_bolus} rather than {.code two_comp_bolus}.")
+      cli::cli_li("Each name is a function, e.g. one_comp_iv(), that ")
       cli::cli_li("Ensure the model parameters are defined in the {.code PRI} block {.emph in the same order} and with the {.emph same names} as in the library.")
       cli::cli_li("Define secondary parameters in the {.code SEC} block as needed, preserving the names in the {.code PRI} block,  e.g. V = V * wt.")
       cli::cli_li("Additional parameters and blocks, e.g. lag, bioavailaiblity, initial conditions, and covariates may be added.")
@@ -108,7 +107,7 @@ model_lib <- function(show = TRUE) {
       cli::cli_li("Model inputs are indicated in the {.emph Corresponding ODE}, i.e. bolus (B[1]) and infusion (R[1]). These cannot be changed.")
       cli::cli_li("{.emph ODE} are used only for plotting purposes.")
       cli::cli_end(ul)
-    }
+  }
     
     
     return(invisible(mod_table))
@@ -120,6 +119,8 @@ model_lib <- function(show = TRUE) {
   
   
   
+  # Legacy PM_lib implementation retained temporarily for reference.
+  if (FALSE) {
   PM_lib <- R6::R6Class(
     "PM_lib",
     public = list(
@@ -331,6 +332,7 @@ model_lib <- function(show = TRUE) {
         }
       ) # end active
     ) # end PM_lib class definition
+  }
     
     
     ##### default models in the library
@@ -690,7 +692,7 @@ model_lib <- function(show = TRUE) {
     
     # model creator helpers -----------------------------------------------------
     
-    new_pm_lib_model <- function(model_name) {
+    get_model_library_entry <- function(model_name) {
       mod_idx <- purrr::detect_index(mod_list, \(x) x$name == model_name)
       
       if (mod_idx == 0) {
@@ -699,104 +701,139 @@ model_lib <- function(show = TRUE) {
         ))
       }
       
-      PM_lib$new(mod_list[[mod_idx]])
+      mod_list[[mod_idx]]
+    }
+
+    new_pm_model_from_library <- function(model_name) {
+      lib_model <- get_model_library_entry(model_name)
+
+      args <- list(
+        pri = as.list(lib_model$arg_list$pri),
+        eqn = eval(parse(text = sprintf("function(){ %s }", model_name))),
+        out = lib_model$arg_list$out,
+        err = as.list(lib_model$arg_list$err)
+      )
+
+      if ("cov" %in% names(lib_model$arg_list)) {
+        args$cov <- lib_model$arg_list$cov
+      }
+
+      if ("sec" %in% names(lib_model$arg_list)) {
+        args$sec <- lib_model$arg_list$sec
+      }
+
+      if ("fa" %in% names(lib_model$arg_list)) {
+        args$fa <- lib_model$arg_list$fa
+      }
+
+      if ("ini" %in% names(lib_model$arg_list)) {
+        args$ini <- lib_model$arg_list$ini
+      }
+
+      if ("lag" %in% names(lib_model$arg_list)) {
+        args$lag <- lib_model$arg_list$lag
+      }
+
+      mod <- do.call(PM_model$new, args)
+      mod$copy()
+      invisible(mod)
     }
     
     
     #' @title One-compartment IV model template
-    #' @description Create a `PM_lib` object for the `one_comp_iv` model template.
-    #' @return A `PM_lib` object.
+    #' @description Create a `PM_model` object for the `one_comp_iv` model template.
+    #' @return A `PM_model` object.
     #' @export
     one_comp_iv <- function() {
-      new_pm_lib_model("one_comp_iv")
+      new_pm_model_from_library("one_comp_iv")
     }
     
     #' @title One-compartment IV clearance model template
-    #' @description Create a `PM_lib` object for the `one_comp_iv_cl` model template.
-    #' @return A `PM_lib` object.
+    #' @description Create a `PM_model` object for the `one_comp_iv_cl` model template.
+    #' @return A `PM_model` object.
     #' @export
     one_comp_iv_cl <- function() {
-      new_pm_lib_model("one_comp_iv_cl")
+      new_pm_model_from_library("one_comp_iv_cl")
     }
     
     #' @title One-compartment bolus model template
-    #' @description Create a `PM_lib` object for the `one_comp_bolus` model template.
-    #' @return A `PM_lib` object.
+    #' @description Create a `PM_model` object for the `one_comp_bolus` model template.
+    #' @return A `PM_model` object.
     #' @export
     one_comp_bolus <- function() {
-      new_pm_lib_model("one_comp_bolus")
+      new_pm_model_from_library("one_comp_bolus")
     }
     
     #' @title One-compartment bolus clearance model template
-    #' @description Create a `PM_lib` object for the `one_comp_bolus_cl` model template.
-    #' @return A `PM_lib` object.
+    #' @description Create a `PM_model` object for the `one_comp_bolus_cl` model template.
+    #' @return A `PM_model` object.
     #' @export
     one_comp_bolus_cl <- function() {
-      new_pm_lib_model("one_comp_bolus_cl")
+      new_pm_model_from_library("one_comp_bolus_cl")
     }
     
     #' @title Two-compartment IV model template
-    #' @description Create a `PM_lib` object for the `two_comp_iv` model template.
-    #' @return A `PM_lib` object.
+    #' @description Create a `PM_model` object for the `two_comp_iv` model template.
+    #' @return A `PM_model` object.
     #' @export
     two_comp_iv <- function() {
-      new_pm_lib_model("two_comp_iv")
+      new_pm_model_from_library("two_comp_iv")
     }
     
     #' @title Two-compartment IV clearance model template
-    #' @description Create a `PM_lib` object for the `two_comp_iv_cl` model template.
-    #' @return A `PM_lib` object.
+    #' @description Create a `PM_model` object for the `two_comp_iv_cl` model template.
+    #' @return A `PM_model` object.
     #' @export
     two_comp_iv_cl <- function() {
-      new_pm_lib_model("two_comp_iv_cl")
+      new_pm_model_from_library("two_comp_iv_cl")
     }
     
     #' @title Two-compartment bolus model template
-    #' @description Create a `PM_lib` object for the `two_comp_bolus` model template.
-    #' @return A `PM_lib` object.
+    #' @description Create a `PM_model` object for the `two_comp_bolus` model template.
+    #' @return A `PM_model` object.
     #' @export
     two_comp_bolus <- function() {
-      new_pm_lib_model("two_comp_bolus")
+      new_pm_model_from_library("two_comp_bolus")
     }
     
     #' @title Two-compartment bolus clearance model template
-    #' @description Create a `PM_lib` object for the `two_comp_bolus_cl` model template.
-    #' @return A `PM_lib` object.
+    #' @description Create a `PM_model` object for the `two_comp_bolus_cl` model template.
+    #' @return A `PM_model` object.
     #' @export
     two_comp_bolus_cl <- function() {
-      new_pm_lib_model("two_comp_bolus_cl")
+      new_pm_model_from_library("two_comp_bolus_cl")
     }
     
     #' @title Three-compartment IV model template
-    #' @description Create a `PM_lib` object for the `three_comp_iv` model template.
-    #' @return A `PM_lib` object.
+    #' @description Create a `PM_model` object for the `three_comp_iv` model template.
+    #' @return A `PM_model` object.
     #' @export
     three_comp_iv <- function() {
-      new_pm_lib_model("three_comp_iv")
+      new_pm_model_from_library("three_comp_iv")
     }
     
     #' @title Three-compartment IV clearance model template
-    #' @description Create a `PM_lib` object for the `three_comp_iv_cl` model template.
-    #' @return A `PM_lib` object.
+    #' @description Create a `PM_model` object for the `three_comp_iv_cl` model template.
+    #' @return A `PM_model` object.
     #' @export
     three_comp_iv_cl <- function() {
-      new_pm_lib_model("three_comp_iv_cl")
+      new_pm_model_from_library("three_comp_iv_cl")
     }
     
     #' @title Three-compartment bolus model template
-    #' @description Create a `PM_lib` object for the `three_comp_bolus` model template.
-    #' @return A `PM_lib` object.
+    #' @description Create a `PM_model` object for the `three_comp_bolus` model template.
+    #' @return A `PM_model` object.
     #' @export
     three_comp_bolus <- function() {
-      new_pm_lib_model("three_comp_bolus")
+      new_pm_model_from_library("three_comp_bolus")
     }
     
     #' @title Three-compartment bolus clearance model template
-    #' @description Create a `PM_lib` object for the `three_comp_bolus_cl` model template.
-    #' @return A `PM_lib` object.
+    #' @description Create a `PM_model` object for the `three_comp_bolus_cl` model template.
+    #' @return A `PM_model` object.
     #' @export
     three_comp_bolus_cl <- function() {
-      new_pm_lib_model("three_comp_bolus_cl")
+      new_pm_model_from_library("three_comp_bolus_cl")
     }
     
     
