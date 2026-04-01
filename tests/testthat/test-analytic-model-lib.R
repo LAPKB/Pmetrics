@@ -37,7 +37,6 @@ make_sim_iv_template_data <- function() {
 build_model_from_library <- function(model_name, mode = c("analytical", "ode")) {
   mode <- match.arg(mode)
 
-  lib_model <- get(model_name, mode = "function")()
   lib_entry <- Pmetrics:::get_model_library_entry(model_name)
 
   eqn_block <- if (mode == "analytical") {
@@ -50,7 +49,7 @@ build_model_from_library <- function(model_name, mode = c("analytical", "ode")) 
     pri = as.list(lib_entry$arg_list$pri),
     eqn = eqn_block,
     out = lib_entry$arg_list$out,
-    err = lib_entry$arg_list$err
+    err = as.list(lib_entry$arg_list$err)
   )
 
   if ("cov" %in% names(lib_entry$arg_list)) {
@@ -90,8 +89,7 @@ compare_obs <- function(sim_analytic, sim_ode, tolerance = 1e-2) {
   
 }
 
-model_names <- model_lib(show = FALSE) |>
-  dplyr::pull(Name) |>
+model_names <- Pmetrics:::mod_lib_names() |>
   purrr::discard(~.x %in% c("one_comp_iv_cl", "one_comp_bolus"))
 
 for (model_name in model_names) {
