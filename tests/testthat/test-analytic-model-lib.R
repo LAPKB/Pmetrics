@@ -89,9 +89,7 @@ compare_obs <- function(sim_analytic, sim_ode, tolerance = 1e-2) {
   
 }
 
-model_names <- Pmetrics:::mod_lib_names() |>
-  purrr::discard(~.x %in% c("one_comp_iv_cl", "one_comp_bolus"))
-
+model_names <- Pmetrics:::mod_lib_names() 
 for (model_name in model_names) {
   testthat::test_that(paste("Simulated Analytical and ODE observations agree for", model_name), {
     dat <- if (stringr::str_detect(model_name, "bolus")) {
