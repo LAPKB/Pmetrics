@@ -21,7 +21,7 @@ Both use \link{summary.PM_cycle}.
 # but we provide this function for completeness.
 NPex$cycle$data \%>\% summary()
 # all the below are the same
-# summary(NPex$cycle$data) 
+# summary(NPex$cycle$data)
 # summary(NPex$cycle)
 # NPex$cycle$summary()
 }

@@ -37,7 +37,7 @@ make_sim_iv_template_data <- function() {
 build_model_from_library <- function(model_name, mode = c("analytical", "ode")) {
   mode <- match.arg(mode)
 
-  lib_entry <- Pmetrics:::get_model_library_entry(model_name)
+  lib_entry <- getFromNamespace("get_model_library_entry", "Pmetrics")(model_name)
 
   eqn_block <- if (mode == "analytical") {
     eval(parse(text = sprintf("function(){ %s }", model_name)))
@@ -85,23 +85,38 @@ compare_obs <- function(sim_analytic, sim_ode, tolerance = 1e-2) {
   testthat::expect_equal(obs_a$out, obs_o$out, tolerance = tolerance)
 
   return(invisible(TRUE))
-
-  
 }
 
-model_names <- Pmetrics:::mod_lib_names() 
+make_stable_theta <- function(mod) {
+  theta <- vapply(mod$model_list$pri, function(x) x$mean, numeric(1))
+
+  rate_idx <- grepl("^(ka|ke|k[0-9]+|cl|q[0-9]*)$", tolower(names(theta)))
+  theta[rate_idx] <- theta[rate_idx] + seq_len(sum(rate_idx)) * 0.05
+
+  volume_idx <- grepl("^v[0-9]*$", tolower(names(theta)))
+  theta[volume_idx] <- theta[volume_idx] + seq_len(sum(volume_idx)) * 5
+
+  as.data.frame(as.list(theta))
+}
+
+model_names <- model_lib(show = FALSE) |>
+  dplyr::pull(Name)
+
+bolus_data <- make_sim_bolus_template_data()
+iv_data <- make_sim_iv_template_data()
+
 for (model_name in model_names) {
   testthat::test_that(paste("Simulated Analytical and ODE observations agree for", model_name), {
     dat <- if (stringr::str_detect(model_name, "bolus")) {
-      make_sim_bolus_template_data()
+      bolus_data
     } else if (stringr::str_detect(model_name, "iv")) {
-      make_sim_iv_template_data()
+      iv_data
     } else {
       stop("No template data defined for model ", model_name)
     }
 
     mod <- build_model_from_library(model_name, mode = "analytical")
-    theta <- mod$model_list$pri |> purrr::map_df(\(x) x$mean)
+    theta <- make_stable_theta(mod)
 
     sim_analytic <- PM_sim$new(poppar = theta, model = mod, data = dat, predInt = 1)
 
@@ -111,5 +126,3 @@ for (model_name in model_names) {
     compare_obs(sim_analytic, sim_ode)
   })
 }
-
-
