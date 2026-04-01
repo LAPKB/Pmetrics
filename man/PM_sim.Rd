@@ -201,22 +201,22 @@ The data object may also be replaced (and often is) by a different \link{PM_data
 object compatible with the model.
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{run1 <- PM_load(1) # load the PM_result object
-sim1 <- run1$sim(...) # replace model and data in run1 if desired; 
+sim1 <- run1$sim(...) # replace model and data in run1 if desired;
 #must be compatible with model and data in run1
 
 mod <- PM_model$new("model.txt") # or use a model object
-sim2 <- mod$sim(poppar = run1, data = "newdata.csv", ...) 
+sim2 <- mod$sim(poppar = run1, data = "newdata.csv", ...)
 # poppar and data necessary, model obtained from mod
 }\if{html}{\out{</div>}}
 \item Population prior parameters as a \link{PM_final} object found in
 \code{PM_result$final}.
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{run1 <- PM_load(1) # load the PM_result object
-sim1 <- PM_sim$new(poppar = run1$final, model = newmodel, data = newdata, ...) 
+sim1 <- PM_sim$new(poppar = run1$final, model = newmodel, data = newdata, ...)
 # model and data necessary
 
 mod <- PM_model$new("model.txt") # or use a model object
-sim2 <- mod$sim(poppar = run1$final, data = "newdata.csv", ...) 
+sim2 <- mod$sim(poppar = run1$final, data = "newdata.csv", ...)
 # poppar and data necessary, model obtained from mod
 }\if{html}{\out{</div>}}
 \item The name of a previously saved simulation via the \verb{$save} method. The
@@ -257,9 +257,9 @@ Examples:
 \item Single distribution:
 }
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar = list(wt = 1, 
-              mean = list(ke = 0.5, v = 100), 
-              cov = matrix(c(0.04, 2.4, 2.8, 400), nrow = 2))  # sd not required because cov specified 
+\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar = list(wt = 1,
+              mean = list(ke = 0.5, v = 100),
+              cov = matrix(c(0.04, 2.4, 2.8, 400), nrow = 2))  # sd not required because cov specified
 }\if{html}{\out{</div>}}
 \itemize{
 \item Multiple distributions:

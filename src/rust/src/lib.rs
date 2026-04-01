@@ -7,7 +7,11 @@ mod simulation;
 
 use anyhow::Result;
 use extendr_api::prelude::*;
-use pmcore::prelude::{data::{read_pmetrics, Data, Event}, pharmsol::exa::build, Analytical, ODE};
+use pmcore::prelude::{
+    data::{read_pmetrics, Data, Event},
+    pharmsol::exa::build,
+    Analytical, ODE,
+};
 use simulation::SimulationRow;
 use std::process::Command;
 use tracing_subscriber::layer::SubscriberExt;
@@ -25,17 +29,25 @@ fn validate_paths(data_path: &str, model_path: &str) {
 
 fn compact_analytical_indices(data: &mut Data) {
     let has_zero_input = data.iter().any(|subject| {
-        subject.occasions().iter().flat_map(|occasion| occasion.iter()).any(|event| match event {
-            Event::Bolus(bolus) => bolus.input() == 0,
-            Event::Infusion(infusion) => infusion.input() == 0,
-            Event::Observation(_) => false,
-        })
+        subject
+            .occasions()
+            .iter()
+            .flat_map(|occasion| occasion.iter())
+            .any(|event| match event {
+                Event::Bolus(bolus) => bolus.input() == 0,
+                Event::Infusion(infusion) => infusion.input() == 0,
+                Event::Observation(_) => false,
+            })
     });
     let has_zero_outeq = data.iter().any(|subject| {
-        subject.occasions().iter().flat_map(|occasion| occasion.iter()).any(|event| match event {
-            Event::Observation(observation) => observation.outeq() == 0,
-            _ => false,
-        })
+        subject
+            .occasions()
+            .iter()
+            .flat_map(|occasion| occasion.iter())
+            .any(|event| match event {
+                Event::Observation(observation) => observation.outeq() == 0,
+                _ => false,
+            })
     });
 
     for subject in data.iter_mut() {
@@ -59,10 +71,8 @@ fn compact_analytical_indices(data: &mut Data) {
 }
 
 fn read_pmetrics_for_kind(data_path: &str, kind: &str) -> Result<Data> {
-    let mut data = read_pmetrics(data_path).map_err(|err| anyhow::format_err!(
-        "Failed to parse data: {}",
-        err
-    ))?;
+    let mut data = read_pmetrics(data_path)
+        .map_err(|err| anyhow::format_err!("Failed to parse data: {}", err))?;
 
     match kind {
         "ode" => {}
@@ -190,14 +200,12 @@ pub fn fit(
     validate_paths(data, model_path);
     let data = read_pmetrics_for_kind(data, kind)?;
     match kind {
-        "ode" => {
-            match executor::fit::<ODE>(model_path.into(), data, params, output_path.into()) {
-                Ok(_) => {}
-                Err(err) => {
-                    println!("{}", err)
-                }
+        "ode" => match executor::fit::<ODE>(model_path.into(), data, params, output_path.into()) {
+            Ok(_) => {}
+            Err(err) => {
+                println!("{}", err)
             }
-        }
+        },
         "analytical" => {
             match executor::fit::<Analytical>(model_path.into(), data, params, output_path.into()) {
                 Ok(_) => {}
@@ -330,10 +338,6 @@ fn setup_logs() -> anyhow::Result<()> {
 
     Ok(())
 }
-
-
-
-
 
 extendr_module! {
     mod Pmetrics;
