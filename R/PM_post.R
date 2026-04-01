@@ -133,7 +133,7 @@ private = list(
       icen == "post_mean" ~ "mean"
     )) %>%
     mutate(block = block + 1) %>%
-    mutate(outeq = outeq + 1) %>%
+    mutate(outeq = normalize_engine_index(outeq)) %>%
     relocate(id, time, icen, outeq, pred, block)
     
     class(post) <- c("PM_post_data", "data.frame")

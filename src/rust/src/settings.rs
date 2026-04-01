@@ -27,9 +27,10 @@ pub(crate) fn settings(
 
     let error_models_raw = settings.get("error_models").unwrap().as_list().unwrap();
 
-    let mut ems = ErrorModels::new();
+    let mut ems = AssayErrorModels::new();
 
     for (i, (_, em)) in error_models_raw.iter().enumerate() {
+        let outeq = i + 1;
         let em = em.as_list().unwrap().into_hashmap();
         let gamlam = em.get("initial").unwrap().as_real().unwrap();
         let type_vec = em.get("type").unwrap().as_string_vector().unwrap();
@@ -38,8 +39,8 @@ pub(crate) fn settings(
         match err_type.as_str() {
             "additive" => {
                 ems = ems.add(
-                    i,
-                    ErrorModel::additive(
+                    outeq,
+                    AssayErrorModel::additive(
                         ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
                         gamlam,
                     ),
@@ -47,8 +48,8 @@ pub(crate) fn settings(
             }
             "proportional" => {
                 ems = ems.add(
-                    i,
-                    ErrorModel::proportional(
+                    outeq,
+                    AssayErrorModel::proportional(
                         ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
                         gamlam,
                     ),

@@ -1555,11 +1555,23 @@ PM_sim <- R6::R6Class(
       sim_res$.id <- template$standard_data$id[match(sim_res$id, template$standard_data$id)]
       sim_res <- sim_res %>%
       rename(comp = state_index, nsim = spp_index, amt = state) %>%
-      mutate(across(c(outeq, comp, nsim), \(x) x <- x + 1)) %>%
+      mutate(nsim = nsim + 1)
+
+      if (identical(mod$model_list$type, "ODE")) {
+        sim_res <- sim_res %>% filter(comp != 0)
+      } else {
+        sim_res <- sim_res %>%
+          mutate(
+            outeq = normalize_engine_index(outeq),
+            comp = normalize_engine_index(comp)
+          )
+      }
+
+      sim_res <- sim_res %>%
       arrange(.id, comp, nsim, time, outeq) %>%
       select(-.id)
       
-      obs <- sim_res %>% filter(comp == 1) %>% # obs are duplicated in every compartment
+      obs <- sim_res %>% filter(comp == min(comp, na.rm = TRUE)) %>% # obs are duplicated in every compartment
       select(id, nsim, time, out, outeq)
       
       amt <- sim_res %>%

@@ -373,6 +373,9 @@ PM_model <- R6::R6Class(
     #'   replicate(3, proportional(2, c(0.1, 0.15, 0, 0)))
     #' )
     #' ```
+    #' @param solver Optional ODE solver for user-defined ODE models.
+    #' Supported values are "BDF", "TRBDF2", "ESDIRK34", and "TSIT45".
+    #' This is ignored for analytical library models.
     #' @param ... Not currently used.
     initialize = function(x = NULL,
       pri = NULL,
@@ -384,6 +387,7 @@ PM_model <- R6::R6Class(
       ini = NULL,
       out = NULL,
       err = NULL,
+      solver = NULL,
       ...) {
         # Store the original function arguments
         self$arg_list <- list(
@@ -396,11 +400,12 @@ PM_model <- R6::R6Class(
           fa = fa,
           ini = ini,
           out = out,
-          err = err
+          err = err,
+          solver = solver
         )
         
         if (!is.null(x)) {
-          model_sections <- c("pri", "cov", "sec", "eqn", "lag", "fa", "ini", "out", "err")
+          model_sections <- c("pri", "cov", "sec", "eqn", "lag", "fa", "ini", "out", "err", "solver")
           if (is.character(x) && length(x) == 1) { # x is a filename
             if (!file.exists(x)) {
               cli::cli_abort(c(
@@ -475,6 +480,34 @@ PM_model <- R6::R6Class(
           type <- "ODE"
         }
         
+        index_mode <- if (type == "ODE") "passthrough" else "compact"
+
+        if (type == "ODE") {
+          has_dynamic_indices <- any(c(
+            has_nonliteral_index(self$arg_list$eqn, c("x", "dx", "b", "bolus", "r", "rateiv")),
+            has_nonliteral_index(self$arg_list$out, c("x", "y")),
+            if (!is.null(self$arg_list$ini)) has_nonliteral_index(self$arg_list$ini, "x") else FALSE,
+            if (!is.null(self$arg_list$lag)) has_nonliteral_index(self$arg_list$lag, "lag") else FALSE,
+            if (!is.null(self$arg_list$fa)) has_nonliteral_index(self$arg_list$fa, "fa") else FALSE
+          ))
+
+          if (has_dynamic_indices) {
+            msg <- c(
+              msg,
+              "ODE models must use literal compartment, input, and output indices so the Rust {.code ode!} macro can infer model dimensions."
+            )
+          }
+        }
+
+        solver_rust <- NULL
+        if (!is.null(self$arg_list$solver)) {
+          if (type != "ODE") {
+            msg <- c(msg, "{.arg solver} is only supported for ODE models.")
+          } else {
+            solver_rust <- ode_solver_to_rust(self$arg_list$solver)
+          }
+        }
+
         # Number of equations
         n_eqn <- if (type == "Analytical") {
           length(model_template$compartments)
@@ -482,6 +515,18 @@ PM_model <- R6::R6Class(
           get_assignments(self$arg_list$eqn, "dx")
         }
         n_out <- get_assignments(self$arg_list$out, "y")
+        n_drug <- if (type == "Analytical") {
+          index_vector_size(
+            max(
+              get_max_index(self$arg_list$eqn, c("b", "bolus", "r", "rateiv")),
+              if (!is.null(self$arg_list$lag)) get_max_index(self$arg_list$lag, "lag") else 0L,
+              if (!is.null(self$arg_list$fa)) get_max_index(self$arg_list$fa, "fa") else 0L
+            ),
+            index_mode = "compact"
+          )
+        } else {
+          NA_integer_
+        }
         
         ## Get the names of the parameters
         parameters <- tolower(names(self$arg_list$pri))
@@ -621,7 +666,7 @@ PM_model <- R6::R6Class(
         # in other blocks
         
         if (!is.null(self$arg_list$sec)) {
-          sec <- transpile_sec(self$arg_list$sec)
+          sec <- transpile_sec(self$arg_list$sec, index_mode = index_mode)
         } else {
           sec <- ""
         }
@@ -635,28 +680,28 @@ PM_model <- R6::R6Class(
         
         # fa
         if (!is.null(self$arg_list$fa)) {
-          fa <- transpile_fa(self$arg_list$fa, parameters, covariates, sec)
+          fa <- transpile_fa(self$arg_list$fa, parameters, covariates, sec, index_mode = index_mode)
         } else {
           fa <- empty_fa()
         }
         
         # lag
         if (!is.null(self$arg_list$lag)) {
-          lag <- transpile_lag(self$arg_list$lag, parameters, covariates, sec)
+          lag <- transpile_lag(self$arg_list$lag, parameters, covariates, sec, index_mode = index_mode)
         } else {
           lag <- empty_lag()
         }
         
         # ini
         if (!is.null(self$arg_list$ini)) {
-          ini <- transpile_ini(self$arg_list$ini, parameters, covariates, sec)
+          ini <- transpile_ini(self$arg_list$ini, parameters, covariates, sec, index_mode = index_mode)
         } else {
           ini <- empty_ini()
         }
         
         # out
         if (!is.null(self$arg_list$out)) {
-          out <- transpile_out(self$arg_list$out, parameters, covariates, sec)
+          out <- transpile_out(self$arg_list$out, parameters, covariates, sec, index_mode = index_mode)
         } else {
           out <- empty_out()
         }
@@ -689,10 +734,12 @@ PM_model <- R6::R6Class(
           ini = ini,
           out = out,
           n_eqn = n_eqn,
+          n_drug = n_drug,
           n_out = n_out,
           parameters = parameters,
           covariates = covariates,
           err = err,
+          solver = self$arg_list$solver,
           name = name
         )
         # make everything lower case if a character vector
@@ -706,6 +753,7 @@ PM_model <- R6::R6Class(
         
         # this one needs to be capital
         self$model_list$type <- type
+        self$model_list$solver_rust <- solver_rust
         
         
         # Abort if errors
@@ -1015,14 +1063,14 @@ PM_model <- R6::R6Class(
             bolus <- unique(data$standard_data$input[data$standard_data$dur == 0]) %>% purrr::discard(~ is.na(.x))
             infusion <- unique(data$standard_data$input[data$standard_data$dur > 0]) %>% purrr::discard(~ is.na(.x))
             if (length(bolus) > 0) {
-              missing_bolus <- bolus[!stringr::str_detect(self$model_list$eqn, paste0("b\\[", bolus - 1))]
+              missing_bolus <- bolus[!stringr::str_detect(self$model_list$eqn, paste0("b\\[", bolus, "\\]"))]
               if (length(missing_bolus) > 0) {
                 msg <- c(msg, "Bolus input(s) {paste(missing_bolus, collapse = ', ')} {?is/are} missing from the model equations. Use {.code b[{missing_bolus}]} or {.code bolus[{missing_bolus}]}, for example, to represent bolus inputs in the equations.")
                 run_error <- run_error + 1
               }
             }
             if (length(infusion) > 0) {
-              missing_infusion <- infusion[!stringr::str_detect(self$model_list$eqn, paste0("rateiv\\[", infusion - 1))]
+              missing_infusion <- infusion[!stringr::str_detect(self$model_list$eqn, paste0("rateiv\\[", infusion, "\\]"))]
               if (length(missing_infusion) > 0) {
                 msg <- c(msg, "Infusion input(s) {paste(missing_infusion, collapse = ', ')} {?is/are} missing from the model equations. Use {.code r[{missing_infusion}]} or {.code rateiv[{missing_infusion}]} , for example, to represent infusion inputs in the equations.")
                 run_error <- run_error + 1
@@ -1360,7 +1408,6 @@ PM_model <- R6::R6Class(
           if (!quiet) cli::cli_inform(c("i" = "Compiling model..."))
           # path inside Pmetrics package
           template_path <- if (Sys.getenv("env") == "Development") { file.path(temporary_path(), "template") } else { system.file(package = "Pmetrics")}
-          if (Sys.getenv("env") == "Development") {cat("Using template path:", template_path, "\n")}
           tryCatch(
             {
               compile_model(model_path, output_path, private$get_primary(), template_path, kind = tolower(self$model_list$type))
@@ -1491,10 +1538,15 @@ PM_model <- R6::R6Class(
             }) %>% paste(collapse = ",\n"),
             "\n  )"
           )
+          solver <- if (!is.null(arg_list$solver)) {
+            sprintf("\n  solver = \"%s\",", arg_list$solver)
+          } else {
+            NULL
+          }
           
           model_copy <- c(
             "mod <- PM_model$new(\n",
-            paste0(c(pri, cov, sec, fa, ini, lag, eqn, out, err), collapse = ""),
+            paste0(c(pri, cov, sec, fa, ini, lag, eqn, out, err, solver), collapse = ""),
             "\n)"
           )
           cli::cli_div(theme = list(
@@ -1502,12 +1554,23 @@ PM_model <- R6::R6Class(
             span.navy = list(color = navy())
           ))
           if (requireNamespace("clipr", quietly = TRUE)) {
-            clipr::write_clip(model_copy)
-            
-            cli::cli_inform(c(
-              "v" = "{.navy Model with default values compiled and code copied to clipboard.}",
-              ">" = "{.red Paste the code into your script to edit and recompile (typical).}"
-            ))
+            copied_to_clipboard <- tryCatch({
+              clipr::write_clip(model_copy, allow_non_interactive = TRUE)
+              TRUE
+            }, error = function(...) FALSE)
+
+            if (copied_to_clipboard) {
+              cli::cli_inform(c(
+                "v" = "{.navy Model with default values compiled and code copied to clipboard.}",
+                ">" = "{.red Paste the code into your script to edit and recompile (typical).}"
+              ))
+            } else {
+              cli::cli_inform(c(
+                "v" = "{.navy Model code with default values compiled, but clipboard copy is unavailable.}",
+                ">" = "{.red Copy and paste the code below into your script to edit and recompile (typical).}"
+              ))
+              cat("\n", model_copy, "\n")
+            }
 
           } else {
             cli::cli_inform(c(
@@ -1694,16 +1757,47 @@ PM_model <- R6::R6Class(
             cli::cli_abort(c("x" = "Model list is empty.", "i" = "Please provide a valid model list."))
           }
           
-          if (self$model_list$type %in% c("Analytical", "ODE")) {
-            placeholders <- c("eqn", "lag", "fa", "ini", "out", "n_eqn", "n_out")
+          if (self$model_list$type == "ODE") {
+            placeholders <- c("eqn", "lag", "fa", "ini", "out")
             base <- paste0(
-              "#[allow(unused_assignments)]\n#[allow(unused_mut)]\nequation::",
-              self$model_list$type,
-              "::new(\n",
-              paste("<", placeholders[1:5], ">", sep = "", collapse = ",\n "),
-              ",\n (",
-              paste("<", placeholders[6:7], ">", sep = "", collapse = ", "),
-              "),\n)"
+              "{\n",
+              "  #[allow(unused_assignments)]\n",
+              "  #[allow(unused_mut)]\n",
+              "  #[allow(unused_variables)]\n",
+              "  fn build_eqn() -> impl Equation {\n",
+              "    ode! {\n",
+              "     diffeq: <eqn>,\n",
+              "     lag: <lag>,\n",
+              "     fa: <fa>,\n",
+              "     init: <ini>,\n",
+              "     out: <out>,\n",
+              "    }",
+              if (!is.null(self$model_list$solver_rust)) {
+                paste0("\n    .with_solver(", self$model_list$solver_rust, ")")
+              } else {
+                ""
+              },
+              "\n  }\n",
+              "  build_eqn()\n",
+              "}"
+            )
+          } else if (self$model_list$type == "Analytical") {
+            placeholders <- c("eqn", "lag", "fa", "ini", "out", "n_eqn", "n_drug", "n_out")
+            base <- paste0(
+              "{\n",
+              "  #[allow(unused_assignments)]\n",
+              "  #[allow(unused_mut)]\n",
+              "  #[allow(unused_variables)]\n",
+              "  fn build_eqn() -> impl Equation {\n",
+              "    equation::Analytical::new(\n",
+              paste("<", placeholders[1:5], ">", sep = "", collapse = ",\n     "),
+              "\n    )\n",
+              "    .with_nstates(<n_eqn>)\n",
+              "    .with_ndrugs(<n_drug>)\n",
+              "    .with_nout(<n_out>)\n",
+              "  }\n",
+              "  build_eqn()\n",
+              "}"
             )
           } else {
             cli::cli_abort(c("x" = "Invalid model type.", "i" = "Please provide a valid model type."))
@@ -1724,6 +1818,29 @@ PM_model <- R6::R6Class(
         }
       ) # end private
     ) # end R6Class PM_model
+
+    ode_solver_to_rust <- function(solver) {
+      if (!is.character(solver) || length(solver) != 1) {
+        cli::cli_abort(c(
+          "x" = "{.arg solver} must be a single character value.",
+          "i" = "Supported values are 'BDF', 'TRBDF2', 'ESDIRK34', and 'TSIT45'."
+        ))
+      }
+
+      solver <- tolower(solver)
+
+      switch(
+        solver,
+        bdf = "OdeSolver::Bdf",
+        trbdf2 = "OdeSolver::Sdirk(SdirkTableau::TrBdf2)",
+        esdirk34 = "OdeSolver::Sdirk(SdirkTableau::Esdirk34)",
+        tsit45 = "OdeSolver::ExplicitRk(ExplicitRkTableau::Tsit45)",
+        cli::cli_abort(c(
+          "x" = "Unsupported {.arg solver} value: {.val {solver}}.",
+          "i" = "Supported values are 'BDF', 'TRBDF2', 'ESDIRK34', and 'TSIT45'."
+        ))
+      )
+    }
     
     ##### These functions create various model components
     

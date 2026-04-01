@@ -420,7 +420,7 @@ private = list(
     
     msg <- c(msg, "ADDL > 0 rows expanded.\n")
   }
-  dataObj <- dataObj %>% select(standardNames, dplyr::all_of(covNames))
+  dataObj <- dataObj %>% select(dplyr::all_of(standardNames), dplyr::all_of(covNames))
   # dataObj <- dataObj %>% dplyr::arrange(id, time)
   
   if (length(msg) > 1) {

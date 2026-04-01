@@ -231,14 +231,25 @@ PM_cycle <- R6::R6Class(
         x / dplyr::first(x)
       }))
       
-      n_out <- max(op_raw$outeq, na.rm = TRUE) + 1 # rust is 0 based indexing
+      observed_outeq <- sort(unique(normalize_engine_index(op_raw$outeq)))
+      n_out <- max(observed_outeq, na.rm = TRUE)
       n_cyc <- max(cycle_data$cycle)
       
       #gamlam
-      model_types <- data.frame(outeq = 1:n_out, type = names(config$errormodels$models)) 
+      model_types <- decode_error_model_rows(config$errormodels$models, op_raw$outeq) %>%
+      dplyr::filter(.data$outeq %in% observed_outeq) %>%
+      dplyr::select(outeq, type)
       
       gamlam <- raw %>% select(starts_with("gamlam"))
-      if (ncol(gamlam) == 1 & n_out > 1) {
+      if (ncol(gamlam) == 0) {
+        gamlam <- tibble::tibble(
+          cycle = numeric(),
+          value = numeric(),
+          outeq = numeric(),
+          type = character()
+        )
+      } else {
+      if (ncol(gamlam) == 1 && n_out > 1) {
         gamlam <- cbind(gamlam, replicate((n_out - 1), gamlam[, 1]))
       }
       gamlam <- gamlam %>%
@@ -249,8 +260,9 @@ PM_cycle <- R6::R6Class(
       ) %>%
       mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
       select(cycle, value, outeq) %>% arrange(cycle, outeq) %>%
-      mutate(outeq = as.numeric(outeq) + 1) %>%
+      mutate(outeq = normalize_engine_index(as.numeric(outeq))) %>%
       dplyr::right_join(model_types, by = "outeq")
+      }
       
       
       status <- tail(cycle_data$status, 1)
@@ -517,7 +529,7 @@ plot.PM_cycle <- function(x,
     # amend older versions of gamma if needed
     if (is.matrix(data$gamlam)) {
       gamlam <- raw %>% select(dplyr::starts_with("add")|dplyr::starts_with("prop"))
-      if (ncol(gamlam) == 1 & n_out > 1) {
+      if (ncol(gamlam) == 1 && n_out > 1) {
         gamlam <- cbind(gamlam, replicate((n_out - 1), gamlam[, 1]))
       }
       gamlam <- gamlam %>%
@@ -799,7 +811,7 @@ plot.PM_cycle <- function(x,
     cli::cli_text("AIC:: {.blue {x$aic}}")
     cli::cli_text("BIC: {.blue {x$bic}}")
     
-    for(i in 1:nrow(x$gamlam)){
+    for (i in seq_len(nrow(x$gamlam))) {
       type <- c("Gamma", "Lambda")[1 + as.numeric(x$gamlam$type[i] == "Additive")]
       cli::cli_text("Outeq {.blue {x$gamlam$outeq[i]}}: {type} = {.blue {x$gamlam$value[i]}}")
       

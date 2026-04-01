@@ -176,7 +176,22 @@ private = list(
       ))
       return(NULL)
     }
-    poly <- map(config$errormodels$models, \(x) x %>% pluck("poly")) %>% bind_rows()
+    poly <- decode_error_model_rows(config$errormodels$models, op_raw$outeq)
+
+    calc_obs_sd <- function(outeq, obs) {
+      coeff <- poly %>%
+        dplyr::filter(.data$outeq == outeq) %>%
+        dplyr::slice_head(n = 1) %>%
+        dplyr::select(c0, c1, c2, c3)
+
+      if (nrow(coeff) == 0) {
+        return(NA_real_)
+      }
+
+      coeff <- as.numeric(coeff[1, ])
+      sum(coeff * obs^(0:3))
+    }
+
     op <- op_raw %>%
     # left_join(pred_raw, by = c("id", "time", "outeq")) %>%
     pivot_longer(cols = c(pop_mean, pop_median, post_mean, post_median)) %>%
@@ -198,13 +213,13 @@ private = list(
     ) %>%
     select(-name) %>%
     dplyr::rename(pred = value) %>%
-    dplyr::mutate(outeq = outeq + 1) %>%
+    dplyr::mutate(outeq = normalize_engine_index(outeq)) %>%
     dplyr::mutate(block = block + 1) %>%
     # dplyr::mutate(obs = dplyr::na_if(obs, -99)) %>% # obsolete
     dplyr::rowwise() %>%
     mutate(d = pred - obs) %>%
     mutate(ds = d * d) %>%
-    mutate(obsSD = map(1:4, \(x) poly[outeq, x] * obs^(x-1)) %>% unlist() %>% sum()) %>%
+    mutate(obsSD = calc_obs_sd(outeq, obs)) %>%
     mutate(wd = d / obsSD) %>%
     mutate(wds = wd * wd) %>%
     dplyr::ungroup()
