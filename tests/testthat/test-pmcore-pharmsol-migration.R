@@ -8,46 +8,6 @@ testthat::skip_if_not(
 CL <- NULL
 V <- NULL
 
-build_library_model <- function(model_name, mode = c("analytical", "ode")) {
-    mode <- match.arg(mode)
-    lib_entry <- getFromNamespace("get_model_library_entry", "Pmetrics")(model_name)
-
-    eqn_block <- if (mode == "analytical") {
-        eval(parse(text = sprintf("function(){ %s }", model_name)))
-    } else {
-        lib_entry$arg_list$eqn
-    }
-
-    args <- list(
-        pri = as.list(lib_entry$arg_list$pri),
-        eqn = eqn_block,
-        out = lib_entry$arg_list$out,
-        err = as.list(lib_entry$arg_list$err)
-    )
-
-    if ("cov" %in% names(lib_entry$arg_list)) {
-        args$cov <- lib_entry$arg_list$cov
-    }
-
-    if ("sec" %in% names(lib_entry$arg_list)) {
-        args$sec <- lib_entry$arg_list$sec
-    }
-
-    if ("lag" %in% names(lib_entry$arg_list)) {
-        args$lag <- lib_entry$arg_list$lag
-    }
-
-    if ("fa" %in% names(lib_entry$arg_list)) {
-        args$fa <- lib_entry$arg_list$fa
-    }
-
-    if ("ini" %in% names(lib_entry$arg_list)) {
-        args$ini <- lib_entry$arg_list$ini
-    }
-
-    do.call(PM_model$new, args)
-}
-
 build_passthrough_ode_model <- function(solver = NULL) {
     PM_model$new(list(
         pri = list(

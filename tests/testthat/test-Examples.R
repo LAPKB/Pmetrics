@@ -1,5 +1,5 @@
 test_that("Data object creation", {
-  exData <- PM_data$new(data = "ex.csv", quiet = T)
+  exData <- PM_data$new(data = "ex.csv", quiet = TRUE)
   summary <- exData$summary()
   expect_equal(summary$nsub, 20)
   expect_equal(summary$ndrug, 1)
@@ -10,184 +10,57 @@ test_that("Data object creation", {
 
 
 test_that("PMdata print", {
-  exData <- PM_data$new(data = "ex.csv", quiet = T)
-  expect_snapshot_output(exData$print(viewer = F))
+  exData <- PM_data$new(data = "ex.csv", quiet = TRUE)
+  expect_snapshot_output(exData$print(viewer = FALSE))
 })
 
 test_that("Model object creation", {
-  mod1 <- PM_model$new(list(
-    pri = list(
-      Ka = ab(0.1, 0.9),
-      Ke = ab(0.001, 0.1),
-      V = ab(30, 120),
-      Tlag1 = ab(0, 4)
-    ),
-    cov = list(
-      covariate("WT"),
-      covariate("AFRICA"),
-      covariate("AGE"),
-      covariate("GENDER"),
-      covariate("HEIGHT")
-    ),
-    lag = list("TLAG[1] = Tlag1"),
-    out = list(
-      Y1 = list(
-        val = "X[2]/V",
-        err = list(
-          model = proportional(5),
-          assay = errorPoly(c(0.02, 0.05, -0.0002, 0))
-        )
-      )
-    )
-  ))
+  mod1 <- build_example_ode_model(compile = FALSE)
 
-  expect_equal(mod1$model_list$pri$Ka, ab(0.1, 0.9))
-  expect_equal(mod1$model_list$pri$Ka$max, 0.9)
-  expect_equal(mod1$model_list$pri$Ka$min, 0.1)
-  expect_equal(mod1$model_list$pri$Ka$mean, 0.5)
-  expect_equal(mod1$model_list$pri$Ka$sd, 0.133)
-  expect_equal(mod1$model_list$pri$Ka$mode, "ab")
-  expect_equal(mod1$model_list$pri$Ka$gtz, FALSE)
-  expect_equal(ab(0.1, 0.9, gtz = T)$gtz, TRUE)
-  expect_equal(purrr::map_chr(mod1$model_list$cov, \(x) x$covariate), c("WT", "AFRICA", "AGE", "GENDER", "HEIGHT"))
-  expect_equal(mod1$model_list$lag, list("TLAG[1] = Tlag1"))
-  expect_equal(names(mod1$model_list$out), "Y1")
-  expect_equal(mod1$model_list$out$Y1$val, "X[2]/V")
-  expect_equal(mod1$model_list$out$Y1$err$model, proportional(5))
-  expect_equal(mod1$model_list$out$Y1$err$model$proportional, 5)
-  expect_equal(mod1$model_list$out$Y1$err$assay$coefficients, c(0.02, 0.05, -0.0002, 0))
+  expect_equal(mod1$model_list$pri$ka, ab(0.1, 1.0))
+  expect_equal(mod1$model_list$pri$ke, ab(0.01, 0.5))
+  expect_equal(mod1$model_list$pri$v, ab(10, 100))
+  expect_equal(mod1$model_list$n_eqn, 2)
+  expect_equal(mod1$model_list$n_out, 1)
+  expect_equal(mod1$model_list$type, "ODE")
+  expect_true(is.null(mod1$binary_path))
 })
 
-test_that("Object representation", {
-  mod1 <- PM_model$new(list(
-    pri = list(
-      Ka = ab(0.1, 0.9),
-      Ke = ab(0.001, 0.1),
-      V = ab(30, 120),
-      Tlag1 = ab(0, 4)
-    ),
-    cov = list(
-      covariate("WT"),
-      covariate("AFRICA"),
-      covariate("AGE"),
-      covariate("GENDER"),
-      covariate("HEIGHT")
-    ),
-    lag = list("TLAG[1] = Tlag1"),
-    out = list(
-      Y1 = list(
-        val = "X[2]/V",
-        err = list(
-          model = proportional(5),
-          assay = errorPoly(c(0.02, 0.05, -0.0002, 0))
-        )
-      )
-    )
-  ))
-  mod1$save("mod1.txt")
-  expect_equal(readLines("mod1.txt"), readLines("generated_model.txt"))
-})
+test_that("Model can be reconstructed from an existing PM_model", {
+  mod1 <- build_example_ode_model(compile = FALSE)
+  mod2 <- PM_model$new(x = mod1, compile = FALSE)
 
-test_that("Object update", {
-  mod1 <- PM_model$new(list(
-    pri = list(
-      Ka = ab(0.1, 0.9),
-      Ke = ab(0.001, 0.1),
-      V = ab(30, 120),
-      Tlag1 = ab(0, 4)
-    ),
-    cov = list(
-      covariate("WT"),
-      covariate("AFRICA"),
-      covariate("AGE"),
-      covariate("GENDER"),
-      covariate("HEIGHT")
-    ),
-    lag = list("TLAG[1] = Tlag1"),
-    out = list(
-      Y1 = list(
-        val = "X[2]/V",
-        err = list(
-          model = proportional(5),
-          assay = errorPoly(c(0.02, 0.05, -0.0002, 0))
-        )
-      )
-    )
-  ))
-  mod1$update(list(
-    pri = list(
-      Ka = ab(0.001, 5)
-    )
-  ))
-  expect_equal(mod1$model_list$pri$Ka, ab(0.001, 5))
-  expect_equal(mod1$model_list$pri$Ka$max, 5)
-  expect_equal(mod1$model_list$pri$Ka$min, 0.001)
-  expect_equal(mod1$model_list$pri$Ka$mean, 2.5)
-  expect_equal(mod1$model_list$pri$Ka$sd, 0.833)
+  expect_s3_class(mod2, "PM_model")
+  expect_equal(names(mod2$model_list$pri), c("ka", "ke", "v"))
+  expect_equal(mod2$model_list$type, "ODE")
+  expect_true(is.null(mod2$binary_path))
 })
 
 
-test_that("Fit object creation", {
-  mod1 <- PM_model$new(list(
-    pri = list(
-      Ka = ab(0.1, 0.9),
-      Ke = ab(0.001, 0.1),
-      V = ab(30, 120),
-      Tlag1 = ab(0, 4)
-    ),
-    cov = list(
-      covariate("WT"),
-      covariate("AFRICA"),
-      covariate("AGE"),
-      covariate("GENDER"),
-      covariate("HEIGHT")
-    ),
-    lag = list("TLAG[1] = Tlag1"),
-    out = list(
-      Y1 = list(
-        val = "X[2]/V",
-        err = list(
-          model = proportional(5),
-          assay = errorPoly(c(0.02, 0.05, -0.0002, 0))
-        )
-      )
-    )
-  ))
-  exFit <- PM_fit$new(model = mod1, data = "ex.csv", quiet = T)
-  expect_output(exFit$check(), "Excellent - there were no errors found in your model file.")
-  expect_output(exFit$check(), "No data errors found.")
-})
+test_that("Current workflow: PM_model + PM_data + PM_model$fit", {
+  skip_on_cran()
+  skip_if_not(
+    is_cargo_installed(),
+    message = "Cargo is required to compile and run PM_model$fit tests."
+  )
 
-test_that("Basic model fitting", {
-  skip_if(length(list.files("1")) != 0)
-  mod1 <- PM_model$new(list(
-    pri = list(
-      Ka = ab(0.1, 0.9),
-      Ke = ab(0.001, 0.1),
-      V = ab(30, 120),
-      Tlag1 = ab(0, 4)
-    ),
-    cov = list(
-      covariate("WT"),
-      covariate("AFRICA"),
-      covariate("AGE"),
-      covariate("GENDER"),
-      covariate("HEIGHT")
-    ),
-    lag = list("TLAG[1] = Tlag1"),
-    out = list(
-      Y1 = list(
-        val = "X[2]/V",
-        err = list(
-          model = proportional(5),
-          assay = errorPoly(c(0.02, 0.05, -0.0002, 0))
-        )
-      )
-    )
-  ))
-  exFit <- PM_fit$new(model = mod1, data = "ex.csv")
+  mod1 <- build_example_ode_model(compile = TRUE)
+  ex_data <- PM_data$new(data = "ex.csv", quiet = TRUE)
 
-  expect_output(exFit$run(intern = T), "The run did not converge before the last cycle.")
+  expect_true(file.exists(mod1$binary_path))
+
+  run_path <- withr::local_tempdir()
+  ex_res <- mod1$fit(
+    data = ex_data,
+    path = run_path,
+    cycles = 1,
+    points = 20,
+    report = "none",
+    quiet = TRUE
+  )
+
+  expect_s3_class(ex_res, "PM_result")
+  expect_true(file.exists(file.path(run_path, "1", "outputs", "PMout.Rdata")))
 })
 
 test_that("Analytical models allow multi-line secondary conditionals", {

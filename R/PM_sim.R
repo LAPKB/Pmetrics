@@ -119,7 +119,7 @@ PM_sim <- R6::R6Class(
     #' Output may also be directed to a new Pmetrics .csv data file
     #' using the `makecsv` argument.
     #'
-    #' @param poppar One of four things:
+    #' @param poppar One of five things:
     #'
     #' 1. A [PM_result] object containing the final population parameter
     #' distribution from a model run, a model object, and a data object.
@@ -194,6 +194,17 @@ PM_sim <- R6::R6Class(
     #'                   sd = list(ke = 0.2, v = 20), # overall sd, ignoring multiple distributions
     #'                   cor = matrix(c(1, 0.6, 0.7, 1), nrow = 2)) # sd required because cor specified
     #'     ```
+    #' 5. A data frame with one column for each parameter and one row for each parameter set
+    #' to simulate. This is useful when you already have fixed parameter values, such as
+    #' `NPex$final$popPoints`. Each row will generate one simulated profile, so `nsim` is
+    #' ignored and the number of simulated profiles will equal the number of rows in the
+    #' data frame.
+    #'
+    #'     ```
+    #'     poppar <- as.data.frame(run1$final$popPoints) |>
+    #'       dplyr::select(ke, v)
+    #'     sim1 <- PM_sim$new(poppar = poppar, model = run1$model, data = run1$data)
+    #'     ```
     #'
     #' @param model Name of a suitable [PM_model] object or a model file template
     #' in the working directory. If missing, and `poppar` is a [PM_result],
@@ -264,7 +275,9 @@ PM_sim <- R6::R6Class(
     #'
     #' @param nsim The number of simulated profiles to create, per subject.  Default
     #' is 1000.  Entering 0 will result in one profile being simulated from each
-    #' point in the non-parametric prior (for NPAG final objects only).
+    #' point in the non-parametric prior (for NPAG final objects only). If `poppar`
+    #' is supplied as a data frame of parameter values, `nsim` is ignored and the
+    #' number of simulated profiles will equal the number of rows in that data frame.
     #'
     #' @param predInt The interval in fractional hours for simulated predicted
     #' outputs at times other than those specified in the template `data`.

@@ -399,7 +399,7 @@ PM_valid <- R6::R6Class(
       dcMedian <- dataSub %>%
         group_by(bin = dcBin) %>%
         filter(!is.na(dose)) %>%
-        summarize(dplyr::across(c(dose, !!binCov), median, na.rm = T))
+        summarize(dplyr::across(c(dose, !!binCov), \(x) median(x, na.rm = TRUE)))
 
       timeMedian <- dataSub %>%
         group_by(bin = timeBin) %>%
@@ -471,7 +471,7 @@ PM_valid <- R6::R6Class(
       argsSIM1 <- c(list(
         poppar = popparZero, data = medianData, model = result$model, nsim = 1,
         seed = runif(nsub, -100, 100),
-        limits = limits, combine = TRUE, quiet = TRUE
+        limits = limits, quiet = TRUE
       ), argsSIM)
       
       cli::cli_inform(c("i" = "Simulating one version of each subject using medians of binned data..."))
@@ -526,7 +526,7 @@ PM_valid <- R6::R6Class(
         list(
           poppar = poppar, data = fullData, model = result$model, nsim = nsim,
           seed = runif(nsub, -100, 100), limits = limits,
-          combine = TRUE, quiet = TRUE
+          quiet = TRUE
         ),
         argsSIM
       )

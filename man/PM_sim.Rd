@@ -191,7 +191,7 @@ or via the \verb{$sim} method for \link{PM_result} objects.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{poppar}}{One of four things:
+\item{\code{poppar}}{One of five things:
 \enumerate{
 \item A \link{PM_result} object containing the final population parameter
 distribution from a model run, a model object, and a data object.
@@ -270,6 +270,16 @@ Examples:
               sd = list(ke = 0.2, v = 20), # overall sd, ignoring multiple distributions
               cor = matrix(c(1, 0.6, 0.7, 1), nrow = 2)) # sd required because cor specified
 }\if{html}{\out{</div>}}
+\item A data frame with one column for each parameter and one row for each parameter set
+to simulate. This is useful when you already have fixed parameter values, such as
+\code{NPex$final$popPoints}. Each row will generate one simulated profile, so \code{nsim} is
+ignored and the number of simulated profiles will equal the number of rows in the
+data frame.
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar <- as.data.frame(run1$final$popPoints) |>
+  dplyr::select(ke, v)
+sim1 <- PM_sim$new(poppar = poppar, model = run1$model, data = run1$data)
+}\if{html}{\out{</div>}}
 }}
 
 \item{\code{model}}{Name of a suitable \link{PM_model} object or a model file template
@@ -342,7 +352,9 @@ Using both \code{include} and \code{exclude} criteria may result in conflicts.}
 
 \item{\code{nsim}}{The number of simulated profiles to create, per subject.  Default
 is 1000.  Entering 0 will result in one profile being simulated from each
-point in the non-parametric prior (for NPAG final objects only).}
+point in the non-parametric prior (for NPAG final objects only). If \code{poppar}
+is supplied as a data frame of parameter values, \code{nsim} is ignored and the
+number of simulated profiles will equal the number of rows in that data frame.}
 
 \item{\code{predInt}}{The interval in fractional hours for simulated predicted
 outputs at times other than those specified in the template \code{data}.

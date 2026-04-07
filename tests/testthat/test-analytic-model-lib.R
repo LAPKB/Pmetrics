@@ -34,47 +34,6 @@ make_sim_iv_template_data <- function() {
   )
 }
 
-build_model_from_library <- function(model_name, mode = c("analytical", "ode")) {
-  mode <- match.arg(mode)
-
-  lib_entry <- getFromNamespace("get_model_library_entry", "Pmetrics")(model_name)
-
-  eqn_block <- if (mode == "analytical") {
-    eval(parse(text = sprintf("function(){ %s }", model_name)))
-  } else {
-    lib_entry$arg_list$eqn
-  }
-
-  args <- list(
-    pri = as.list(lib_entry$arg_list$pri),
-    eqn = eqn_block,
-    out = lib_entry$arg_list$out,
-    err = as.list(lib_entry$arg_list$err)
-  )
-
-  if ("cov" %in% names(lib_entry$arg_list)) {
-    args$cov <- lib_entry$arg_list$cov
-  }
-
-  if ("sec" %in% names(lib_entry$arg_list)) {
-    args$sec <- lib_entry$arg_list$sec
-  }
-
-  if ("lag" %in% names(lib_entry$arg_list)) {
-    args$lag <- lib_entry$arg_list$lag
-  }
-
-  if ("fa" %in% names(lib_entry$arg_list)) {
-    args$fa <- lib_entry$arg_list$fa
-  }
-
-  if ("ini" %in% names(lib_entry$arg_list)) {
-    args$ini <- lib_entry$arg_list$ini
-  }
-
-  do.call(PM_model$new, args)
-}
-
 compare_obs <- function(sim_analytic, sim_ode, tolerance = 1e-2) {
   obs_a <- sim_analytic$data$obs |>
     dplyr::arrange(id, nsim, time, outeq)
@@ -115,12 +74,12 @@ for (model_name in model_names) {
       stop("No template data defined for model ", model_name)
     }
 
-    mod <- build_model_from_library(model_name, mode = "analytical")
+    mod <- build_library_model(model_name, mode = "analytical")
     theta <- make_stable_theta(mod)
 
     sim_analytic <- PM_sim$new(poppar = theta, model = mod, data = dat, predInt = 1)
 
-    mod_ode <- build_model_from_library(model_name, mode = "ode")
+    mod_ode <- build_library_model(model_name, mode = "ode")
     sim_ode <- PM_sim$new(poppar = theta, model = mod_ode, data = dat, predInt = 1)
 
     compare_obs(sim_analytic, sim_ode)
