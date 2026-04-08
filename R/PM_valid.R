@@ -250,6 +250,41 @@ PM_valid <- R6::R6Class(
         dataSubTad <- dataSub$tad[dataSub$evid == 0]
       }
 
+      flush_plot <- function() {
+        if (grDevices::dev.cur() > 1) {
+          try(grDevices::dev.flush(), silent = TRUE)
+        }
+        utils::flush.console()
+        if (requireNamespace("later", quietly = TRUE)) {
+          try(later::run_now(0.1), silent = TRUE)
+        }
+        Sys.sleep(0.05)
+        invisible(NULL)
+      }
+
+      show_diag_plot <- function(expr) {
+        expr <- substitute(expr)
+        p <- eval(expr, envir = parent.frame())
+
+        # For object-based plotting systems, force rendering explicitly.
+        if (!is.null(p) &&
+          (inherits(p, "gg") ||
+            inherits(p, "ggplot") ||
+            inherits(p, "trellis") ||
+            inherits(p, "plotly") ||
+            inherits(p, "htmlwidget"))) {
+          try(base::print(p), silent = TRUE)
+        }
+
+        flush_plot()
+        invisible(NULL)
+      }
+
+      ask_user <- function(prompt = "") {
+        flush_plot()
+        readline(prompt = prompt)
+      }
+
       # ELBOW PLOT for clustering if used
       elbow <- function(x) {
         set.seed(123)
@@ -269,11 +304,14 @@ PM_valid <- R6::R6Class(
           }
         )
         wss
-        plot(2:k.max, wss,
-          type = "b", pch = 19, frame = FALSE,
-          xlab = "Number of clusters",
-          ylab = "Total within-clusters sum of squares (WSS)"
-        )
+        show_diag_plot({
+          plot(2:k.max, wss,
+            type = "b", pch = 19, frame = FALSE,
+            xlab = "Number of clusters",
+            ylab = "Total within-clusters sum of squares (WSS)"
+          )
+  
+        })
 
       }
 
@@ -282,18 +320,20 @@ PM_valid <- R6::R6Class(
         # DOSE/COVARIATES
         cat("Now optimizing clusters for dose/covariates.\n")
         cat("First step is a Gaussian mixture model analysis, followed by an elbow plot.\n")
-        readline(paste("Press <Return> to start cluster analysis for ",
+        ask_user(paste("Press <Return> to start cluster analysis for ",
           paste(c("dose", binCov), collapse = ", ", sep = ""), ": ",
           sep = ""
         ))
         cat("Now performing Gaussian mixture model analysis.")
         mod1 <- mclust::Mclust(dataSubDC)
         cat(paste("Most likely number of clusters is ", mod1$G, ".", sep = ""))
-        readline("Press <Return> to see classification plot: ")
-        plot(mod1, "classification")
-        readline("Press <Return> to see elbow plot: ")
+        ask_user("Press <Return> to see classification plot: ")
+        show_diag_plot({
+          plot(mod1, "classification")
+        })
+        ask_user("Press <Return> to see elbow plot: ")
         elbow(dataSubDC)
-        doseC <- as.numeric(readline(paste("Specify your dose/covariate cluster number, <Return> for ", mod1$G, ": ", sep = "")))
+        doseC <- as.numeric(ask_user(paste("Specify your dose/covariate cluster number, <Return> for ", mod1$G, ": ", sep = "")))
         if (is.na(doseC)) doseC <- mod1$G
       } # end if missing doseC
 
@@ -308,38 +348,44 @@ PM_valid <- R6::R6Class(
           timeLabel <- "Time after dose"
           timePlot <- as.formula(out ~ tad)
         }
-        readline("Press <Return> to start cluster analysis for sample times: ")
+        ask_user("Press <Return> to start cluster analysis for sample times: ")
         mod <- mclust::Mclust(use.data)
         cat(paste("Most likely number of clusters is ", mod$G, ".\n", sep = ""))
-        readline("Press <Return> to see classification plot: ")
-        plot(mod, "classification")
-        readline("Press <Return> to see cluster plot: ")
+        ask_user("Press <Return> to see classification plot: ")
+        show_diag_plot({
+          plot(mod, "classification")
+        })
+        ask_user("Press <Return> to see cluster plot: ")
 
         timeClusterPlot <- function() {
           plot(timePlot, dataSub, xlab = timeLabel, ylab = "Observation", xlim = c(min(use.data), max(use.data)))
         }
 
         # plot for user to see
-        timeClusterPlot()
         timeClusters <- stats::kmeans(use.data, centers = mod$G, nstart = 50)
-        abline(v = timeClusters$centers, col = "red")
+        show_diag_plot({
+          timeClusterPlot()
+          abline(v = timeClusters$centers, col = "red")
+        })
 
         # allow user to override
-        readline("Press <Return> to see elbow plot: ")
+        ask_user("Press <Return> to see elbow plot: ")
         elbow(use.data)
-        ans <- readline(cat(paste("Enter:\n<1> for ", mod$G, " clusters\n<2> for a different number of automatically placed clusters\n<3> to manually specify cluster centers ", sep = "")))
+        ans <- ask_user(paste("Enter:\n<1> for ", mod$G, " clusters\n<2> for a different number of automatically placed clusters\n<3> to manually specify cluster centers ", sep = ""))
         if (ans == 1) {
           TclustNum <- mod$G
         }
         if (ans == 2) {
           confirm <- 2
           while (confirm != 1) {
-            TclustNum <- readline("Specify your sample time cluster number \n")
+            TclustNum <- ask_user("Specify your sample time cluster number \n")
             mod <- mclust::Mclust(use.data, G = TclustNum)
-            timeClusterPlot()
             timeClusters <- kmeans(use.data, centers = mod$G, nstart = 50)
-            abline(v = timeClusters$centers, col = "red")
-            confirm <- readline(cat("Enter:\n<1> to confirm times\n<2> to revise number of times\n<3> to manually enter times"))
+            show_diag_plot({
+              timeClusterPlot()
+              abline(v = timeClusters$centers, col = "red")
+            })
+            confirm <- ask_user("Enter:\n<1> to confirm times\n<2> to revise number of times\n<3> to manually enter times")
             if (confirm == 3) {
               ans <- 3
               confirm <- 1
@@ -349,11 +395,13 @@ PM_valid <- R6::R6Class(
         if (ans == 3) {
           confirm <- 2
           while (confirm != 1) {
-            timeClusterPlot()
-            timeVec <- readline("Specify a comma-separated list of times, e.g. 1,2,8,10: ")
+            timeVec <- ask_user("Specify a comma-separated list of times, e.g. 1,2,8,10: ")
             timeVec <- as.numeric(strsplit(timeVec, ",")[[1]])
-            abline(v = timeVec, col = "red")
-            confirm <- readline(cat("Enter:\n<1> to confirm times\n<2> to revise times "))
+            show_diag_plot({
+              timeClusterPlot()
+              abline(v = timeVec, col = "red")
+            })
+            confirm <- ask_user("Enter:\n<1> to confirm times\n<2> to revise times ")
           }
           TclustNum <- timeVec
         }
