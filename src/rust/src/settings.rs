@@ -90,6 +90,7 @@ pub(crate) fn settings(
     settings.set_prior(prior);
     settings.set_output_path(output_path.to_string());
     settings.set_write_logs(true);
+    settings.set_log_level(LogLevel::INFO);
     settings.write()?;
     Ok(settings)
 }

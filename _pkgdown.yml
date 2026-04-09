@@ -122,8 +122,10 @@ reference:
   - PMtest
   - PM_tutorial
   - setPMoptions
+  - check_updates
   - latestR
   - downloadR
+
 - title: Internal
   desc: Internal and low-level functions
 - contents:

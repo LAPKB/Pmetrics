@@ -566,12 +566,16 @@ PM_sim <- R6::R6Class(
       
         # check to make sure any arguments in ... are not misspelled or otherwise unrecognized
         allArgs <- formals(PM_sim$public_methods$initialize) %>% names()
+        # exclude the variadic placeholder from validation
+        allArgs <- setdiff(allArgs, "...")
         dotArgs <- names(dots)
+        # only validate truly named arguments (non-NA, non-empty names)
+        dotArgs <- dotArgs[!is.null(dotArgs) & !is.na(dotArgs) & nzchar(dotArgs)]
         unrecog <- setdiff(dotArgs, allArgs)
         if (length(unrecog) > 0) {
           cli::cli_abort(c(
             "x" = "The following argument{?s} {?is/are} not recognized: {.val {unrecog}}.",
-            "i" = "Check for case erorrs or misspellings. Refer to {.help PM_sim} for a list of valid arguments."
+            "i" = "Check for case errors or misspellings. Refer to {.help PM_sim} for a list of valid arguments."
           ))
         }
       
@@ -1153,7 +1157,7 @@ PM_sim <- R6::R6Class(
         
         
         # get SD of covariates
-        covSD <- CVsum %>% summarize(across(last_col(offset = nsimcov - 1):last_col(), sd, na.rm = TRUE))
+        covSD <- CVsum %>% summarize(across(last_col(offset = nsimcov - 1):last_col(), \(x) sd(x, na.rm = TRUE)))
         
         # grab their names
         covs2sim <- names(covSD)
@@ -1175,7 +1179,7 @@ PM_sim <- R6::R6Class(
         dimnames(covMat) <- dimnames(corMat)
         
         # get means of covariates
-        covMean <- CVsum %>% summarize(across(covs2sim, mean, na.rm = TRUE))
+        covMean <- CVsum %>% summarize(across(covs2sim, \(x) mean(x, na.rm = TRUE)))
         
         # set means of named variables, and use population values for others
         if (length(covariate$mean) > 0) {
@@ -1194,9 +1198,9 @@ PM_sim <- R6::R6Class(
         meanVector <-  poppar$popMean %>% tibble::add_column(!!!as.list(covMean))
         # get the covariate limits
         # get min of original population covariates
-        covMin <- CVsum %>% summarize(across(covs2sim, min, na.rm = TRUE))
+        covMin <- CVsum %>% summarize(across(covs2sim, \(x) min(x, na.rm = TRUE)))
         # and get max of original population covariates
-        covMax <- CVsum %>% summarize(across(covs2sim, max, na.rm = TRUE))
+        covMax <- CVsum %>% summarize(across(covs2sim, \(x) max(x, na.rm = TRUE)))
         
         orig_covlim <- tibble::tibble(par = covs2sim, min = unlist(covMin), max = unlist(covMax))
         covLimits <- orig_covlim
