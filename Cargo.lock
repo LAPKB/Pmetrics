@@ -341,9 +341,9 @@ dependencies = [
 
 [[package]]
 name = "diffsol"
-version = "0.8.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31fd20d3173a897a4a016c7f320b82e81a4bae05f3616c1acd0d9da97d080ee7"
+checksum = "fcb280582d6bf3f01ad1bc197c38f0d88793e22e300ce96866381e237f5fc684"
 dependencies = [
  "faer",
  "faer-traits",
