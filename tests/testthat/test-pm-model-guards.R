@@ -98,7 +98,8 @@ make_infusion_data <- function() {
   )
 }
 
-test_that("PM_model$new validates x type and file existence", {
+testthat::test_that("PM_model$new validates x type and file existence", {
+  message("[test] PM_model$new validates x type and file existence")
   expect_error(
     PM_model$new(x = 123),
     "Non supported input"
@@ -110,7 +111,8 @@ test_that("PM_model$new validates x type and file existence", {
   )
 })
 
-test_that("PM_model$new flags reserved names and dynamic ODE indices", {
+testthat::test_that("PM_model$new flags reserved names and dynamic ODE indices", {
+  message("[test] PM_model$new flags reserved names and dynamic ODE indices")
   reserved <- PM_model$new(
     pri = list(x = ab(1, 2)),
     eqn = function() {
@@ -146,7 +148,8 @@ test_that("PM_model$new flags reserved names and dynamic ODE indices", {
   expect_true(is.null(dynamic_index$binary_path))
 })
 
-test_that("PM_model$map enforces required arguments", {
+testthat::test_that("PM_model$map enforces required arguments", {
+  message("[test] PM_model$map enforces required arguments")
   mod <- make_minimal_ode_model(with_bolus = TRUE, with_infusion = TRUE)
   dat <- make_bolus_data()
 
@@ -161,7 +164,8 @@ test_that("PM_model$map enforces required arguments", {
   )
 })
 
-test_that("PM_model$sim validates data and theta", {
+testthat::test_that("PM_model$sim validates data and theta", {
+  message("[test] PM_model$sim validates data and theta")
   mod <- make_minimal_ode_model(with_bolus = TRUE, with_infusion = TRUE)
   dat <- make_bolus_data()
 
@@ -186,7 +190,8 @@ test_that("PM_model$sim validates data and theta", {
   )
 })
 
-test_that("PM_model$fit preflight checks prevent malformed runs", {
+testthat::test_that("PM_model$fit preflight checks prevent malformed runs", {
+  message("[test] PM_model$fit preflight checks prevent malformed runs")
   bolus_data <- make_bolus_data()
   infusion_data <- make_infusion_data()
 

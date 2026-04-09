@@ -9,7 +9,7 @@ test_that("Data object creation", {
 })
 
 
-test_that("PMdata print", {
+test_that("PM_data print", {
   exData <- PM_data$new(data = "ex.csv", quiet = TRUE)
   expect_snapshot_output(exData$print(viewer = FALSE))
 })

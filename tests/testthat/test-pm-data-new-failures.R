@@ -1,4 +1,5 @@
-test_that("PM_data$new fails for missing or unreadable file paths", {
+testthat::test_that("PM_data$new fails for missing or unreadable file paths", {
+  message("[test] PM_data$new fails for missing or unreadable file paths")
   expect_error(
     PM_data$new(data = "no_such_file_abc.csv"),
     "Unable to create.*PM_data"
@@ -10,7 +11,8 @@ test_that("PM_data$new fails for missing or unreadable file paths", {
   )
 })
 
-test_that("PM_data$new fails when mandatory columns are missing", {
+testthat::test_that("PM_data$new fails when mandatory columns are missing", {
+  message("[test] PM_data$new fails when mandatory columns are missing")
   complete <- data.frame(
     id = c(1, 1),
     time = c(0, 1),
@@ -39,14 +41,16 @@ test_that("PM_data$new fails when mandatory columns are missing", {
   )
 })
 
-test_that("PM_data$new fails for non-tabular input when validate is TRUE", {
+testthat::test_that("PM_data$new fails for non-tabular input when validate is TRUE", {
+  message("[test] PM_data$new fails for non-tabular input when validate is TRUE")
   expect_error(
     PM_data$new(data = 1:3, validate = TRUE),
     "missing these mandatory columns"
   )
 })
 
-test_that("PM_data$new fails when date/time cannot be parsed", {
+testthat::test_that("PM_data$new fails when date/time cannot be parsed", {
+  message("[test] PM_data$new fails when date/time cannot be parsed")
   bad_dt <- data.frame(
     id = c(1, 1),
     date = c("notadate", "stillbad"),
