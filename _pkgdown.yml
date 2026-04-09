@@ -113,6 +113,9 @@ reference:
 - title: Utility
   desc: Utility functions
 - contents:
+  - bestdose
+  - PM_bestdose
+  - PM_bestdose_problem
   - PM_build
   - PM_help
   - PMcheck
