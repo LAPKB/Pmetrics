@@ -255,7 +255,7 @@ fn is_cargo_installed() -> bool {
 fn model_parameters(model_path: &str, kind: &str) -> Result<Vec<String>> {
     match kind {
         "ode" => Ok(executor::model_parameters::<ODE>(model_path.into())),
-        "analytical" => Ok(executor::model_parameters::<ODE>(model_path.into())),
+        "analytical" => Ok(executor::model_parameters::<Analytical>(model_path.into())),
         err => Err(anyhow::format_err!("{} is not a supported model type", err)),
     }
 }
@@ -278,10 +278,8 @@ fn setup_logs() -> anyhow::Result<()> {
 
     // Create a subscriber with our custom layer using the global timer
     // Filter to show only WARN and above (WARN, ERROR) by default
-    // Filter to show only WARN and above (WARN, ERROR) by default
     let subscriber = tracing_subscriber::registry()
         .with(RFormatLayer::new())
-        .with(LevelFilter::from_level(Level::WARN));
         .with(LevelFilter::from_level(Level::WARN));
 
     // Set as global default - this will fail if already set, which is fine
@@ -351,4 +349,3 @@ extendr_module! {
 // rextendr::document()
 // Optional: reload Pmetrics
 // devtools::load_all()
-
