@@ -49,6 +49,8 @@ reference:
   - PM_load
   - PM_result
   - PM_valid
+  - bd
+  - bd_post
 - title: Helpers
   desc: Helper functions for R6 object creations
 - contents:
@@ -113,9 +115,6 @@ reference:
 - title: Utility
   desc: Utility functions
 - contents:
-  - bestdose
-  - PM_bestdose
-  - PM_bestdose_problem
   - PM_build
   - PM_help
   - PMcheck
@@ -123,6 +122,8 @@ reference:
   - PMtest
   - PM_tutorial
   - setPMoptions
+  - latestR
+  - downloadR
 - title: Internal
   desc: Internal and low-level functions
 - contents:
