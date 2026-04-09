@@ -251,9 +251,6 @@ PM_valid <- R6::R6Class(
       }
 
       flush_plot <- function() {
-        if (grDevices::dev.cur() > 1) {
-          try(grDevices::dev.flush(), silent = TRUE)
-        }
         utils::flush.console()
         if (requireNamespace("later", quietly = TRUE)) {
           try(later::run_now(0.1), silent = TRUE)
@@ -262,9 +259,8 @@ PM_valid <- R6::R6Class(
         invisible(NULL)
       }
 
-      show_diag_plot <- function(expr) {
-        expr <- substitute(expr)
-        p <- eval(expr, envir = parent.frame())
+      show_diag_plot_impl <- function(expr, env) {
+        p <- eval(expr, envir = env)
 
         # For object-based plotting systems, force rendering explicitly.
         if (!is.null(p) &&
@@ -280,9 +276,56 @@ PM_valid <- R6::R6Class(
         invisible(NULL)
       }
 
+      open_diag_device_if_needed <- function() {
+        current_dev <- names(grDevices::dev.cur())
+        if (identical(current_dev, ".ark.graphics.device")) {
+          opened <- FALSE
+          dev_id <- NA_integer_
+
+          try({
+            if (.Platform$OS.type == "windows") {
+              grDevices::windows()
+            } else if (capabilities("aqua")) {
+              grDevices::quartz()
+            } else {
+              grDevices::x11()
+            }
+            opened <- TRUE
+            dev_id <- as.integer(grDevices::dev.cur())
+          }, silent = TRUE)
+
+          return(list(opened = opened, dev_id = dev_id))
+        }
+
+        list(opened = FALSE, dev_id = NA_integer_)
+      }
+
+      show_diag_plot <- function(expr) {
+        show_diag_plot_impl(substitute(expr), parent.frame())
+      }
+
+      show_diag_then_continue <- function(expr, prompt = "Review plot, then press <Return> to continue: ") {
+        dev_state <- open_diag_device_if_needed()
+        on.exit({
+          if (isTRUE(dev_state$opened) && dev_state$dev_id %in% grDevices::dev.list()) {
+            try(grDevices::dev.off(which = dev_state$dev_id), silent = TRUE)
+          }
+        }, add = TRUE)
+
+        show_diag_plot_impl(substitute(expr), parent.frame())
+        ask_user(prompt)
+      }
+
       ask_user <- function(prompt = "") {
         flush_plot()
-        readline(prompt = prompt)
+        if (!interactive()) {
+          return("")
+        }
+        if (nzchar(prompt)) {
+          cat(prompt)
+          utils::flush.console()
+        }
+        readline(prompt = "")
       }
 
       # ELBOW PLOT for clustering if used
@@ -303,15 +346,13 @@ PM_valid <- R6::R6Class(
             val$tot.withinss
           }
         )
-        wss
-        show_diag_plot({
-          plot(2:k.max, wss,
-            type = "b", pch = 19, frame = FALSE,
-            xlab = "Number of clusters",
-            ylab = "Total within-clusters sum of squares (WSS)"
-          )
-  
-        })
+        plot(2:k.max, wss,
+          type = "b", pch = 19, frame = FALSE,
+          xlab = "Number of clusters",
+          ylab = "Total within-clusters sum of squares (WSS)"
+        )
+
+        invisible(wss)
 
       }
 
@@ -327,12 +368,12 @@ PM_valid <- R6::R6Class(
         cat("Now performing Gaussian mixture model analysis.")
         mod1 <- mclust::Mclust(dataSubDC)
         cat(paste("Most likely number of clusters is ", mod1$G, ".", sep = ""))
-        ask_user("Press <Return> to see classification plot: ")
-        show_diag_plot({
+        show_diag_then_continue({
           plot(mod1, "classification")
-        })
-        ask_user("Press <Return> to see elbow plot: ")
-        elbow(dataSubDC)
+        }, "Review classification plot, then press <Return> to continue: ")
+        show_diag_then_continue({
+          elbow(dataSubDC)
+        }, "Review elbow plot, then press <Return> to continue: ")
         doseC <- as.numeric(ask_user(paste("Specify your dose/covariate cluster number, <Return> for ", mod1$G, ": ", sep = "")))
         if (is.na(doseC)) doseC <- mod1$G
       } # end if missing doseC
@@ -351,11 +392,9 @@ PM_valid <- R6::R6Class(
         ask_user("Press <Return> to start cluster analysis for sample times: ")
         mod <- mclust::Mclust(use.data)
         cat(paste("Most likely number of clusters is ", mod$G, ".\n", sep = ""))
-        ask_user("Press <Return> to see classification plot: ")
-        show_diag_plot({
+        show_diag_then_continue({
           plot(mod, "classification")
-        })
-        ask_user("Press <Return> to see cluster plot: ")
+        }, "Review classification plot, then press <Return> to continue: ")
 
         timeClusterPlot <- function() {
           plot(timePlot, dataSub, xlab = timeLabel, ylab = "Observation", xlim = c(min(use.data), max(use.data)))
@@ -363,14 +402,15 @@ PM_valid <- R6::R6Class(
 
         # plot for user to see
         timeClusters <- stats::kmeans(use.data, centers = mod$G, nstart = 50)
-        show_diag_plot({
+        show_diag_then_continue({
           timeClusterPlot()
           abline(v = timeClusters$centers, col = "red")
-        })
+        }, "Review cluster plot, then press <Return> to continue: ")
 
         # allow user to override
-        ask_user("Press <Return> to see elbow plot: ")
-        elbow(use.data)
+        show_diag_then_continue({
+          elbow(use.data)
+        }, "Review elbow plot, then press <Return> to continue: ")
         ans <- ask_user(paste("Enter:\n<1> for ", mod$G, " clusters\n<2> for a different number of automatically placed clusters\n<3> to manually specify cluster centers ", sep = ""))
         if (ans == 1) {
           TclustNum <- mod$G
@@ -381,10 +421,10 @@ PM_valid <- R6::R6Class(
             TclustNum <- ask_user("Specify your sample time cluster number \n")
             mod <- mclust::Mclust(use.data, G = TclustNum)
             timeClusters <- kmeans(use.data, centers = mod$G, nstart = 50)
-            show_diag_plot({
+            show_diag_then_continue({
               timeClusterPlot()
               abline(v = timeClusters$centers, col = "red")
-            })
+            }, "Review cluster plot, then press <Return> to continue: ")
             confirm <- ask_user("Enter:\n<1> to confirm times\n<2> to revise number of times\n<3> to manually enter times")
             if (confirm == 3) {
               ans <- 3
@@ -397,10 +437,10 @@ PM_valid <- R6::R6Class(
           while (confirm != 1) {
             timeVec <- ask_user("Specify a comma-separated list of times, e.g. 1,2,8,10: ")
             timeVec <- as.numeric(strsplit(timeVec, ",")[[1]])
-            show_diag_plot({
+            show_diag_then_continue({
               timeClusterPlot()
               abline(v = timeVec, col = "red")
-            })
+            }, "Review cluster plot, then press <Return> to continue: ")
             confirm <- ask_user("Enter:\n<1> to confirm times\n<2> to revise times ")
           }
           TclustNum <- timeVec
