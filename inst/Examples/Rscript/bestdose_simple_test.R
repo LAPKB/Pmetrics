@@ -52,96 +52,96 @@ for (lambda in prior_weights) {
     ))
 }
 
-# Last result predictions
-r <- posterior$optimize(
-    target = target_file,
-    dose_range = list(min = 0, max = 300),
-    prior_weight = 0.0
-)
-cat("\nConcentration-time predictions for prior_weight=0.0:\n")
-preds <- r$result$predictions
-for (j in seq_len(nrow(preds))) {
-    p <- preds[j, ]
-    cat(sprintf(
-        "Time: %.2f h, Observed: %.2f, (Pop Mean: %.4f, Pop Median: %.4f, Post Mean: %.4f, Post Median: %.4f)\n",
-        p$time, p$obs, p$pop_mean, p$pop_median, p$post_mean, p$post_median
-    ))
-}
+# # Last result predictions
+# r <- posterior$optimize(
+#     target = target_file,
+#     dose_range = list(min = 0, max = 300),
+#     prior_weight = 0.0
+# )
+# cat("\nConcentration-time predictions for prior_weight=0.0:\n")
+# preds <- r$result$predictions
+# for (j in seq_len(nrow(preds))) {
+#     p <- preds[j, ]
+#     cat(sprintf(
+#         "Time: %.2f h, Observed: %.2f, (Pop Mean: %.4f, Pop Median: %.4f, Post Mean: %.4f, Post Median: %.4f)\n",
+#         p$time, p$obs, p$pop_mean, p$pop_median, p$post_mean, p$post_median
+#     ))
+# }
 
 
-# ===== One-shot API =====
-bd1 <- bd$new(
-    prior = prior_file,
-    model = mod_onecomp,
-    past_data = PM_data$new(past_file, quiet = TRUE),
-    max_cycles = 500,
-    future = PM_data$new(target_file, quiet = TRUE),
-    dose_range = list(min = 0, max = 5000),
-    prior_weight = 0,
-    start = 0
-)
+# # ===== One-shot API =====
+# bd1 <- bd$new(
+#     prior = prior_file,
+#     model = mod_onecomp,
+#     past_data = PM_data$new(past_file, quiet = TRUE),
+#     max_cycles = 500,
+#     future = PM_data$new(target_file, quiet = TRUE),
+#     dose_range = list(min = 0, max = 5000),
+#     prior_weight = 0,
+#     start = 0
+# )
 
-bd1
+# bd1
 
-bd1$plot()
+# bd1$plot()
 
-bd2 <- bd$new(
-    prior = prior_file,
-    model = mod_onecomp,
-    max_cycles = 500,
-    future = target_file,
-    dose_range = list(min = 0, max = 300),
-    prior_weight = 0.0
-)
+# bd2 <- bd$new(
+#     prior = prior_file,
+#     model = mod_onecomp,
+#     max_cycles = 500,
+#     future = target_file,
+#     dose_range = list(min = 0, max = 300),
+#     prior_weight = 0.0
+# )
 
-bd2
-
-
-
-bd2$plot()
-
-plot(bd1)
+# bd2
 
 
-## adding ability to specify future as argument to bd$new() instead of target file.
-## This will allow for more flexible future specifications and avoid the need for a separate target file.
 
-future_list <- list(dose = c(120,0), 
-    frequency = 12, 
-    route = 0, 
-    number = 3, 
-    target_time = 11.5, 
-    target = 0.3,
-    target_type = "concentration")
+# bd2$plot()
 
-future_list <- list(dose = 320, 
-    frequency = 12, 
-    route = 0, 
-    number = 3, 
-    target_time = 0.6, 
-    target = 0.3,
-    target_type = "time")
-
-#AUC target - crashing as of 3/13/26
-future_list <- list(dose = 320, 
-    frequency = 12, 
-    route = 0, 
-    number = 3, 
-    target_time = 11.5, 
-    target = 10,
-    target_type = "auc")
+# plot(bd1)
 
 
-bd_new <- bd$new(
-    prior = prior_file,
-    model = mod_onecomp,
-    past_data = PM_data$new(past_file, quiet = TRUE),
-    max_cycles = 50,
-    future = future_list,
-    dose_range = list(min = 0, max = 5000),
-    prior_weight = 0,
-    start = "02/02/26 00:00",
-)
+# ## adding ability to specify future as argument to bd$new() instead of target file.
+# ## This will allow for more flexible future specifications and avoid the need for a separate target file.
 
-# bd_new$plot()
-bd_new$report()
+# future_list <- list(dose = c(120,0),
+#     frequency = 12,
+#     route = 0,
+#     number = 3,
+#     target_time = 11.5,
+#     target = 0.3,
+#     target_type = "concentration")
+
+# future_list <- list(dose = 320,
+#     frequency = 12,
+#     route = 0,
+#     number = 3,
+#     target_time = 0.6,
+#     target = 0.3,
+#     target_type = "time")
+
+# #AUC target - crashing as of 3/13/26
+# future_list <- list(dose = 320,
+#     frequency = 12,
+#     route = 0,
+#     number = 3,
+#     target_time = 11.5,
+#     target = 10,
+#     target_type = "auc")
+
+
+# bd_new <- bd$new(
+#     prior = prior_file,
+#     model = mod_onecomp,
+#     past_data = PM_data$new(past_file, quiet = TRUE),
+#     max_cycles = 50,
+#     future = future_list,
+#     dose_range = list(min = 0, max = 5000),
+#     prior_weight = 0,
+#     start = "02/02/26 00:00",
+# )
+
+# # bd_new$plot()
+# bd_new$report()
