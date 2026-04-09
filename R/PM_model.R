@@ -436,6 +436,7 @@ PM_model <- R6::R6Class(
             }
           })
           self$arg_list$x <- NULL
+          self$binary_path <- x$binary_path
         } else {
           cli::cli_abort(c(
             "x" = "Non supported input for {.arg x}: {typeof(x)}",

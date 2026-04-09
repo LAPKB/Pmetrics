@@ -87,6 +87,7 @@ error = function(e) {
 core <- list(
   data = fit_object$data,
   model = fit_object$model,
+  model_binary_path = if (!is.null(fit_object) && inherits(fit_object$model, "PM_model")) fit_object$model$binary_path else NULL,
   op = op,
   cov = cov,
   post = post,

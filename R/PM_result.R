@@ -179,8 +179,7 @@ PM_result <- R6::R6Class(
       dots <- list(...)
       
       dots$poppar <- self # send the PM_result object as poppar
-      
-      
+
       # if (!"data" %in% names(dots)) {
       #   dots$data <- self$data
       # }
@@ -398,6 +397,51 @@ PM_load <- function(run, path = ".", file = "PMout.Rdata") {
   if (found != "") {
     result <- output2List(Out = get(load(found)))
     rebuild <- PM_result$new(result, path = dirname(found), quiet = TRUE)
+
+    inputs_dir <- normalizePath(file.path(dirname(found), "..", "inputs"), mustWork = FALSE)
+    inputs_binaries <- if (dir.exists(inputs_dir)) {
+      list.files(inputs_dir, pattern = "\\.pmx$", full.names = TRUE)
+    } else {
+      character(0)
+    }
+
+    if (inherits(rebuild$model, "PM_model")) {
+      is_valid_path <- function(x) {
+        is.character(x) && length(x) == 1 && !is.na(x) && nzchar(x)
+      }
+
+      target_binary_path <- result$model_binary_path
+      if (!is_valid_path(target_binary_path)) {
+        target_binary_path <- rebuild$model$binary_path
+      }
+
+      if (length(inputs_binaries) > 0) {
+        source_binary <- inputs_binaries[1]
+        if (is_valid_path(target_binary_path)) {
+          preferred_source <- normalizePath(file.path(inputs_dir, basename(target_binary_path)), mustWork = FALSE)
+          if (file.exists(preferred_source)) {
+            source_binary <- preferred_source
+          }
+        }
+
+        if (is_valid_path(target_binary_path)) {
+          target_binary_path <- normalizePath(target_binary_path, mustWork = FALSE)
+          copied <- tryCatch(
+            {
+              fs::dir_create(dirname(target_binary_path))
+              isTRUE(file.copy(source_binary, target_binary_path, overwrite = TRUE))
+            },
+            error = function(e) FALSE
+          )
+          rebuild$model$binary_path <- if (copied) target_binary_path else source_binary
+        } else {
+          rebuild$model$binary_path <- source_binary
+        }
+      } else {
+        rebuild$model$binary_path <- NULL
+      }
+    }
+
     return(rebuild)
   } else {
     cli::cli_abort(c("x" = "No Pmetrics output file found in {.path {path}}."))
