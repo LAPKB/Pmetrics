@@ -41,6 +41,8 @@ PM_valid <- R6::R6Class(
     #' @field npde_tad Data for Normalized Prediction Distribution Error
     #' using Time After Dose if available
     npde_tad = NULL,
+    #' @field npde_stats Captured NPDE console summaries for later replay
+    npde_stats = NULL,
 
     #' @description
     #' `r lifecycle::badge("stable")`
@@ -88,6 +90,7 @@ PM_valid <- R6::R6Class(
     #' * opDF A data frame with observations, predicitons, and bin-corrected predictions for each subject.
     #' * ndpe An object with results of normalized distrubition of prediction errors analysis.
     #' * npde_tad NPDE with time after dose rather than absolute time, if `tad = TRUE`
+    #' * npde_stats Captured NPDE console summary text, replayable with `$show_npde_stats()`.
     #' @author Michael Neely
     #' @examples
     #' \dontrun{
@@ -126,6 +129,204 @@ PM_valid <- R6::R6Class(
       )
       # Assign results to public fields
       purrr::walk2(names(valRes), valRes, \(x, y) self[[x]] <- y)
+    },
+    #' @description Replay captured NPDE summary statistics.
+    #' @param outeq Output equation number to replay.
+    #' @param tad Logical; replay TAD-based NPDE stats.
+    show_npde_stats = function(outeq = 1, tad = FALSE) {
+      source <- if (isTRUE(tad)) self$npde_stats$tad else self$npde_stats$time
+
+      if (is.null(source) || length(source) < outeq || is.null(source[[outeq]]) || length(source[[outeq]]) == 0) {
+        cli::cli_abort(c(
+          "x" = "No captured NPDE statistics are available for the requested selection.",
+          "i" = "Run validation again if you need to regenerate NPDE console summaries."
+        ))
+      }
+
+      cli::cli_text(source[[outeq]])
+      invisible(source[[outeq]])
+    },
+    #' @description
+    #' Summarize a [PM_valid] object. Reports NPDE distribution statistics and a
+    #' Numerical Predictive Check (NPC) for each output equation. TAD-based results
+    #' are included automatically when TAD validation was performed.
+    #' @param probs Numeric vector of quantile cut-points for the NPC.
+    #' Default is `c(0.05, 0.5, 0.95)`.
+    summary = function(probs = c(0.05, 0.5, 0.95)) {
+      # Detect TAD availability from stored fields
+      has_tad <- !is.null(self$npde_tad) &&
+        length(self$npde_tad) > 0 &&
+        !is.null(self$npde_tad[[1]]) &&
+        !is.null(self$simdata$data$obs$tad) &&
+        any(!is.na(self$simdata$data$obs$tad))
+
+      nout <- length(self$npde)
+
+      # ------------------------------------------------------------------
+      # Helpers
+      # ------------------------------------------------------------------
+
+      # Linear interpolation of simulation quantile rank for one observation
+      sim_interp <- function(t, y, sim_sum, q_probs) {
+        if (min(sim_sum$time) > t || max(sim_sum$time) < t) return(NA_real_)
+        lo_t <- max(sim_sum$time[sim_sum$time <= t], na.rm = TRUE)
+        hi_t <- min(sim_sum$time[sim_sum$time >= t], na.rm = TRUE)
+        rank <- 0
+        for (p in q_probs) {
+          lo_v <- sim_sum$value[sim_sum$time == lo_t & sim_sum$quantile == p]
+          hi_v <- sim_sum$value[sim_sum$time == hi_t & sim_sum$quantile == p]
+          if (!length(lo_v) || !length(hi_v)) next
+          interp_v <- if (lo_t != hi_t) {
+            lo_v + (hi_v - lo_v) / (hi_t - lo_t) * (t - lo_t)
+          } else {
+            lo_v
+          }
+          if (y >= interp_v) rank <- p
+        }
+        rank
+      }
+
+      # Build a tidy quantile summary from simulated data
+      build_sim_quant_df <- function(sim_df, time_col, q_probs) {
+        sim_sub <- sim_df %>%
+          dplyr::select(time = !!rlang::sym(time_col), out)
+        times <- sort(unique(sim_sub$time))
+        sim_sub %>%
+          dplyr::group_by(time) %>%
+          dplyr::group_map(~ quantile(.x$out, probs = q_probs, na.rm = TRUE)) %>%
+          dplyr::tibble() %>%
+          tidyr::unnest_longer(col = 1, indices_to = "quantile", values_to = "value") %>%
+          dplyr::mutate(
+            time     = rep(times, each = length(q_probs)),
+            quantile = readr::parse_number(quantile) / 100
+          ) %>%
+          dplyr::select(time, quantile, value)
+      }
+
+      # Compute NPC for one output equation
+      compute_npc <- function(outeq_idx, use_tad = FALSE) {
+        time_col <- if (use_tad) "tad" else "time"
+
+        sim_df <- self$simdata$data$obs %>%
+          dplyr::filter(
+            outeq == outeq_idx,
+            !is.na(.data[[time_col]])
+          )
+        obs_df <- self$opDF %>%
+          dplyr::filter(
+            outeq == outeq_idx,
+            !is.na(.data[[time_col]])
+          )
+
+        if (nrow(sim_df) == 0 || nrow(obs_df) == 0) return(NULL)
+
+        sim_quant_df <- build_sim_quant_df(sim_df, time_col, probs)
+
+        obs_time <- obs_df[[time_col]]
+        obs_out  <- obs_df$obs
+
+        q_rank <- vapply(
+          seq_along(obs_time),
+          \(i) sim_interp(obs_time[[i]], obs_out[[i]], sim_quant_df, probs),
+          numeric(1)
+        )
+
+        not_miss <- sum(!is.na(q_rank))
+        if (not_miss == 0) return(NULL)
+
+        pct_below <- vapply(probs, \(p) sum(q_rank < p, na.rm = TRUE) / not_miss, numeric(1))
+        pvals     <- vapply(probs, \(p) {
+          s <- sum(q_rank < p, na.rm = TRUE)
+          tryCatch(binom.test(s, not_miss, p, "two")$p.value, error = \(e) NA_real_)
+        }, numeric(1))
+
+        npc_tbl <- data.frame(
+          Quantile    = paste0(formatC(probs * 100, format = "f", digits = 1), "%"),
+          Prop_below  = paste0(formatC(pct_below * 100, format = "f", digits = 1), "%"),
+          P_value     = formatC(pvals, format = "f", digits = 3),
+          stringsAsFactors = FALSE
+        )
+        names(npc_tbl) <- c("Quantile", "Prop. Below", "P-value")
+
+        # proportion within 5th-95th PI (always computed against 0.05/0.95)
+        between_rank <- vapply(
+          seq_along(obs_time),
+          \(i) sim_interp(obs_time[[i]], obs_out[[i]], sim_quant_df, c(0.05, 0.95)),
+          numeric(1)
+        )
+        in90   <- sum(between_rank >= 0.05 & between_rank < 0.95, na.rm = TRUE)
+        pct90  <- in90 / not_miss
+        pval90 <- tryCatch(
+          binom.test(in90, not_miss, 0.9, "two")$p.value,
+          error = \(e) NA_real_
+        )
+
+        list(
+          tbl      = npc_tbl,
+          pct90    = pct90,
+          pval90   = pval90,
+          not_miss = not_miss,
+          total    = nrow(obs_df)
+        )
+      }
+
+      # Print NPC result block
+      print_npc <- function(npc, label) {
+        cli::cli_text(
+          "{.strong NPC ({label})} \u2014 {npc$not_miss} of {npc$total} observations within simulated range"
+        )
+        print(npc$tbl, row.names = FALSE, right = FALSE)
+        cat(sprintf(
+          "  Proportion within 5th\u201395th percentile interval: %.1f%% (p = %.3f)\n",
+          npc$pct90 * 100,
+          npc$pval90
+        ))
+      }
+
+      # ------------------------------------------------------------------
+      # Output
+      # ------------------------------------------------------------------
+
+      cli::cli_h1("PM_valid Summary")
+
+      for (i in seq_len(nout)) {
+        cli::cli_h2("Output Equation {i}")
+
+        # NPDE stats (time)
+        stats_t <- self$npde_stats$time[[i]]
+        if (!is.null(stats_t) && length(stats_t) > 0) {
+          cli::cli_text("{.strong NPDE (time)}")
+          cat(paste(stats_t, collapse = "\n"), "\n")
+        }
+
+        # NPDE stats (TAD)
+        if (has_tad) {
+          stats_tad <- self$npde_stats$tad[[i]]
+          if (!is.null(stats_tad) && length(stats_tad) > 0) {
+            cat("\n")
+            cli::cli_text("{.strong NPDE (TAD)}")
+            cat(paste(stats_tad, collapse = "\n"), "\n")
+          }
+        }
+
+        # NPC (time)
+        npc_t <- compute_npc(i, use_tad = FALSE)
+        if (!is.null(npc_t)) {
+          cat("\n")
+          print_npc(npc_t, "time")
+        }
+
+        # NPC (TAD)
+        if (has_tad) {
+          npc_tad <- compute_npc(i, use_tad = TRUE)
+          if (!is.null(npc_tad)) {
+            cat("\n")
+            print_npc(npc_tad, "TAD")
+          }
+        }
+      }
+
+      invisible(self)
     },
     #' @description
     #' Plot method. Calls [plot.PM_valid].
@@ -178,8 +379,14 @@ PM_valid <- R6::R6Class(
         excludeID <- NULL
       }
 
-      # Get TAD if needed
-      if (tad) valTAD <- calcTAD(mdata)
+      # Get TAD lazily if needed
+      valTAD_cache <- NULL
+      get_tad_values <- function() {
+        if (is.null(valTAD_cache)) {
+          valTAD_cache <<- calcTAD(mdata)
+        }
+        valTAD_cache
+      }
 
       # number of subjects
       nsub <- length(unique(mdata$id))
@@ -187,145 +394,58 @@ PM_valid <- R6::R6Class(
 
       # define covariates in model to be binned
       covData <- getCov(mdata)
-      if (covData$ncov > 0) { # if there are any covariates...
-        if (length(binCov) == 0) {
-          covInData <- getCov(mdata)$covnames
-          cat(paste("Covariates in your data file: ", paste(getCov(mdata)$covnames, collapse = ", ")))
-          binCov <- readline("Enter any covariates to be binned, separated by commas (<Return> for none): ")
-          binCov <- unlist(strsplit(binCov, ","))
-          # remove leading/trailing spaces
-          binCov <- gsub("^[[:space:]]|[[:space:]]$", "", binCov)
-        }
-        if (!all(binCov %in% names(mdata))) {
-          cli::cli_abort(c("x" = "You have entered covariates which are not valid covariates in your data."))
-        }
-        # ensure binCov has covariates in same order as data file
-        covSub <- covData$covnames[covData$covnames %in% binCov]
-        binCov <- covSub
-      } else { # there are no covariates
-        binCov <- NULL
+      cov_names <- if (covData$ncov > 0) covData$covnames else character(0)
+
+      if (is.null(binCov) || length(binCov) == 0) {
+        binCov <- character(0)
+      }
+      if (length(binCov) > 0 && !all(binCov %in% cov_names)) {
+        cli::cli_abort(c("x" = "You have entered covariates which are not valid covariates in your data."))
+      }
+      binCov <- cov_names[cov_names %in% binCov]
+
+      build_cluster_data <- function(covariates, use_tad = tad) {
+        use_cov <- cov_names[cov_names %in% covariates]
+
+        data_sub <- mdata %>%
+          select(id, evid, time, out, dose, all_of(use_cov)) %>%
+          mutate(tad = if (isTRUE(use_tad)) get_tad_values() else NA) %>%
+          dplyr::relocate(tad, .after = time)
+
+        data_sub_dc <- data_sub %>%
+          filter(evid > 0) %>%
+          select(c("id", "dose", dplyr::all_of(use_cov))) %>%
+          mutate(dose = ifelse(dose == 0, NA, dose)) %>%
+          group_by(id) %>%
+          mutate(dose = {
+            first_valid_dose <- dose[!is.na(dose)][1]
+            tidyr::replace_na(dose, first_valid_dose)
+          }) %>%
+          fill(everything(), .direction = "down") %>%
+          ungroup()
+
+        data_sub_time <- data_sub %>%
+          filter(evid == 0) %>%
+          select(time)
+
+        data_sub_tad <- if (isTRUE(use_tad)) data_sub$tad[data_sub$evid == 0] else NULL
+
+        list(
+          dataSub = data_sub,
+          dataSubDC = data_sub_dc,
+          dataSubTime = data_sub_time,
+          dataSubTad = data_sub_tad,
+          binCov = use_cov,
+          use_tad = isTRUE(use_tad)
+        )
       }
 
-      # set up data for clustering
-      # fill in gaps for cluster analysis only for binning variables (always dose and time)
-
-      dataSub <- mdata %>%
-        select(id, evid, time, out, dose, all_of(binCov)) %>%
-        mutate(tad = if (tad) valTAD else NA) %>%
-        dplyr::relocate(tad, .after = time)
-
-     
-
-      # restrict to doses for dose/covariate clustering (since covariates applied on doses)
-      dataSubDC <- dataSub %>%
-        filter(evid > 0) %>%
-        select(c("id", "dose", dplyr::all_of(binCov)))
-
-
-      dataSubDC <- dataSubDC %>%
-        # 1. Replace 0 doses with NA
-        mutate(dose = ifelse(dose == 0, NA, dose)) %>%
-        # 2. Group by 'id' to handle each patient separately
-        group_by(id) %>%
-        # 3. Fill missing doses forward (using the next non-NA dose in the same patient)
-        mutate(dose = {
-          # Find the first non-NA dose for each patient
-          first_valid_dose <- dose[!is.na(dose)][1]
-          # Replace NA doses with the next available dose (forward fill)
-          tidyr::replace_na(dose, first_valid_dose)
-        }) %>%
-        # 4. Fill remaining missing values (covariates) with the previous row's value
-        fill(everything(), .direction = "down") %>%
-        # 5. Ungroup to return a standard data frame
-        ungroup()
-
-      # restrict to observations for time clustering
-      dataSubTime <- dataSub$time[dataSub$evid == 0]
-      dataSubTime <- dataSub %>%
-        filter(evid == 0) %>%
-        select(time)
-
-      # restrict to observations for tad clustering
+      cluster_data <- build_cluster_data(binCov, use_tad = tad)
+      dataSub <- cluster_data$dataSub
+      dataSubDC <- cluster_data$dataSubDC
+      dataSubTime <- cluster_data$dataSubTime
       if (tad) {
-        dataSubTad <- dataSub$tad[dataSub$evid == 0]
-      }
-
-      flush_plot <- function() {
-        utils::flush.console()
-        if (requireNamespace("later", quietly = TRUE)) {
-          try(later::run_now(0.1), silent = TRUE)
-        }
-        Sys.sleep(0.05)
-        invisible(NULL)
-      }
-
-      show_diag_plot_impl <- function(expr, env) {
-        p <- eval(expr, envir = env)
-
-        # For object-based plotting systems, force rendering explicitly.
-        if (!is.null(p) &&
-          (inherits(p, "gg") ||
-            inherits(p, "ggplot") ||
-            inherits(p, "trellis") ||
-            inherits(p, "plotly") ||
-            inherits(p, "htmlwidget"))) {
-          try(base::print(p), silent = TRUE)
-        }
-
-        flush_plot()
-        invisible(NULL)
-      }
-
-      open_diag_device_if_needed <- function() {
-        current_dev <- names(grDevices::dev.cur())
-        if (identical(current_dev, ".ark.graphics.device")) {
-          opened <- FALSE
-          dev_id <- NA_integer_
-
-          try({
-            if (.Platform$OS.type == "windows") {
-              grDevices::windows()
-            } else if (capabilities("aqua")) {
-              grDevices::quartz()
-            } else {
-              grDevices::x11()
-            }
-            opened <- TRUE
-            dev_id <- as.integer(grDevices::dev.cur())
-          }, silent = TRUE)
-
-          return(list(opened = opened, dev_id = dev_id))
-        }
-
-        list(opened = FALSE, dev_id = NA_integer_)
-      }
-
-      show_diag_plot <- function(expr) {
-        show_diag_plot_impl(substitute(expr), parent.frame())
-      }
-
-      show_diag_then_continue <- function(expr, prompt = "Review plot, then press <Return> to continue: ") {
-        dev_state <- open_diag_device_if_needed()
-        on.exit({
-          if (isTRUE(dev_state$opened) && dev_state$dev_id %in% grDevices::dev.list()) {
-            try(grDevices::dev.off(which = dev_state$dev_id), silent = TRUE)
-          }
-        }, add = TRUE)
-
-        show_diag_plot_impl(substitute(expr), parent.frame())
-        ask_user(prompt)
-      }
-
-      ask_user <- function(prompt = "") {
-        flush_plot()
-        if (!interactive()) {
-          return("")
-        }
-        if (nzchar(prompt)) {
-          cat(prompt)
-          utils::flush.console()
-        }
-        readline(prompt = "")
+        dataSubTad <- cluster_data$dataSubTad
       }
 
       # ELBOW PLOT for clustering if used
@@ -356,119 +476,363 @@ PM_valid <- R6::R6Class(
 
       }
 
-
-      if (length(doseC) == 0) {
-        # DOSE/COVARIATES
-        cat("Now optimizing clusters for dose/covariates.\n")
-        cat("First step is a Gaussian mixture model analysis, followed by an elbow plot.\n")
-        ask_user(paste("Press <Return> to start cluster analysis for ",
-          paste(c("dose", binCov), collapse = ", ", sep = ""), ": ",
-          sep = ""
-        ))
-        cat("Now performing Gaussian mixture model analysis.")
-        mod1 <- mclust::Mclust(dataSubDC)
-        cat(paste("Most likely number of clusters is ", mod1$G, ".", sep = ""))
-        show_diag_then_continue({
-          plot(mod1, "classification")
-        }, "Review classification plot, then press <Return> to continue: ")
-        show_diag_then_continue({
-          elbow(dataSubDC)
-        }, "Review elbow plot, then press <Return> to continue: ")
-        doseC <- as.numeric(ask_user(paste("Specify your dose/covariate cluster number, <Return> for ", mod1$G, ": ", sep = "")))
-        if (is.na(doseC)) doseC <- mod1$G
-      } # end if missing doseC
-
-      # function to cluster by time or tad
-      timeCluster <- function(timevar) {
-        if (timevar == "time") {
-          use.data <- dataSubTime
-          timeLabel <- "Time"
-          timePlot <- as.formula(out ~ time)
+      suggest_clusters <- function(x) {
+        if (is.null(dim(x))) {
+          n_unique <- length(unique(x))
         } else {
-          use.data <- dataSubTad
-          timeLabel <- "Time after dose"
-          timePlot <- as.formula(out ~ tad)
+          n_unique <- nrow(unique(x))
         }
-        ask_user("Press <Return> to start cluster analysis for sample times: ")
-        mod <- mclust::Mclust(use.data)
-        cat(paste("Most likely number of clusters is ", mod$G, ".\n", sep = ""))
-        show_diag_then_continue({
-          plot(mod, "classification")
-        }, "Review classification plot, then press <Return> to continue: ")
+        if (is.na(n_unique) || n_unique < 2) {
+          return(1)
+        }
+        mclust::Mclust(x, verbose = FALSE)$G
+      }
 
-        timeClusterPlot <- function() {
-          plot(timePlot, dataSub, xlab = timeLabel, ylab = "Observation", xlim = c(min(use.data), max(use.data)))
+      clamp_centers <- function(x, centers) {
+        n_unique <- if (is.null(dim(x))) length(unique(x)) else nrow(unique(x))
+        if (is.na(n_unique) || n_unique < 1) {
+          return(1)
+        }
+        max(1, min(as.integer(round(centers)), n_unique))
+      }
+
+      needs_dose <- length(doseC) == 0
+      needs_time <- length(timeC) == 0
+      needs_tad <- isTRUE(tad) && length(tadC) == 0
+
+      if (needs_dose || needs_time || needs_tad) {
+        if (!interactive()) {
+          cli::cli_abort(c(
+            "x" = "Interactive clustering requires a Shiny session.",
+            "i" = "In non-interactive use, provide {.arg doseC}, {.arg timeC}, and {.arg tadC} (if {.arg tad = TRUE})."
+          ))
         }
 
-        # plot for user to see
-        timeClusters <- stats::kmeans(use.data, centers = mod$G, nstart = 50)
-        show_diag_then_continue({
-          timeClusterPlot()
-          abline(v = timeClusters$centers, col = "red")
-        }, "Review cluster plot, then press <Return> to continue: ")
-
-        # allow user to override
-        show_diag_then_continue({
-          elbow(use.data)
-        }, "Review elbow plot, then press <Return> to continue: ")
-        ans <- ask_user(paste("Enter:\n<1> for ", mod$G, " clusters\n<2> for a different number of automatically placed clusters\n<3> to manually specify cluster centers ", sep = ""))
-        if (ans == 1) {
-          TclustNum <- mod$G
+        if (!requireNamespace("shiny", quietly = TRUE)) {
+          cli::cli_abort(c(
+            "x" = "Package {.pkg shiny} is required for interactive PM_valid clustering.",
+            "i" = "Install {.pkg shiny} or provide {.arg doseC}, {.arg timeC}, and {.arg tadC} directly."
+          ))
         }
-        if (ans == 2) {
-          confirm <- 2
-          while (confirm != 1) {
-            TclustNum <- ask_user("Specify your sample time cluster number \n")
-            mod <- mclust::Mclust(use.data, G = TclustNum)
-            timeClusters <- kmeans(use.data, centers = mod$G, nstart = 50)
-            show_diag_then_continue({
-              timeClusterPlot()
-              abline(v = timeClusters$centers, col = "red")
-            }, "Review cluster plot, then press <Return> to continue: ")
-            confirm <- ask_user("Enter:\n<1> to confirm times\n<2> to revise number of times\n<3> to manually enter times")
-            if (confirm == 3) {
-              ans <- 3
-              confirm <- 1
+
+        default_dose <- if (needs_dose) suggest_clusters(dataSubDC) else as.numeric(doseC)[1]
+        default_time <- if (needs_time) suggest_clusters(dataSubTime) else as.numeric(timeC)[1]
+        default_tad <- if (length(tadC) > 0) {
+          as.numeric(tadC)[1]
+        } else {
+          suggest_clusters(build_cluster_data(binCov, use_tad = TRUE)$dataSubTad)
+        }
+
+        plot_time_with_centers <- function(data_sub, use_data, centers, label = "Time", x_var = c("time", "tad")) {
+          x_var <- match.arg(x_var)
+          if (all(is.na(use_data))) {
+            plot.new()
+            title(main = paste(label, "has only missing values"))
+            return(invisible(NULL))
+          }
+          plot_data <- data_sub %>%
+            filter(evid == 0, !is.na(out))
+
+          if (identical(x_var, "tad")) {
+            plot_data <- plot_data %>% filter(!is.na(tad))
+          }
+
+          plot_formula <- if (identical(x_var, "tad")) {
+            out ~ tad
+          } else {
+            out ~ time
+          }
+          plot(
+            plot_formula,
+            data = plot_data,
+            xlab = label,
+            ylab = "Observation",
+            xlim = c(min(use_data, na.rm = TRUE), max(use_data, na.rm = TRUE))
+          )
+          k <- stats::kmeans(use_data, centers = clamp_centers(use_data, centers), nstart = 50)
+          abline(v = as.numeric(k$centers), col = "red")
+          invisible(NULL)
+        }
+
+        cli::cli_bullets(c(
+          ">" = "{.strong Step 1}: cluster dosing, selected covariates, and observation times across the population.",
+          ">" = "Launching interactive Shiny clustering app..."
+        ))
+
+        instruction_panel <- function(title, lines) {
+          shiny::tags$details(
+            shiny::tags$summary(title, style = "display: list-item; cursor: pointer;"),
+            shiny::tags$ul(lapply(lines, shiny::tags$li))
+          )
+        }
+
+        ui <- shiny::fluidPage(
+          shiny::titlePanel("PM_valid clustering"),
+          shiny::sidebarLayout(
+            shiny::sidebarPanel(
+              if (covData$ncov > 0) {
+                shiny::checkboxGroupInput(
+                  "binCov",
+                  "Covariates to include in dose/covariate clustering",
+                  choices = cov_names,
+                  selected = binCov
+                )
+              },
+              shiny::checkboxInput("use_tad", "Include Time After Dose (TAD) clustering", value = isTRUE(tad)),
+              if (needs_dose) shiny::numericInput("doseC", "Dose/covariate clusters", value = default_dose, min = 1, step = 1),
+              if (needs_time) shiny::numericInput("timeC", "Sample-time clusters", value = default_time, min = 1, step = 1),
+              shiny::conditionalPanel(
+                condition = "input.use_tad",
+                shiny::numericInput("tadC", "TAD clusters", value = default_tad, min = 1, step = 1)
+              ),
+              shiny::actionButton("apply", "Go", class = "btn-success", style = "color: #fff;"),
+              shiny::actionButton("cancel", "Cancel")
+            ),
+            shiny::mainPanel(
+              shiny::tabsetPanel(
+                if (needs_dose) {
+                  shiny::tabPanel(
+                    "Dose/Covariates",
+                    instruction_panel(
+                      "How to use the dose/covariate classification plot",
+                      c(
+                        "Off-diagonal panels show the relationship between the row/column variable values.",
+                        "Each point is a dose/covariate record grouped by the current model-based cluster assignment.",
+                        "Increase or decrease Dose/covariate clusters to group points as much as possible with the greatest separation between groups.",
+                        "Use this plot to decide whether additional clusters reveal meaningful structure or just overly segment the data."
+                      )
+                    ),
+                    shiny::plotOutput("dose_class"),
+                    instruction_panel(
+                      "How to use the dose/covariate elbow plot",
+                      c(
+                        "The elbow shows how within-cluster variation decreases as cluster count increases.",
+                        "Look for the bend where extra clusters give only small improvement in WSS.",
+                        "Choose that elbow value as a practical balance between fit and simplicity."
+                      )
+                    ),
+                    shiny::plotOutput("dose_elbow")
+                  )
+                },
+                if (needs_time) {
+                  shiny::tabPanel(
+                    "Sample Times",
+                    instruction_panel(
+                      "How to use the sample-time classification plot",
+                      c(
+                        "Points are grouped by observation time clusters.",
+                        "Adjust Sample-time clusters and confirm whether clusters remain interpretable and well separated.",
+                        "Prefer settings that preserve clinically relevant timing structure."
+                      )
+                    ),
+                    shiny::plotOutput("time_class"),
+                    instruction_panel(
+                      "How to use the observation plot",
+                      c(
+                        "Observations are plotted relative to cluster times."
+                      
+                      )
+                    ),
+                    shiny::plotOutput("time_cluster"),
+                    instruction_panel(
+                      "How to use the sample-time elbow plot",
+                      c(
+                        "The elbow summarizes diminishing returns as more time clusters are added.",
+                        "A clear bend indicates a reasonable cluster count for time binning.",
+                        "Use this together with the classification view before applying your final choice."
+                      )
+                    ),
+                    shiny::plotOutput("time_elbow")
+                  )
+                },
+                shiny::tabPanel(
+                  "TAD",
+                  shiny::conditionalPanel(
+                    condition = "input.use_tad",
+                    instruction_panel(
+                      "How to use the TAD classification plot",
+                      c(
+                        "This plot groups observations by model-based clusters of time-after-dose values.",
+                        "Adjust TAD clusters to inspect whether the grouping remains stable and clinically interpretable.",
+                        "Use this view with the elbow plot before finalizing your TAD cluster count."
+                      )
+                    ),
+                    shiny::plotOutput("tad_class"),
+                    instruction_panel(
+                      "How to use the observation plot",
+                      c(
+                        "Observations are plotted relative to clustered times after doses."
+                      
+                      )
+                    ),
+                    shiny::plotOutput("tad_cluster"),
+                    instruction_panel(
+                      "How to use the TAD elbow plot",
+                      c(
+                        "The elbow reflects how much within-cluster variation drops as TAD cluster count increases.",
+                        "Select the bend point where additional clusters have diminishing benefit.",
+                        "Prefer the smallest count that still captures meaningful TAD structure."
+                      )
+                    ),
+                    shiny::plotOutput("tad_elbow")
+                  ),
+                  shiny::conditionalPanel(
+                    condition = "!input.use_tad",
+                    shiny::tags$p("Enable 'Use TAD clustering' to configure and inspect TAD clusters.")
+                  )
+                )
+              )
+            )
+          )
+        )
+
+        server <- function(input, output, session) {
+          selected_cov <- shiny::reactive({
+            if (covData$ncov == 0) {
+              character(0)
+            } else {
+              cov_names[cov_names %in% input$binCov]
             }
-          }
-        }
-        if (ans == 3) {
-          confirm <- 2
-          while (confirm != 1) {
-            timeVec <- ask_user("Specify a comma-separated list of times, e.g. 1,2,8,10: ")
-            timeVec <- as.numeric(strsplit(timeVec, ",")[[1]])
-            show_diag_then_continue({
-              timeClusterPlot()
-              abline(v = timeVec, col = "red")
-            }, "Review cluster plot, then press <Return> to continue: ")
-            confirm <- ask_user("Enter:\n<1> to confirm times\n<2> to revise times ")
-          }
-          TclustNum <- timeVec
-        }
-        if (all(is.na(TclustNum))) TclustNum <- mod$G
-        return(as.numeric(TclustNum))
-      } # end timeCluster function
+          })
 
-      # cluster by time and tad if appropriate
-      if (length(timeC) == 0) {
-        cat("Now clustering for actual sample times...\n")
-        timeC <- timeCluster("time")
-      } # end if missing timeC
-      if (tad & length(tadC) == 0) {
-        cat("Now clustering for time after dose...\n")
-        tadC <- timeCluster("tad")
+          use_tad <- shiny::reactive({
+            isTRUE(input$use_tad)
+          })
+
+          reactive_cluster_data <- shiny::reactive({
+            build_cluster_data(selected_cov(), use_tad = use_tad())
+          })
+
+          suggested_dose_clusters <- shiny::reactive({
+            shiny::req(needs_dose)
+            suggest_clusters(reactive_cluster_data()$dataSubDC)
+          })
+
+          suggested_time_clusters <- shiny::reactive({
+            shiny::req(needs_time)
+            suggest_clusters(reactive_cluster_data()$dataSubTime)
+          })
+
+          shiny::observeEvent(selected_cov(), {
+            if (needs_dose) {
+              shiny::updateNumericInput(
+                session,
+                "doseC",
+                value = suggested_dose_clusters()
+              )
+            }
+            if (needs_time) {
+              shiny::updateNumericInput(
+                session,
+                "timeC",
+                value = suggested_time_clusters()
+              )
+            }
+          }, ignoreInit = TRUE)
+
+          if (needs_dose) {
+            output$dose_class <- shiny::renderPlot({
+              dose_data <- reactive_cluster_data()$dataSubDC
+              selected_g <- clamp_centers(dose_data, input$doseC)
+              dose_mod <- mclust::Mclust(dose_data, G = selected_g, verbose = FALSE)
+              plot(dose_mod, "classification")
+            })
+            output$dose_elbow <- shiny::renderPlot({
+              elbow(reactive_cluster_data()$dataSubDC)
+            })
+          }
+
+          if (needs_time) {
+            output$time_class <- shiny::renderPlot({
+              mod <- mclust::Mclust(reactive_cluster_data()$dataSubTime, verbose = FALSE)
+              plot(mod, "classification")
+            })
+            output$time_cluster <- shiny::renderPlot({
+              cluster_data <- reactive_cluster_data()
+              plot_time_with_centers(
+                cluster_data$dataSub,
+                cluster_data$dataSubTime,
+                max(1, as.numeric(input$timeC)),
+                "Time",
+                x_var = "time"
+              )
+            })
+            output$time_elbow <- shiny::renderPlot({
+              elbow(reactive_cluster_data()$dataSubTime)
+            })
+          }
+
+          output$tad_class <- shiny::renderPlot({
+            shiny::req(use_tad())
+            mod <- mclust::Mclust(reactive_cluster_data()$dataSubTad, verbose = FALSE)
+            plot(mod, "classification")
+          })
+          output$tad_cluster <- shiny::renderPlot({
+            shiny::req(use_tad())
+            cluster_data <- reactive_cluster_data()
+            plot_time_with_centers(
+              cluster_data$dataSub,
+              cluster_data$dataSubTad,
+              max(1, as.numeric(input$tadC)),
+              "Time after dose",
+              x_var = "tad"
+            )
+          })
+          output$tad_elbow <- shiny::renderPlot({
+            shiny::req(use_tad())
+            elbow(reactive_cluster_data()$dataSubTad)
+          })
+
+          shiny::observeEvent(input$apply, {
+            selected_data <- reactive_cluster_data()
+            selected <- list(
+              doseC = if (needs_dose) max(1, as.numeric(input$doseC)) else as.numeric(doseC)[1],
+              timeC = if (needs_time) max(1, as.numeric(input$timeC)) else as.numeric(timeC)[1],
+              tad = selected_data$use_tad,
+              tadC = if (isTRUE(selected_data$use_tad)) max(1, as.numeric(input$tadC)) else NA_real_,
+              binCov = selected_data$binCov
+            )
+            shiny::stopApp(selected)
+          })
+
+          shiny::observeEvent(input$cancel, {
+            shiny::stopApp(NULL)
+          })
+        }
+
+        app_result <- shiny::runApp(shiny::shinyApp(ui = ui, server = server), launch.browser = TRUE)
+        if (is.null(app_result)) {
+          cli::cli_abort(c(
+            "x" = "Clustering selection was cancelled.",
+            "i" = "Re-run and complete the Shiny dialog, or provide cluster settings directly."
+          ))
+        }
+
+        if (needs_dose) doseC <- as.numeric(app_result$doseC)
+        if (needs_time) timeC <- as.numeric(app_result$timeC)
+        tad <- isTRUE(app_result$tad)
+        tadC <- if (isTRUE(tad)) as.numeric(app_result$tadC) else NULL
+        binCov <- cov_names[cov_names %in% app_result$binCov]
+
+        cluster_data <- build_cluster_data(binCov, use_tad = tad)
+        dataSub <- cluster_data$dataSub
+        dataSubDC <- cluster_data$dataSubDC
+        dataSubTime <- cluster_data$dataSubTime
+        if (tad) {
+          dataSubTad <- cluster_data$dataSubTad
+        }
       }
 
       # now set the cluster bins
-      dcClusters <- stats::kmeans(dataSubDC, centers = doseC, nstart = 50)
+      dcClusters <- stats::kmeans(dataSubDC, centers = clamp_centers(dataSubDC, doseC), nstart = 50)
       dataSub$dcBin[dataSub$evid > 0] <- dcClusters$cluster # m=dose,covariate bins
 
-      timeClusters <- stats::kmeans(dataSubTime, centers = timeC, nstart = 50)
+      timeClusters <- stats::kmeans(dataSubTime, centers = clamp_centers(dataSubTime, timeC), nstart = 50)
       # dataSub$timeBin[dataSub$evid == 0] <- sapply(timeClusters$cluster, function(x) which(order(timeClusters$centers) == x)) # n=ordered time bins
       dataSub$timeBin[dataSub$evid == 0] <- timeClusters$cluster
 
       if (tad) {
-        tadClusters <- stats::kmeans(dataSubTad, centers = tadC, nstart = 50)
+        tadClusters <- stats::kmeans(dataSubTad, centers = clamp_centers(dataSubTad, tadC), nstart = 50)
         # dataSub$tadBin[dataSub$evid == 0] <- sapply(tadClusters$cluster, function(x) which(order(tadClusters$centers) == x)) # n=ordered time bins
         dataSub$tadBin[dataSub$evid == 0] <- tadClusters$cluster
       } else {
@@ -476,11 +840,7 @@ PM_valid <- R6::R6Class(
       }
 
       # Simulations -------------------------------------------------------------
-      # datafileName <- "gendata.csv"
-      # modelfile <- "genmodel.txt"
-      #
-      # result$data$save(datafileName)
-      # result$model$save(modelfile)
+
 
       # simulate PRED_bin from pop icen parameter values and median of each bin for each subject
       # first, calculate median of each bin
@@ -562,7 +922,7 @@ PM_valid <- R6::R6Class(
         limits = limits, quiet = TRUE
       ), argsSIM)
       
-      cli::cli_inform(c("i" = "Simulating one version of each subject using medians of binned data..."))
+      cli::cli_bullets(c(">" = "{.strong Step 2}:Simulating one version of each subject using medians of binned data..."))
 
       PRED_bin <- do.call(PM_sim$new, argsSIM1)
       PRED_bin$data$obs <- PRED_bin$data$obs %>% filter(!is.na(out))
@@ -625,7 +985,7 @@ PM_valid <- R6::R6Class(
         argsSIM2$exclude <- excludeID
       }
       
-      cli::cli_inform(c("i" = "Simulating {nsim} versions of each subject using original data..."))
+      cli::cli_bullets(c(">" = "{.strong Step 3}:Simulating {nsim} versions of each subject using original data..."))
       simFull <- do.call(PM_sim$new, argsSIM2)
       # take out observations at time 0 from evid=4 and missing outputs
       simFull$data$obs <- simFull$data$obs %>% filter(time > 0, out != -99)
@@ -681,8 +1041,49 @@ PM_valid <- R6::R6Class(
 
       # get number of outeq
       nout <- max(obs$outeq, na.rm = T)
-      npde <- list()
-      npdeTAD <- list()
+      npde <- vector("list", nout)
+      npdeTAD <- vector("list", nout)
+      npdeStats <- vector("list", nout)
+      npdeTADStats <- vector("list", nout)
+
+      prepare_npde_pair <- function(obs_df, sim_df) {
+        id_levels <- unique(obs_df$id)
+
+        obs_clean <- obs_df %>%
+          mutate(
+            id = match(id, id_levels),
+            time = suppressWarnings(as.numeric(time)),
+            out = suppressWarnings(as.numeric(out))
+          ) %>%
+          filter(!is.na(id), is.finite(time), is.finite(out)) %>%
+          arrange(id, time)
+
+        sim_clean <- sim_df %>%
+          filter(id %in% id_levels) %>%
+          mutate(
+            id = match(id, id_levels),
+            time = suppressWarnings(as.numeric(time)),
+            out = suppressWarnings(as.numeric(out))
+          ) %>%
+          filter(!is.na(id), is.finite(time), is.finite(out)) %>%
+          arrange(id, time)
+
+        list(obs = data.frame(obs_clean), sim = data.frame(sim_clean))
+      }
+
+      run_autonpde_silent <- function(...) {
+        npde_obj <- NULL
+        console_text <- capture.output(
+          npde_obj <- suppressMessages(
+            suppressWarnings(
+              npde::autonpde(...)
+            )
+          ),
+          type = "output"
+        )
+
+        list(result = npde_obj, console = console_text)
+      }
 
       for (thisout in 1:nout) {
         obs_sub <- obs %>%
@@ -693,8 +1094,9 @@ PM_valid <- R6::R6Class(
           filter(outeq == thisout, id %in% obs_sub$id) %>%
           select(id, time, out) %>%
           arrange(id, time)
-        obs_sub <- data.frame(obs_sub)
-        sim_sub <- data.frame(sim_sub)
+        clean_pair <- prepare_npde_pair(obs_sub, sim_sub)
+        obs_sub <- clean_pair$obs
+        sim_sub <- clean_pair$sim
 
         if (tad) {
           obs_sub2 <- obs %>%
@@ -705,83 +1107,107 @@ PM_valid <- R6::R6Class(
             filter(outeq == thisout, id %in% obs_sub$id) %>%
             select(id, time = tad, out) %>%
             arrange(id, time)
-          obs_sub2 <- data.frame(obs_sub2)
-          sim_sub2 <- data.frame(sim_sub2)
+          clean_pair_tad <- prepare_npde_pair(obs_sub2, sim_sub2)
+          obs_sub2 <- clean_pair_tad$obs
+          sim_sub2 <- clean_pair_tad$sim
         }
         # get NPDE decorr.method = "inverse",
 
-        
-        npde[[thisout]] <- suppressMessages(tryCatch(
-          suppressWarnings(npde::autonpde(obs_sub, sim_sub,
-                         iid = "id", ix = "time", iy = "out",
-                         detect = FALSE,
-                         verbose = FALSE,
-                         boolsave = FALSE
-          )),
-          error = function(e) {
-            e
-            return(e)
-          }
-        ))
-        
+        npde_run <- tryCatch(
+          run_autonpde_silent(
+            obs_sub, sim_sub,
+            iid = "id", ix = "time", iy = "out",
+            detect = FALSE,
+            verbose = FALSE,
+            boolsave = FALSE
+          ),
+          error = function(e) e
+        )
+
+        if (inherits(npde_run, "error")) {
+          npde[[thisout]] <- npde_run
+          npdeStats[[thisout]] <- character()
+        } else {
+          npde[[thisout]] <- npde_run$result
+          npdeStats[[thisout]] <- npde_run$console
+        }
+
         if (inherits(npde[[thisout]], "error")) { # error, often due to non pos-def matrix
-          npde[[thisout]] <- tryCatch(
-            npde::autonpde(obs_sub, sim_sub,
-                           iid = "id", ix = "time", iy = "out",
-                           detect = FALSE,
-                           verbose = FALSE,
-                           boolsave = FALSE,
-                           decorr.method = "inverse"
+          npde_run <- tryCatch(
+            run_autonpde_silent(
+              obs_sub, sim_sub,
+              iid = "id", ix = "time", iy = "out",
+              detect = FALSE,
+              verbose = FALSE,
+              boolsave = FALSE,
+              decorr.method = "inverse"
             ),
-            error = function(e) {
-              e
-              return(e)
-            }
+            error = function(e) e
           )
 
-          if (inherits(npde[[thisout]], "error")) { # still with error
-            errorMsg <- npde[[thisout]]
-            npde[[thisout]] <- paste0("Unable to calculate NPDE for outeq ", thisout, ": ", errorMsg)
+          if (inherits(npde_run, "error")) {
+            npde[[thisout]] <- paste0("Unable to calculate NPDE for outeq ", thisout, ": ", npde_run$message)
+            npdeStats[[thisout]] <- character()
           } else {
-            cat(paste0("NOTE: Due to numerical instability, for outeq ", thisout, " inverse decorrelation applied, not Cholesky (the default)."))
+            npde[[thisout]] <- npde_run$result
+            npdeStats[[thisout]] <- c(
+              npde_run$console,
+              paste0(
+                "NOTE: Due to numerical instability, for outeq ",
+                thisout,
+                " inverse decorrelation applied, not Cholesky (the default)."
+              )
+            )
           }
         }
 
         # get NPDE for TAD
         if (tad) {
-          npdeTAD[[thisout]] <- tryCatch(
-            npde::autonpde(obs_sub2, sim_sub2,
-                           iid = "id", ix = "time", iy = "out",
-                           detect = FALSE,
-                           verbose = FALSE,
-                           boolsave = FALSE
+          npde_tad_run <- tryCatch(
+            run_autonpde_silent(
+              obs_sub2, sim_sub2,
+              iid = "id", ix = "time", iy = "out",
+              detect = FALSE,
+              verbose = FALSE,
+              boolsave = FALSE
             ),
-            error = function(e) {
-              e
-              return(e)
-            }
+            error = function(e) e
           )
 
+          if (inherits(npde_tad_run, "error")) {
+            npdeTAD[[thisout]] <- npde_tad_run
+            npdeTADStats[[thisout]] <- character()
+          } else {
+            npdeTAD[[thisout]] <- npde_tad_run$result
+            npdeTADStats[[thisout]] <- npde_tad_run$console
+          }
+
           if (inherits(npdeTAD[[thisout]], "error")) { # error, often due to non pos-def matrix
-            npdeTAD[[thisout]] <- tryCatch(
-              npde::autonpde(obs_sub2, sim_sub2,
+            npde_tad_run <- tryCatch(
+              run_autonpde_silent(
+                obs_sub2, sim_sub2,
                 iid = "id", ix = "time", iy = "out",
-                detect = F,
-                verbose = F,
-                boolsave = F,
+                detect = FALSE,
+                verbose = FALSE,
+                boolsave = FALSE,
                 decorr.method = "inverse"
               ),
-              error = function(e) {
-                e
-                return(e)
-              }
+              error = function(e) e
             )
 
-            if (inherits(npdeTAD[[thisout]], "error")) { # still with error
-              errorMsg <- npdeTAD[[thisout]]
-              npdeTAD[[thisout]] <- paste0("Unable to calculate NPDE with TAD for outeq ", thisout, ": ", errorMsg)
+            if (inherits(npde_tad_run, "error")) {
+              npdeTAD[[thisout]] <- paste0("Unable to calculate NPDE with TAD for outeq ", thisout, ": ", npde_tad_run$message)
+              npdeTADStats[[thisout]] <- character()
             } else {
-              cat(paste0("NOTE: Due to numerical instability, for outeq ", thisout, " and TAD, inverse decorrelation applied, not Cholesky (the default)."))
+              npdeTAD[[thisout]] <- npde_tad_run$result
+              npdeTADStats[[thisout]] <- c(
+                npde_tad_run$console,
+                paste0(
+                  "NOTE: Due to numerical instability, for outeq ",
+                  thisout,
+                  " and TAD, inverse decorrelation applied, not Cholesky (the default)."
+                )
+              )
             }
           }
         }
@@ -796,13 +1222,29 @@ PM_valid <- R6::R6Class(
         tadBinMedian = tadMedian,
         opDF = tempDF,
         npde = npde,
-        npde_tad = npdeTAD
+        npde_tad = npdeTAD,
+        npde_stats = list(time = npdeStats, tad = npdeTADStats)
       )
 
       return(invisible(valRes))
     } # end make function
   ) # end private
 )
+
+#' @title Summary Method for PM_valid Objects
+#' @description
+#' `r lifecycle::badge('stable')`
+#' Prints NPDE distribution statistics and a Numerical Predictive Check (NPC)
+#' for each output equation in the [PM_valid] object. TAD-based results are
+#' included automatically when TAD validation was performed.
+#' @param object A [PM_valid] object.
+#' @param probs Numeric vector of quantile cut-points for the NPC.
+#' Default is `c(0.05, 0.5, 0.95)`.
+#' @param ... Ignored; present for S3 compatibility.
+#' @export
+summary.PM_valid <- function(object, probs = c(0.05, 0.5, 0.95), ...) {
+  object$summary(probs = probs)
+}
 
 
 # PLOT --------------------------------------------------------------------
