@@ -1056,22 +1056,24 @@ get_metric_info <- function(pe) {
   bias_imp_col <- ifelse(with_percent, 3, 2)
   current_imp <- getPMoptions("imp_method")
   imp_row <- which(type_options == stringr::str_replace(current_imp, "percent_", ""))
+  bias_key <- stringr::str_replace(current_bias, "percent_", "")
+  imp_key <- stringr::str_replace(current_imp, "percent_", "")
 
   metric_types <- tibble(
-    bias = stringr::str_replace(current_bias, "percent_", "") %>%
-      case_match(
-        "mae" ~ "Mean absolute error (MAE)",
-        "mwe" ~ "Mean weighted error (MWE)"
-      ),
-    imprecision = stringr::str_replace(current_imp, "percent_", "") %>%
-      case_match(
-        "mse" ~ "Mean squared error (MSE)",
-        "mwse" ~ "Mean weighted squared error (MWSE)",
-        "rmse" ~ "Root mean squared error (RMSE)",
-        "mbase" ~ "Mean, bias-adjusted, squared error (MBASE)",
-        "mbawse" ~ "Mean, bias-adjusted, weighted, squared error (MBAWSE)",
-        "rmbawse" ~ "Root mean, bias-adjusted, weighted, squared error (RMBAWSE)"
-      )
+    bias = dplyr::case_when(
+      bias_key == "mae" ~ "Mean absolute error (MAE)",
+      bias_key == "mwe" ~ "Mean weighted error (MWE)",
+      TRUE ~ bias_key
+    ),
+    imprecision = dplyr::case_when(
+      imp_key == "mse" ~ "Mean squared error (MSE)",
+      imp_key == "mwse" ~ "Mean weighted squared error (MWSE)",
+      imp_key == "rmse" ~ "Root mean squared error (RMSE)",
+      imp_key == "mbase" ~ "Mean, bias-adjusted, squared error (MBASE)",
+      imp_key == "mbawse" ~ "Mean, bias-adjusted, weighted, squared error (MBAWSE)",
+      imp_key == "rmbawse" ~ "Root mean, bias-adjusted, weighted, squared error (RMBAWSE)",
+      TRUE ~ imp_key
+    )
   ) %>% mutate(across(everything(), ~ if (with_percent) paste0("% ", .x) else .x))
 
   metric_vals <- tibble(

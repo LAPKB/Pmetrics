@@ -25,7 +25,7 @@ build_passthrough_ode_model <- function(solver = NULL) {
     ))
 }
 
-testthat::test_that("ODE generation uses ode! and preserves 1-based indices", {
+test_that("ODE generation uses ode! and preserves 1-based indices", {
     mod <- build_passthrough_ode_model("TSIT45")
     rust_file <- tempfile(fileext = ".rs")
     on.exit(unlink(rust_file), add = TRUE)
@@ -45,7 +45,7 @@ testthat::test_that("ODE generation uses ode! and preserves 1-based indices", {
     testthat::expect_false(grepl("dx[0]", rust, fixed = TRUE))
 })
 
-testthat::test_that("Analytical migration compiles and reports analytical parameters", {
+test_that("Analytical migration compiles and reports analytical parameters", {
     mod <- build_library_model("one_comp_iv", mode = "analytical")
     rust_file <- tempfile(fileext = ".rs")
     on.exit(unlink(rust_file), add = TRUE)

@@ -1222,7 +1222,9 @@ PM_model <- R6::R6Class(
       #### Save input objects ####
       fs::dir_create(normalizePath(file.path(path_run, "inputs"), mustWork = FALSE))
       PM_data$new(data_filtered, quiet = TRUE)$save(normalizePath(file.path(path_run, "inputs", "gendata.csv"), mustWork = FALSE), header = FALSE)
-      saveRDS(list(data = data, model = self), file = normalizePath(file.path(path_run, "inputs", "fit.rds"), mustWork = FALSE))
+      suppressWarnings(
+        saveRDS(list(data = data, model = self), file = normalizePath(file.path(path_run, "inputs", "fit.rds"), mustWork = FALSE))
+      )
       file.copy(self$binary_path, normalizePath(file.path(path_run, "inputs"), mustWork = FALSE))
 
       # Get ranges and calculate points
@@ -2637,7 +2639,7 @@ plot.PM_model <- function(x,
       geom_label(
         data = layout_df,
         aes(x = x, y = y + 0.15, label = compartment), fill = NA,
-        color = "black", fontface = "bold", size = 7, label.size = NA
+        color = "black", fontface = "bold", size = 7, linewidth = NA
       ) +
 
       geom_point(
@@ -2655,7 +2657,7 @@ plot.PM_model <- function(x,
         fontface = "bold",
         size = 4,
         show.legend = FALSE,
-        label.size = NA
+        linewidth = NA
       )
     }
     if (length(outputs) > 0) {
@@ -2680,7 +2682,7 @@ plot.PM_model <- function(x,
           fill = NA,
           fontface = "bold",
           size = 3,
-          label.size = 0
+          linewidth = 0
         )
       }
     }
@@ -2702,7 +2704,7 @@ plot.PM_model <- function(x,
   # equations <- parse_equations(this_model)
   # Expand and distribute equations
 
-  expanded_equations <- purrr::map(parse(text = tolower(eqns)), expand_distribute)
+  expanded_equations <- purrr::map(as.list(parse(text = tolower(eqns))), expand_distribute)
   outputs <- parse_output_equations(as.list(parse(text = tolower(outs))))
   out_comp <- map_chr(outputs, function(o) {
     if (!is.null(o$compartment)) {

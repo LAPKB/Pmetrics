@@ -65,7 +65,7 @@ bolus_data <- make_sim_bolus_template_data()
 iv_data <- make_sim_iv_template_data()
 
 for (model_name in model_names) {
-  testthat::test_that(paste("Simulated Analytical and ODE observations agree for", model_name), {
+  test_that(paste("Simulated Analytical and ODE observations agree for", model_name), {
     dat <- if (stringr::str_detect(model_name, "bolus")) {
       bolus_data
     } else if (stringr::str_detect(model_name, "iv")) {

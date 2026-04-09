@@ -1,3 +1,9 @@
+test_that <- function(desc, code) {
+  desc <- as.character(desc)
+  message(sprintf("[test] %s", desc))
+  testthat::test_that(desc, code)
+}
+
 build_library_model <- function(model_name, mode = c("analytical", "ode")) {
   mode <- match.arg(mode)
 
