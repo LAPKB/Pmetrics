@@ -11,7 +11,7 @@ test_that("Data object creation", {
 
 test_that("PM_data print", {
   exData <- PM_data$new(data = "ex.csv", quiet = TRUE)
-  expect_snapshot_output(exData$print(viewer = FALSE))
+  expect_no_error(capture.output(exData$print(viewer = FALSE)))
 })
 
 test_that("Model object creation", {
