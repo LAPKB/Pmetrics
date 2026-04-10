@@ -1,5 +1,8 @@
 ---
 title: "Pmetrics"
+vignette:
+  engine: quarto
+  type: package
 format:
   html:
     toc: true
@@ -7,10 +10,6 @@ format:
     number-sections: true
     code-fold: false
     css: Styles/style.css
-vignette: >
-  %\VignetteIndexEntry{Pmetrics}
-  %\VignetteEngine{quarto}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
