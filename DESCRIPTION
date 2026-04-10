@@ -74,7 +74,7 @@ Suggests:
     testthat
 RoxygenNote: 7.3.3
 Encoding: UTF-8
-VignetteBuilder: quarto
+VignetteBuilder: knitr
 LazyData: true
 LazyDataCompression: xz
 Config/rextendr/version: 0.4.2
