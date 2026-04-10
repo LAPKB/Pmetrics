@@ -1,8 +1,9 @@
 ---
 title: "Pmetrics"
-vignette:
-  engine: quarto
-  type: package
+vignette: >
+  %\VignetteIndexEntry{Pmetrics}
+  %\VignetteEngine{quarto::quarto}
+  %\VignetteEncoding{UTF-8}
 format:
   html:
     toc: true
