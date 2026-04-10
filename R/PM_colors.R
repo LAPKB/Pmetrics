@@ -27,7 +27,7 @@ green <- function(alpha = 1) {
 }
 
 red <- function(alpha = 1) {
-  make_color(hex = "#FF9999", alpha = alpha)
+  make_color(hex = "#FF0000", alpha = alpha)
 }
 
 yellow <- function(alpha = 1) {

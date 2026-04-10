@@ -155,6 +155,7 @@ Again, all R code will be converted to lowercase prior to translation into Rust.
   ini = NULL,
   out = NULL,
   err = NULL,
+  solver = NULL,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -434,6 +435,10 @@ for 3 outputs with the same error model:
   replicate(3, proportional(2, c(0.1, 0.15, 0, 0)))
 )
 }\if{html}{\out{</div>}}}
+
+\item{\code{solver}}{Optional ODE solver for user-defined ODE models.
+Supported values are "BDF", "TRBDF2", "ESDIRK34", and "TSIT45".
+This is ignored for analytical library models.}
 
 \item{\code{...}}{Not currently used.}
 }

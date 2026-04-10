@@ -61,7 +61,7 @@ PM_tutorial <- function() {
   cli::cli_text("Click {.file {file.path(ans, 'Learn/Rscript/Learn.R')}} to proceed with the tutorial.")
 
   # create the sample data files
-  data(dataEx)
+  data(dataEx, envir = environment())
   # example data
   readr::write_csv(dataEx$data, file = file.path(ans, "Learn", "src", "ex.csv" ), na = ".")
   # simulation template

@@ -112,7 +112,9 @@ class(core) <- "PM_result"
 
 
 if (write) {
-  save(core, file = file.path(path, "PMout.Rdata"))
+  suppressWarnings(
+    save(core, file = file.path(path, "PMout.Rdata"))
+  )
 }
 
 return(invisible(core))
