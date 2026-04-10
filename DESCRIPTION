@@ -71,7 +71,8 @@ Suggests:
     RcppTOML,
     rstudioapi,
     reticulate,
-    testthat
+    testthat,
+    withr
 RoxygenNote: 7.3.3
 Encoding: UTF-8
 VignetteBuilder: knitr
