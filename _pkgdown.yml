@@ -99,6 +99,10 @@ reference:
   - PMgetCRCL
   - PM_step
   - starts_with("get")
+- title: Model library
+  desc: Functions that copy library model code to clipboard
+- contents:
+  - contains("_comp_")
 - title: Datasets
   desc: Pmetrics datasets
 - contents: has_keyword("datasets")
