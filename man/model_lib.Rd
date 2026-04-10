@@ -7,11 +7,17 @@
 model_lib(show = TRUE)
 }
 \arguments{
-\item{show}{Logical indicating if the table should be printed. Default is TRUE.}
+\item{show}{Logical. If \code{TRUE} (default), launches the Shiny browser app.
+If \code{FALSE}, returns the model tibble invisibly without launching the app.}
 }
 \value{
-Invisibly, a tibble containing the model templates or a specific model template.
+Invisibly, a tibble of all model templates.
 }
 \description{
-Returns a table of all available model templates in the Pmetrics library.
+Launches a Shiny app for browsing all available pharmacokinetic model
+templates in the Pmetrics library. Select a model to view its parameters,
+compartment structure, differential equations, and ready-to-use
+\code{PM_model$new()} code. Use the Copy button to send the code to the
+clipboard. Individual creator functions such as \code{\link[=one_comp_iv]{one_comp_iv()}} return a
+compiled \code{PM_model} and copy the code automatically.
 }

@@ -1,4 +1,6 @@
 [workspace]
+resolver = "2"
+
 members = [
     "src/rust",
 ]
@@ -9,3 +11,6 @@ exclude = [
     # R CMD check copy of the Pmetrics Rust crate
     "check/Pmetrics.Rcheck/00_pkg_src/Pmetrics/src/rust",
 ]
+
+[profile.release]
+panic = "unwind"

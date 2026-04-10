@@ -179,8 +179,7 @@ PM_result <- R6::R6Class(
       dots <- list(...)
       
       dots$poppar <- self # send the PM_result object as poppar
-      
-      
+
       # if (!"data" %in% names(dots)) {
       #   dots$data <- self$data
       # }

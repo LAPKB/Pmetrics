@@ -7,7 +7,11 @@ mod simulation;
 
 use anyhow::Result;
 use extendr_api::prelude::*;
-use pmcore::prelude::{data::read_pmetrics, pharmsol::exa::build, Analytical, ODE};
+use pmcore::prelude::{
+    data::{read_pmetrics, Data, Event},
+    pharmsol::exa::build,
+    Analytical, ODE,
+};
 use simulation::SimulationRow;
 use std::process::Command;
 use tracing_subscriber::layer::SubscriberExt;
@@ -21,6 +25,62 @@ fn validate_paths(data_path: &str, model_path: &str) {
     if !std::path::Path::new(model_path).exists() {
         panic!("Model path does not exist: {}", model_path);
     }
+}
+
+fn compact_analytical_indices(data: &mut Data) {
+    let has_zero_input = data.iter().any(|subject| {
+        subject
+            .occasions()
+            .iter()
+            .flat_map(|occasion| occasion.iter())
+            .any(|event| match event {
+                Event::Bolus(bolus) => bolus.input() == 0,
+                Event::Infusion(infusion) => infusion.input() == 0,
+                Event::Observation(_) => false,
+            })
+    });
+    let has_zero_outeq = data.iter().any(|subject| {
+        subject
+            .occasions()
+            .iter()
+            .flat_map(|occasion| occasion.iter())
+            .any(|event| match event {
+                Event::Observation(observation) => observation.outeq() == 0,
+                _ => false,
+            })
+    });
+
+    for subject in data.iter_mut() {
+        for occasion in subject.occasions_iter_mut() {
+            for event in occasion.iter_mut() {
+                match event {
+                    Event::Bolus(bolus) if !has_zero_input => {
+                        bolus.set_input(bolus.input() - 1);
+                    }
+                    Event::Infusion(infusion) if !has_zero_input => {
+                        infusion.set_input(infusion.input() - 1);
+                    }
+                    Event::Observation(observation) if !has_zero_outeq => {
+                        observation.set_outeq(observation.outeq() - 1);
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+}
+
+fn read_pmetrics_for_kind(data_path: &str, kind: &str) -> Result<Data> {
+    let mut data = read_pmetrics(data_path)
+        .map_err(|err| anyhow::format_err!("Failed to parse data: {}", err))?;
+
+    match kind {
+        "ode" => {}
+        "analytical" => compact_analytical_indices(&mut data),
+        err => return Err(anyhow::format_err!("{} is not a supported model type", err)),
+    }
+
+    Ok(data)
 }
 
 /// Simulates the first subject in the data set using the model at the given path.
@@ -38,7 +98,7 @@ fn simulate_one(
     kind: &str,
 ) -> Result<Dataframe<SimulationRow>> {
     validate_paths(data_path, model_path);
-    let data = read_pmetrics(data_path).expect("Failed to parse data");
+    let data = read_pmetrics_for_kind(data_path, kind)?;
     let subjects = data.subjects();
     let rows = match kind {
         "ode" => executor::simulate::<ODE>(
@@ -81,7 +141,7 @@ fn simulate_all(
 
     validate_paths(data_path, model_path);
     let theta = parse_theta(theta);
-    let data = read_pmetrics(data_path).expect("Failed to parse data");
+    let data = read_pmetrics_for_kind(data_path, kind).expect("Failed to parse data");
     let subjects = data.subjects();
 
     let rows: Vec<_> = match kind {
@@ -138,22 +198,16 @@ pub fn fit(
     setup_logs()?;
     println!("Initializing model fit...");
     validate_paths(data, model_path);
+    let data = read_pmetrics_for_kind(data, kind)?;
     match kind {
-        "ode" => {
-            match executor::fit::<ODE>(model_path.into(), data.into(), params, output_path.into()) {
-                Ok(_) => {}
-                Err(err) => {
-                    println!("{}", err)
-                }
+        "ode" => match executor::fit::<ODE>(model_path.into(), data, params, output_path.into()) {
+            Ok(_) => {}
+            Err(err) => {
+                println!("{}", err)
             }
-        }
+        },
         "analytical" => {
-            match executor::fit::<Analytical>(
-                model_path.into(),
-                data.into(),
-                params,
-                output_path.into(),
-            ) {
+            match executor::fit::<Analytical>(model_path.into(), data, params, output_path.into()) {
                 Ok(_) => {}
                 Err(err) => {
                     println!("{}", err)
@@ -228,7 +282,6 @@ fn compile_model(
 /// @export
 #[extendr]
 fn dummy_compile(template_path: &str) -> Result<String> {
-    dbg!("inside dummy_compile");
     let template_path = std::path::PathBuf::from(template_path);
     let build_path = build::dummy_compile(template_path, |_key, val| {
         print!("{}", val);
@@ -240,8 +293,6 @@ fn dummy_compile(template_path: &str) -> Result<String> {
 /// @export
 #[extendr]
 fn is_cargo_installed() -> bool {
-    println!("inside is_cargo_installed");
-    dbg!("dbg is_cargo_installed");
     Command::new("cargo").arg("--version").output().is_ok()
 }
 
@@ -254,7 +305,7 @@ fn is_cargo_installed() -> bool {
 fn model_parameters(model_path: &str, kind: &str) -> Result<Vec<String>> {
     match kind {
         "ode" => Ok(executor::model_parameters::<ODE>(model_path.into())),
-        "analytical" => Ok(executor::model_parameters::<ODE>(model_path.into())),
+        "analytical" => Ok(executor::model_parameters::<Analytical>(model_path.into())),
         err => Err(anyhow::format_err!("{} is not a supported model type", err)),
     }
 }
@@ -287,10 +338,6 @@ fn setup_logs() -> anyhow::Result<()> {
 
     Ok(())
 }
-
-
-
-
 
 extendr_module! {
     mod Pmetrics;
