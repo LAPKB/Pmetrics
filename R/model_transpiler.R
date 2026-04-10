@@ -129,7 +129,7 @@ expr_to_rust <- function(
         inner_exprs <- as.list(args)
         paste(
           vapply(inner_exprs, function(e) {
-            expr_to_rust(e, params, covs, declared)
+            expr_to_rust(e, params, covs, declared, index_mode = index_mode)
           }, character(1)),
           collapse = "\n"
         )

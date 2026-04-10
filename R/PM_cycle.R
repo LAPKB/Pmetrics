@@ -532,22 +532,40 @@ plot.PM_cycle <- function(
 
   # amend older versions of gamma if needed
   if (is.matrix(data$gamlam)) {
-    gamlam <- raw %>% select(dplyr::starts_with("add") | dplyr::starts_with("prop"))
-    if (ncol(gamlam) == 1 && n_out > 1) {
-      gamlam <- cbind(gamlam, replicate((n_out - 1), gamlam[, 1]))
-    }
-    gamlam <- gamlam %>%
-      pivot_longer(
-        cols = dplyr::everything(),
-        values_to = "value", names_to = c("type", "outeq"),
-        names_sep = "\\."
-      ) %>%
-      mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
-      select(cycle, value, outeq, type) %>%
-      arrange(cycle, outeq)
-  }
+    # Older PM_cycle objects stored gamlam as a matrix. Reconstruct a tidy
+    # tibble for plotting here using fields available on `data` rather than
+    # relying on `raw`, `n_out` or `n_cyc` which are not in scope.
+    gamlam_mat <- data$gamlam
+    n_cyc_local <- nrow(gamlam_mat)
+    n_out_local <- ncol(gamlam_mat)
 
-  p3 <- data$gamlam %>%
+    coln <- colnames(gamlam_mat)
+    if (is.null(coln)) {
+      # If columns are unnamed, create generic names so we can split into
+      # type and outeq. Use a default type name 'Value'.
+      coln <- paste0("Value.", seq_len(n_out_local))
+    }
+
+    gamlam <- tibble::as_tibble(gamlam_mat)
+    names(gamlam) <- coln
+    gamlam <- gamlam %>%
+      dplyr::mutate(cycle = seq_len(n_cyc_local)) %>%
+      tidyr::pivot_longer(
+        cols = -cycle,
+        values_to = "value",
+        names_to = c("type", "outeq"),
+        names_sep = "\\.",
+        values_drop_na = FALSE
+      ) %>%
+      dplyr::mutate(outeq = normalize_engine_index(as.numeric(outeq))) %>%
+      dplyr::select(cycle, value, outeq, type) %>%
+      dplyr::arrange(cycle, outeq)
+  }
+  
+  # Use the reconstructed gamlam for plotting when needed; otherwise use
+  # the `data$gamlam` already present.
+  gamlam_plot <- if (exists("gamlam")) gamlam else data$gamlam
+  p3 <- gamlam_plot %>%
     mutate(
       type = ifelse(type == "Additive", "Lambda", "Gamma"),
       outeq = as.factor(outeq),
