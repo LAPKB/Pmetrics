@@ -53,6 +53,8 @@ Michael Neely
 
 \item{\code{npde_tad}}{Data for Normalized Prediction Distribution Error
 using Time After Dose if available}
+
+\item{\code{npde_stats}}{Captured NPDE console summaries for later replay}
 }
 \if{html}{\out{</div>}}
 }
@@ -60,6 +62,8 @@ using Time After Dose if available}
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-PM_valid-new}{\code{PM_valid$new()}}
+\item \href{#method-PM_valid-show_npde_stats}{\code{PM_valid$show_npde_stats()}}
+\item \href{#method-PM_valid-summary}{\code{PM_valid$summary()}}
 \item \href{#method-PM_valid-plot}{\code{PM_valid$plot()}}
 \item \href{#method-PM_valid-clone}{\code{PM_valid$clone()}}
 }
@@ -132,6 +136,7 @@ This will be \code{NA} if \code{tad = FALSE}.
 \item opDF A data frame with observations, predicitons, and bin-corrected predictions for each subject.
 \item ndpe An object with results of normalized distrubition of prediction errors analysis.
 \item npde_tad NPDE with time after dose rather than absolute time, if \code{tad = TRUE}
+\item npde_stats Captured NPDE console summary text, replayable with \verb{$show_npde_stats()}.
 }
 }
 \subsection{Examples}{
@@ -145,6 +150,45 @@ valid <- NPex$validate(limits = c(0, 3))
 
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_valid-show_npde_stats"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_valid-show_npde_stats}{}}}
+\subsection{Method \code{show_npde_stats()}}{
+Replay captured NPDE summary statistics.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_valid$show_npde_stats(outeq = 1, tad = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{outeq}}{Output equation number to replay.}
+
+\item{\code{tad}}{Logical; replay TAD-based NPDE stats.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_valid-summary"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_valid-summary}{}}}
+\subsection{Method \code{summary()}}{
+Summarize a \link{PM_valid} object. Reports NPDE distribution statistics and a
+Numerical Predictive Check (NPC) for each output equation. TAD-based results
+are included automatically when TAD validation was performed.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_valid$summary(probs = c(0.05, 0.5, 0.95))}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{probs}}{Numeric vector of quantile cut-points for the NPC.
+Default is \code{c(0.05, 0.5, 0.95)}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_valid-plot"></a>}}

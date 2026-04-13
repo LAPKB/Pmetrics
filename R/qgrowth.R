@@ -51,8 +51,8 @@ qgrowth <- function(sex = "B", agemos = (seq(0, 18) * 12), percentile = 50) {
     rowwise() %>%
     mutate(corr_age = agemos - KNOT, measure = A + B1 * corr_age + B2 * corr_age**2 + B3 * corr_age**3) %>% # calculate appropriate measure
     ungroup() %>%
-    mutate(across(CHART, stringr::str_replace, "length", "ht")) %>% # tidy labels
-    mutate(across(CHART, stringr::str_replace, regex("\\s+x age"), "")) %>%
+    mutate(across(CHART, \(x) stringr::str_replace(x, "length", "ht"))) %>% # tidy labels
+    mutate(across(CHART, \(x) stringr::str_replace(x, regex("\\s+x age"), ""))) %>%
     select(agemos, sex, percentile, CHART, measure) %>%
     pivot_wider(id_cols = 1:3, names_from = CHART, values_from = measure) %>% # reform the data frame
     mutate(ageyrs = agemos / 12, bmi = wt / (ht / 100)**2) %>% # add age in years and BMI

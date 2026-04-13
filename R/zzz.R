@@ -30,5 +30,5 @@
   setPMoptions(launch.app = FALSE)
   
   # Build model library
-  build_model_lib()
+  # build_model_lib()
 }

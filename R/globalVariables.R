@@ -1,5 +1,5 @@
 utils::globalVariables(
-  ".groups A AGE Agemos B1 B2 B3 CHART HTML KNOT PERCENTILE SEX Sex
+  ".groups A AGE Agemos B1 B2 B3 CHART HTML KNOT PERCENTILE SEX Sex dataEx
     actionButton ageyrs aic algebraic annotate arrow assignInNamespace
     bic block bmi bolus browseURL browseVignettes cdc_bmi checkboxInput
     ci cmt code colorRampPalette column combn corr_age cyc cycle d dcBin

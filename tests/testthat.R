@@ -1,4 +1,6 @@
 library(testthat)
 library(Pmetrics)
 
-# test_check("Pmetrics")
+# Test tooling notes: see tests/testthat/tools/README.md
+
+test_check("Pmetrics")
