@@ -198,7 +198,8 @@ PM_sim <- R6::R6Class(
     #' to simulate. This is useful when you already have fixed parameter values, such as
     #' `NPex$final$popPoints`. Each row will generate one simulated profile, so `nsim` is
     #' ignored and the number of simulated profiles will equal the number of rows in the
-    #' data frame.
+    #' data frame. If a `$prob` column is present, it will be ignored, since each row is 
+    #' treated as the parameters to be used for one simulation.
     #'
     #'     ```
     #'     poppar <- as.data.frame(run1$final$popPoints) |>
