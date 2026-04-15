@@ -24,10 +24,12 @@ run_fit_with_mocked_engine <- function(prior_input) {
   prior_arg <- prior_file
 
   captured_prior <- NULL
+  captured_wd <- NULL
 
   fit_result <- testthat::with_mocked_bindings(
     fit = function(model_path, data, params, output_path, kind) {
       captured_prior <<- params$prior
+      captured_wd <<- getwd()
       fs::dir_create(output_path)
       invisible(NULL)
     },
@@ -50,7 +52,9 @@ run_fit_with_mocked_engine <- function(prior_input) {
   list(
     fit_result = fit_result,
     captured_prior = captured_prior,
-    prior_csv = file.path(getwd(), "prior.csv")
+    captured_wd = captured_wd,
+    prior_csv = file.path(captured_wd, "prior.csv"),
+    root_prior_csv = file.path(getwd(), "prior.csv")
   )
 }
 
@@ -64,7 +68,9 @@ test_that("PM_model$fit accepts prior file with matching parameter names", {
 
   expect_s3_class(out$fit_result, "PM_result")
   expect_equal(out$captured_prior, "prior.csv")
+  expect_false(identical(out$captured_wd, getwd()))
   expect_true(file.exists(out$prior_csv))
+  expect_false(file.exists(out$root_prior_csv))
   expect_equal(names(utils::read.csv(out$prior_csv, check.names = FALSE)), c(params, "prob"))
 })
 
@@ -79,6 +85,7 @@ test_that("PM_model$fit reorders prior parameter columns to match current PRI or
 
   expect_s3_class(out$fit_result, "PM_result")
   expect_equal(out$captured_prior, "prior.csv")
+  expect_false(file.exists(out$root_prior_csv))
   expect_equal(names(utils::read.csv(out$prior_csv, check.names = FALSE)), c(params, "prob"))
 })
 
@@ -92,6 +99,7 @@ test_that("PM_model$fit substitutes renamed prior parameter columns when only na
 
   expect_s3_class(out$fit_result, "PM_result")
   expect_equal(out$captured_prior, "prior.csv")
+  expect_false(file.exists(out$root_prior_csv))
   expect_equal(names(utils::read.csv(out$prior_csv, check.names = FALSE)), c(params, "prob"))
 })
 
@@ -124,10 +132,12 @@ test_that("PM_model$fit supports numeric prior run and normalizes theta.csv colu
   file.create(model$binary_path)
 
   captured_prior <- NULL
+  captured_wd <- NULL
 
   fit_result <- testthat::with_mocked_bindings(
     fit = function(model_path, data, params, output_path, kind) {
       captured_prior <<- params$prior
+      captured_wd <<- getwd()
       fs::dir_create(output_path)
       invisible(NULL)
     },
@@ -149,5 +159,6 @@ test_that("PM_model$fit supports numeric prior run and normalizes theta.csv colu
 
   expect_s3_class(fit_result, "PM_result")
   expect_equal(captured_prior, "prior.csv")
-  expect_equal(names(utils::read.csv("prior.csv", check.names = FALSE)), c(params, "prob"))
+  expect_false(file.exists(file.path(getwd(), "prior.csv")))
+  expect_equal(names(utils::read.csv(file.path(captured_wd, "prior.csv"), check.names = FALSE)), c(params, "prob"))
 })

@@ -33,30 +33,35 @@ qgrowth <- function(sex = "B", agemos = (seq(0, 18) * 12), percentile = 50) {
     sex <- toupper(sex)
   }
 
-  sub1 <- purrr::map2_df(sex, percentile, function(x, y) {
-    growth %>%
-      filter(SEX == x, (CHART == "wt  x age" | CHART == "length x age" |
-        CHART == "ht x age"), PERCENTILE == y) %>%
-      rename(agecat = AGE, percentile = PERCENTILE, sex = SEX)
-  })
+  sub1 <- tidyr::crossing(sex, percentile) |>
+    dplyr::inner_join(
+      growth |>
+        dplyr::filter(
+          SEX %in% sex,
+          CHART %in% c("wt  x age", "length x age", "ht x age"),
+          PERCENTILE %in% percentile
+        ) |>
+        dplyr::rename(agecat = AGE, percentile = PERCENTILE, sex = SEX),
+      dplyr::join_by(sex, percentile)
+    )
 
   sub2 <- tidyr::crossing(agemos, sex, percentile) %>% # all combinations
-    mutate(agecat = ifelse(agemos <= 36, "0-36 mos", "2-18 years")) %>% # categorize age
-    inner_join(., sub1, by = c("agecat", "sex", "percentile")) %>% # lookup combinations in CDC table
-    group_by(agemos, sex, percentile, CHART) %>%
-    filter(KNOT <= agemos) %>%
-    slice_tail(n = 1) %>% # choose the maximum KNOT which is < agemos for each combination
-    ungroup() %>%
-    group_by(CHART) %>%
-    rowwise() %>%
-    mutate(corr_age = agemos - KNOT, measure = A + B1 * corr_age + B2 * corr_age**2 + B3 * corr_age**3) %>% # calculate appropriate measure
-    ungroup() %>%
-    mutate(across(CHART, \(x) stringr::str_replace(x, "length", "ht"))) %>% # tidy labels
-    mutate(across(CHART, \(x) stringr::str_replace(x, regex("\\s+x age"), ""))) %>%
-    select(agemos, sex, percentile, CHART, measure) %>%
-    pivot_wider(id_cols = 1:3, names_from = CHART, values_from = measure) %>% # reform the data frame
-    mutate(ageyrs = agemos / 12, bmi = wt / (ht / 100)**2) %>% # add age in years and BMI
-    select(agemos, ageyrs, wt, ht, bmi, sex, percentile) # final form
+    dplyr::mutate(agecat = ifelse(agemos <= 36, "0-36 mos", "2-18 years")) %>% # categorize age
+    dplyr::inner_join(sub1, by = c("agecat", "sex", "percentile")) %>% # lookup combinations in CDC table
+    dplyr::group_by(agemos, sex, percentile, CHART) %>%
+    dplyr::filter(KNOT <= agemos) %>%
+    dplyr::slice_tail(n = 1) %>% # choose the maximum KNOT which is < agemos for each combination
+    dplyr::ungroup() %>%
+    dplyr::group_by(CHART) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(corr_age = agemos - KNOT, measure = A + B1 * corr_age + B2 * corr_age**2 + B3 * corr_age**3) %>% # calculate appropriate measure
+    dplyr::ungroup() %>%
+    dplyr::mutate(CHART = stringr::str_replace(CHART, "length", "ht")) %>% # tidy labels
+    dplyr::mutate(CHART = stringr::str_replace(CHART, stringr::regex("\\s+x age"), "")) %>%
+    dplyr::select(agemos, sex, percentile, CHART, measure) %>%
+    tidyr::pivot_wider(id_cols = 1:3, names_from = CHART, values_from = measure) %>% # reform the data frame
+    dplyr::mutate(ageyrs = agemos / 12, bmi = .data$wt / (.data$ht / 100)**2) %>% # add age in years and BMI
+    dplyr::select(dplyr::all_of(c("agemos", "ageyrs", "wt", "ht", "bmi", "sex", "percentile"))) # final form
 
   return(sub2)
 }

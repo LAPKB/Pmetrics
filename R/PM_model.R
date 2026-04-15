@@ -1140,6 +1140,14 @@ PM_model <- R6::R6Class(
         run_error <- run_error + 1
       }
 
+      prior_dir <- NULL
+
+      make_prior_file <- function() {
+        prior_dir <<- tempfile(pattern = "prior-")
+        fs::dir_create(prior_dir)
+        file.path(prior_dir, "prior.csv")
+      }
+
       normalize_prior_csv <- function(file, current_parameters) {
         prior_df <- tryCatch(
           utils::read.csv(file, check.names = FALSE),
@@ -1229,9 +1237,9 @@ PM_model <- R6::R6Class(
 
         prior_df <- prior_df[, ordered_idx, drop = FALSE]
         names(prior_df)[seq_along(current_parameters)] <- current_parameters
-        utils::write.csv(prior_df, "prior.csv", row.names = FALSE)
+        utils::write.csv(prior_df, file, row.names = FALSE)
 
-        list(ok = TRUE, prior = "prior.csv", note = note)
+        list(ok = TRUE, prior = "prior.csv", prior_dir = dirname(file), note = note)
       }
 
       # set prior
@@ -1242,13 +1250,15 @@ PM_model <- R6::R6Class(
             msg <- c(msg, "{.arg prior} file does not exist.", "i" = "Check the file path.")
             run_error <- run_error + 1
           }
-          file.copy(glue::glue("{path}/{prior}/outputs/theta.csv"), "prior.csv", overwrite = TRUE)
-          prior_res <- normalize_prior_csv("prior.csv", self$model_list$parameters)
+          prior_file <- make_prior_file()
+          file.copy(glue::glue("{path}/{prior}/outputs/theta.csv"), prior_file, overwrite = TRUE)
+          prior_res <- normalize_prior_csv(prior_file, self$model_list$parameters)
           if (!prior_res$ok) {
             msg <- c(msg, prior_res$error)
             run_error <- run_error + 1
           } else {
             prior <- prior_res$prior
+            prior_dir <- prior_res$prior_dir
             if (!is.null(prior_res$note)) {
               msg <- c(msg, prior_res$note)
             }
@@ -1259,13 +1269,15 @@ PM_model <- R6::R6Class(
             msg <- c(msg, "{.arg prior} file does not exist.")
             run_error <- run_error + 1
           }
-          file.copy(prior, "prior.csv", overwrite = TRUE) # ensure in current working directory
-          prior_res <- normalize_prior_csv("prior.csv", self$model_list$parameters)
+          prior_file <- make_prior_file()
+          file.copy(prior, prior_file, overwrite = TRUE)
+          prior_res <- normalize_prior_csv(prior_file, self$model_list$parameters)
           if (!prior_res$ok) {
             msg <- c(msg, prior_res$error)
             run_error <- run_error + 1
           } else {
             prior <- prior_res$prior
+            prior_dir <- prior_res$prior_dir
             if (!is.null(prior_res$note)) {
               msg <- c(msg, prior_res$note)
             }
@@ -1276,13 +1288,15 @@ PM_model <- R6::R6Class(
             msg <- c(msg, "{.arg prior} data frame must contain columns for parameters and probabilities.")
             run_error <- run_error + 1
           }
-          utils::write.csv(prior, "prior.csv", row.names = FALSE)
-          prior_res <- normalize_prior_csv("prior.csv", self$model_list$parameters)
+          prior_file <- make_prior_file()
+          utils::write.csv(prior, prior_file, row.names = FALSE)
+          prior_res <- normalize_prior_csv(prior_file, self$model_list$parameters)
           if (!prior_res$ok) {
             msg <- c(msg, prior_res$error)
             run_error <- run_error + 1
           } else {
             prior <- prior_res$prior
+            prior_dir <- prior_res$prior_dir
             if (!is.null(prior_res$note)) {
               msg <- c(msg, prior_res$note)
             }
@@ -1370,7 +1384,7 @@ PM_model <- R6::R6Class(
         ### CALL RUST
         out_path <- normalizePath(file.path(path_run, "outputs"), mustWork = FALSE)
         msg <- c(msg, "Run results were saved in folder '{.path {out_path}}'")
-        rlang::try_fetch(
+        fit_call <- function() {
           fit(
             # defined in extendr-wrappers.R
             model_path = normalizePath(self$binary_path),
@@ -1388,7 +1402,14 @@ PM_model <- R6::R6Class(
             ),
             output_path = out_path,
             kind = tolower(self$model_list$type)
-          ),
+          )
+        }
+        rlang::try_fetch(
+          if (!is.null(prior_dir) && identical(prior, "prior.csv")) {
+            withr::with_dir(prior_dir, fit_call())
+          } else {
+            fit_call()
+          },
           error = function(e) {
             cli::cli_warn("Unable to create {.cls PM_result} object", parent = e)
             return(NULL)
@@ -1531,11 +1552,7 @@ PM_model <- R6::R6Class(
       output_path <- tempfile(pattern = "model_", fileext = ".pmx")
       if (!quiet) cli::cli_inform(c("i" = "Compiling model..."))
       # path inside Pmetrics package
-      template_path <- if (Sys.getenv("env") == "Development") {
-        file.path(temporary_path(), "template")
-      } else {
-        system.file(package = "Pmetrics")
-      }
+      template_path <- resolve_template_path()
       tryCatch(
         {
           compile_model(model_path, output_path, private$get_primary(), template_path, kind = tolower(self$model_list$type))
