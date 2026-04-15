@@ -43,6 +43,7 @@ test_that("Current workflow: PM_model + PM_data + PM_model$fit", {
     is_cargo_installed(),
     message = "Cargo is required to compile and run PM_model$fit tests."
   )
+  local_exa_tmp_cleanup()
 
   mod1 <- build_example_ode_model(compile = TRUE)
   ex_data <- PM_data$new(data = "ex.csv", quiet = TRUE)
