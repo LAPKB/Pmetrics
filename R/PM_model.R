@@ -1140,6 +1140,108 @@ PM_model <- R6::R6Class(
         run_error <- run_error + 1
       }
 
+      prior_dir <- NULL
+
+      make_prior_file <- function() {
+        prior_dir <<- tempfile(pattern = "prior-")
+        fs::dir_create(prior_dir)
+        file.path(prior_dir, "prior.csv")
+      }
+
+      normalize_prior_csv <- function(file, current_parameters) {
+        prior_df <- tryCatch(
+          utils::read.csv(file, check.names = FALSE),
+          error = function(e) NULL
+        )
+
+        if (is.null(prior_df)) {
+          return(list(
+            ok = FALSE,
+            error = "{.arg prior} could not be read as a csv file."
+          ))
+        }
+
+        prior_names_raw <- names(prior_df)
+        prior_names <- tolower(prior_names_raw)
+        current_parameters <- tolower(current_parameters)
+
+        prob_idx <- which(prior_names == "prob")
+        if (length(prob_idx) > 1) {
+          return(list(
+            ok = FALSE,
+            error = "{.arg prior} has multiple {.code prob} columns."
+          ))
+        }
+
+        param_idx <- if (length(prob_idx) == 1) {
+          setdiff(seq_along(prior_names), prob_idx)
+        } else {
+          seq_along(prior_names)
+        }
+
+        prior_parameters <- prior_names[param_idx]
+
+        if (length(prior_parameters) != length(current_parameters)) {
+          return(list(
+            ok = FALSE,
+            error = glue::glue(
+              "{{.arg prior}} has {length(prior_parameters)} parameter columns but current {{.code pri}} has {length(current_parameters)}."
+            )
+          ))
+        }
+
+        prior_only <- setdiff(prior_parameters, current_parameters)
+        current_only <- setdiff(current_parameters, prior_parameters)
+
+        note <- NULL
+
+        if (length(prior_only) > 0 || length(current_only) > 0) {
+          if (length(prior_only) == length(current_only)) {
+            rename_map <- stats::setNames(current_only, prior_only)
+            mapped_parameters <- purrr::map_chr(prior_parameters, \(p) {
+              if (p %in% names(rename_map)) {
+                rename_map[[p]]
+              } else {
+                p
+              }
+            })
+
+            if (!setequal(mapped_parameters, current_parameters)) {
+              return(list(
+                ok = FALSE,
+                error = "{.arg prior} parameter columns do not match the current {.code pri} parameters."
+              ))
+            }
+
+            names(prior_df)[param_idx] <- mapped_parameters
+            note <- "Prior parameter names were substituted to match the current {.code pri} block."
+          } else {
+            return(list(
+              ok = FALSE,
+              error = "{.arg prior} parameter columns do not match the current {.code pri} parameters."
+            ))
+          }
+        }
+
+        ordered_idx <- match(current_parameters, tolower(names(prior_df)))
+        if (any(is.na(ordered_idx))) {
+          return(list(
+            ok = FALSE,
+            error = "{.arg prior} could not be aligned to current {.code pri} parameter names."
+          ))
+        }
+
+        if (length(prob_idx) == 1) {
+          ordered_idx <- c(ordered_idx, prob_idx)
+        }
+
+        prior_df <- prior_df[, ordered_idx, drop = FALSE]
+        names(prior_df)[seq_along(current_parameters)] <- current_parameters
+        utils::write.csv(prior_df, file, row.names = FALSE)
+
+        list(ok = TRUE, prior = "prior.csv", prior_dir = dirname(file), note = note)
+      }
+
       # set prior
       if (length(prior) == 1 && prior != "sobol") {
         if (is.numeric(prior)) {
@@ -1148,23 +1250,57 @@ PM_model <- R6::R6Class(
             msg <- c(msg, "{.arg prior} file does not exist.", "i" = "Check the file path.")
             run_error <- run_error + 1
           }
-          file.copy(glue::glue("{path}/{prior}/outputs/theta.csv"), "prior.csv", overwrite = TRUE)
-          prior <- "prior.csv"
+          prior_file <- make_prior_file()
+          file.copy(glue::glue("{path}/{prior}/outputs/theta.csv"), prior_file, overwrite = TRUE)
+          prior_res <- normalize_prior_csv(prior_file, self$model_list$parameters)
+          if (!prior_res$ok) {
+            msg <- c(msg, prior_res$error)
+            run_error <- run_error + 1
+          } else {
+            prior <- prior_res$prior
+            prior_dir <- prior_res$prior_dir
+            if (!is.null(prior_res$note)) {
+              msg <- c(msg, prior_res$note)
+            }
+          }
         } else if (length(prior) == 1 && is.character(prior)) {
           # prior specified as a filename
           if (!file.exists(prior)) {
             msg <- c(msg, "{.arg prior} file does not exist.")
             run_error <- run_error + 1
           }
-          file.copy(prior, "prior.csv", overwrite = TRUE) # ensure in current working directory
+          prior_file <- make_prior_file()
+          file.copy(prior, prior_file, overwrite = TRUE)
+          prior_res <- normalize_prior_csv(prior_file, self$model_list$parameters)
+          if (!prior_res$ok) {
+            msg <- c(msg, prior_res$error)
+            run_error <- run_error + 1
+          } else {
+            prior <- prior_res$prior
+            prior_dir <- prior_res$prior_dir
+            if (!is.null(prior_res$note)) {
+              msg <- c(msg, prior_res$note)
+            }
+          }
         } else if (is.data.frame(prior)) {
           # prior specified as a data frame
-          if (!all(c("prob", self$model_list$parameters) %in% names(prior))) {
+          if (ncol(prior) == 0) {
             msg <- c(msg, "{.arg prior} data frame must contain columns for parameters and probabilities.")
             run_error <- run_error + 1
           }
-          prior <- prior %>% dplyr::select(all_of(self$model_list$parameters), prob)
-          write.csv(prior, "prior.csv", row.names = FALSE)
+          prior_file <- make_prior_file()
+          utils::write.csv(prior, prior_file, row.names = FALSE)
+          prior_res <- normalize_prior_csv(prior_file, self$model_list$parameters)
+          if (!prior_res$ok) {
+            msg <- c(msg, prior_res$error)
+            run_error <- run_error + 1
+          } else {
+            prior <- prior_res$prior
+            prior_dir <- prior_res$prior_dir
+            if (!is.null(prior_res$note)) {
+              msg <- c(msg, prior_res$note)
+            }
+          }
         } else {
           msg <- c(msg, "{.arg prior} must be a numeric run number or character filename.")
           run_error <- run_error + 1
@@ -1248,7 +1384,7 @@ PM_model <- R6::R6Class(
         ### CALL RUST
         out_path <- normalizePath(file.path(path_run, "outputs"), mustWork = FALSE)
         msg <- c(msg, "Run results were saved in folder '{.path {out_path}}'")
-        rlang::try_fetch(
+        fit_call <- function() {
           fit(
             # defined in extendr-wrappers.R
             model_path = normalizePath(self$binary_path),
@@ -1266,7 +1402,14 @@ PM_model <- R6::R6Class(
             ),
             output_path = out_path,
             kind = tolower(self$model_list$type)
-          ),
+          )
+        }
+        rlang::try_fetch(
+          if (!is.null(prior_dir) && identical(prior, "prior.csv")) {
+            withr::with_dir(prior_dir, fit_call())
+          } else {
+            fit_call()
+          },
           error = function(e) {
             cli::cli_warn("Unable to create {.cls PM_result} object", parent = e)
             return(NULL)
@@ -1409,11 +1552,7 @@ PM_model <- R6::R6Class(
       output_path <- tempfile(pattern = "model_", fileext = ".pmx")
       if (!quiet) cli::cli_inform(c("i" = "Compiling model..."))
       # path inside Pmetrics package
-      template_path <- if (Sys.getenv("env") == "Development") {
-        file.path(temporary_path(), "template")
-      } else {
-        system.file(package = "Pmetrics")
-      }
+      template_path <- resolve_template_path()
       tryCatch(
         {
           compile_model(model_path, output_path, private$get_primary(), template_path, kind = tolower(self$model_list$type))

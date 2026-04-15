@@ -1676,6 +1676,15 @@ plot.PM_data <- function(
     print = TRUE, ...) {
   # Plot parameters ---------------------------------------------------------
 
+  if (is.list(marker) && !is.null(marker$shape) && is.null(marker$symbol)) {
+    marker$symbol <- marker$shape
+    marker$shape <- NULL
+  }
+
+  # capture user-supplied overrides before defaults are filled in by amendMarker
+  user_color  <- if (is.list(marker) && !is.null(marker$color))  marker$color  else NULL
+  user_symbol <- if (is.list(marker) && !is.null(marker$symbol)) marker$symbol else NULL
+
   # process marker
   marker <- amendMarker(marker)
 
@@ -1713,7 +1722,16 @@ plot.PM_data <- function(
     line$pred <- FALSE
   }
 
+  join_color_specified <- is.list(line$join) && "color" %in% names(line$join)
+  pred_color_specified <- is.list(line$pred) && "color" %in% names(line$pred)
+
   join <- amendLine(line$join)
+  if (join_color_specified) {
+    cli::cli_warn(c(
+      "!" = "Join line colors are fixed to match the group marker colors.",
+      "i" = "Use {.code marker$color} to control PM_data group colors. BLOQ/ALOQ symbols are shown in the opposite color only for the markers."
+    ))
+  }
   if (is.logical(line$pred) && !line$pred) { # if line$pred is FALSE
     line$pred <- NULL
   }
@@ -1797,51 +1815,49 @@ plot.PM_data <- function(
     filter(outeq %in% !!outeq, block %in% !!block, evid == 0) %>%
     includeExclude(include, exclude)
 
+  show_block_label <- dplyr::n_distinct(presub$block) > 1
 
 
-  # make group column for groups
+
+  # ---- covariate group (drives COLOR) ------------------------------------
   if (!is.null(group)) {
     if (!group %in% base::names(dat$standard_data)) {
       cli::cli_abort(c("x" = "{group} is not a column in the data."))
     }
     if (is.null(group_names)) {
-      presub$group <- presub[[group]]
+      presub$cov_group <- as.character(presub[[group]])
     } else if (length(group_names) < length(unique(presub[[group]]))) {
       cli::cli_abort(c("x" = "The number of names in {.var group_names} must be at least as long as the number of unique values in {.var group}."))
     } else {
-      presub$group <- factor(presub[[group]], labels = group_names)
+      presub$cov_group <- as.character(factor(presub[[group]], labels = group_names))
     }
-  } else { # group was NULL
-    presub <- presub %>% mutate(group = "")
+  } else {
+    presub$cov_group <- ""
   }
 
-
-  # make outeq labels if more than one output being plotted
+  # ---- outeq group (drives SHAPE) -----------------------------------------
   if (length(outeq) > 1) {
     if (is.null(out_names)) {
       out_names <- paste0("Output ", 1:max(outeq))
     } else if (length(out_names) < max(outeq)) {
       cli::cli_abort(c("x" = "The number of names in {.var out_names} must be at least as long as the maximum number of outputs in {.var outeq}."))
     }
-    # add outeq to group
-    presub <- presub %>%
-      rowwise() %>%
-      mutate(group = paste0(group, ", ", out_names[outeq]))
+    presub$outeq_group <- out_names[presub$outeq]
+  } else {
+    presub$outeq_group <- ""
   }
 
-  # add blocks if more than one being plotted
-  if (length(block) > 1) {
-    presub <- presub %>%
-      rowwise() %>%
-      mutate(group = paste0(group, ", Block ", block))
-  }
-
-  # there will always be an Obs group
+  # ---- combined display label (legend / hover) ----------------------------
   presub <- presub %>%
-    rowwise() %>%
-    mutate(group = paste0(group, ", Obs "))
-
-  presub$group <- stringr::str_replace(presub$group, "^\\s*,*\\s*", "")
+    mutate(group = {
+      mapply(function(cv, oq, blk) {
+        parts <- c(cv, oq, blk)
+        parts <- parts[nchar(trimws(parts)) > 0]
+        paste(parts, collapse = ", ")
+      }, cov_group, outeq_group,
+        if (show_block_label) paste0("Block ", presub$block) else "")
+    }) %>%
+    ungroup()
 
   # add cens column if missing
   if (!"cens" %in% names(presub)) {
@@ -1850,7 +1866,7 @@ plot.PM_data <- function(
 
   # select relevant columns
   sub <- presub %>%
-    select(id, time, out, cens, outeq, group) %>%
+    select(id, time, out, cens, outeq, group, cov_group, outeq_group) %>%
     mutate(id = as.character(id)) %>%
     ungroup()
   sub$group <- factor(sub$group)
@@ -1911,7 +1927,12 @@ plot.PM_data <- function(
     }
 
     predArgs <- amendLine(predArgs) # color will be set by obs later
-
+    if (pred_color_specified) {
+      cli::cli_warn(c(
+        "!" = "Prediction line colors are fixed to match the group marker colors.",
+        "i" = "Use {.code marker$color} to control PM_data group colors. BLOQ/ALOQ opposite colors apply only to markers."
+      ))
+    }
 
 
     # filter and group by id
@@ -1934,8 +1955,8 @@ plot.PM_data <- function(
         filter(out != -99 & (cens == "none" | cens == 0))
 
 
-      # add group
-      lookup <- dplyr::distinct(sub, id, outeq, group)
+      # add group, cov_group, outeq_group from obs lookup
+      lookup <- dplyr::distinct(sub, id, outeq, group, cov_group, outeq_group)
       predsub <- predsub %>%
         dplyr::left_join(lookup, by = c("id", "outeq")) %>%
         mutate(group = factor(stringr::str_replace_all(group, "Obs", "Pred")))
@@ -1954,69 +1975,62 @@ plot.PM_data <- function(
   # Plot function ----------------------------------------------------------
 
   dataPlot <- function(allsub, overlay, includePred) {
-    group_colors <- marker$color
-    group_symbols <- marker$symbol
-    if (!is.null(group) | length(outeq) > 1 | length(block) > 1) { # there was grouping beyond obs/pred
 
-      n_colors <- length(unique(allsub$group))
+    # ---- Color palette: driven by combined display groups --------------------
+    obs_only <- allsub %>% filter(src == "obs")
+    group_levels <- unique(as.character(obs_only$group))
+    if (length(group_levels) == 0) {
+      group_levels <- ""
+    }
+    n_groups <- length(group_levels)
 
-      if (length(group_colors) < n_colors) { # fewer colors than groups, need to interpolate
-        if (checkRequiredPackages("RColorBrewer")) {
-          palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
-          if (length(group_colors) == 1) { # only one color specified
-            if (group_colors %in% palettes$name) { # colors specified as a palette name
-              max_colors <- palettes$maxcolors[match(group_colors, palettes$name)]
-              group_colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, group_colors))(n_colors)
-            } else {
-              group_colors <- c(group_colors, getDefaultColors(n_colors)[-1]) # in plotly_Utils, add default colors to specified color
-            }
-          } else { # length of group_colors > 1 but fewer than groups, so interpolate
-            group_colors <- tryCatch(colorRampPalette(group_colors)(n_colors),
-              error = function(e) {
-                cli::cli_warn(c("!" = "Unable to interpolate colors, using default colors."))
-                getDefaultColors(n_colors) # in plotly_Utils
-              }
-            )
-          }
-        } else {
-          cli::cli_inform(c("i" = "Group colors are better with the {.pkg RColorBrewer} package installed."))
-          colors <- getDefaultColors(n_colors) # in plotly_Utils
-        }
+    if (!is.null(user_color)) {
+      if (length(user_color) == 1 && checkRequiredPackages("RColorBrewer") &&
+          user_color %in% rownames(RColorBrewer::brewer.pal.info)) {
+        max_c <- RColorBrewer::brewer.pal.info[user_color, "maxcolors"]
+        color_palette <- colorRampPalette(RColorBrewer::brewer.pal(max_c, user_color))(n_groups)
+      } else {
+        color_palette <- rep(as.character(user_color), length.out = n_groups)
       }
-
-      if (length(group_symbols) < n_colors) { # fewer symbols than groups, need to interpolate
-        if (length(group_symbols) == 1) { # only one symbol specified
-          group_symbols <- rep(group_symbols, n_colors)
-        } else { # multiple symbols specified, but fewer than groups
-          group_symbols <- rep(group_symbols, length.out = n_colors)
-        }
-      }
-    } else { # no grouping other than possibly pred
-      if (includePred | join$width > 0) { # need colors for both obs and join or pred
-        group_colors <- rep(group_colors, 2) # observed and predicted should be the same
-      }
+    } else if (n_groups == 1) {
+      color_palette <- rep(marker$color[[1]], n_groups)
+    } else if (checkRequiredPackages("RColorBrewer")) {
+      n_pal <- min(max(n_groups, 3L), 9L)  # brewer.pal: min 3, max 9 for Set1
+      color_palette <- rep(RColorBrewer::brewer.pal(n_pal, "Set1"), length.out = n_groups)
+    } else {
+      color_palette <- getDefaultColors(n_groups)
     }
 
+    # ---- Shape list: driven by combined display groups -----------------------
+    default_shapes <- c("circle", "square", "diamond", "cross", "x",
+                        "pentagon", "hexagon", "star", "hexagram")
+    if (!is.null(user_symbol)) {
+      shape_list <- rep(as.character(user_symbol), length.out = n_groups)
+    } else {
+      shape_list <- rep(default_shapes, length.out = n_groups)
+    }
 
-    # assign colors and symbols to each group, editing for censoring
+    # ---- Assign per-row color and symbol ------------------------------------
     IDstring <- ifelse(overlay, "ID: {id}\n", "")
     allsub <- allsub %>%
-      # rowwise() %>%
       mutate(
-        color = group_colors[as.integer(group)],
-        symbol = group_symbols[as.integer(group)]
+        base_color = color_palette[match(as.character(group), group_levels)],
+        base_symbol = shape_list[match(as.character(group), group_levels)]
+      ) %>%
+      mutate(
+        base_color = dplyr::coalesce(base_color, color_palette[[1]]),
+        base_symbol = dplyr::coalesce(base_symbol, shape_list[[1]])
       ) %>%
       mutate(
         color = dplyr::case_when(
-          cens == "bloq" | cens == "1" | color == "aloq" | color == "-1" ~ opposite_color(color, degrees = 90),
-          .default = color
+          src == "obs" & (cens == "bloq" | cens == "1")  ~ opposite_color(base_color, degrees = 90),
+          src == "obs" & (cens == "aloq" | cens == "-1") ~ opposite_color(base_color, degrees = 90),
+          .default = base_color
         ),
-        # color = ifelse(cens != "none" & cens != "0", opposite_color(color, degrees = 90), color),
         symbol = dplyr::case_when(
-          cens == "bloq" | cens == "1" ~ "triangle-down",
-          cens == "none" | cens == "0" ~ as.character(symbol),
-          cens == "aloq" | cens == "-1" ~ "triangle-up",
-          .default = symbol
+          src == "obs" & (cens == "bloq" | cens == "1")  ~ "triangle-down",
+          src == "obs" & (cens == "aloq" | cens == "-1") ~ "triangle-up",
+          .default = as.character(base_symbol)
         ),
         text_label = dplyr::case_when(
           cens == "bloq" | cens == "1" ~ glue::glue(IDstring, "Time: {round2(time)}\nBLLQ: {round2(out)}\n{group}"),
@@ -2046,53 +2060,72 @@ plot.PM_data <- function(
     p <- plot_ly()
     for (i in seq_along(traces)) {
       trace_data <- traces[[i]]
-      if (any(!unique(trace_data$group) %in% seen_groups)) {
-        seen_groups <- c(seen_groups, as.character(unique(trace_data$group)))
-        legendShow <- TRUE
-      } else {
-        legendShow <- FALSE
-      }
       this_id <- ifelse(overlay, trace_data$id[1], 1)
 
-      p <- add_trace(
-        p,
-        data = trace_data %>% plotly::filter(src == "obs") %>% arrange(group, time),
-        x = ~time, y = ~ out * mult,
-        type = "scatter",
-        mode = "markers",
-        split = ~group,
-        name = ~group,
-        uid = as.character(this_id),
-        meta = list(id = this_id),
-        marker = list(
-          color = ~ I(color), symbol = ~ I(symbol), size = marker$size, opacity = marker$opacity,
-          line = list(color = marker$line$color, width = marker$line$width)
-        ),
-        text = ~text_label,
-        hoverinfo = "text",
-        legendgroup = ~group,
-        showlegend = legendShow
-      )
+      obs_split <- trace_data %>%
+        filter(src == "obs") %>%
+        arrange(
+          group,
+          dplyr::case_when(
+            cens == "none" | cens == "0" ~ 0L,
+            .default = 1L
+          ),
+          time
+        ) %>%
+        dplyr::group_split(group)
+
+      for (j in seq_along(obs_split)) {
+        obs_group <- obs_split[[j]]
+        group_name <- as.character(obs_group$group[1])
+        legendShow <- !group_name %in% seen_groups
+        if (legendShow) {
+          seen_groups <- c(seen_groups, group_name)
+        }
+
+        p <- add_trace(
+          p,
+          data = obs_group,
+          x = ~time, y = ~ out * mult,
+          type = "scatter",
+          mode = "markers",
+          name = group_name,
+          uid = as.character(this_id),
+          meta = list(id = this_id),
+          marker = list(
+            color = I(obs_group$color),
+            symbol = I(obs_group$symbol),
+            size = marker$size,
+            opacity = marker$opacity,
+            line = list(color = marker$line$color, width = marker$line$width)
+          ),
+          text = ~text_label,
+          hoverinfo = "text",
+          legendgroup = group_name,
+          showlegend = legendShow
+        )
+      }
 
       # add joining lines if needed
       if (join$width > 0) {
         trace_split <- trace_data %>%
           filter(src == "obs") %>%
-          dplyr::group_split(color)
+          arrange(group, time) %>%
+          dplyr::group_split(group)
         for (j in seq_along(trace_split)) {
-          this_color <- trace_split[[j]]$color[1]
+          this_color <- trace_split[[j]]$base_color[1]
+          group_name <- as.character(trace_split[[j]]$group[1])
           p <- add_trace(
             p,
             data = trace_split[[j]],
             x = ~time, y = ~ (out * mult),
             type = "scatter", mode = "lines",
-            name = ~group,
+            name = group_name,
             uid = as.character(this_id),
             meta = list(id = this_id),
             line = list(color = this_color, width = join$width, dash = join$dash),
             text = ~text_label,
             hoverinfo = "text",
-            legendgroup = ~group,
+            legendgroup = group_name,
             showlegend = FALSE
           )
         }
@@ -2101,21 +2134,27 @@ plot.PM_data <- function(
       if (includePred) {
         trace_split <- trace_data %>%
           filter(src == "pred") %>%
-          dplyr::group_split(color)
+          arrange(group, time) %>%
+          dplyr::group_split(group)
         for (j in seq_along(trace_split)) {
-          this_color <- trace_split[[j]]$color[1]
+          this_color <- trace_split[[j]]$base_color[1]
+          group_name <- as.character(trace_split[[j]]$group[1])
+          legendShow <- !group_name %in% seen_groups
+          if (legendShow) {
+            seen_groups <- c(seen_groups, group_name)
+          }
           p <- add_trace(
             p,
             data = trace_split[[j]],
             x = ~time, y = ~ (out * mult),
             type = "scatter", mode = "lines",
-            name = ~group,
+            name = group_name,
             uid = as.character(this_id),
             meta = list(id = this_id),
             line = list(color = this_color, width = predArgs$width, dash = predArgs$dash),
             text = ~text_label,
             hoverinfo = "text",
-            legendgroup = ~group,
+            legendgroup = group_name,
             showlegend = legendShow
           )
         }
@@ -2171,6 +2210,32 @@ plot.PM_data <- function(
 
   return(invisible(p))
 }
+
+#' @title Plot method for PM_data data frames
+#' @description
+#' `r lifecycle::badge("stable")`
+#' Allows plotting of altered [PM_data] objects. 
+#' @details
+#' This is useful if you want to modify the data in a [PM_data] object, e.g. to filter the data, but still want to use the plotting capabilities of [plot.PM_data]. 
+#' See [plot.PM_data] for details on how to format the plot.
+#' @method plot PM_data_data
+#' @param x A data frame in the format of the `standard_data` field of a [PM_data] object
+#' @param ... Additional arguments passed to [plot.PM_data]
+#' @return A plot of the data.
+#' @author Michael Neely
+#' @seealso [PM_data], [plot.PM_data]
+#' @export
+#' @examples
+#' \dontrun{
+#' # filter then plot the standard_data data frame from a PM_data object
+#' dataEx$standard_data %>% filter(gender == 0) %>% plot()
+#' }
+#' 
+plot.PM_data_data <- function(x, ...) {
+  dat_new <- PM_data$new(x, quiet = TRUE)
+  plot.PM_data(dat_new, ...)
+}
+
 # SUMMARY -----------------------------------------------------------------
 
 #' @title Summarize PM_data objects

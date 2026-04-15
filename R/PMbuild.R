@@ -19,7 +19,7 @@ PM_build <- function() {
   
   if (is_rustup_installed()) {
     cli::cli_text("Rust was detected in your system, Fetching dependencies and building base project.")
-    template_path <- if (Sys.getenv("env") == "Development") { file.path(temporary_path(), "template") } else { system.file(package = "Pmetrics")}
+    template_path <- resolve_template_path()
     dummy_compile(template_path = template_path)
   } else {
     cli::cli_text("Rust was not detected in your system, this can be caused by multiple reasons:")
@@ -30,6 +30,16 @@ PM_build <- function() {
     cli::cli_end(ul)
     cli::cli_text("If this error persists, please refer to our discussions website: https://github.com/LAPKB/Pmetrics/discussions.")
   }
+}
+
+resolve_template_path <- function() {
+  in_check <- nzchar(Sys.getenv("_R_CHECK_PACKAGE_NAME_"))
+
+  if (Sys.getenv("env") == "Development" && !in_check) {
+    return(file.path(temporary_path(), "template"))
+  }
+
+  system.file(package = "Pmetrics")
 }
 
 is_rustup_installed <- function() {

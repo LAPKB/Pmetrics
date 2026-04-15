@@ -22,14 +22,35 @@ build_plot <- function(x, ...) {
     choices_user <- NULL
   }
 
-  ClassFilter <- function(x) any(grepl("^PM_result|^PM_model|^PM_data|^PM_sim|^PM_pta|^PM_cov|^PM_final", class(get(x))))
-  choices2 <- Filter(ClassFilter, ls(globalenv()))
-
-  choices <- unique(c(choices_user, choices2))
-
-  if (length(choices) == 0) {
-    choices <- Filter(ClassFilter, ls("package:Pmetrics")) # load examples if none already loaded
+  get_obj <- function(name) {
+    if (exists(name, envir = .GlobalEnv, inherits = FALSE)) {
+      return(get(name, envir = .GlobalEnv, inherits = FALSE))
+    }
+    if ("package:Pmetrics" %in% search()) {
+      pkg_env <- as.environment("package:Pmetrics")
+      if (exists(name, envir = pkg_env, inherits = FALSE)) {
+        return(get(name, envir = pkg_env, inherits = FALSE))
+      }
+    }
+    NULL
   }
+
+  ClassFilter <- function(name) {
+    obj <- get_obj(name)
+    if (is.null(obj)) {
+      return(FALSE)
+    }
+    any(grepl("^PM_result|^PM_model|^PM_data|^PM_sim|^PM_pta|^PM_cov|^PM_final", class(obj)))
+  }
+
+  choices_global <- Filter(ClassFilter, ls(globalenv()))
+  choices_pkg <- if ("package:Pmetrics" %in% search()) {
+    Filter(ClassFilter, ls("package:Pmetrics"))
+  } else {
+    character(0)
+  }
+
+  choices <- unique(c(choices_user, choices_global, choices_pkg))
 
 
 
@@ -66,6 +87,16 @@ build_plot <- function(x, ...) {
       shiny::helpText(htmlOutput("help")),
       card(textOutput("plotCode"),
         max_height = "100px"
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          width = 6,
+          shiny::actionButton("copy_exit_btn", "Copy and Exit", class = "btn-success")
+        ),
+        shiny::column(
+          width = 6,
+          shiny::actionButton("exit_btn", "Exit", class = "btn-danger")
+        )
       ),
       card(uiOutput("plotPM")),
       tags$style(
@@ -191,6 +222,28 @@ build_plot <- function(x, ...) {
         } else {
           return(input[[par]])
         }
+      }
+
+      do_plot <- function(args) {
+        x_obj <- args$x
+        x_classes <- class(x_obj)
+        plot_method <- NULL
+
+        for (cls in x_classes) {
+          plot_method <- utils::getS3method("plot", cls, optional = TRUE)
+          if (!is.null(plot_method)) {
+            break
+          }
+        }
+
+        if (!is.null(plot_method)) {
+          method_formals <- names(formals(plot_method))
+          if ("print" %in% method_formals) {
+            args$print <- FALSE
+          }
+        }
+
+        do.call(plot, args)
       }
 
 
@@ -1117,7 +1170,7 @@ build_plot <- function(x, ...) {
             }
 
             if (!is.null(formula)) {
-              p <- do.call(plot, args)
+              p <- do_plot(args)
               if (code) {
                 return(codeStatement)
               } else {
@@ -1297,7 +1350,7 @@ build_plot <- function(x, ...) {
               codeStatement <- paste0(Name, ")")
             }
 
-            p <- do.call(plot, args)
+            p <- do_plot(args)
             if (code) {
               return(codeStatement)
             } else {
@@ -1524,7 +1577,7 @@ build_plot <- function(x, ...) {
               codeStatement <- paste0(Name, ")")
             }
 
-            p <- do.call(plot, args)
+            p <- do_plot(args)
             if (code) {
               return(codeStatement)
             } else {
@@ -1640,7 +1693,7 @@ build_plot <- function(x, ...) {
               codeStatement <- paste0(Name, ")")
             }
 
-            p <- do.call(plot, args)
+            p <- do_plot(args)
             if (code) {
               return(codeStatement)
             } else {
@@ -1763,9 +1816,9 @@ build_plot <- function(x, ...) {
             }
 
             # group names
-            names <- setVal("group_names", "")
-            if (!is.null(names)) {
-              names <- unlist(stringr::str_split(names, "\\s*,\\s*"))
+            group_names <- setVal("group_names", "")
+            if (!is.null(group_names)) {
+              group_names <- unlist(stringr::str_split(group_names, "\\s*,\\s*"))
             }
 
             # legend
@@ -1793,9 +1846,8 @@ build_plot <- function(x, ...) {
               x = x,
               include = include, exclude = exclude,
               line = line, marker = marker,
-              color = color,
-              colors = colors,
-              names = names,
+              group = color,
+              group_names = group_names,
               outeq = as.numeric(outeq),
               block = as.numeric(block),
               tad = tad,
@@ -1828,9 +1880,8 @@ build_plot <- function(x, ...) {
               include = id_obj, exclude = NULL,
               line = list(join = TRUE, pred = FALSE),
               marker = TRUE,
-              color = NULL,
-              colors = "Set1",
-              names = "",
+              group = NULL,
+              group_names = "",
               mult = 1,
               outeq = 1, block = 1,
               tad = FALSE,
@@ -1874,7 +1925,7 @@ build_plot <- function(x, ...) {
               "pred = list\\(\\1"
             )
 
-            p <- do.call(plot, args)
+            p <- do_plot(args)
             if (code) {
               return(codeStatement)
             } else {
@@ -2052,7 +2103,7 @@ build_plot <- function(x, ...) {
           )
 
 
-          p <- do.call(plot, args)
+          p <- do_plot(args)
           if (code) {
             return(codeStatement)
           } else {
@@ -2161,7 +2212,7 @@ build_plot <- function(x, ...) {
             codeStatement <- paste0(Name, ")")
           }
 
-          p <- do.call(plot, args)
+          p <- do_plot(args)
           if (code) {
             return(codeStatement)
           } else {
@@ -2211,28 +2262,58 @@ build_plot <- function(x, ...) {
       })
 
 
-      # Build the Pmetrics plot statements
-      output$plotCode <- renderText({
+      plot_code <- reactive({
         makePMplot(code = TRUE)
       })
 
-      # Make the plot call
-      output$plotPM <- renderUI({
-        if (!is.null(input$data) &&
+      # Build the Pmetrics plot statements
+      output$plotCode <- renderText({
+        plot_code()
+      })
+
+      observeEvent(input$copy_exit_btn, {
+        code <- plot_code()
+        if (requireNamespace("clipr", quietly = TRUE)) {
+          clipr::write_clip(code)
+          shiny::stopApp()
+        } else {
+          shiny::showNotification(
+            "Install the 'clipr' package to enable clipboard copy.",
+            type = "warning",
+            duration = 5
+          )
+        }
+      })
+
+      observeEvent(input$exit_btn, {
+        shiny::stopApp()
+      })
+
+      is_base_plot <- reactive({
+        !is.null(input$data) &&
           (inherits(get(input$data), "PM_model") ||
             (inherits(get(input$data), "PM_result") &&
-              !is.null(input$res_sub) && input$res_sub == "mod"))) {
-          renderPlot({
-            makePMplot()
-          })
+              !is.null(input$res_sub) && input$res_sub == "mod"))
+      })
+
+      output$plotPM <- renderUI({
+        if (isTRUE(is_base_plot())) {
+          plotOutput("plotPM_base")
         } else {
-          p <- makePMplot()
-          if (inherits(p, "plotly")) { # need this to avoid warning message
-            renderPlotly({
-              p
-            })
-          }
+          plotly::plotlyOutput("plotPM_plotly")
         }
+      })
+
+      output$plotPM_base <- renderPlot({
+        req(isTRUE(is_base_plot()))
+        makePMplot()
+      })
+
+      output$plotPM_plotly <- renderPlotly({
+        req(!isTRUE(is_base_plot()))
+        p <- makePMplot()
+        req(inherits(p, "plotly"))
+        p
       })
     } # end shinyServer
   ) # end shiny App

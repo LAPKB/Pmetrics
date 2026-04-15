@@ -274,7 +274,8 @@ Examples:
 to simulate. This is useful when you already have fixed parameter values, such as
 \code{NPex$final$popPoints}. Each row will generate one simulated profile, so \code{nsim} is
 ignored and the number of simulated profiles will equal the number of rows in the
-data frame.
+data frame. If a \verb{$prob} column is present, it will be ignored, since each row is
+treated as the parameters to be used for one simulation.
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{poppar <- as.data.frame(run1$final$popPoints) |>
   dplyr::select(ke, v)
