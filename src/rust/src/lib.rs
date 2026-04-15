@@ -1,5 +1,5 @@
 // mod build;
-
+mod bestdose_executor;
 mod executor;
 mod logs;
 mod settings;
@@ -16,6 +16,7 @@ use simulation::SimulationRow;
 use std::process::Command;
 use tracing_subscriber::layer::SubscriberExt;
 
+use crate::bestdose_executor::BestDosePosteriorHandle;
 use crate::logs::RFormatLayer;
 
 fn validate_paths(data_path: &str, model_path: &str) {
@@ -339,6 +340,47 @@ fn setup_logs() -> anyhow::Result<()> {
     Ok(())
 }
 
+// Macro to generate exports.
+// This ensures exported functions are registered with R.
+// See corresponding C code in `entrypoint.c`.
+#[extendr]
+fn bestdose_prepare(
+    model_path: &str,
+    prior_path: &str,
+    past_data_path: Nullable<String>,
+    params: List,
+    kind: &str,
+) -> Robj {
+    bestdose_executor::bestdose_prepare_internal(
+        model_path,
+        prior_path,
+        past_data_path,
+        params,
+        kind,
+    )
+}
+
+#[extendr]
+fn bestdose_optimize(
+    handle: ExternalPtr<BestDosePosteriorHandle>,
+    target_data_path: &str,
+    time_offset: Nullable<f64>,
+    dose_min: f64,
+    dose_max: f64,
+    bias_weight: f64,
+    target_type: &str,
+) -> Robj {
+    bestdose_executor::bestdose_optimize_internal(
+        handle,
+        target_data_path,
+        time_offset,
+        dose_min,
+        dose_max,
+        bias_weight,
+        target_type,
+    )
+}
+
 extendr_module! {
     mod Pmetrics;
     fn simulate_one;
@@ -350,7 +392,8 @@ extendr_module! {
     fn model_parameters;
     fn temporary_path;
     fn setup_logs;
-
+    fn bestdose_prepare;
+    fn bestdose_optimize;
 }
 
 // To generate the exported function in R, run the following command:

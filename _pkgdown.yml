@@ -49,6 +49,8 @@ reference:
   - PM_load
   - PM_result
   - PM_valid
+  - bd
+  - bd_post
 - title: Helpers
   desc: Helper functions for R6 object creations
 - contents:

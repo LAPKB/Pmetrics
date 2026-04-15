@@ -1362,9 +1362,9 @@ dependencies = [
 
 [[package]]
 name = "pmcore"
-version = "0.23.0"
+version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a25fdc5f5b70b5a78ded849d8abbb7005073bb592e68d2cee15e4440b24f213"
+checksum = "c0b374f0513eadeffe3c8578cf67630b0c156923d478d2114dcb9a929d0f7bc0"
 dependencies = [
  "anyhow",
  "argmin",
@@ -1732,9 +1732,9 @@ checksum = "94143f37725109f92c262ed2cf5e59bce7498c01bcc1502d7b9afe439a4e9f49"
 
 [[package]]
 name = "semver"
-version = "1.0.27"
+version = "1.0.28"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d767eb0aabc880b29956c35734170f26ed551a859dbd361d140cdbeca61ab1e2"
+checksum = "8a7852d02fc848982e0c167ef163aaff9cd91dc640ba85e263cb1ce46fae51cd"
 
 [[package]]
 name = "seq-macro"
