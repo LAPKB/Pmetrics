@@ -27,7 +27,7 @@ pub(crate) fn settings(
 
     let error_models_raw = settings.get("error_models").unwrap().as_list().unwrap();
 
-    let mut ems = AssayErrorModels::new();
+    let mut ems = AssayErrorModels::new().add(0, AssayErrorModel::None)?;
 
     for (i, (_, em)) in error_models_raw.iter().enumerate() {
         let outeq = i + 1;
