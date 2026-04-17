@@ -1555,9 +1555,11 @@ createInstructions <- function(wb) {
 #' * `join`  Can either be a boolean or a list. If set to `TRUE` or
 #' a list of plotly line attributes, it
 #' will generate line segments joining observations. If set to
-#' `FALSE`, no segments will be generated. The color of the joining line
+#' `FALSE`, no segments will be generated. 
+#' 
+#' **Note:**The color of the joining line
 #' is the same as the marker color for that line. To avoid confusion, the line
-#' color cannot be changed. The default
+#' color cannot be changed. Change the `marker` color instead. The default
 #' values for the other elements of the `join` list, both of which can be
 #' overriden are:
 #'     - `width `Width of the segments, default 1.
@@ -1600,7 +1602,7 @@ createInstructions <- function(wb) {
 #' @param group_names A character vector of names to label the **groups** if `legend = TRUE`.
 #' This vector must be the same length as the number of groups within `group`. If missing,
 #' the vector will be generated from the unique values in `group`.
-#' Example: `c("Male", "Female")` if `color = "gender"` and "gender" is a covariate
+#' Example: `c("Male", "Female")` if `group = "gender"` and "gender" is a covariate
 #' in the data.
 #' @param mult `r template("mult")`
 #' @param outeq `r template("outeq")` Default is 1, but can be multiple if present in the data, e.g. `1:2` or `c(1, 3)`.
@@ -1708,7 +1710,17 @@ plot.PM_data <- function(
 
 
 
-  highlight_color <- opposite_color(marker$color[1]) # in plotly_Utils.R
+  highlight_base_color <- marker$color[[1]]
+  if (length(marker$color) == 1 && checkRequiredPackages("RColorBrewer") &&
+      marker$color[[1]] %in% rownames(RColorBrewer::brewer.pal.info)) {
+    max_c <- RColorBrewer::brewer.pal.info[marker$color[[1]], "maxcolors"]
+    highlight_base_color <- RColorBrewer::brewer.pal(max_c, marker$color[[1]])[[1]]
+  }
+
+  highlight_color <- tryCatch(
+    opposite_color(highlight_base_color),
+    error = function(e) opposite_color("dodgerblue")
+  ) # in plotly_Utils.R
 
 
   # process line
@@ -1824,12 +1836,23 @@ plot.PM_data <- function(
     if (!group %in% base::names(dat$standard_data)) {
       cli::cli_abort(c("x" = "{group} is not a column in the data."))
     }
+    cov_group_factor <- factor(presub[[group]])
+    cov_group_levels <- levels(cov_group_factor)
+    if (!is.null(group_names)) {
+      group_names <- stringr::str_trim(as.character(group_names))
+      group_names <- group_names[nzchar(group_names)]
+      if (length(group_names) == 0) {
+        group_names <- NULL
+      }
+    }
     if (is.null(group_names)) {
-      presub$cov_group <- as.character(presub[[group]])
-    } else if (length(group_names) < length(unique(presub[[group]]))) {
-      cli::cli_abort(c("x" = "The number of names in {.var group_names} must be at least as long as the number of unique values in {.var group}."))
+      presub$cov_group <- as.character(cov_group_factor)
     } else {
-      presub$cov_group <- as.character(factor(presub[[group]], labels = group_names))
+      n_levels <- length(cov_group_levels)
+      n_user <- min(length(group_names), n_levels)
+      merged_group_names <- cov_group_levels
+      merged_group_names[seq_len(n_user)] <- group_names[seq_len(n_user)]
+      presub$cov_group <- as.character(factor(presub[[group]], levels = cov_group_levels, labels = merged_group_names))
     }
   } else {
     presub$cov_group <- ""

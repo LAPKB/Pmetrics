@@ -3,15 +3,15 @@
 \name{apps}
 \alias{apps}
 \alias{lit_sim}
-\alias{pm_plot_app}
-\alias{pm_run_app}
+\alias{pm_plot}
+\alias{pm_run}
 \title{Launch packaged Shiny apps}
 \usage{
 lit_sim(launch.browser = TRUE)
 
-pm_plot_app(launch.browser = TRUE)
+pm_plot(launch.browser = TRUE)
 
-pm_run_app(launch.browser = TRUE)
+pm_run(launch.browser = TRUE)
 
 apps(launch.browser = TRUE)
 }
@@ -23,7 +23,7 @@ Invisibly returns the value from \code{\link[shiny:runApp]{shiny::runApp()}} for
 functions. \code{apps()} returns invisibly \code{NULL} on cancel/invalid input.
 }
 \description{
-\code{lit_sim()}, \code{model_lib()}, \code{pm_plot_app()}, and \code{pm_run_app()} launch specific packaged
+\code{lit_sim()}, \code{model_lib()}, \code{pm_plot()}, and \code{pm_run()} launch specific packaged
 apps from \code{inst/apps}.
 }
 \details{

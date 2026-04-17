@@ -381,7 +381,7 @@ plot.PM_op <- function(
   }
   sub1 <- x %>%
     dplyr::filter(
-      icen == !!icen, outeq == !!outeq, pred.type == !!pred.type,
+      icen == !!icen, outeq %in% !!outeq, pred.type == !!pred.type,
       block %in% !!block
     ) %>%
     includeExclude(include, exclude) %>%
