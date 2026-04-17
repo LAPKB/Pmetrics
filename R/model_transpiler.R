@@ -1,23 +1,11 @@
 # R-to-Rust transpiler for Pmetrics model blocks.
-# ODE and analytical public vectors both use passthrough 1-based indexing so
-# Rust keeps slot 0 unused; only native helper parameter packing stays compact.
 
-normalize_index_mode <- function(index_mode = c("passthrough", "compact")) {
-  match.arg(index_mode)
-}
-
-index_vector_size <- function(max_index, index_mode = c("passthrough", "compact")) {
-  index_mode <- normalize_index_mode(index_mode)
-
+index_vector_size <- function(max_index) {
   if (max_index <= 0L) {
     return(1L)
   }
 
-  if (index_mode == "passthrough") {
-    return(max_index + 1L)
-  }
-
-  max_index
+  max_index + 1L
 }
 
 get_max_index <- function(fn_or_expr, targets) {
@@ -108,9 +96,7 @@ has_nonliteral_index <- function(fn_or_expr, targets) {
 # Convert an R expression to Rust code (recursive)
 expr_to_rust <- function(
     expr, params = NULL, covs = NULL,
-    declared = new.env(parent = emptyenv()),
-    index_mode = c("passthrough", "compact")) {
-  index_mode <- normalize_index_mode(index_mode)
+    declared = new.env(parent = emptyenv())) {
   declared_has <- function(name) isTRUE(get0(name, envir = declared, inherits = FALSE))
   declared_add <- function(name) assign(name, TRUE, envir = declared)
 
@@ -127,22 +113,14 @@ expr_to_rust <- function(
     return(as.character(expr))
   }
 
-  # Handle indexing. Public Pmetrics vectors stay 1-based with slot 0 unused;
-  # only analytical helper parameter packing remains compact.
+  # Handle indexing.
   if (is.call(expr) && as.character(expr[[1]]) == "[") {
     var <- as.character(expr[[2]])
     idx_raw <- expr[[3]]
     if (is.numeric(idx_raw) && length(idx_raw) == 1) {
-      idx_val <- as.integer(idx_raw)
-      if (index_mode == "compact") {
-        idx_val <- idx_val - 1L
-      }
-      return(sprintf("%s[%d]", var, idx_val))
+      return(sprintf("%s[%d]", var, as.integer(idx_raw)))
     } else {
-      idx_code <- expr_to_rust(idx_raw, params, covs, declared, index_mode = index_mode)
-      if (index_mode == "compact") {
-        return(sprintf("%s[%s - 1]", var, idx_code))
-      }
+      idx_code <- expr_to_rust(idx_raw, params, covs, declared)
       return(sprintf("%s[%s]", var, idx_code))
     }
   }
@@ -152,8 +130,7 @@ expr_to_rust <- function(
   args <- as.list(expr[-1])
   rust_args <- lapply(args, expr_to_rust,
     params = params, covs = covs,
-    declared = declared,
-    index_mode = index_mode
+    declared = declared
   )
   switch(op,
     # Grouping
@@ -166,7 +143,7 @@ expr_to_rust <- function(
         inner_exprs <- as.list(args)
         paste(
           vapply(inner_exprs, function(e) {
-            expr_to_rust(e, params, covs, declared, index_mode = index_mode)
+            expr_to_rust(e, params, covs, declared)
           }, character(1)),
           collapse = "\n"
         )
@@ -254,7 +231,7 @@ expr_to_rust <- function(
         }
       } else {
         # e.g., dx[1] = ...
-        lhs_code <- expr_to_rust(lhs, params, covs, declared, index_mode = index_mode)
+        lhs_code <- expr_to_rust(lhs, params, covs, declared)
         sprintf("%s = %s;", lhs_code, rhs_code)
       }
     },
@@ -263,9 +240,9 @@ expr_to_rust <- function(
     # If
     "if" = {
       cond <- rust_args[[1]]
-      then_code <- expr_to_rust(args[[2]], params, covs, declared, index_mode = index_mode)
+      then_code <- expr_to_rust(args[[2]], params, covs, declared)
       if (length(args) == 3) {
-        else_code <- expr_to_rust(args[[3]], params, covs, declared, index_mode = index_mode)
+        else_code <- expr_to_rust(args[[3]], params, covs, declared)
         sprintf("if %s { %s } else { %s };", cond, then_code, else_code)
       } else {
         sprintf("if %s { %s };", cond, then_code)
@@ -281,7 +258,7 @@ expr_to_rust <- function(
       } else {
         list(args[[3]])
       }
-      body <- stmts_to_rust(loop_exprs, params, covs, index_mode = index_mode)
+      body <- stmts_to_rust(loop_exprs, params, covs)
       sprintf("for %s in 0..%s as usize {\n%s}\n", var, n_sym, indent(body))
     },
 
@@ -300,15 +277,13 @@ expr_to_rust <- function(
 
 # Helpers: convert list of statements to Rust and indent blocks
 stmts_to_rust <- function(
-    exprs, params = NULL, covs = NULL,
-    index_mode = c("passthrough", "compact")) {
+    exprs, params = NULL, covs = NULL) {
   lines <- vapply(
     exprs,
     expr_to_rust,
     character(1),
     params = params,
-    covs = covs,
-    index_mode = index_mode
+    covs = covs
   )
   tolower(paste(lines, collapse = "\n")) # rust is case sensitive, make everything lowercase
 }
@@ -336,9 +311,7 @@ transpile_ode_eqn <- function(fun, params, covs, sec) {
 
 
 transpile_analytic_eqn <- function(
-    fun, params, covs,
-  index_mode = c("passthrough", "compact")) {
-  index_mode <- normalize_index_mode(index_mode)
+    fun, params, covs) {
   if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
     found <- get_found_model(fun)
     if (length(found) == 1) { # NA
@@ -395,7 +368,7 @@ transpile_analytic_eqn <- function(
     paste(covs, collapse = ", "),
     paste(params, collapse = ", ")
   )
-  body_rust <- stmts_to_rust(exprs, index_mode = index_mode)
+  body_rust <- stmts_to_rust(exprs)
   # remap parameters
   # req_par <- get(tem)$parameters %>%
   #   tolower() %>%
@@ -419,18 +392,15 @@ transpile_analytic_eqn <- function(
   sprintf("%s\n%s\n%s\n }", header, indent(body_rust, spaces = 4), indent(req_par, spaces = 4))
 }
 
-transpile_sec <- function(fun, index_mode = c("passthrough", "compact")) {
-  index_mode <- normalize_index_mode(index_mode)
+transpile_sec <- function(fun) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
-  body_rust <- stmts_to_rust(exprs, index_mode = index_mode)
+  body_rust <- stmts_to_rust(exprs)
   sprintf("%s\n", indent(body_rust, spaces = 4))
 }
 
 
 transpile_fa <- function(
-    fun, params, covs, sec,
-  index_mode = c("passthrough", "compact")) {
-  index_mode <- normalize_index_mode(index_mode)
+    fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
     as.list(body(fun)[-1])
   } else {
@@ -449,7 +419,7 @@ transpile_fa <- function(
     0L
   }
   max_fa <- max(sapply(exprs, find_max_idx), 0L)
-  arr_size <- index_vector_size(max_fa, index_mode)
+  arr_size <- index_vector_size(max_fa)
 
   header <- sprintf(
     "|p, t, cov| {\nfetch_params!(p, %s);\nfetch_cov!(cov, t, %s);\nlet mut fa: [f64; %d] = [0.0; %d];\n%s",
@@ -459,7 +429,7 @@ transpile_fa <- function(
     if (length(sec)) paste0("  ", paste(sec, collapse = "\n  "), "\n") else ""
   )
 
-  body_lines <- stmts_to_rust(exprs, params = params, covs = covs, index_mode = index_mode)
+  body_lines <- stmts_to_rust(exprs, params = params, covs = covs)
 
   slots <- seq_len(arr_size) - 1L
   slot_args <- paste0(slots, "=> fa[", slots, "]", collapse = ", ")
@@ -470,9 +440,7 @@ transpile_fa <- function(
 
 
 transpile_lag <- function(
-    fun, params, covs, sec,
-  index_mode = c("passthrough", "compact")) {
-  index_mode <- normalize_index_mode(index_mode)
+    fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
     as.list(body(fun)[-1])
   } else {
@@ -491,7 +459,7 @@ transpile_lag <- function(
     0L
   }
   max_lag <- max(sapply(exprs, find_max_idx), 0L)
-  arr_size <- index_vector_size(max_lag, index_mode)
+  arr_size <- index_vector_size(max_lag)
 
   header <- sprintf(
     "|p, t, cov| {\nfetch_params!(p, %s);\nfetch_cov!(cov, t, %s);\nlet mut lag: [f64; %d] = [0.0; %d];\n%s",
@@ -501,7 +469,7 @@ transpile_lag <- function(
     if (length(sec)) paste0("  ", paste(sec, collapse = "\n  "), "\n") else ""
   )
 
-  body_lines <- stmts_to_rust(exprs, params = params, covs = covs, index_mode = index_mode)
+  body_lines <- stmts_to_rust(exprs, params = params, covs = covs)
 
   slots <- seq_len(arr_size) - 1L
   slot_args <- paste0(slots, "=> lag[", slots, "]", collapse = ", ")
@@ -511,9 +479,7 @@ transpile_lag <- function(
 }
 
 transpile_ini <- function(
-    fun, params, covs, sec,
-  index_mode = c("passthrough", "compact")) {
-  index_mode <- normalize_index_mode(index_mode)
+    fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
     "|p, t, cov, x| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",
@@ -521,14 +487,12 @@ transpile_ini <- function(
     paste(params, collapse = ", "),
     paste(sec, collapse = ", ")
   )
-  body_rust <- stmts_to_rust(exprs, params, covs, index_mode = index_mode)
+  body_rust <- stmts_to_rust(exprs, params, covs)
   sprintf("%s\n%s\n }", header, indent(body_rust, spaces = 4))
 }
 
 transpile_out <- function(
-    fun, params, covs, sec,
-  index_mode = c("passthrough", "compact")) {
-  index_mode <- normalize_index_mode(index_mode)
+    fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
     "|x, p, t, cov, y| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s);\n%s",
@@ -536,7 +500,7 @@ transpile_out <- function(
     paste(params, collapse = ", "),
     paste(sec, collapse = ", ")
   )
-  body_rust <- stmts_to_rust(exprs, params, covs, index_mode = index_mode)
+  body_rust <- stmts_to_rust(exprs, params, covs)
   sprintf("%s\n%s\n }", header, indent(body_rust, spaces = 4))
 }
 
