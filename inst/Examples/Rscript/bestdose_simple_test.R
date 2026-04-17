@@ -40,12 +40,13 @@ for (lambda in prior_weights) {
     r <- posterior$optimize(
         target = target_file,
         dose_range = list(min = 0, max = 300),
-        prior_weight = lambda # ought to be called "prior_weight"
+        prior_weight = lambda, # ought to be called "prior_weight"
+        start = NULL
     )
     cat(sprintf(
-        "Prior weight: %.2f\t\tOptimal dose: [%.4f, %.4f]\t\tCost: %.6f\t\tln Cost: %.4f\t\tMethod: %s\n",
+        "Prior weight: %.2f\t\tOptimal dose: [%s]\t\tCost: %.6f\t\tln Cost: %.4f\t\tMethod: %s\n",
         lambda,
-        r$doses[1], r$doses[2],
+        paste(r$doses, collapse = ", "),
         r$objf,
         log(r$objf),
         r$method
