@@ -32,7 +32,9 @@ bd_parse_datetime <- function(x) {
 
   for (fmt in formats) {
     dt <- suppressWarnings(as.POSIXct(x, format = fmt, tz = Sys.timezone()))
-    if (!is.na(dt)) return(dt)
+    if (!is.na(dt)) {
+      return(dt)
+    }
   }
 
   suppressWarnings(as.POSIXct(x, tz = Sys.timezone()))
@@ -40,14 +42,18 @@ bd_parse_datetime <- function(x) {
 
 bd_plot_start_datetime <- function(x) {
   if (!is.null(x$past) && !is.null(x$past$data) && nrow(x$past$data) > 0 &&
-      all(c("date", "time") %in% names(x$past$data))) {
+    all(c("date", "time") %in% names(x$past$data))) {
     dt <- bd_parse_datetime(paste(as.character(x$past$data$date[1]), as.character(x$past$data$time[1])))
-    if (!is.na(dt)) return(dt)
+    if (!is.na(dt)) {
+      return(dt)
+    }
   }
 
   if (is.character(x$start) && length(x$start) == 1 && nzchar(x$start)) {
     dt <- bd_parse_datetime(x$start)
-    if (!is.na(dt)) return(dt)
+    if (!is.na(dt)) {
+      return(dt)
+    }
   }
 
   now <- Sys.time()
@@ -63,7 +69,11 @@ bd_plot_start_datetime <- function(x) {
 bd_future_time_offset <- function(x) {
   has_past <- !is.null(x$past) && !is.null(x$past$standard_data) && nrow(x$past$standard_data) > 0
   if (has_past) {
-    max(x$past$standard_data$time, na.rm = TRUE)
+    if (is.null(x$start_offset)) {
+      0
+    } else {
+      max(x$past$standard_data$time, na.rm = TRUE)
+    }
   } else {
     x$start_offset %||% 0
   }
@@ -267,9 +277,11 @@ bd_fit_plot <- function(data, title) {
     )
   }
 
-  p <- plotly::plot_ly(data = data, x = ~pred, y = ~obs, type = "scatter", mode = "markers",
+  p <- plotly::plot_ly(
+    data = data, x = ~pred, y = ~obs, type = "scatter", mode = "markers",
     marker = list(size = 9, color = "rgba(214, 86, 69, 0.75)", line = list(color = "rgba(120, 40, 30, 0.9)", width = 1)),
-    hovertemplate = "Predicted: %{x}<br>Observed: %{y}<extra></extra>") |>
+    hovertemplate = "Predicted: %{x}<br>Observed: %{y}<extra></extra>"
+  ) |>
     plotly::layout(
       title = title,
       xaxis = list(title = "Predicted", range = lims),
@@ -286,9 +298,11 @@ bd_fit_plot <- function(data, title) {
   if (!is.null(fit) && !anyNA(stats::coef(fit))) {
     reg_line <- data.frame(x = lims, y = stats::coef(fit)[1] + stats::coef(fit)[2] * lims)
     p <- p |>
-      plotly::add_lines(data = reg_line, x = ~x, y = ~y, inherit = FALSE,
+      plotly::add_lines(
+        data = reg_line, x = ~x, y = ~y, inherit = FALSE,
         line = list(color = "#2c3e50", width = 2),
-        hoverinfo = "skip", showlegend = FALSE) |>
+        hoverinfo = "skip", showlegend = FALSE
+      ) |>
       plotly::layout(annotations = list(list(
         x = 0.02, y = 0.98, xref = "paper", yref = "paper",
         text = ann_text, align = "left",
@@ -447,7 +461,9 @@ bd_rainbow_region_color <- function(bias, imp, alpha = 1) {
   b <- seq(100, 0, -20)
 
   inside_ellipse <- function(x, y, ax, by) {
-    if (!is.finite(ax) || !is.finite(by) || ax <= 0 || by <= 0) return(FALSE)
+    if (!is.finite(ax) || !is.finite(by) || ax <= 0 || by <= 0) {
+      return(FALSE)
+    }
     ((x^2) / (ax^2) + (y^2) / (by^2)) <= 1
   }
 
@@ -501,8 +517,10 @@ bd_fit_rainbow_plot_single <- function(metrics, color = "black", name = "Point",
   p <- plotly::plot_ly()
 
   for (i in 1:5) {
-    a1 <- a[i]; a2 <- a[i + 1]
-    b1 <- b[i]; b2 <- b[i + 1]
+    a1 <- a[i]
+    a2 <- a[i + 1]
+    b1 <- b[i]
+    b2 <- b[i + 1]
     x1 <- seq(-a1, a1, by = 1)
     x2 <- seq(-a2, a2, by = 1)
     y1 <- sqrt(pmax(0, b1^2 * (1 - x1^2 / a1^2)))
@@ -669,7 +687,9 @@ bd_auc_table <- function(x, outeq = 1, start_datetime = NULL) {
 }
 
 bd_auc_plot <- function(auc_tbl) {
-  if (is.null(auc_tbl) || nrow(auc_tbl) == 0) return(NULL)
+  if (is.null(auc_tbl) || nrow(auc_tbl) == 0) {
+    return(NULL)
+  }
 
   date_fmt <- getPMoptions("date_format", warn = FALSE, quiet = TRUE)
   if (!is.character(date_fmt) || length(date_fmt) != 1 || !nzchar(date_fmt)) {
@@ -691,7 +711,7 @@ bd_auc_plot <- function(auc_tbl) {
 
   # bars for post-dose AUC
   p <- p |> plotly::add_bars(
-    x = ~df$datetime, y = ~df$postdose_auc,
+    x = ~ df$datetime, y = ~ df$postdose_auc,
     marker = list(color = cols),
     opacity = 0.5,
     name = "Post-dose AUC",
@@ -765,13 +785,13 @@ bd_auc_plot <- function(auc_tbl) {
     yaxis = list(title = "Post-dose AUC", zeroline = FALSE),
     yaxis2 = list(
       overlaying = "y", side = "right",
-        title = list(text = "Cumulative AUC", standoff = 40),
+      title = list(text = "Cumulative AUC", standoff = 40),
       automargin = TRUE,
       zeroline = FALSE
     ),
-      margin = list(t = 90),
+    margin = list(t = 90),
     bargap = 0.2,
-      showlegend = FALSE
+    showlegend = FALSE
   )
 }
 
@@ -1151,7 +1171,7 @@ bd_report_build <- function(x, outeq = 1) {
   pd_target_summary <- NULL
   if (!is.null(x$future_target_info)) {
     ti <- x$future_target_info
-    tt  <- ti$target_type %||% "concentration"
+    tt <- ti$target_type %||% "concentration"
     tgt <- ti$target
     ttm <- ti$target_time
     if (!is.null(tt) && tt == "time") {

@@ -17,8 +17,8 @@ mod_onecomp <- PM_model$new(
 )
 
 past_file <- "inst/Examples/src/bestdose_past.csv"
-target_file <- "inst/Examples/src/bestdose_target_pmcore.csv"
-prior_file <- "inst/Examples/src/bestdose_prior_pmcore.csv"
+target_file <- "inst/Examples/src/bestdose_target.csv"
+prior_file <- "inst/Examples/src/bestdose_prior.csv"
 
 cat("Using PMcore prior file\n")
 
@@ -35,15 +35,16 @@ print(head(posterior$theta, 5))
 cat("\nPosterior weights (first 10):\n")
 print(head(posterior$posterior_weights, 10))
 
-bias_weights <- seq(0, 1, by = 0.1)
-for (lambda in bias_weights) {
+prior_weights <- seq(0, 1, by = 0.1)
+for (lambda in prior_weights) {
     r <- posterior$optimize(
         target = target_file,
         dose_range = list(min = 0, max = 300),
-        bias_weight = lambda
+        prior_weight = lambda,
+        start = NULL
     )
     cat(sprintf(
-        "Bias weight: %.2f\t\tOptimal dose: [%.4f, %.4f]\t\tCost: %.6f\t\tln Cost: %.4f\t\tMethod: %s\n",
+        "Prior weight: %.2f\t\tOptimal dose: [%.4f, %.4f]\t\tCost: %.6f\t\tln Cost: %.4f\t\tMethod: %s\n",
         lambda,
         r$doses[1], r$doses[2],
         r$objf,
@@ -56,9 +57,10 @@ for (lambda in bias_weights) {
 r <- posterior$optimize(
     target = target_file,
     dose_range = list(min = 0, max = 300),
-    bias_weight = 1.0
+    prior_weight = 1.0,
+    start = NULL
 )
-cat("\nConcentration-time predictions for bias_weight=1.0:\n")
+cat("\nConcentration-time predictions for prior_weight=1.0:\n")
 preds <- r$result$predictions
 for (j in seq_len(nrow(preds))) {
     p <- preds[j, ]
