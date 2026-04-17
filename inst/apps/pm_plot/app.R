@@ -368,23 +368,23 @@ server <- function(input, output, session) {
             multiple = TRUE, selectize = FALSE
           ),
           checkboxGroupInput(
-            "outeq",
+            "data_outeq",
             "Output equations:",
             choices = as.character(1:max(data_obj$outeq, na.rm = TRUE)),
             selected = "1",
             inline = TRUE
           ),
           conditionalPanel(
-            condition = "input.outeq && input.outeq.length > 1",
+            condition = "input.data_outeq && input.data_outeq.length > 1",
             shiny::helpText("One name per output, separate by commas."),
-            textInput("out_names", "Output Names:")
+            textInput("data_out_names", "Output Names:")
           ),
-          numericInput("block", "Block number:", 1, min = 1, step = 1),
-          selectInput("group", "Grouping factor", choices = c("None" = "none", getCov(data_obj)$covnames)), # in PMutilities
+          numericInput("data_block", "Block number:", 1, min = 1, step = 1),
+          selectInput("data_group", "Grouping factor", choices = c("None" = "none", getCov(data_obj)$covnames)), # in PMutilities
           conditionalPanel(
-            condition = "input.group !== 'none'",
+            condition = "input.data_group !== 'none'",
             shiny::helpText("One name per group, separate by commas."),
-            textInput("group_names", "Group Names:")
+            textInput("data_group_names", "Group Names:")
           )
 
         ))
@@ -409,18 +409,24 @@ server <- function(input, output, session) {
         ############### Data: PM_result #####################
 
         if (inherits(obj, "PM_result")) {
+          res_sub_choices <- c(
+            "Data" = "dat",
+            "Model" = "mod",
+            "Obs/Pred" = "op",
+            "Population" = "pop",
+            "Posterior" = "post",
+            "Final" = "fin",
+            "Cycle" = "cyc",
+            "Covariate" = "cov"
+          )
+          if (!is.null(obj$valid)) {
+            res_sub_choices <- c(res_sub_choices, "Validation" = "valid")
+          }
+
           return(list(
             radioButtons("res_sub", "Plot which field?",
               selected = "dat",
-              c(
-                "Data" = "dat",
-                "Model" = "mod",
-                "Obs/Pred" = "op",
-                "Final" = "fin",
-                "Cycle" = "cyc",
-                "Covariate" = "cov",
-                "Validation" = "valid"
-              )
+              res_sub_choices
             ),
 
             ############### Data: PM_result$data #####################
@@ -494,7 +500,61 @@ server <- function(input, output, session) {
               selectInput("icen", "Summary method for changing covariates:",
                 choices = c("mean", "median", "mode", "none"), "mean"
               )
-            ) # end cov conditional panel
+            ), # end cov conditional panel
+
+            ############### Data: PM_result$pop #####################
+
+            conditionalPanel(
+              condition = "input.res_sub == 'pop'",
+              checkboxGroupInput(
+                "pop_icen", "Predictions based on:",
+                choices = c("mean", "median"), selected = "median", inline = TRUE
+              ),
+              checkboxGroupInput(
+                "pop_outeq",
+                "Output equations:",
+                choices = as.character(1:max(get(input$data)$pop$data$outeq)),
+                selected = "1",
+                inline = TRUE
+              ),
+              selectInput("pop_block", "Block:",
+                choices = c("All", sort(unique(get(input$data)$pop$data$block)))
+              ),
+              shiny::helpText("Use Shift or CTRL (Windows) or CMD (Mac) + Click to (de)select subjects."),
+              radioButtons("pop_include", "", c("Include subjects" = "yes", "Exclude subjects" = "no"), selected = "yes"),
+              selectInput("pop_select", "",
+                choices = unique(get(input$data)$pop$data$id),
+                selected = unique(get(input$data)$pop$data$id),
+                multiple = TRUE, selectize = FALSE
+              )
+            ), # end pop conditional panel
+
+            ############### Data: PM_result$post #####################
+
+            conditionalPanel(
+              condition = "input.res_sub == 'post'",
+              checkboxGroupInput(
+                "post_icen", "Predictions based on:",
+                choices = c("mean", "median"), selected = "median", inline = TRUE
+              ),
+              checkboxGroupInput(
+                "post_outeq",
+                "Output equations:",
+                choices = as.character(1:max(get(input$data)$post$data$outeq)),
+                selected = "1",
+                inline = TRUE
+              ),
+              selectInput("post_block", "Block:",
+                choices = c("All", sort(unique(get(input$data)$post$data$block)))
+              ),
+              shiny::helpText("Use Shift or CTRL (Windows) or CMD (Mac) + Click to (de)select subjects."),
+              radioButtons("post_include", "", c("Include subjects" = "yes", "Exclude subjects" = "no"), selected = "yes"),
+              selectInput("post_select", "",
+                choices = unique(get(input$data)$post$data$id),
+                selected = unique(get(input$data)$post$data$id),
+                multiple = TRUE, selectize = FALSE
+              )
+            ) # end post conditional panel
 
             ############### Data: PM_result$model #####################
 
@@ -826,6 +886,106 @@ server <- function(input, output, session) {
           )) # end list
         } # end PM_op
 
+        ############### Format: PM_result$pop #####################
+
+        if (!is.null(input$data) && inherits(get(input$data), "PM_result") &&
+          !is.null(input$res_sub) && input$res_sub == "pop") {
+          return(list(
+            bslib::accordion(
+              bslib::accordion_panel(
+                "Line Options",
+                checkboxInput("pop_join", "Include?", TRUE),
+                checkboxInput("def_pop_line_fmt", "Use default formatting", TRUE),
+                shiny::helpText("Line color matches marker color."),
+                conditionalPanel(
+                  condition = "!input.def_pop_line_fmt",
+                  numericInput("pop_line_lwd", "Line width", 1, step = 0.5),
+                  selectInput("pop_line_dash", "Dash style:", choices = c("solid", "dot", "dash", "longdash", "dashdot", "longdashdot"))
+                )
+              ), # end accordion_panel
+              bslib::accordion_panel(
+                "Marker Options",
+                checkboxInput("def_marker_fmt", "Use default formatting", TRUE),
+                conditionalPanel(
+                  condition = "!input.def_marker_fmt",
+                  marker_controls(default_color = "red", default_symbol = "circle"),
+                  numericInput("mrk_size", "Size", 10, step = 1),
+                  numericInput("mrk_opacity", "Opacity", value = 0.5, min = 0, max = 1, step = 0.1),
+                  numericInput("mrk_lwd", "Outline width", 1, step = 0.5),
+                  textInput("mrk_lcol", "Outline color:", "black")
+                )
+              ), # end accordion_panel
+              bslib::accordion_panel(
+                "Plot Options",
+                numericInput("mult", "Multiplication factor for axes:", "1"),
+                checkboxInput("log", "Semi-log plot", FALSE),
+                checkboxInput("grid", "Grid", FALSE),
+                checkboxInput("legend", "Legend", FALSE),
+                textInput("pop_names", "Group labels (comma-separated):", ""),
+                shiny::helpText("Optional: label each group (icen/outeq/block combination) in order."),
+                checkboxInput("def_title_fmt", "Omit title", TRUE),
+                conditionalPanel(
+                  condition = "!input.def_title_fmt",
+                  textInput("title_text", "Title:", ""),
+                  textInput("title_col", "Color:", "black"),
+                  numericInput("title_size", "Size", 20, step = 1),
+                  checkboxInput("title_bold", "Bold?", TRUE)
+                )
+              ) # end accordion_panel
+            ) # end accordion
+          )) # end list
+        } # end PM_pop format
+
+        ############### Format: PM_result$post #####################
+
+        if (!is.null(input$data) && inherits(get(input$data), "PM_result") &&
+          !is.null(input$res_sub) && input$res_sub == "post") {
+          return(list(
+            bslib::accordion(
+              bslib::accordion_panel(
+                "Line Options",
+                checkboxInput("post_join", "Include?", TRUE),
+                checkboxInput("def_post_line_fmt", "Use default formatting", TRUE),
+                shiny::helpText("Line color matches marker color."),
+                conditionalPanel(
+                  condition = "!input.def_post_line_fmt",
+                  numericInput("post_line_lwd", "Line width", 1, step = 0.5),
+                  selectInput("post_line_dash", "Dash style:", choices = c("solid", "dot", "dash", "longdash", "dashdot", "longdashdot"))
+                )
+              ), # end accordion_panel
+              bslib::accordion_panel(
+                "Marker Options",
+                checkboxInput("def_marker_fmt", "Use default formatting", TRUE),
+                conditionalPanel(
+                  condition = "!input.def_marker_fmt",
+                  marker_controls(default_color = "red", default_symbol = "circle"),
+                  numericInput("mrk_size", "Size", 10, step = 1),
+                  numericInput("mrk_opacity", "Opacity", value = 0.5, min = 0, max = 1, step = 0.1),
+                  numericInput("mrk_lwd", "Outline width", 1, step = 0.5),
+                  textInput("mrk_lcol", "Outline color:", "black")
+                )
+              ), # end accordion_panel
+              bslib::accordion_panel(
+                "Plot Options",
+                numericInput("mult", "Multiplication factor for axes:", "1"),
+                checkboxInput("log", "Semi-log plot", FALSE),
+                checkboxInput("grid", "Grid", FALSE),
+                checkboxInput("legend", "Legend", FALSE),
+                textInput("post_names", "Group labels (comma-separated):", ""),
+                shiny::helpText("Optional: label each group (icen/outeq/block combination) in order."),
+                checkboxInput("def_title_fmt", "Omit title", TRUE),
+                conditionalPanel(
+                  condition = "!input.def_title_fmt",
+                  textInput("title_text", "Title:", ""),
+                  textInput("title_col", "Color:", "black"),
+                  numericInput("title_size", "Size", 20, step = 1),
+                  checkboxInput("title_bold", "Bold?", TRUE)
+                )
+              ) # end accordion_panel
+            ) # end accordion
+          )) # end list
+        } # end PM_post format
+
         ############### Format: PM_result$cycle #####################
 
         if (!is.null(input$data) && inherits(get(input$data), "PM_result") &&
@@ -950,7 +1110,7 @@ server <- function(input, output, session) {
                   checkboxInput("title_bold", "Bold?", TRUE)
                 ),
                 conditionalPanel(
-                  condition = "input.group !== 'none'",
+                  condition = "input.data_group !== 'none'",
                   checkboxInput("legend", "Legend", value = TRUE)
                 )
               ) # end accordion_panel
@@ -1063,7 +1223,7 @@ server <- function(input, output, session) {
         ############### Axis: all but PM_data #####################
 
         if (!is.null(input$data) && (inherits(get(input$data), "PM_sim") ||
-          (inherits(get(input$data), "PM_result") && input$res_sub %in% c("cov", "op", "fin")))) {
+          (inherits(get(input$data), "PM_result") && input$res_sub %in% c("cov", "op", "fin", "pop", "post")))) {
           # if(inherits(get(input$data),c("PMcov","PMfinal","PMop", "PMsim"))){
           return(list(
             h3("Axes"),
@@ -1734,6 +1894,350 @@ server <- function(input, output, session) {
             }
           } # end PM_op
 
+          ############### Plot and Code: PM_result$pop #####################
+
+          if (!is.null(input$res_sub) && input$res_sub == "pop") {
+            # x argument
+            x <- get(input$data)$pop
+
+            # icen argument (can be multiple)
+            icen <- setVal("pop_icen", "median")
+            if (length(icen) == 0) icen <- "median"
+
+            # outeq argument (can be multiple)
+            outeq <- setVal("pop_outeq", 1)
+            outeq <- as.numeric(outeq)
+            if (length(outeq) == 0) outeq <- 1
+
+            # block argument
+            block_val <- setVal("pop_block", "All")
+            if (identical(block_val, "All") || length(block_val) == 0) {
+              block <- sort(unique(x$data$block))
+            } else {
+              block <- as.numeric(block_val)
+            }
+
+            # include/exclude arguments
+            if (!is.null(input$pop_include)) {
+              if (input$pop_include == "yes") {
+                include <- input$pop_select
+                exclude <- NULL
+              } else {
+                include <- NULL
+                exclude <- input$pop_select
+              }
+            } else {
+              include <- exclude <- NULL
+            }
+
+            # line argument
+            pop_join <- setVal("pop_join", TRUE)
+            def_pop_line_fmt <- setVal("def_pop_line_fmt", TRUE)
+            def_pop_line_args <- list(width = 1, dash = "solid")
+            pop_line_lwd <- setVal("pop_line_lwd", def_pop_line_args$width)
+            pop_line_dash <- setVal("pop_line_dash", def_pop_line_args$dash)
+
+            if (pop_join) {
+              if (!def_pop_line_fmt) {
+                line_join <- list(width = pop_line_lwd, dash = pop_line_dash)
+                line_join <- line_join[!line_join %in% def_pop_line_args]
+                if (length(line_join) == 0) {
+                  line <- list(join = TRUE)
+                } else {
+                  line <- list(join = line_join)
+                }
+              } else {
+                line <- list(join = TRUE)
+              }
+            } else {
+              line <- list(join = FALSE)
+            }
+
+            # marker argument
+            def_marker_fmt <- setVal("def_marker_fmt", TRUE)
+            def_marker_args <- list(
+              color = "red", symbol = "circle", size = 10, opacity = 0.5,
+              line = list(width = 1, color = "black")
+            )
+
+            mrk_col <- parse_marker_color(def_marker_args$color)
+            mrk_symbol <- parse_marker_symbol(def_marker_args$symbol)
+            mrk_size <- setVal("mrk_size", def_marker_args$size)
+            mrk_opacity <- setVal("mrk_opacity", def_marker_args$opacity)
+            mrk_lwd <- setVal("mrk_lwd", def_marker_args$line$width)
+            mrk_lcol <- setVal("mrk_lcol", def_marker_args$line$color)
+
+            if (def_marker_fmt) {
+              marker <- FALSE
+            } else {
+              marker <- list(
+                color = mrk_col, symbol = mrk_symbol, size = mrk_size,
+                opacity = mrk_opacity, line = list(width = mrk_lwd, color = mrk_lcol)
+              )
+              marker$line <- marker$line[!marker$line %in% def_marker_args$line]
+              if (length(marker$line) == 0) marker$line <- NULL
+              marker <- marker[!marker %in% def_marker_args]
+              if (length(marker) == 0) marker <- NULL
+            }
+
+            # names argument
+            pop_names_raw <- setVal("pop_names", "")
+            names_arg <- NULL
+            if (!is.null(pop_names_raw) && nzchar(pop_names_raw)) {
+              names_arg <- unlist(stringr::str_split(pop_names_raw, "\\s*,\\s*"))
+              names_arg <- stringr::str_trim(names_arg)
+              names_arg <- names_arg[nzchar(names_arg)]
+              if (length(names_arg) == 0) names_arg <- NULL
+            }
+
+            # other arguments
+            mult <- setVal("mult", 1)
+            log <- setVal("log", FALSE)
+            grid <- setVal("grid", FALSE)
+            legend <- setVal("legend", FALSE)
+
+            # title argument
+            def_title_fmt <- setVal("def_title_fmt", TRUE)
+            def_title_args <- list(text = "", font = list(color = "black", size = 20, bold = TRUE))
+            title_text <- setVal("title_text", "")
+            title_col <- setVal("title_col", "black")
+            title_bold <- setVal("title_bold", TRUE)
+            title_size <- setVal("title_size", 20)
+            if (def_title_fmt) {
+              title <- ""
+            } else {
+              title <- list(text = title_text, font = list(
+                color = title_col, size = title_size,
+                bold = title_bold
+              ))
+              title$font <- title$font[!title$font %in% def_title_args$font]
+              if (length(title$font) == 0) title$font <- NULL
+            }
+
+            args <- list(
+              x = x, line = line, marker = marker,
+              names = names_arg,
+              icen = icen, outeq = outeq, block = block,
+              include = include, exclude = exclude,
+              mult = as.numeric(mult), log = log, grid = grid,
+              legend = legend,
+              title = title,
+              xlab = getXlab(), ylab = getYlab(),
+              xlim = getXlim(), ylim = getYlim()
+            )
+            args <- args[which(sapply(args, function(x) length(x) > 0), arr.ind = T)]
+
+            # now make the code
+            Name <- paste0(input$data, "$pop$plot(")
+            all_blocks <- sort(unique(get(input$data)$pop$data$block))
+            all_subs <- as.character(unique(get(input$data)$pop$data$id))
+            def_args <- list(
+              line = list(join = TRUE),
+              marker = FALSE,
+              names = NULL,
+              icen = "median", outeq = 1, block = all_blocks,
+              include = all_subs, exclude = NULL,
+              mult = 1,
+              log = FALSE,
+              grid = FALSE,
+              legend = FALSE,
+              title = "",
+              xlab = NULL, ylab = NULL,
+              xlim = NULL, ylim = NULL
+            )
+
+            arglist <- args[-1] # remove the data object
+            arglist <- arglist[map_lgl(intersect(names(arglist), names(def_args)), \(x) !identical(arglist[[x]], def_args[[x]]))]
+            if (length(arglist) > 0) {
+              arglist <- paste(deparse(arglist), collapse = "") %>%
+                stringr::str_replace("^list\\(", "") %>%
+                stringr::str_replace_all("(\\d+)L", "\\1") %>%
+                stringr::str_replace_all(" +", " ")
+              codeStatement <- paste0(Name, arglist)
+            } else {
+              codeStatement <- paste0(Name, ")")
+            }
+
+            p <- do_plot(args)
+            if (code) {
+              return(codeStatement)
+            } else {
+              return(p)
+            }
+          } # end PM_pop
+
+          ############### Plot and Code: PM_result$post #####################
+
+          if (!is.null(input$res_sub) && input$res_sub == "post") {
+            # x argument
+            x <- get(input$data)$post
+
+            # icen argument (can be multiple)
+            icen <- setVal("post_icen", "median")
+            if (length(icen) == 0) icen <- "median"
+
+            # outeq argument (can be multiple)
+            outeq <- setVal("post_outeq", 1)
+            outeq <- as.numeric(outeq)
+            if (length(outeq) == 0) outeq <- 1
+
+            # block argument
+            block_val <- setVal("post_block", "All")
+            if (identical(block_val, "All") || length(block_val) == 0) {
+              block <- sort(unique(x$data$block))
+            } else {
+              block <- as.numeric(block_val)
+            }
+
+            # include/exclude arguments
+            if (!is.null(input$post_include)) {
+              if (input$post_include == "yes") {
+                include <- input$post_select
+                exclude <- NULL
+              } else {
+                include <- NULL
+                exclude <- input$post_select
+              }
+            } else {
+              include <- exclude <- NULL
+            }
+
+            # line argument
+            post_join <- setVal("post_join", TRUE)
+            def_post_line_fmt <- setVal("def_post_line_fmt", TRUE)
+            def_post_line_args <- list(width = 1, dash = "solid")
+            post_line_lwd <- setVal("post_line_lwd", def_post_line_args$width)
+            post_line_dash <- setVal("post_line_dash", def_post_line_args$dash)
+
+            if (post_join) {
+              if (!def_post_line_fmt) {
+                line_join <- list(width = post_line_lwd, dash = post_line_dash)
+                line_join <- line_join[!line_join %in% def_post_line_args]
+                if (length(line_join) == 0) {
+                  line <- list(join = TRUE)
+                } else {
+                  line <- list(join = line_join)
+                }
+              } else {
+                line <- list(join = TRUE)
+              }
+            } else {
+              line <- list(join = FALSE)
+            }
+
+            # marker argument
+            def_marker_fmt <- setVal("def_marker_fmt", TRUE)
+            def_marker_args <- list(
+              color = "red", symbol = "circle", size = 10, opacity = 0.5,
+              line = list(width = 1, color = "black")
+            )
+
+            mrk_col <- parse_marker_color(def_marker_args$color)
+            mrk_symbol <- parse_marker_symbol(def_marker_args$symbol)
+            mrk_size <- setVal("mrk_size", def_marker_args$size)
+            mrk_opacity <- setVal("mrk_opacity", def_marker_args$opacity)
+            mrk_lwd <- setVal("mrk_lwd", def_marker_args$line$width)
+            mrk_lcol <- setVal("mrk_lcol", def_marker_args$line$color)
+
+            if (def_marker_fmt) {
+              marker <- FALSE
+            } else {
+              marker <- list(
+                color = mrk_col, symbol = mrk_symbol, size = mrk_size,
+                opacity = mrk_opacity, line = list(width = mrk_lwd, color = mrk_lcol)
+              )
+              marker$line <- marker$line[!marker$line %in% def_marker_args$line]
+              if (length(marker$line) == 0) marker$line <- NULL
+              marker <- marker[!marker %in% def_marker_args]
+              if (length(marker) == 0) marker <- NULL
+            }
+
+            # names argument
+            post_names_raw <- setVal("post_names", "")
+            names_arg <- NULL
+            if (!is.null(post_names_raw) && nzchar(post_names_raw)) {
+              names_arg <- unlist(stringr::str_split(post_names_raw, "\\s*,\\s*"))
+              names_arg <- stringr::str_trim(names_arg)
+              names_arg <- names_arg[nzchar(names_arg)]
+              if (length(names_arg) == 0) names_arg <- NULL
+            }
+
+            # other arguments
+            mult <- setVal("mult", 1)
+            log <- setVal("log", FALSE)
+            grid <- setVal("grid", FALSE)
+            legend <- setVal("legend", FALSE)
+
+            # title argument
+            def_title_fmt <- setVal("def_title_fmt", TRUE)
+            def_title_args <- list(text = "", font = list(color = "black", size = 20, bold = TRUE))
+            title_text <- setVal("title_text", "")
+            title_col <- setVal("title_col", "black")
+            title_bold <- setVal("title_bold", TRUE)
+            title_size <- setVal("title_size", 20)
+            if (def_title_fmt) {
+              title <- ""
+            } else {
+              title <- list(text = title_text, font = list(
+                color = title_col, size = title_size,
+                bold = title_bold
+              ))
+              title$font <- title$font[!title$font %in% def_title_args$font]
+              if (length(title$font) == 0) title$font <- NULL
+            }
+
+            args <- list(
+              x = x, line = line, marker = marker,
+              names = names_arg,
+              icen = icen, outeq = outeq, block = block,
+              include = include, exclude = exclude,
+              mult = as.numeric(mult), log = log, grid = grid,
+              legend = legend,
+              title = title,
+              xlab = getXlab(), ylab = getYlab(),
+              xlim = getXlim(), ylim = getYlim()
+            )
+            args <- args[which(sapply(args, function(x) length(x) > 0), arr.ind = T)]
+
+            # now make the code
+            Name <- paste0(input$data, "$post$plot(")
+            all_blocks <- sort(unique(get(input$data)$post$data$block))
+            all_subs <- as.character(unique(get(input$data)$post$data$id))
+            def_args <- list(
+              line = list(join = TRUE),
+              marker = FALSE,
+              names = NULL,
+              icen = "median", outeq = 1, block = all_blocks,
+              include = all_subs, exclude = NULL,
+              mult = 1,
+              log = FALSE,
+              grid = FALSE,
+              legend = FALSE,
+              title = "",
+              xlab = NULL, ylab = NULL,
+              xlim = NULL, ylim = NULL
+            )
+
+            arglist <- args[-1] # remove the data object
+            arglist <- arglist[map_lgl(intersect(names(arglist), names(def_args)), \(x) !identical(arglist[[x]], def_args[[x]]))]
+            if (length(arglist) > 0) {
+              arglist <- paste(deparse(arglist), collapse = "") %>%
+                stringr::str_replace("^list\\(", "") %>%
+                stringr::str_replace_all("(\\d+)L", "\\1") %>%
+                stringr::str_replace_all(" +", " ")
+              codeStatement <- paste0(Name, arglist)
+            } else {
+              codeStatement <- paste0(Name, ")")
+            }
+
+            p <- do_plot(args)
+            if (code) {
+              return(codeStatement)
+            } else {
+              return(p)
+            }
+          } # end PM_post
+
           ############### Plot and Code: PM_result$cycle #####################
 
           if (!is.null(input$res_sub) && input$res_sub == "cyc") {
@@ -1965,7 +2469,7 @@ server <- function(input, output, session) {
             }
 
             # group names
-            group_names <- setVal("group_names", NULL)
+            group_names <- setVal("data_group_names", NULL)
             if (!is.null(group_names)) {
               group_names <- unlist(stringr::str_split(group_names, "\\s*,\\s*"))
               group_names <- stringr::str_trim(group_names)
@@ -1976,7 +2480,7 @@ server <- function(input, output, session) {
             }
 
             # output names
-            out_names <- setVal("out_names", NULL)
+            out_names <- setVal("data_out_names", NULL)
             if (!is.null(out_names)) {
               out_names <- unlist(stringr::str_split(out_names, "\\s*,\\s*"))
               out_names <- stringr::str_trim(out_names)
@@ -1987,7 +2491,7 @@ server <- function(input, output, session) {
             }
 
             # legend
-            if (!is.null(input$group) && input$group != "none") {
+            if (!is.null(input$data_group) && input$data_group != "none") {
               legend <- setVal("legend", TRUE)
             } else {
               legend <- setVal("legend", FALSE)
@@ -1995,10 +2499,10 @@ server <- function(input, output, session) {
 
 
             # Other defaults
-            color <- setVal("group", "none")
+            color <- setVal("data_group", "none")
             tad <- setVal("tad", FALSE)
-            outeq <- setVal("outeq", 1)
-            block <- setVal("block", 1)
+            outeq <- setVal("data_outeq", 1)
+            block <- setVal("data_block", 1)
             mult <- setVal("mult", 1)
             log <- setVal("log", FALSE)
             grid <- setVal("grid", FALSE)
@@ -2053,7 +2557,7 @@ server <- function(input, output, session) {
               out_names = NULL,
               block = 1,
               tad = FALSE,
-              legend = ifelse(!is.null(input$group) && input$group != "none", TRUE, FALSE),
+              legend = ifelse(!is.null(input$data_group) && input$data_group != "none", TRUE, FALSE),
               log = FALSE,
               grid = FALSE,
               xlab = NULL, ylab = NULL,

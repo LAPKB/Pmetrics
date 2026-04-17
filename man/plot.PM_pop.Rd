@@ -8,10 +8,8 @@
   x,
   include = NULL,
   exclude = NULL,
-  line = TRUE,
-  marker = TRUE,
-  color = NULL,
-  colors = "Set1",
+  line = list(join = TRUE),
+  marker = FALSE,
   names = NULL,
   mult = 1,
   icen = "median",
@@ -53,17 +51,11 @@ Example: \code{line = list(color = "red", dash = "longdash", width = 2)}}
 
 \item{marker}{Formats the symbols plotting observations. Controls the plotting symbol for observations.  This argument maps to the plotly marker object. It can be boolean or a list. \code{TRUE} will plot the marker with default characteristics. \code{FALSE} will suppress marker plotting. If a list, can control many marker characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > marker to see all the ways the marker can be formatted. Most common will be: \itemize{ \item{\code{color}} Marker color. \item{\code{symbol}} Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values. \item{\code{size}} Character size in points. \item{\code{opacity}} Ranging between 0 (fully transparent) to 1 (fully opaque). \item{\code{line}} A list of  additional attributes governing the outline for filled shapes, most commonly color and width. }
 
-Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}}
+Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}
 
-\item{color}{Character vector naming a column to \strong{group} by, e.g. "outeq" or "icen".}
-
-\item{colors}{to use for \strong{groups} when there are multiple \code{outeq}, \code{block}, or \code{icen}.
-This can be a palette or a vector of colors.
-For accepted palette names see \code{RColorBrewer::brewer.pal.info}. Examples include
-"BrBG", or "Set2". An example vector could be \code{c("red", "green", "blue")}. It is not
-necessary to specify the same number of colors as groups within \code{color}, as colors
-will be interpolated to generate the correct number. The default when \code{color}
-is specified is the "Set1" palette.}
+When multiple groups are displayed (via \code{icen}, \code{outeq}, and/or \code{block}),
+\code{marker$color} can be a palette name from \code{RColorBrewer::brewer.pal.info} or
+a vector of colors.}
 
 \item{names}{A character vector of names to label the \strong{groups} if \code{legend = TRUE}.
 This vector does need to be the same length as the number of groups.
@@ -138,7 +130,9 @@ However, the function can be called directly on a \link{PM_pop} object.
 This function will plot time and population predictions with a variety of options.
 By default markers are included and  have the following plotly properties:
 \code{list(symbol = "circle", color = "red", size = 10, opacity = 0.5, line = list(color = "black", width = 1))}.
-Markers can be joined by lines, default is \code{TRUE}. If \code{TRUE},
+Markers are omitted by default.
+If enabled, markers can be joined by lines, default is \code{line = list(join = TRUE)}.
+If joined,
 the joining lines will have the following properties:
 \verb{list(color = "dodgerblue", width = 1, dash = "solid"}.
 The grid and legend are omitted by default.

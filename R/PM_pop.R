@@ -155,7 +155,9 @@ PM_pop <- R6::R6Class(
 #' This function will plot time and population predictions with a variety of options.
 #' By default markers are included and  have the following plotly properties:
 #' `list(symbol = "circle", color = "red", size = 10, opacity = 0.5, line = list(color = "black", width = 1))`.
-#' Markers can be joined by lines, default is `TRUE`. If `TRUE`,
+#' Markers are omitted by default.
+#' If enabled, markers can be joined by lines, default is `line = list(join = TRUE)`.
+#' If joined,
 #' the joining lines will have the following properties:
 #' `list(color = "dodgerblue", width = 1, dash = "solid"`.
 #' The grid and legend are omitted by default.
@@ -178,14 +180,9 @@ PM_pop <- R6::R6Class(
 #' line > dash > values. Default is "solid".
 #' Example: `line = list(color = "red", dash = "longdash", width = 2)`
 #' @param marker Formats the symbols plotting observations. `r template("marker")`
-#' @param color Character vector naming a column to **group** by, e.g. "outeq" or "icen".
-#' @param colors to use for **groups** when there are multiple `outeq`, `block`, or `icen`.
-#' This can be a palette or a vector of colors.
-#' For accepted palette names see `RColorBrewer::brewer.pal.info`. Examples include
-#' "BrBG", or "Set2". An example vector could be `c("red", "green", "blue")`. It is not
-#' necessary to specify the same number of colors as groups within `color`, as colors
-#' will be interpolated to generate the correct number. The default when `color`
-#' is specified is the "Set1" palette.
+#' When multiple groups are displayed (via `icen`, `outeq`, and/or `block`),
+#' `marker$color` can be a palette name from `RColorBrewer::brewer.pal.info` or
+#' a vector of colors.
 #' @param names A character vector of names to label the **groups** if `legend = TRUE`.
 #' This vector does need to be the same length as the number of groups.
 #' Example: `c("Mean", "Median")` if `icen = c("mean", "median")`.
@@ -229,10 +226,8 @@ plot.PM_pop <- function(
     x,
     include = NULL,
     exclude = NULL,
-    line = TRUE,
-    marker = TRUE,
-    color = NULL,
-    colors = "Set1",
+    line = list(join = TRUE),
+    marker = FALSE,
     names = NULL,
     mult = 1,
     icen = "median",
@@ -253,11 +248,40 @@ plot.PM_pop <- function(
     x$data
   }
 
+  user_color <- if (is.list(marker) && !is.null(marker$color)) marker$color else NULL
+
+  line_join <- TRUE
+  line_input <- line
+  if (is.list(line_input) && "join" %in% names(line_input)) {
+    join_val <- line_input$join
+    line_input$join <- NULL
+    if (is.logical(join_val)) {
+      line_join <- isTRUE(join_val)
+    } else if (is.list(join_val)) {
+      line_input <- modifyList(line_input, join_val)
+      line_join <- TRUE
+    } else {
+      line_join <- isTRUE(join_val)
+    }
+  }
+  line_color_specified <- is.list(line_input) && "color" %in% names(line_input)
+
   # process marker
   marker <- amendMarker(marker)
 
   # process line
-  line <- amendLine(line)
+  line <- amendLine(line_input)
+  if (!line_join) {
+    line <- amendLine(FALSE)
+  }
+
+  if (line_color_specified) {
+    cli::cli_warn(c(
+      "!" = "Line colors are fixed to match marker colors for PM_pop groups.",
+      "i" = "Use {.code marker$color} to control PM_pop group colors."
+    ))
+  }
+  line$color <- NULL
 
 
   # get the rest of the dots
@@ -370,21 +394,29 @@ plot.PM_pop <- function(
 
     if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
       n_colors <- length(levels(allsub$group))
-      if (checkRequiredPackages("RColorBrewer")) {
-        palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
-        if (length(colors) == 1 && colors %in% palettes$name) {
-          max_colors <- palettes$maxcolors[match(colors, palettes$name)]
-          colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, colors))(n_colors)
+      if (!is.null(user_color)) {
+        if (length(user_color) == 1 && checkRequiredPackages("RColorBrewer") &&
+            user_color %in% rownames(RColorBrewer::brewer.pal.info)) {
+          max_colors <- RColorBrewer::brewer.pal.info[user_color, "maxcolors"]
+          colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, user_color))(n_colors)
+        } else {
+          colors <- rep(as.character(user_color), length.out = n_colors)
         }
+      } else if (n_colors == 1) {
+        colors <- rep(marker$color[[1]], n_colors)
+      } else if (checkRequiredPackages("RColorBrewer")) {
+        n_pal <- min(max(n_colors, 3L), 9L)
+        colors <- rep(RColorBrewer::brewer.pal(n_pal, "Set1"), length.out = n_colors)
       } else {
         cli::cli_inform(c("i" = "Group colors are better with RColorBrewer package installed."))
         colors <- getDefaultColors(n_colors) # in plotly_Utils
       }
 
       marker$color <- NULL
-      line$color <- NULL
     } else { # no grouping
       allsub$group <- factor(1, labels = "Predicted")
+      colors <- marker$color[[1]]
+      marker$color <- NULL
     }
 
     p <- allsub %>%

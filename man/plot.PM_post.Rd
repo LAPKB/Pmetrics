@@ -8,10 +8,8 @@
   x,
   include = NULL,
   exclude = NULL,
-  line = TRUE,
-  marker = TRUE,
-  color = NULL,
-  colors = "Set1",
+  line = list(join = TRUE),
+  marker = FALSE,
   names = NULL,
   mult = 1,
   icen = "median",
@@ -42,28 +40,23 @@ in a \link{PM_result} object}
 It can either be a boolean or a list. If set to \code{TRUE} or
 a list of plotly line attributes, it
 will generate line segments joining observations. If set to
-\code{FALSE}, no segments will be generated. The default
-values for the elements of formatting list, all of which can be
-overriden are:
-- \code{color} Color of the segments. Default is "dodgerblue".
-- \code{width }Width of the segments, default 1.
+\code{FALSE}, no segments will be generated.
+Line colors are fixed to match marker colors for group displays and cannot be overridden.
+Other customizable line properties are:
+- \code{width} Width of the segments, default 1.
 - \code{dash} See \code{plotly::schema()}, traces > scatter > attributes >
 line > dash > values. Default is "solid".
-Example: \code{line = list(color = "red", dash = "longdash", width = 2)}}
+- \code{join} Set to \code{TRUE} (default) to join markers with lines, or \code{FALSE} for markers only.
+Example: \code{line = list(width = 2, dash = "longdash", join = FALSE)}}
 
 \item{marker}{Formats the symbols plotting observations. Controls the plotting symbol for observations.  This argument maps to the plotly marker object. It can be boolean or a list. \code{TRUE} will plot the marker with default characteristics. \code{FALSE} will suppress marker plotting. If a list, can control many marker characteristics, including overriding defaults. Use the plotly \code{plotly::schema()} command in the console and navigate to traces > scatter > attributes > marker to see all the ways the marker can be formatted. Most common will be: \itemize{ \item{\code{color}} Marker color. \item{\code{symbol}} Plotting character. See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values. \item{\code{size}} Character size in points. \item{\code{opacity}} Ranging between 0 (fully transparent) to 1 (fully opaque). \item{\code{line}} A list of  additional attributes governing the outline for filled shapes, most commonly color and width. }
 
-Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}}
+Example: \code{marker = list(color = "red", symbol = "triangle", opacity = 0.8, line = list(color = "black", width = 2))}
 
-\item{color}{Character vector naming a column to \strong{group} by, e.g. "outeq" or "icen".}
-
-\item{colors}{to use for \strong{groups} when there are multiple \code{outeq}, \code{block}, or \code{icen}.
-This can be a palette or a vector of colors.
-For accepted palette names see \code{RColorBrewer::brewer.pal.info}. Examples include
-"BrBG", or "Set2". An example vector could be \code{c("red", "green", "blue")}. It is not
-necessary to specify the same number of colors as groups within \code{color}, as colors
-will be interpolated to generate the correct number. The default when \code{color}
-is specified is the "Set1" palette.}
+Marker colors control group display colors. When multiple groups are displayed
+(via \code{icen}, \code{outeq}, and/or \code{block}),
+\code{marker$color} can be a palette name from \code{RColorBrewer::brewer.pal.info} or
+a vector of colors. Line colors are automatically matched to marker colors.}
 
 \item{names}{A character vector of names to label the \strong{groups} if \code{legend = TRUE}.
 This vector does need to be the same length as the number of groups.
@@ -135,12 +128,13 @@ Plots \link{PM_post} objects
 This is a function usually called by the \verb{$plot()} method for \link{PM_post} objects
 within a \link{PM_result} to generate the plot.
 However, the function can be called directly on a \link{PM_post} object.
-This function will plot time and population predictions with a variety of options.
-By default markers are included and  have the following plotly properties:
+This function will plot time and posterior predictions with a variety of options.
+Markers are omitted by default. When enabled, markers have default plotly properties:
 \code{list(symbol = "circle", color = "red", size = 10, opacity = 0.5, line = list(color = "black", width = 1))}.
-Markers can be joined by lines, default is \code{TRUE}. If \code{TRUE},
-the joining lines will have the following properties:
-\verb{list(color = "dodgerblue", width = 1, dash = "solid"}.
+Markers can be joined by lines, with default \code{line = list(join = TRUE)}.
+When joined, line colors are automatically matched to marker colors.
+The joining lines have the following default properties:
+\code{list(color = "dodgerblue", width = 1, dash = "solid")}.
 The grid and legend are omitted by default.
 }
 \examples{
