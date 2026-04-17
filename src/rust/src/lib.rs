@@ -28,15 +28,12 @@ fn validate_paths(data_path: &str, model_path: &str) {
 }
 
 fn read_pmetrics_for_kind(data_path: &str, kind: &str) -> Result<Data> {
-    let data = read_pmetrics(data_path)
-        .map_err(|err| anyhow::format_err!("Failed to parse data: {}", err))?;
-
     match kind {
         "ode" | "analytical" => {}
         err => return Err(anyhow::format_err!("{} is not a supported model type", err)),
     }
 
-    Ok(data)
+    read_pmetrics(data_path).map_err(|err| anyhow::format_err!("Failed to parse data: {}", err))
 }
 
 /// Simulates the first subject in the data set using the model at the given path.

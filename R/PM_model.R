@@ -481,6 +481,7 @@ PM_model <- R6::R6Class(
         type <- "ODE"
       }
 
+      index_mode <- "passthrough"
       if (type == "ODE") {
         has_dynamic_indices <- any(c(
           has_nonliteral_index(self$arg_list$eqn, c("x", "dx", "b", "bolus", "r", "rateiv")),
@@ -531,13 +532,13 @@ PM_model <- R6::R6Class(
         get_assignments(self$arg_list$eqn, "dx")
       }
       n_eqn_slots <- if (type == "Analytical") {
-        index_vector_size(template_n_eqn)
+        index_vector_size(template_n_eqn, index_mode = "passthrough")
       } else {
         NA_integer_
       }
-      n_out <- get_max_assignment_index(self$arg_list$out, "y")
+      n_out <- get_assignments(self$arg_list$out, "y")
       n_out_slots <- if (type == "Analytical") {
-        index_vector_size(n_out)
+        index_vector_size(get_max_index(self$arg_list$out, "y"), index_mode = "passthrough")
       } else {
         NA_integer_
       }
@@ -547,7 +548,7 @@ PM_model <- R6::R6Class(
         NA_integer_
       }
       n_drug_slots <- if (type == "Analytical") {
-        index_vector_size(template_n_drug)
+        index_vector_size(template_n_drug, index_mode = "passthrough")
       } else {
         NA_integer_
       }
@@ -691,7 +692,7 @@ PM_model <- R6::R6Class(
       # in other blocks
 
       if (!is.null(self$arg_list$sec)) {
-        sec <- transpile_sec(self$arg_list$sec)
+        sec <- transpile_sec(self$arg_list$sec, index_mode = index_mode)
       } else {
         sec <- ""
       }
@@ -700,33 +701,33 @@ PM_model <- R6::R6Class(
       if (type == "ODE") {
         eqn <- transpile_ode_eqn(self$arg_list$eqn, parameters, covariates, sec)
       } else if (type == "Analytical") {
-        eqn <- transpile_analytic_eqn(sec_eqn, parameters, covariates)
+        eqn <- transpile_analytic_eqn(sec_eqn, parameters, covariates, index_mode = index_mode)
       }
 
       # fa
       if (!is.null(self$arg_list$fa)) {
-        fa <- transpile_fa(self$arg_list$fa, parameters, covariates, sec)
+        fa <- transpile_fa(self$arg_list$fa, parameters, covariates, sec, index_mode = index_mode)
       } else {
         fa <- empty_fa()
       }
 
       # lag
       if (!is.null(self$arg_list$lag)) {
-        lag <- transpile_lag(self$arg_list$lag, parameters, covariates, sec)
+        lag <- transpile_lag(self$arg_list$lag, parameters, covariates, sec, index_mode = index_mode)
       } else {
         lag <- empty_lag()
       }
 
       # ini
       if (!is.null(self$arg_list$ini)) {
-        ini <- transpile_ini(self$arg_list$ini, parameters, covariates, sec)
+        ini <- transpile_ini(self$arg_list$ini, parameters, covariates, sec, index_mode = index_mode)
       } else {
         ini <- empty_ini()
       }
 
       # out
       if (!is.null(self$arg_list$out)) {
-        out <- transpile_out(self$arg_list$out, parameters, covariates, sec)
+        out <- transpile_out(self$arg_list$out, parameters, covariates, sec, index_mode = index_mode)
       } else {
         out <- empty_out()
       }
