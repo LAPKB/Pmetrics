@@ -185,16 +185,16 @@ PM_post <- R6::R6Class(
 #'     - `join` Set to `TRUE` (default) to join markers with lines, or `FALSE` for markers only.
 #' Example: `line = list(width = 2, dash = "longdash", join = FALSE)`
 #' @param marker Formats the symbols plotting observations. `r template("marker")`
-#' Marker colors control group display colors. When multiple groups are displayed
-#' (via `icen`, `outeq`, and/or `block`),
-#' `marker$color` can be a palette name from `RColorBrewer::brewer.pal.info` or
+#' Marker colors control group display colors. When multiple output equations are displayed
+#' (via `outeq`), `marker$color` can be a palette name from `RColorBrewer::brewer.pal.info` or
 #' a vector of colors. Line colors are automatically matched to marker colors.
-#' @param names A character vector of names to label the **groups** if `legend = TRUE`.
-#' This vector does need to be the same length as the number of groups.
-#' Example: `c("Mean", "Median")` if `icen = c("mean", "median")`.
+#' @param out_names A character vector of names to label the output equations if `legend = TRUE`.
+#' Must be at least as long as the maximum value in `outeq`.
+#' Example: `c("Conc A", "Conc B")` if `outeq = c(1, 2)`.
 #' @param mult `r template("mult")`
-#' @param icen Can be "median" for the predictions based on median of
-#' parameter value distributions, "mean", or both, e.g. `c("mean", "median")`.  Default is "median".
+#' @param icen Can be `"median"` for predictions based on the median of the parameter
+#' value distributions, or `"mean"`. Default is `"median"`.
+#' Only a single value is accepted; `outeq` is the sole grouping dimension.
 #' @param outeq `r template("outeq")` Default is 1, but can be multiple if present in the data, e.g. `1:2` or `c(1, 3)`.
 #' @param block `r template("block")` Default is 1, but can be multiple if present in the data, as for `outeq`.
 #' @param overlay Operator to overlay all time prediction profiles in a single plot.
@@ -234,7 +234,7 @@ plot.PM_post <- function(
     exclude = NULL,
     line = list(join = TRUE),
     marker = FALSE,
-    names = NULL,
+    out_names = NULL,
     mult = 1,
     icen = "median",
     outeq = 1,
@@ -343,36 +343,25 @@ plot.PM_post <- function(
 
   # Data processing ---------------------------------------------------------
 
-  # filter
+  # filter — icen is a single-value filter only; outeq is the sole grouping dimension
   presub <- x %>%
-    filter(outeq %in% !!outeq, block %in% !!block, icen %in% !!icen) %>%
+    filter(outeq %in% !!outeq, block %in% !!block, icen == !!icen[1]) %>%
     mutate(group = "") %>%
     includeExclude(include, exclude)
 
-  # group
-  if (outeq[1] != 1 | length(outeq) > 1) {
-    presub <- presub %>%
-      rowwise() %>%
-      mutate(group = paste0(group, ", outeq: ", outeq))
-  }
-  if (block[1] != 1 | length(block) > 1) {
-    presub <- presub %>%
-      rowwise() %>%
-      mutate(group = paste0(group, ", block: ", block))
-  }
-
-  if (length(icen) > 1) {
-    presub <- presub %>%
-      rowwise() %>%
-      mutate(group = paste0(group, ", ", icen))
+  # group by outeq only
+  if (length(outeq) > 1) {
+    if (is.null(out_names)) {
+      out_names_vec <- paste0("Output ", seq_len(max(outeq)))
+    } else if (length(out_names) < max(outeq)) {
+      cli::cli_abort(c("x" = "The number of names in {.var out_names} must be at least as long as the maximum value in {.var outeq}."))
+    } else {
+      out_names_vec <- out_names
+    }
+    presub$group <- out_names_vec[presub$outeq]
   }
 
-  presub$group <- stringr::str_replace(presub$group, "^\\s*,*\\s*", "")
-  if (!is.null(names)) {
-    presub$group <- factor(presub$group, labels = names)
-  } else {
-    presub$group <- factor(presub$group)
-  }
+  presub$group <- factor(presub$group)
 
   # select relevant columns
   sub <- presub %>%

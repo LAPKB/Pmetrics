@@ -506,9 +506,9 @@ server <- function(input, output, session) {
 
             conditionalPanel(
               condition = "input.res_sub == 'pop'",
-              checkboxGroupInput(
+              selectInput(
                 "pop_icen", "Predictions based on:",
-                choices = c("mean", "median"), selected = "median", inline = TRUE
+                choices = c("median", "mean"), selected = "median"
               ),
               checkboxGroupInput(
                 "pop_outeq",
@@ -533,9 +533,9 @@ server <- function(input, output, session) {
 
             conditionalPanel(
               condition = "input.res_sub == 'post'",
-              checkboxGroupInput(
+              selectInput(
                 "post_icen", "Predictions based on:",
-                choices = c("mean", "median"), selected = "median", inline = TRUE
+                choices = c("median", "mean"), selected = "median"
               ),
               checkboxGroupInput(
                 "post_outeq",
@@ -921,8 +921,8 @@ server <- function(input, output, session) {
                 checkboxInput("log", "Semi-log plot", FALSE),
                 checkboxInput("grid", "Grid", FALSE),
                 checkboxInput("legend", "Legend", FALSE),
-                textInput("pop_names", "Group labels (comma-separated):", ""),
-                shiny::helpText("Optional: label each group (icen/outeq/block combination) in order."),
+                textInput("pop_out_names", "Output names (comma-separated):", ""),
+                shiny::helpText("Optional: label each output equation in order, e.g. 'Drug A, Drug B'."),
                 checkboxInput("def_title_fmt", "Omit title", TRUE),
                 conditionalPanel(
                   condition = "!input.def_title_fmt",
@@ -971,8 +971,8 @@ server <- function(input, output, session) {
                 checkboxInput("log", "Semi-log plot", FALSE),
                 checkboxInput("grid", "Grid", FALSE),
                 checkboxInput("legend", "Legend", FALSE),
-                textInput("post_names", "Group labels (comma-separated):", ""),
-                shiny::helpText("Optional: label each group (icen/outeq/block combination) in order."),
+                textInput("post_out_names", "Output names (comma-separated):", ""),
+                shiny::helpText("Optional: label each output equation in order, e.g. 'Drug A, Drug B'."),
                 checkboxInput("def_title_fmt", "Omit title", TRUE),
                 conditionalPanel(
                   condition = "!input.def_title_fmt",
@@ -1900,9 +1900,10 @@ server <- function(input, output, session) {
             # x argument
             x <- get(input$data)$pop
 
-            # icen argument (can be multiple)
+            # icen argument (single value)
             icen <- setVal("pop_icen", "median")
             if (length(icen) == 0) icen <- "median"
+            icen <- icen[1]
 
             # outeq argument (can be multiple)
             outeq <- setVal("pop_outeq", 1)
@@ -1980,14 +1981,14 @@ server <- function(input, output, session) {
               if (length(marker) == 0) marker <- NULL
             }
 
-            # names argument
-            pop_names_raw <- setVal("pop_names", "")
-            names_arg <- NULL
-            if (!is.null(pop_names_raw) && nzchar(pop_names_raw)) {
-              names_arg <- unlist(stringr::str_split(pop_names_raw, "\\s*,\\s*"))
-              names_arg <- stringr::str_trim(names_arg)
-              names_arg <- names_arg[nzchar(names_arg)]
-              if (length(names_arg) == 0) names_arg <- NULL
+            # out_names argument
+            pop_out_names_raw <- setVal("pop_out_names", "")
+            out_names_arg <- NULL
+            if (!is.null(pop_out_names_raw) && nzchar(pop_out_names_raw)) {
+              out_names_arg <- unlist(stringr::str_split(pop_out_names_raw, "\\s*,\\s*"))
+              out_names_arg <- stringr::str_trim(out_names_arg)
+              out_names_arg <- out_names_arg[nzchar(out_names_arg)]
+              if (length(out_names_arg) == 0) out_names_arg <- NULL
             }
 
             # other arguments
@@ -2016,7 +2017,7 @@ server <- function(input, output, session) {
 
             args <- list(
               x = x, line = line, marker = marker,
-              names = names_arg,
+              out_names = out_names_arg,
               icen = icen, outeq = outeq, block = block,
               include = include, exclude = exclude,
               mult = as.numeric(mult), log = log, grid = grid,
@@ -2034,7 +2035,7 @@ server <- function(input, output, session) {
             def_args <- list(
               line = list(join = TRUE),
               marker = FALSE,
-              names = NULL,
+              out_names = NULL,
               icen = "median", outeq = 1, block = all_blocks,
               include = all_subs, exclude = NULL,
               mult = 1,
@@ -2072,9 +2073,10 @@ server <- function(input, output, session) {
             # x argument
             x <- get(input$data)$post
 
-            # icen argument (can be multiple)
+            # icen argument (single value)
             icen <- setVal("post_icen", "median")
             if (length(icen) == 0) icen <- "median"
+            icen <- icen[1]
 
             # outeq argument (can be multiple)
             outeq <- setVal("post_outeq", 1)
@@ -2152,14 +2154,14 @@ server <- function(input, output, session) {
               if (length(marker) == 0) marker <- NULL
             }
 
-            # names argument
-            post_names_raw <- setVal("post_names", "")
-            names_arg <- NULL
-            if (!is.null(post_names_raw) && nzchar(post_names_raw)) {
-              names_arg <- unlist(stringr::str_split(post_names_raw, "\\s*,\\s*"))
-              names_arg <- stringr::str_trim(names_arg)
-              names_arg <- names_arg[nzchar(names_arg)]
-              if (length(names_arg) == 0) names_arg <- NULL
+            # out_names argument
+            post_out_names_raw <- setVal("post_out_names", "")
+            out_names_arg <- NULL
+            if (!is.null(post_out_names_raw) && nzchar(post_out_names_raw)) {
+              out_names_arg <- unlist(stringr::str_split(post_out_names_raw, "\\s*,\\s*"))
+              out_names_arg <- stringr::str_trim(out_names_arg)
+              out_names_arg <- out_names_arg[nzchar(out_names_arg)]
+              if (length(out_names_arg) == 0) out_names_arg <- NULL
             }
 
             # other arguments
@@ -2188,7 +2190,7 @@ server <- function(input, output, session) {
 
             args <- list(
               x = x, line = line, marker = marker,
-              names = names_arg,
+              out_names = out_names_arg,
               icen = icen, outeq = outeq, block = block,
               include = include, exclude = exclude,
               mult = as.numeric(mult), log = log, grid = grid,
@@ -2206,7 +2208,7 @@ server <- function(input, output, session) {
             def_args <- list(
               line = list(join = TRUE),
               marker = FALSE,
-              names = NULL,
+              out_names = NULL,
               icen = "median", outeq = 1, block = all_blocks,
               include = all_subs, exclude = NULL,
               mult = 1,
