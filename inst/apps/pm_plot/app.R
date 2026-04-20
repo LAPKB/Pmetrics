@@ -57,14 +57,8 @@ ui <- bslib::page_sidebar(
         selectInput("data", "Choose a Pmetrics object to plot:", choices = choices),
         uiOutput("DataControls")
       ),
-      bslib::accordion_panel(
-        "Formatting",
-        uiOutput("FormatControls")
-      ),
-      bslib::accordion_panel(
-        "Axes",
-        uiOutput("AxesControls")
-      )
+      uiOutput("FormattingPanel"),
+      uiOutput("AxesPanel")
     ) # end accordion Panel
   ), # end sidebarPanel
   
@@ -2934,6 +2928,46 @@ server <- function(input, output, session) {
       # Set up the inputs
       output$DataControls <- renderUI({
         makeDataControls()
+      })
+      output$FormattingPanel <- renderUI({
+        obj <- current_data_obj()
+        if (is.null(obj)) {
+          return(NULL)
+        }
+
+        is_model_plot <-
+          inherits(obj, "PM_model") ||
+          (inherits(obj, "PM_result") &&
+            !is.null(input$res_sub) && input$res_sub == "mod")
+
+        if (is_model_plot) {
+          return(NULL)
+        }
+
+        bslib::accordion_panel(
+          "Formatting",
+          uiOutput("FormatControls")
+        )
+      })
+      output$AxesPanel <- renderUI({
+        obj <- current_data_obj()
+        if (is.null(obj)) {
+          return(NULL)
+        }
+
+        is_model_plot <-
+          inherits(obj, "PM_model") ||
+          (inherits(obj, "PM_result") &&
+            !is.null(input$res_sub) && input$res_sub == "mod")
+
+        if (is_model_plot) {
+          return(NULL)
+        }
+
+        bslib::accordion_panel(
+          "Axes",
+          uiOutput("AxesControls")
+        )
       })
       output$FormatControls <- renderUI({
         makeFormatControls()

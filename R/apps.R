@@ -27,13 +27,13 @@ NULL
     list(
       id = "pm_plot",
       title = "Pmetrics plot helper",
-      fn = pm_plot_app
-    ),
-    list(
-      id = "pm_run",
-      title = "Legacy Pmetrics run helper",
-      fn = pm_run_app
+      fn = pm_plot
     )
+    # list(
+    #   id = "pm_run",
+    #   title = "Legacy Pmetrics run helper",
+    #   fn = pm_run_app
+    # )
   )
 }
 
@@ -62,11 +62,11 @@ pm_plot <- function(launch.browser = TRUE) {
   .launch_packaged_app("pm_plot", launch.browser = launch.browser)
 }
 
-#' @rdname apps
-#' @export
-pm_run <- function(launch.browser = TRUE) {
-  .launch_packaged_app("pm_run", launch.browser = launch.browser)
-}
+# #' @rdname apps
+# #' @export
+# pm_run <- function(launch.browser = TRUE) {
+#   .launch_packaged_app("pm_run", launch.browser = launch.browser)
+# }
 
 #' @rdname apps
 #' @export

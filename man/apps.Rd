@@ -4,14 +4,11 @@
 \alias{apps}
 \alias{lit_sim}
 \alias{pm_plot}
-\alias{pm_run}
 \title{Launch packaged Shiny apps}
 \usage{
 lit_sim(launch.browser = TRUE)
 
 pm_plot(launch.browser = TRUE)
-
-pm_run(launch.browser = TRUE)
 
 apps(launch.browser = TRUE)
 }
