@@ -1324,8 +1324,9 @@ dependencies = [
 
 [[package]]
 name = "pharmsol"
-version = "0.26.0"
-source = "git+https://github.com/LAPKB/pharmsol?branch=fix%2Fpmetrics-analytical#5b1e3315dfb61c0be0dc8dd0de319c1900139175"
+version = "0.26.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "de605b6c68d73a526d5247830088350df33bed2cdfdcd52fa00e86933a93a154"
 dependencies = [
  "ahash",
  "argmin",
@@ -1350,7 +1351,8 @@ dependencies = [
 [[package]]
 name = "pharmsol-macros"
 version = "0.1.0"
-source = "git+https://github.com/LAPKB/pharmsol?branch=fix%2Fpmetrics-analytical#5b1e3315dfb61c0be0dc8dd0de319c1900139175"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6fbff5e3ed52098eb43dbf92bfb76de87661b73d9f486d28a0cb5f0a5d821f8"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1378,8 +1380,9 @@ dependencies = [
 
 [[package]]
 name = "pmcore"
-version = "0.25.1"
-source = "git+https://github.com/LAPKB/PMcore?branch=fix%2Fpmetrics-analytical#eb479b9e7c280406600152e17db17fbdd3912b85"
+version = "0.25.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56359b47b12acc12b49b61e98c2405f8750e586a3241e8417bdfa5c59d6aa71d"
 dependencies = [
  "anyhow",
  "argmin",
@@ -1387,7 +1390,7 @@ dependencies = [
  "faer",
  "ndarray",
  "pharmsol",
- "rand 0.9.4",
+ "rand 0.10.1",
  "rayon",
  "serde",
  "serde_json",
