@@ -1,6 +1,6 @@
 #' Launch packaged Shiny apps
 #'
-#' `lit_sim()`, `model_lib()`, `pm_plot()`, and `pm_run()` launch specific packaged
+#' `lit_sim()`, `model_lib()`, and `pm_plot()` launch specific packaged
 #' apps from `inst/apps`.
 #'
 #' `apps()` shows an interactive numbered menu (via `cli`) and launches the

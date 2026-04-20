@@ -48,16 +48,16 @@
 #' }
 #' @export
 
-make_AUC <- function(data,
-  formula,
-  include, exclude,
+make_AUC <- function(data = NULL,
+  formula = NULL,
+  include = NULL, exclude = NULL,
   start = 0, end = Inf,
   icen = "median",
   outeq = 1, block = 1,
   method = "linear",
   addZero = F) {
     # handle objects
-    if (missing(data)) {
+    if (is.null(data)) {
       cli::cli_abort("Please supply a data object to calculate AUC.")
     }
     
@@ -90,7 +90,7 @@ make_AUC <- function(data,
       )
       group <- "id"
     } else { # class not matched, so needs formula
-      if (missing(formula)) {
+      if (is.null(formula)) {
         cli::cli_abort(c("x" = "Please supply a formula of form {.code out~time} for objects other than class {.cls PM_sim}, {.cls PM_op}, {.cls PM_pop}, {.cls PM_post}, or {.cls PM_data}."))
       }
     
@@ -116,8 +116,8 @@ make_AUC <- function(data,
     if (!"outeq" %in% names(data2)) data2$outeq <- 1 # add outeq if missing
     if (!"block" %in% names(data2)) data2$block <- 1 # add block if missing
     if (!"icen" %in% names(data2)) data2$icen <- "median" # add icen if missing
-    if (missing(include)) include <- unique(data2[[group]])
-    if (missing(exclude)) exclude <- NA
+    if (is.null(include)) include <- unique(data2[[group]])
+    if (is.null(exclude)) exclude <- NA
     
     group_sym <- rlang::sym(group)
     # filter to create object to pass to auc calculation
@@ -188,9 +188,9 @@ make_AUC <- function(data,
 
 #' @rdname make_AUC
 #' @export
-makeAUC <- function(data,
-  formula,
-  include, exclude,
+makeAUC <- function(data = NULL,
+  formula = NULL,
+  include = NULL, exclude = NULL,
   start = 0, end = Inf,
   icen = "median",
   outeq = 1, block = 1,

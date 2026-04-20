@@ -20,7 +20,7 @@ Invisibly returns the value from \code{\link[shiny:runApp]{shiny::runApp()}} for
 functions. \code{apps()} returns invisibly \code{NULL} on cancel/invalid input.
 }
 \description{
-\code{lit_sim()}, \code{model_lib()}, \code{pm_plot()}, and \code{pm_run()} launch specific packaged
+\code{lit_sim()}, \code{model_lib()}, and \code{pm_plot()} launch specific packaged
 apps from \code{inst/apps}.
 }
 \details{
