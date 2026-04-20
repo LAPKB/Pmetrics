@@ -66,3 +66,12 @@ test_that("Analytical migration compiles and reports analytical parameters", {
         tolower(names(mod$model_list$pri))
     )
 })
+
+test_that("template compilation path stays outside package workspace during checks", {
+    withr::local_envvar(c(`_R_CHECK_PACKAGE_NAME_` = "Pmetrics", env = NA_character_))
+
+    testthat::expect_equal(
+        Pmetrics:::resolve_template_path(),
+        file.path(temporary_path(), "template")
+    )
+})

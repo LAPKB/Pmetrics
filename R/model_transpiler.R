@@ -1,5 +1,4 @@
 # R-to-Rust transpiler for Pmetrics model blocks.
-# Pmetrics uses 1-based model semantics and reserves slot 0 in backend vectors.
 
 index_vector_size <- function(max_index) {
   if (max_index <= 0L) {
@@ -97,7 +96,7 @@ has_nonliteral_index <- function(fn_or_expr, targets) {
 # Convert an R expression to Rust code (recursive)
 expr_to_rust <- function(
     expr, params = NULL, covs = NULL,
-  declared = new.env(parent = emptyenv())) {
+    declared = new.env(parent = emptyenv())) {
   declared_has <- function(name) isTRUE(get0(name, envir = declared, inherits = FALSE))
   declared_add <- function(name) assign(name, TRUE, envir = declared)
 
@@ -114,7 +113,7 @@ expr_to_rust <- function(
     return(as.character(expr))
   }
 
-  # Preserve Pmetrics' 1-based semantics and reserve slot 0 in backend vectors.
+  # Handle indexing.
   if (is.call(expr) && as.character(expr[[1]]) == "[") {
     var <- as.character(expr[[2]])
     idx_raw <- expr[[3]]
@@ -311,7 +310,8 @@ transpile_ode_eqn <- function(fun, params, covs, sec) {
 
 
 
-transpile_analytic_eqn <- function(fun, params, covs) {
+transpile_analytic_eqn <- function(
+    fun, params, covs) {
   if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
     found <- get_found_model(fun)
     if (length(found) == 1) { # NA
@@ -341,18 +341,18 @@ transpile_analytic_eqn <- function(fun, params, covs) {
 
   # map model name from R to rust
   rust_tem <- dplyr::case_when(
-    tem == "one_comp_iv" ~ "one_compartment",
-    tem == "one_comp_iv_cl" ~ "one_compartment_cl",
-    tem == "one_comp_bolus" ~ "one_compartment_with_absorption",
-    tem == "one_comp_bolus_cl" ~ "one_compartment_cl_with_absorption",
-    tem == "two_comp_iv" ~ "two_compartments",
-    tem == "two_comp_iv_cl" ~ "two_compartments_cl",
-    tem == "two_comp_bolus" ~ "two_compartments_with_absorption",
-    tem == "two_comp_bolus_cl" ~ "two_compartments_cl_with_absorption",
-    tem == "three_comp_iv" ~ "three_compartments",
-    tem == "three_comp_iv_cl" ~ "three_compartments_cl",
-    tem == "three_comp_bolus" ~ "three_compartments_with_absorption",
-    tem == "three_comp_bolus_cl" ~ "three_compartments_cl_with_absorption",
+    tem == "one_comp_iv" ~ "pm_one_compartment",
+    tem == "one_comp_iv_cl" ~ "pm_one_compartment_cl",
+    tem == "one_comp_bolus" ~ "pm_one_compartment_with_absorption",
+    tem == "one_comp_bolus_cl" ~ "pm_one_compartment_cl_with_absorption",
+    tem == "two_comp_iv" ~ "pm_two_compartments",
+    tem == "two_comp_iv_cl" ~ "pm_two_compartments_cl",
+    tem == "two_comp_bolus" ~ "pm_two_compartments_with_absorption",
+    tem == "two_comp_bolus_cl" ~ "pm_two_compartments_cl_with_absorption",
+    tem == "three_comp_iv" ~ "pm_three_compartments",
+    tem == "three_comp_iv_cl" ~ "pm_three_compartments_cl",
+    tem == "three_comp_bolus" ~ "pm_three_compartments_with_absorption",
+    tem == "three_comp_bolus_cl" ~ "pm_three_compartments_cl_with_absorption",
     .default = ""
   )
   if (rust_tem == "") {
@@ -399,7 +399,8 @@ transpile_sec <- function(fun) {
 }
 
 
-transpile_fa <- function(fun, params, covs, sec) {
+transpile_fa <- function(
+    fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
     as.list(body(fun)[-1])
   } else {
@@ -438,7 +439,8 @@ transpile_fa <- function(fun, params, covs, sec) {
 }
 
 
-transpile_lag <- function(fun, params, covs, sec) {
+transpile_lag <- function(
+    fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
     as.list(body(fun)[-1])
   } else {
@@ -476,7 +478,8 @@ transpile_lag <- function(fun, params, covs, sec) {
   paste0(header, indent(body_lines, 2), "\n", footer)
 }
 
-transpile_ini <- function(fun, params, covs, sec) {
+transpile_ini <- function(
+    fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
     "|p, t, cov, x| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",
@@ -488,7 +491,8 @@ transpile_ini <- function(fun, params, covs, sec) {
   sprintf("%s\n%s\n }", header, indent(body_rust, spaces = 4))
 }
 
-transpile_out <- function(fun, params, covs, sec) {
+transpile_out <- function(
+    fun, params, covs, sec) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
     "|x, p, t, cov, y| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s);\n%s",

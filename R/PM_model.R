@@ -535,9 +535,9 @@ PM_model <- R6::R6Class(
       } else {
         NA_integer_
       }
-      n_out <- get_max_assignment_index(self$arg_list$out, "y")
+      n_out <- get_assignments(self$arg_list$out, "y")
       n_out_slots <- if (type == "Analytical") {
-        index_vector_size(n_out)
+        index_vector_size(get_max_index(self$arg_list$out, "y"))
       } else {
         NA_integer_
       }
