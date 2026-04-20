@@ -33,13 +33,16 @@ PM_build <- function() {
 }
 
 resolve_template_path <- function() {
+  package_path <- system.file(package = "Pmetrics")
   in_check <- nzchar(Sys.getenv("_R_CHECK_PACKAGE_NAME_"))
+  in_development <- Sys.getenv("env") == "Development"
+  in_cargo_workspace <- nzchar(package_path) && file.exists(file.path(package_path, "Cargo.toml"))
 
-  if (Sys.getenv("env") == "Development" && !in_check) {
+  if (in_development || in_check || in_cargo_workspace) {
     return(file.path(temporary_path(), "template"))
   }
 
-  system.file(package = "Pmetrics")
+  package_path
 }
 
 is_rustup_installed <- function() {
