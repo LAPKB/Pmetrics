@@ -9,7 +9,7 @@
 #' `r lifecycle::badge("stable")`
 #'
 #' Contains the population predictions at short intervals
-#' specified as an argument to the run method of [PM_fit]. Default is every 12 minutes.
+#' specified as an argument to the `$fit` method of [PM_model]. Default is every 12 minutes.
 #'
 #' @details
 #' #' The [PM_pop] object is both a data field within a [PM_result], and itself an R6 object
@@ -78,11 +78,11 @@ PM_pop <- R6::R6Class(
     #' @description
     #' Calculate AUC
     #' @details
-    #' See [makeAUC]
+    #' See [make_AUC]
     #' @param data The object to use for AUC calculation
-    #' @param ... Arguments passed to [makeAUC]
+    #' @param ... Arguments passed to [make_AUC]
     auc = function(...) {
-      rlang::try_fetch(makeAUC(self, ...),
+      rlang::try_fetch(make_AUC(self, ...),
         error = function(e) {
           cli::cli_warn("Unable to generate AUC.", parent = e)
           return(NULL)

@@ -330,9 +330,9 @@ make_NCA <- function(x, postPred = F, include, exclude, input = 1, icen = "media
 
     NCA[i, 10] <- max(temp$out) # cmax
     NCA[i, 11] <- temp$tad[which(temp$out == NCA[i, 10])][1] # tmax
-    NCA[i, 2] <- as.numeric(makeAUC(temp, out ~ tad, icen = icen, outeq = outeq, block = block)[, 2]) # auc
+    NCA[i, 2] <- as.numeric(make_AUC(temp, out ~ tad, icen = icen, outeq = outeq, block = block)[, 2]) # auc
     temp2 <- data.frame(id = temp$id, tad = temp$tad, out = temp$tad * temp$out)
-    NCA[i, 3] <- as.numeric(makeAUC(temp2, out ~ tad, icen = icen, outeq = outeq, block = block)[, 2]) # aumc
+    NCA[i, 3] <- as.numeric(make_AUC(temp2, out ~ tad, icen = icen, outeq = outeq, block = block)[, 2]) # aumc
 
     if (nrow(temp) >= 5) {
       temp <- tail(temp, terminal)

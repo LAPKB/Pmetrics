@@ -48,7 +48,7 @@
 #' }
 #' @export
 
-makeAUC <- function(data,
+make_AUC <- function(data,
   formula,
   include, exclude,
   start = 0, end = Inf,
@@ -183,5 +183,31 @@ makeAUC <- function(data,
     AUCdf <- AUCdf[match(unique(data3[[group]]), AUCdf[[group]]), ]
     
     return(AUCdf)
+  }
+
+
+#' @rdname make_AUC
+#' @export
+makeAUC <- function(data,
+  formula,
+  include, exclude,
+  start = 0, end = Inf,
+  icen = "median",
+  outeq = 1, block = 1,
+  method = "linear",
+  addZero = F) {
+    make_AUC(
+      data = data,
+      formula = formula,
+      include = include,
+      exclude = exclude,
+      start = start,
+      end = end,
+      icen = icen,
+      outeq = outeq,
+      block = block,
+      method = method,
+      addZero = addZero
+    )
   }
   

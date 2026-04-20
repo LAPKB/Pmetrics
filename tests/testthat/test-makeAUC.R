@@ -11,38 +11,38 @@ trap_auc_linear <- function(df) {
   0.5 * sum(dt * cc)
 }
 
-test_that("makeAUC validates required inputs for non-PM objects", {
+test_that("make_AUC validates required inputs for non-PM objects", {
   expect_error(
-    makeAUC(),
+    make_AUC(),
     "Please supply a data object"
   )
 
   expect_error(
-    makeAUC(data = datasets::Theoph),
+    make_AUC(data = datasets::Theoph),
     "Please supply a formula"
   )
 
   expect_error(
-    makeAUC(data = datasets::Theoph, formula = conc ~ bad_time | Subject),
+    make_AUC(data = datasets::Theoph, formula = conc ~ bad_time | Subject),
     "not a variable in the data"
   )
 
   expect_error(
-    makeAUC(data = datasets::Theoph, formula = bad_conc ~ Time | Subject),
+    make_AUC(data = datasets::Theoph, formula = bad_conc ~ Time | Subject),
     "not a variable in the data"
   )
 })
 
-test_that("makeAUC works for NPex PM_result object components", {
+test_that("make_AUC works for NPex PM_result object components", {
   expect_s3_class(NPex, "PM_result")
 
-  auc_op_obj <- makeAUC(NPex$op)
-  auc_op_data <- makeAUC(NPex$op$data)
-  auc_pop_obj <- makeAUC(NPex$pop)
-  auc_pop_data <- makeAUC(NPex$pop$data)
-  auc_post_obj <- makeAUC(NPex$post)
-  auc_post_data <- makeAUC(NPex$post$data)
-  auc_pm_data <- makeAUC(NPex$data)
+  auc_op_obj <- make_AUC(NPex$op)
+  auc_op_data <- make_AUC(NPex$op$data)
+  auc_pop_obj <- make_AUC(NPex$pop)
+  auc_pop_data <- make_AUC(NPex$pop$data)
+  auc_post_obj <- make_AUC(NPex$post)
+  auc_post_data <- make_AUC(NPex$post$data)
+  auc_pm_data <- make_AUC(NPex$data)
 
   expect_equal(names(auc_op_obj), c("id", "tau"))
   expect_equal(names(auc_pop_obj), c("id", "tau"))
@@ -54,25 +54,25 @@ test_that("makeAUC works for NPex PM_result object components", {
   expect_equal(auc_post_obj, auc_post_data)
 
   expect_equal(
-    makeAUC(NPex$op),
+    make_AUC(NPex$op),
     NPex$auc("op")
   )
   expect_equal(
-    makeAUC(NPex$pop),
+    make_AUC(NPex$pop),
     NPex$auc("pop")
   )
   expect_equal(
-    makeAUC(NPex$post),
+    make_AUC(NPex$post),
     NPex$auc("post")
   )
 })
 
-test_that("makeAUC include/exclude/start/end filtering works with NPex", {
+test_that("make_AUC include/exclude/start/end filtering works with NPex", {
   ids <- sort(unique(NPex$op$data$id))
   include_ids <- ids[1:4]
   exclude_ids <- include_ids[2]
 
-  auc_window <- makeAUC(
+  auc_window <- make_AUC(
     data = NPex$op,
     include = include_ids,
     exclude = exclude_ids,
@@ -100,10 +100,10 @@ test_that("makeAUC include/exclude/start/end filtering works with NPex", {
   expect_equal(joined$tau_calc, joined$tau_manual, tolerance = 1e-10)
 })
 
-test_that("makeAUC supports Theoph as external data with formula inputs", {
+test_that("make_AUC supports Theoph as external data with formula inputs", {
   theoph <- datasets::Theoph
 
-  auc_grouped <- makeAUC(
+  auc_grouped <- make_AUC(
     data = theoph,
     formula = conc ~ Time | Subject
   )
@@ -122,7 +122,7 @@ test_that("makeAUC supports Theoph as external data with formula inputs", {
   theoph2 <- theoph |>
     dplyr::transmute(id = Subject, time = Time, out = conc)
 
-  auc_default_group <- makeAUC(
+  auc_default_group <- make_AUC(
     data = theoph2,
     formula = out ~ time
   )
@@ -130,17 +130,17 @@ test_that("makeAUC supports Theoph as external data with formula inputs", {
   expect_equal(auc_default_group$tau, auc_grouped$tau, tolerance = 1e-10)
 })
 
-test_that("makeAUC addZero and method options behave as expected", {
+test_that("make_AUC addZero and method options behave as expected", {
   theoph_no_zero <- datasets::Theoph |>
     dplyr::filter(Time > 0)
 
-  auc_no_zero <- makeAUC(
+  auc_no_zero <- make_AUC(
     data = theoph_no_zero,
     formula = conc ~ Time | Subject,
     addZero = FALSE
   )
 
-  auc_add_zero <- makeAUC(
+  auc_add_zero <- make_AUC(
     data = theoph_no_zero,
     formula = conc ~ Time | Subject,
     addZero = TRUE
@@ -148,13 +148,13 @@ test_that("makeAUC addZero and method options behave as expected", {
 
   expect_true(any(auc_add_zero$tau > auc_no_zero$tau))
 
-  auc_linear <- makeAUC(
+  auc_linear <- make_AUC(
     data = datasets::Theoph,
     formula = conc ~ Time | Subject,
     method = "linear"
   )
 
-  auc_linlog <- makeAUC(
+  auc_linlog <- make_AUC(
     data = datasets::Theoph,
     formula = conc ~ Time | Subject,
     method = "linlog"

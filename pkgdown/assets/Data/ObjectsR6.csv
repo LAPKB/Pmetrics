@@ -49,7 +49,7 @@
 ,\$postVar,A matrix of variances of posterior distributions for each subject and parameter
 ,\$shrinkage,Shrinkage values for each random population parameter
 ,\$summary,"Method: summarize the PM_final object with summary.PMfinal(), same function as for Legacy"
-"op (class: PM_op, R6)",\$auc,Method: makeAUC() to calculate area under time concentration curve
+"op (class: PM_op, R6)",\$auc,Method: make_AUC() to calculate area under time concentration curve
 ,\$block,"Dosing block, usually 1 unless data file contains EVID=4 dose reset events, in which case each such reset within a given ID will increment the dosing block by 1 for that ID"
 ,\$clone,Method: Create copy of PM_op object
 ,\$d,Difference between pred and obs
@@ -68,7 +68,7 @@
 ,\$time,Observation time in relative decimal hours
 ,\$wd,"\$d, weighted by the \$obsSD"
 ,\$wds,"\$ds, weighted by the \$obsSD"
-"pop (class: PM_pop, R6)",\$auc,Method: makeAUC() to calculate area under time concentration curve
+"pop (class: PM_pop, R6)",\$auc,Method: make_AUC() to calculate area under time concentration curve
 "post (class: PM_post, R6)",\$block,Same as for PMop objects above
 NPAG only,\$clone,Method: Create copy of PM_pop or PM_post object
 ,\$data,"Data frame with all data fields, class: PM_pop_data or PM_post_data"
@@ -81,7 +81,7 @@ NPAG only,\$clone,Method: Create copy of PM_pop or PM_post object
 "valid (class: PM_valid, R6)","Use the command str(valid.x) in R, where x is the run number",This is a list containing the information to perform graphical and numerical analysis of prediction checks and normalized prediction distribution errors.  It is a method of internal model validation.
 This object will only be present if you have run \$validate(…) after a run is completed. ,,
 "valid\$simdata (class: PM_sim, R6)",\$amt,"A data frame with \$id, \$time, \$out, \$comp columns containing simulated amounts in each compartment."
-,\$auc,Method: calculate area under the curves of simulated profiles using makeAUC()
+,\$auc,Method: calculate area under the curves of simulated profiles using make_AUC()
 ,\$clone,Method: Create copy 
 ,\$data,A  list with all the fields in \$simdata
 ,\$obs,"A data frame with \$id, \$time, \$out, \$outeq columns containing simulated observations at each time and output equation number in the template data file.  If simulations from multiple template subjects have been combined (see Simulator Runs), then \$id will be of the form x.y, where x is the simulation number, and y is the template number."

@@ -12,7 +12,7 @@
 #' to process the data
 #'
 #' @details
-#' *PM_data* objects are passed to [PM_fit] objects to initiate a
+#' *PM_data* objects are passed to the `$fit` method of compiled [PM_model] objects to initiate a
 #' population analysis. The object is created by reading a delimited file in
 #' the current working directory. The data will be transformed into the standard
 #' format which is the same for all engines, with a report of any assumptions
@@ -31,7 +31,7 @@
 #' defined for a PM_data object, including to write the standard data back
 #' to a file for future use, to summarize and to plot the object, to
 #' conduct a non-compartmental analysis on the raw data using
-#' [makeNCA], to calculate an AUC using [makeAUC], and to add event rows, which
+#' [make_NCA], to calculate an AUC using [make_AUC], and to add event rows, which
 #' is particularly useful for making simulation templates on the fly.
 #'
 #' @export
@@ -118,11 +118,11 @@ PM_data <- R6::R6Class("PM_data",
     #' @description
     #' Calculate AUC
     #' @details
-    #' See [makeAUC].
-    #' @param ... Arguments passed to [makeAUC].
+    #' See [make_AUC].
+    #' @param ... Arguments passed to [make_AUC].
     auc = function(...) {
       if (!is.null(self$data)) {
-        rlang::try_fetch(makeAUC(self, ...),
+        rlang::try_fetch(make_AUC(self, ...),
           error = function(e) {
             cli::cli_warn("Unable to generate AUC.", parent = e)
             return(NULL)
@@ -135,11 +135,11 @@ PM_data <- R6::R6Class("PM_data",
     #' @description
     #' Perform non-compartmental analysis
     #' @details
-    #' See [makeNCA].
-    #' @param ... Arguments passed to [makeNCA].
+    #' See [make_NCA].
+    #' @param ... Arguments passed to [make_NCA].
     nca = function(...) {
       if (!is.null(self$data)) {
-        makeNCA(self, ...)
+        make_NCA(self, ...)
       } else {
         cli::cli_warn("Data have not been defined.")
       }

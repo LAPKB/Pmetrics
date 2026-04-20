@@ -7,7 +7,7 @@
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
 Contains the Bayesian posterior predictions at short intervals
-specified as an argument to the $run method of \link{PM_fit}. Default is every 12 minutes.
+specified as an argument to the \verb{$fit} method of \link{PM_model}. Default is every 12 minutes.
 }
 \details{
 #' The \link{PM_post} object is both a data field within a \link{PM_result}, and itself an R6 object
@@ -144,14 +144,14 @@ Calculate AUC
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{makeAUC}}
+\item{\code{...}}{Arguments passed to \link{make_AUC}}
 
 \item{\code{data}}{The object to use for AUC calculation}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-See \link{makeAUC}
+See \link{make_AUC}
 }
 
 }
