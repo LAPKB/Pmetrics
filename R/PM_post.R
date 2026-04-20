@@ -10,7 +10,7 @@
 #' `r lifecycle::badge("stable")`
 #'
 #' Contains the Bayesian posterior predictions at short intervals
-#' specified as an argument to the $run method of [PM_fit]. Default is every 12 minutes.
+#' specified as an argument to the `$fit` method of [PM_model]. Default is every 12 minutes.
 #'
 #' @details
 #' #' The [PM_post] object is both a data field within a [PM_result], and itself an R6 object
@@ -79,11 +79,11 @@ PM_post <- R6::R6Class(
     #' @description
     #' Calculate AUC
     #' @details
-    #' See [makeAUC]
+    #' See [make_AUC]
     #' @param data The object to use for AUC calculation
-    #' @param ... Arguments passed to [makeAUC]
+    #' @param ... Arguments passed to [make_AUC]
     auc = function(...) {
-      rlang::try_fetch(makeAUC(self, ...),
+      rlang::try_fetch(make_AUC(self, ...),
         error = function(e) {
           cli::cli_warn("Unable to generate AUC.", parent = e)
           return(NULL)
@@ -158,12 +158,13 @@ PM_post <- R6::R6Class(
 #' This is a function usually called by the `$plot()` method for [PM_post] objects
 #' within a [PM_result] to generate the plot.
 #' However, the function can be called directly on a [PM_post] object.
-#' This function will plot time and population predictions with a variety of options.
-#' By default markers are included and  have the following plotly properties:
+#' This function will plot time and posterior predictions with a variety of options.
+#' Markers are omitted by default. When enabled, markers have default plotly properties:
 #' `list(symbol = "circle", color = "red", size = 10, opacity = 0.5, line = list(color = "black", width = 1))`.
-#' Markers can be joined by lines, default is `TRUE`. If `TRUE`,
-#' the joining lines will have the following properties:
-#' `list(color = "dodgerblue", width = 1, dash = "solid"`.
+#' Markers can be joined by lines, with default `line = list(join = TRUE)`.
+#' When joined, line colors are automatically matched to marker colors.
+#' The joining lines have the following default properties:
+#' `list(color = "dodgerblue", width = 1, dash = "solid")`.
 #' The grid and legend are omitted by default.
 #'
 #' @method plot PM_post
@@ -175,29 +176,25 @@ PM_post <- R6::R6Class(
 #' It can either be a boolean or a list. If set to `TRUE` or
 #' a list of plotly line attributes, it
 #' will generate line segments joining observations. If set to
-#' `FALSE`, no segments will be generated. The default
-#' values for the elements of formatting list, all of which can be
-#' overriden are:
-#'     - `color` Color of the segments. Default is "dodgerblue".
-#'     - `width `Width of the segments, default 1.
+#' `FALSE`, no segments will be generated.
+#' Line colors are fixed to match marker colors for group displays and cannot be overridden.
+#' Other customizable line properties are:
+#'     - `width` Width of the segments, default 1.
 #'     - `dash` See `plotly::schema()`, traces > scatter > attributes >
 #' line > dash > values. Default is "solid".
-#' Example: `line = list(color = "red", dash = "longdash", width = 2)`
+#'     - `join` Set to `TRUE` (default) to join markers with lines, or `FALSE` for markers only.
+#' Example: `line = list(width = 2, dash = "longdash", join = FALSE)`
 #' @param marker Formats the symbols plotting observations. `r template("marker")`
-#' @param color Character vector naming a column to **group** by, e.g. "outeq" or "icen".
-#' @param colors to use for **groups** when there are multiple `outeq`, `block`, or `icen`.
-#' This can be a palette or a vector of colors.
-#' For accepted palette names see `RColorBrewer::brewer.pal.info`. Examples include
-#' "BrBG", or "Set2". An example vector could be `c("red", "green", "blue")`. It is not
-#' necessary to specify the same number of colors as groups within `color`, as colors
-#' will be interpolated to generate the correct number. The default when `color`
-#' is specified is the "Set1" palette.
-#' @param names A character vector of names to label the **groups** if `legend = TRUE`.
-#' This vector does need to be the same length as the number of groups.
-#' Example: `c("Mean", "Median")` if `icen = c("mean", "median")`.
+#' Marker colors control group display colors. When multiple output equations are displayed
+#' (via `outeq`), `marker$color` can be a palette name from `RColorBrewer::brewer.pal.info` or
+#' a vector of colors. Line colors are automatically matched to marker colors.
+#' @param out_names A character vector of names to label the output equations if `legend = TRUE`.
+#' Must be at least as long as the maximum value in `outeq`.
+#' Example: `c("Conc A", "Conc B")` if `outeq = c(1, 2)`.
 #' @param mult `r template("mult")`
-#' @param icen Can be "median" for the predictions based on median of
-#' parameter value distributions, "mean", or both, e.g. `c("mean", "median")`.  Default is "median".
+#' @param icen Can be `"median"` for predictions based on the median of the parameter
+#' value distributions, or `"mean"`. Default is `"median"`.
+#' Only a single value is accepted; `outeq` is the sole grouping dimension.
 #' @param outeq `r template("outeq")` Default is 1, but can be multiple if present in the data, e.g. `1:2` or `c(1, 3)`.
 #' @param block `r template("block")` Default is 1, but can be multiple if present in the data, as for `outeq`.
 #' @param overlay Operator to overlay all time prediction profiles in a single plot.
@@ -235,11 +232,9 @@ plot.PM_post <- function(
     x,
     include = NULL,
     exclude = NULL,
-    line = TRUE,
-    marker = TRUE,
-    color = NULL,
-    colors = "Set1",
-    names = NULL,
+    line = list(join = TRUE),
+    marker = FALSE,
+    out_names = NULL,
     mult = 1,
     icen = "median",
     outeq = 1,
@@ -259,11 +254,40 @@ plot.PM_post <- function(
     x$data
   }
 
+  user_color <- if (is.list(marker) && !is.null(marker$color)) marker$color else NULL
+
+  line_join <- TRUE
+  line_input <- line
+  if (is.list(line_input) && "join" %in% names(line_input)) {
+    join_val <- line_input$join
+    line_input$join <- NULL
+    if (is.logical(join_val)) {
+      line_join <- isTRUE(join_val)
+    } else if (is.list(join_val)) {
+      line_input <- modifyList(line_input, join_val)
+      line_join <- TRUE
+    } else {
+      line_join <- isTRUE(join_val)
+    }
+  }
+  line_color_specified <- is.list(line_input) && "color" %in% names(line_input)
+
   # process marker
   marker <- amendMarker(marker)
 
   # process line
-  line <- amendLine(line)
+  line <- amendLine(line_input)
+  if (!line_join) {
+    line <- amendLine(FALSE)
+  }
+
+  if (line_color_specified) {
+    cli::cli_warn(c(
+      "!" = "Line colors are fixed to match marker colors for PM_post groups.",
+      "i" = "Use {.code marker$color} to control PM_post group colors."
+    ))
+  }
+  line$color <- NULL
 
 
   # get the rest of the dots
@@ -319,36 +343,25 @@ plot.PM_post <- function(
 
   # Data processing ---------------------------------------------------------
 
-  # filter
+  # filter — icen is a single-value filter only; outeq is the sole grouping dimension
   presub <- x %>%
-    filter(outeq %in% !!outeq, block %in% !!block, icen %in% !!icen) %>%
+    filter(outeq %in% !!outeq, block %in% !!block, icen == !!icen[1]) %>%
     mutate(group = "") %>%
     includeExclude(include, exclude)
 
-  # group
-  if (outeq[1] != 1 | length(outeq) > 1) {
-    presub <- presub %>%
-      rowwise() %>%
-      mutate(group = paste0(group, ", outeq: ", outeq))
-  }
-  if (block[1] != 1 | length(block) > 1) {
-    presub <- presub %>%
-      rowwise() %>%
-      mutate(group = paste0(group, ", block: ", block))
-  }
-
-  if (length(icen) > 1) {
-    presub <- presub %>%
-      rowwise() %>%
-      mutate(group = paste0(group, ", ", icen))
+  # group by outeq only
+  if (length(outeq) > 1) {
+    if (is.null(out_names)) {
+      out_names_vec <- paste0("Output ", seq_len(max(outeq)))
+    } else if (length(out_names) < max(outeq)) {
+      cli::cli_abort(c("x" = "The number of names in {.var out_names} must be at least as long as the maximum value in {.var outeq}."))
+    } else {
+      out_names_vec <- out_names
+    }
+    presub$group <- out_names_vec[presub$outeq]
   }
 
-  presub$group <- stringr::str_replace(presub$group, "^\\s*,*\\s*", "")
-  if (!is.null(names)) {
-    presub$group <- factor(presub$group, labels = names)
-  } else {
-    presub$group <- factor(presub$group)
-  }
+  presub$group <- factor(presub$group)
 
   # select relevant columns
   sub <- presub %>%
@@ -375,21 +388,29 @@ plot.PM_post <- function(
 
     if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
       n_colors <- length(levels(allsub$group))
-      if (checkRequiredPackages("RColorBrewer")) {
-        palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
-        if (length(colors) == 1 && colors %in% palettes$name) {
-          max_colors <- palettes$maxcolors[match(colors, palettes$name)]
-          colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, colors))(n_colors)
+      if (!is.null(user_color)) {
+        if (length(user_color) == 1 && checkRequiredPackages("RColorBrewer") &&
+            user_color %in% rownames(RColorBrewer::brewer.pal.info)) {
+          max_colors <- RColorBrewer::brewer.pal.info[user_color, "maxcolors"]
+          colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, user_color))(n_colors)
+        } else {
+          colors <- rep(as.character(user_color), length.out = n_colors)
         }
+      } else if (n_colors == 1) {
+        colors <- rep(marker$color[[1]], n_colors)
+      } else if (checkRequiredPackages("RColorBrewer")) {
+        n_pal <- min(max(n_colors, 3L), 9L)
+        colors <- rep(RColorBrewer::brewer.pal(n_pal, "Set1"), length.out = n_colors)
       } else {
         cli::cli_inform(c("i" = "Group colors are better with RColorBrewer package installed."))
         colors <- getDefaultColors(n_colors) # in plotly_Utils
       }
 
       marker$color <- NULL
-      line$color <- NULL
     } else { # no grouping
       allsub$group <- factor(1, labels = "Predicted")
+      colors <- marker$color[[1]]
+      marker$color <- NULL
     }
 
     p <- allsub %>%

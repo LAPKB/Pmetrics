@@ -16,7 +16,7 @@ testthat::test_that("Book data snippets adapted: PM_data from file and from obje
 })
 
 testthat::test_that("Book model snippets adapted: PM_model construction and mapping", {
-  model_from_obj <- PM_model$new(modEx)
+  model_from_obj <- PM_model$new(x = modEx, compile = FALSE)
   model_rebuilt <- PM_model$new(x = model_from_obj, compile = FALSE)
 
   testthat::expect_s3_class(model_from_obj, "PM_model")
@@ -27,10 +27,11 @@ testthat::test_that("Book model snippets adapted: PM_model construction and mapp
 
 testthat::test_that("Book workflow snippets adapted: fit then PM_load roundtrip", {
   testthat::skip_if_not(is_cargo_installed(), "Rust toolchain is required for model compilation.")
+  local_exa_tmp_cleanup()
 
   run_root <- withr::local_tempdir(pattern = "book-workflow-")
 
-  model_local <- PM_model$new(modEx)
+  model_local <- PM_model$new(x = modEx, compile = FALSE)
   data_local <- PM_data$new(dataEx, quiet = TRUE)
 
   fit_result <- suppressMessages(

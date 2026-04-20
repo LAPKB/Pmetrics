@@ -325,7 +325,7 @@ PM_opt <- R6::R6Class(
             stop("Relative weights do not sum to 1.\n")
           } else {
             if ("auc" %in% wtnames) {
-              auc <- makeAUC(obs)
+              auc <- make_AUC(obs)
               sqdiff <- matrix(sapply(1:nsubs, function(x) (auc$tau[x] - auc$tau)^2), nrow = nsubs)
               cbar <- cbar_make1(sqdiff)
               Cbar0[, , 2] <- weight$auc * cbar / mean(cbar)

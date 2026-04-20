@@ -6,7 +6,7 @@
 
 
 #' @title
-#' Object to define and run a model and data in Pmetrics
+#' Object to define a model and data in Pmetrics
 #'
 #' @description
 #' `r lifecycle::badge("stable")`
@@ -16,8 +16,7 @@
 #' @details
 #' Data and model objects can be previously created as [PM_data] or [PM_model] objects,
 #' or created on the fly when making a new PM_fit object. PM_fit objects contain
-#' methods to cross-check data and model objects for compatibility, as well as to
-#' run the analysis.
+#' methods to cross-check data and model objects for compatibility.
 #' @importFrom stringr str_glue
 #' @export
 #' @keywords internal 

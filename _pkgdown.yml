@@ -44,15 +44,21 @@ reference:
   - PM_op
   - PM_pop
   - PM_opt
+  - PM_parse
   - PM_post
+  - PM_pta
   - PM_sim
   - PM_load
   - PM_result
   - PM_valid
   - bd
   - bd_post
+- title: Project management
+  desc: Functions for project management and workflow
+- contents:
+  - PM_tree
 - title: Helpers
-  desc: Helper functions for R6 object creations
+  desc: Helper functions when creating R6 objects
 - contents:
   - ab
   - additive
@@ -62,8 +68,10 @@ reference:
   - msd
   - proportional
   - interp
-  - PMtree
-  - starts_with("make")
+  - make_AUC
+  - makeErrorPoly
+  - make_NCA
+  - makePTAtarget
 - title: Plot
   desc: Functions for plotting Pmetrics output
 - contents:
@@ -87,12 +95,18 @@ reference:
 - title: Print
   desc: Functions for printing Pmetrics output
 - contents: starts_with("print")
+- title: Apps
+  desc: Shiny apps for Pmetrics
+- contents:
+  - apps
+  - lit_sim
+  - model_lib
+  - pm_plot
+  # - pm_run --- IGNORE ---
 - title: Auxilliary
   desc: Auxilliary functions
 - contents:
   - all_is_numeric
-  - build_model
-  - build_plot
   - qgrowth
   - mtsknn.eq
   - zBMI
@@ -129,18 +143,6 @@ reference:
   - check_updates
   - latestR
   - downloadR
-
-- title: Internal
-  desc: Internal and low-level functions
-- contents:
-  - compile_model
-  - dummy_compile
-  - simulate_all
-  - simulate_one
-  - fit
-  - is_cargo_installed
-  - model_parameters
-  - temporary_path
 - title: Reference
   desc: Reference functions
 - contents:

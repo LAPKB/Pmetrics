@@ -1,10 +1,11 @@
 library(Pmetrics)
 
 test_that("PM_load tolerates missing inputs binary and fit recompiles", {
+  local_exa_tmp_cleanup()
   run_root <- tempfile("pmetrics-load-fallback-")
   dir.create(run_root, recursive = TRUE)
 
-  model_local <- PM_model$new(modEx)
+  model_local <- PM_model$new(x = modEx, compile = FALSE)
   run_initial <- suppressMessages(
     model_local$fit(
       data = dataEx,
@@ -45,10 +46,11 @@ test_that("PM_load tolerates missing inputs binary and fit recompiles", {
 })
 
 test_that("PM_sim$new recompiles when PM_load has no inputs binary", {
+  local_exa_tmp_cleanup()
   run_root <- tempfile("pmetrics-sim-fallback-")
   dir.create(run_root, recursive = TRUE)
 
-  model_local <- PM_model$new(modEx)
+  model_local <- PM_model$new(x = modEx, compile = FALSE)
   run_initial <- suppressMessages(
     model_local$fit(
       data = dataEx,

@@ -27,7 +27,7 @@ pub(crate) fn settings(
 
     let error_models_raw = settings.get("error_models").unwrap().as_list().unwrap();
 
-    let mut ems = AssayErrorModels::new();
+    let mut ems = AssayErrorModels::new().add(0, AssayErrorModel::None)?;
 
     for (i, (_, em)) in error_models_raw.iter().enumerate() {
         let outeq = i + 1;
@@ -35,24 +35,37 @@ pub(crate) fn settings(
         let gamlam = em.get("initial").unwrap().as_real().unwrap();
         let type_vec = em.get("type").unwrap().as_string_vector().unwrap();
         let err_type = type_vec.first().unwrap();
+        let fixed = em.get("fixed").unwrap().as_logical().unwrap();
         let coeff = em.get("coeff").unwrap().as_real_vector().unwrap();
         match err_type.as_str() {
             "additive" => {
                 ems = ems.add(
                     outeq,
+                    if fixed.to_bool() {
+                        AssayErrorModel::additive_fixed(
+                            ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
+                            gamlam,
+                        )
+                    } else {
                     AssayErrorModel::additive(
                         ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
                         gamlam,
-                    ),
+                    )},
                 )?;
             }
             "proportional" => {
                 ems = ems.add(
                     outeq,
+                                 if fixed.to_bool() {
+                        AssayErrorModel::proportional_fixed(
+                            ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
+                            gamlam,
+                        )
+                    } else {
                     AssayErrorModel::proportional(
                         ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
                         gamlam,
-                    ),
+                    )},
                 )?;
             }
             err => {

@@ -22,21 +22,10 @@ decode_error_model_rows <- function(models, observed_outeq) {
         ))
     }
 
-    # Normalize observed_outeq to 1-based indexing so we emit consistent 1-based
-    # `outeq` values. Some data sources use 0-based outeq (min == 0); convert
-    # those to 1-based here. If observed_outeq is empty/NA leave as-is.
-    if (!(length(observed_outeq) == 0 || all(is.na(observed_outeq)))) {
-        if (min(observed_outeq, na.rm = TRUE) == 0) {
-            observed_outeq <- observed_outeq + 1L
-        }
-    }
-
-    purrr::imap_dfr(models, function(model, idx) {
+    decode_one_model <- function(model, outeq) {
         if (is.character(model) && length(model) == 1) {
             return(tibble::tibble(
-                # emit 1-based outeq consistently; `idx` is 1-based from
-                # purrr::imap_dfr, so use it directly after normalization above
-                outeq = idx,
+                outeq = outeq,
                 type = model,
                 c0 = 0,
                 c1 = 0,
@@ -50,14 +39,35 @@ decode_error_model_rows <- function(models, observed_outeq) {
         poly <- purrr::pluck(model_data, "poly")
 
         tibble::tibble(
-            # emit 1-based outeq consistently; `idx` is 1-based from
-            # purrr::imap_dfr, so use it directly after normalization above
-            outeq = idx,
+            outeq = outeq,
             type = model_type,
             c0 = purrr::pluck(poly, "c0", .default = 0),
             c1 = purrr::pluck(poly, "c1", .default = 0),
             c2 = purrr::pluck(poly, "c2", .default = 0),
             c3 = purrr::pluck(poly, "c3", .default = 0)
         )
+    }
+
+    observed_outeq <- normalize_engine_index(observed_outeq)
+    observed_outeq <- sort(unique(observed_outeq[!is.na(observed_outeq)]))
+
+    if (length(observed_outeq) == 0) {
+        return(purrr::imap_dfr(models, function(model, idx) {
+            decode_one_model(model, idx)
+        }))
+    }
+
+    shift <- length(models) - max(observed_outeq, na.rm = TRUE)
+    if (!(shift %in% c(0L, 1L))) {
+        shift <- 0L
+    }
+
+    model_indices <- observed_outeq + shift
+    if (any(model_indices < 1L | model_indices > length(models))) {
+        model_indices <- observed_outeq
+    }
+
+    purrr::map2_dfr(model_indices, observed_outeq, function(model_idx, out_idx) {
+        decode_one_model(models[[model_idx]], out_idx)
     })
 }

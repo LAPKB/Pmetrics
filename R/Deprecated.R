@@ -266,3 +266,18 @@ PMbuild <- function(...) {
 PMgetCRCL <- function(...) {
   lifecycle::deprecate_warn("3.0.0", "PMgetCRCL()", details = "Use add_renal() to add CRCL or eGFR, depending on method chosen.")
 }
+
+
+
+#' @title Make NCA
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#'
+#' Use make_NCA instead.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
+#' @export
+makeNCA <- function(...) {
+  lifecycle::deprecate_warn("3.0.0", "makeNCA()", details = "Use make_NCA() instead.")
+}

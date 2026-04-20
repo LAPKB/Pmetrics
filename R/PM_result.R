@@ -148,7 +148,7 @@ PM_result <- R6::R6Class(
     #' @param ... Summary-specific arguments
     auc = function(src, ...) {
       if (!src %in% c("op", "pop", "post", "sim")) {
-        cli::cli_abort(c("x" = "{.fn makeAUC} is defined only for {.cls PM_op}, {.cls PM_pop}, {.cls PM_post}, and {.cls PM_sim} objects."))
+        cli::cli_abort(c("x" = "{.fn make_AUC} is defined only for {.cls PM_op}, {.cls PM_pop}, {.cls PM_post}, and {.cls PM_sim} objects."))
       }
       self[[src]]$auc(...)
     },
@@ -156,8 +156,8 @@ PM_result <- R6::R6Class(
     #' @description
     #' Perform non-compartmental analysis
     #' @details
-    #' See [makeNCA].
-    #' @param ... Arguments passed to [makeNCA].
+    #' See [make_NCA].
+    #' @param ... Arguments passed to [make_NCA].
     nca = function(...) {
       make_NCA(self, ...)
     },

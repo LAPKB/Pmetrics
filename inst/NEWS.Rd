@@ -154,7 +154,7 @@
 \itemize{
 \item Fixed bug in SIMrun when trying to used pre-loaded data file
 \item Fixed bug with copying priors from previous run now that runs made inside new folders
-\item makeAUC now returns NA when only one observation present for a subject
+\item make_AUC now returns NA when only one observation present for a subject
 \item Models with more than 9 compartments detect compartments correctly
 \item Restored split function to simulator, which was broken in 1.5.0
 \item Recoded PMcompare to comply with deprecated recycling of vector length 1 in R, as of v. 3.4.3
@@ -396,7 +396,7 @@
 \itemize{
 \item Updated to reshape2
 \item Enhanced algorithm for makePost and makePop to generate data frames with predictions based on means and medians
-\item Updated makeAUC, makeNCA, plot.PMmatrix to include icen (mean or median) argument to use new output from makePost and makePop
+\item Updated make_AUC, makeNCA, plot.PMmatrix to include icen (mean or median) argument to use new output from makePost and makePop
 \item Updated makeOP and makeCov to eliminate icen argument and make objects that include predictions based on means and medians
 \item Updated plot.PMop to use icen and pred.type (post or pop) rather than type 
 \item Updated plot.PMcov to use icen
@@ -516,7 +516,7 @@
 \subsection{BUG FIXES}{
 \itemize{
 \item Fixed more simulator bugs relating to dataframe format with lots of observations that continued on separate lines
-\item Updated help for makeAUC to include method argument (linear or other)
+\item Updated help for make_AUC to include method argument (linear or other)
 \item Corrected handling of exclude argument to NPrun, ITrun and ERRrun
 }
 }
@@ -582,7 +582,7 @@
 \item Added ability to use wildcards with makePTA to parse Simulator files on the fly
 \item Combined NPload and ITload into single PMload function
 \item Added ability to include comment lines prefixed with 'C ' in model files
-\item Added include and exclude to makeAUC function
+\item Added include and exclude to make_AUC function
 \item Changed predInt argument to SIMrun to allow for start, stop, interval times.
 \item Reworked SIMparse to allow for combining across simulations with different times, as well as to include or exclude files returned when using wildcards.
 \item Added weighted.t.test to summary of PMop objects to test for bias different than 0.  Code for this is courtesy of FelixS (http://www.r-bloggers.com/weighted-t-test-in-r/), also inspired by a function from Gavin Simpson on R-Help
@@ -684,11 +684,11 @@
 \itemize{
 \item Fixed bug in PMcheckMatrix when looking for missing covariate data in first entry for a patient
 \item Fixed bug that caused crash when running population of 1 in NPAG
-\item Fixed a bug in makeAUC for PMsim objects where the start parameter was ignored
+\item Fixed a bug in make_AUC for PMsim objects where the start parameter was ignored
 \item Corrected plot.PMmatrix colors when single outeq > 1 plotted with prediction
 \item Fixed another bug in plot.PMmatrix which did not handle block assignments correctly
 \item Corrected subject IDs in PMcov objects
-\item Corrected block (defined by EVID=4) handling in makeOP, makeAUC, makeNCA.   
+\item Corrected block (defined by EVID=4) handling in makeOP, make_AUC, makeNCA.   
 }
 }
 }
@@ -833,7 +833,7 @@
 \item Updated makeErrorPoly to handle situations with too few points to fit 2nd and/or 3rd degree polynomials
 \item Fixed errors in reading instruction files in ERRrun
 \item Corrected mistake in IT2B runs with instruction files that caused end of file error
-\item Took out AUC extraction with makeCov as it was too subject to error.  This function is better implemented in the existing makeAUC command.
+\item Took out AUC extraction with makeCov as it was too subject to error.  This function is better implemented in the existing make_AUC command.
 }
 }
 }

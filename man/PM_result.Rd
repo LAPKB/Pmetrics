@@ -200,12 +200,12 @@ Perform non-compartmental analysis
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{makeNCA}.}
+\item{\code{...}}{Arguments passed to \link{make_NCA}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-See \link{makeNCA}.
+See \link{make_NCA}.
 }
 
 }

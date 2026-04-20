@@ -8,7 +8,7 @@ mod simulation;
 use anyhow::Result;
 use extendr_api::prelude::*;
 use pmcore::prelude::{
-    data::{read_pmetrics, Data, Event},
+    data::{read_pmetrics, Data},
     pharmsol::exa::build,
     Analytical, ODE,
 };
@@ -28,56 +28,12 @@ fn validate_paths(data_path: &str, model_path: &str) {
     }
 }
 
-fn compact_analytical_indices(data: &mut Data) {
-    let has_zero_input = data.iter().any(|subject| {
-        subject
-            .occasions()
-            .iter()
-            .flat_map(|occasion| occasion.iter())
-            .any(|event| match event {
-                Event::Bolus(bolus) => bolus.input() == 0,
-                Event::Infusion(infusion) => infusion.input() == 0,
-                Event::Observation(_) => false,
-            })
-    });
-    let has_zero_outeq = data.iter().any(|subject| {
-        subject
-            .occasions()
-            .iter()
-            .flat_map(|occasion| occasion.iter())
-            .any(|event| match event {
-                Event::Observation(observation) => observation.outeq() == 0,
-                _ => false,
-            })
-    });
-
-    for subject in data.iter_mut() {
-        for occasion in subject.occasions_iter_mut() {
-            for event in occasion.iter_mut() {
-                match event {
-                    Event::Bolus(bolus) if !has_zero_input => {
-                        bolus.set_input(bolus.input() - 1);
-                    }
-                    Event::Infusion(infusion) if !has_zero_input => {
-                        infusion.set_input(infusion.input() - 1);
-                    }
-                    Event::Observation(observation) if !has_zero_outeq => {
-                        observation.set_outeq(observation.outeq() - 1);
-                    }
-                    _ => {}
-                }
-            }
-        }
-    }
-}
-
 fn read_pmetrics_for_kind(data_path: &str, kind: &str) -> Result<Data> {
-    let mut data = read_pmetrics(data_path)
+    let data = read_pmetrics(data_path)
         .map_err(|err| anyhow::format_err!("Failed to parse data: {}", err))?;
 
     match kind {
-        "ode" => {}
-        "analytical" => compact_analytical_indices(&mut data),
+        "ode" | "analytical" => {}
         err => return Err(anyhow::format_err!("{} is not a supported model type", err)),
     }
 
@@ -328,10 +284,10 @@ fn setup_logs() -> anyhow::Result<()> {
     use tracing_subscriber::filter::LevelFilter;
 
     // Create a subscriber with our custom layer using the global timer
-    // Filter to show only WARN and above (WARN, ERROR) by default
+    // Filter to show INFO and above (INFO, WARN, ERROR) so cycle logs are visible
     let subscriber = tracing_subscriber::registry()
         .with(RFormatLayer::new())
-        .with(LevelFilter::from_level(Level::WARN));
+        .with(LevelFilter::from_level(Level::INFO));
 
     // Set as global default - this will fail if already set, which is fine
     // We just ignore the error

@@ -27,7 +27,7 @@ utils::globalVariables(
      scale_color_identity scale_fill_identity scrAve setNames sl src
      str_split sym symbol theme_void time1 time2 title updateCheckboxInput
      val xend xlim yend ylim
-    wt x y ." %>%
+wt x y base_color base_symbol cov_group outeq_group req ." %>%
     stringr::str_replace_all("\n\\s+", " ") %>%
     stringr::str_split(" ") %>%
     unlist()
