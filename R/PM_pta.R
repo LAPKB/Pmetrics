@@ -570,7 +570,7 @@ PM_pta <- R6::R6Class(
       cycle <- utils::getTxtProgressBar(.pb)
       utils::setTxtProgressBar(.pb, cycle + 1)
       
-      auc <- rlang::try_fetch(makeAUC(sims, out ~ time | nsim, start = .start, end = .end),
+      auc <- rlang::try_fetch(make_AUC(sims, out ~ time | nsim, start = .start, end = .end),
       error = function(e) {
         cli::cli_warn("Unable to generate AUC.", parent = e)
         return(NA)

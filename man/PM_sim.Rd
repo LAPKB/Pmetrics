@@ -763,7 +763,7 @@ Calculates the AUC of the specified simulation
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{makeAUC}.}
+\item{\code{...}}{Arguments passed to \link{make_AUC}.}
 }
 \if{html}{\out{</div>}}
 }

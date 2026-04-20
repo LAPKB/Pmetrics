@@ -115,11 +115,11 @@ PM_op <- R6::R6Class(
     #' @description
     #' Calculate AUC
     #' @details
-    #' See [makeAUC]
+    #' See [make_AUC]
     #' @param data The object to use for AUC calculation
-    #' @param ... Arguments passed to [makeAUC]
+    #' @param ... Arguments passed to [make_AUC]
     auc = function(...) {
-      rlang::try_fetch(makeAUC(self, ...),
+      rlang::try_fetch(make_AUC(self, ...),
         error = function(e) {
           cli::cli_warn("Unable to generate AUC.", parent = e)
           return(NULL)
@@ -381,7 +381,7 @@ plot.PM_op <- function(
   }
   sub1 <- x %>%
     dplyr::filter(
-      icen == !!icen, outeq == !!outeq, pred.type == !!pred.type,
+      icen == !!icen, outeq %in% !!outeq, pred.type == !!pred.type,
       block %in% !!block
     ) %>%
     includeExclude(include, exclude) %>%
@@ -634,7 +634,7 @@ plot.PM_op <- function(
     # Split into traces
     traces <- sub1 %>%
       filter(cens == "none" | cens == "0") %>%
-      group_split(id)
+      dplyr::group_split(id)
 
 
     ##### Build plots

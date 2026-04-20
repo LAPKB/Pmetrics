@@ -1,6 +1,6 @@
 #' Launch packaged Shiny apps
 #'
-#' `lit_sim()`, `model_lib()`, `pm_plot_app()`, and `pm_run_app()` launch specific packaged
+#' `lit_sim()`, `model_lib()`, and `pm_plot()` launch specific packaged
 #' apps from `inst/apps`.
 #'
 #' `apps()` shows an interactive numbered menu (via `cli`) and launches the
@@ -27,15 +27,13 @@ NULL
     list(
       id = "pm_plot",
       title = "Pmetrics plot helper",
-      fn = function(launch.browser = TRUE) {
-        shiny::runApp(build_plot(), launch.browser = launch.browser)
-      }
-    ),
-    list(
-      id = "pm_run",
-      title = "Legacy Pmetrics run helper",
-      fn = pm_run_app
+      fn = pm_plot
     )
+    # list(
+    #   id = "pm_run",
+    #   title = "Legacy Pmetrics run helper",
+    #   fn = pm_run_app
+    # )
   )
 }
 
@@ -60,15 +58,15 @@ lit_sim <- function(launch.browser = TRUE) {
 
 #' @rdname apps
 #' @export
-pm_plot_app <- function(launch.browser = TRUE) {
+pm_plot <- function(launch.browser = TRUE) {
   .launch_packaged_app("pm_plot", launch.browser = launch.browser)
 }
 
-#' @rdname apps
-#' @export
-pm_run_app <- function(launch.browser = TRUE) {
-  .launch_packaged_app("pm_run", launch.browser = launch.browser)
-}
+# #' @rdname apps
+# #' @export
+# pm_run <- function(launch.browser = TRUE) {
+#   .launch_packaged_app("pm_run", launch.browser = launch.browser)
+# }
 
 #' @rdname apps
 #' @export

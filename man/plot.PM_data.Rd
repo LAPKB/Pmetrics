@@ -44,17 +44,19 @@ Here  \code{line} is a list of two elements:
 \item \code{join}  Can either be a boolean or a list. If set to \code{TRUE} or
 a list of plotly line attributes, it
 will generate line segments joining observations. If set to
-\code{FALSE}, no segments will be generated. The color of the joining line
+\code{FALSE}, no segments will be generated.
+}
+
+**Note:**The color of the joining line
 is the same as the marker color for that line. To avoid confusion, the line
-color cannot be changed. The default
+color cannot be changed. Change the \code{marker} color instead. The default
 values for the other elements of the \code{join} list, both of which can be
 overriden are:
-\itemize{
-\item \code{width }Width of the segments, default 1.
-\item \code{dash} See \code{plotly::schema()}, traces > scatter > attributes >
+- \code{width }Width of the segments, default 1.
+- \code{dash} See \code{plotly::schema()}, traces > scatter > attributes >
 line > dash > values. Default is "solid".
 Example: \code{line = list(join = list(dash = "longdash", width = 2))}
-}
+\itemize{
 \item \code{pred} Default is \code{FALSE}, which means that predictions will not be included
 in the plot. To include predictions, supply one of the following:
 \item If plotting data contained in a \link{PM_result}, use "pop" or "post" to include population or posterior predictions.
@@ -100,7 +102,7 @@ a covariate like "gender"}
 \item{group_names}{A character vector of names to label the \strong{groups} if \code{legend = TRUE}.
 This vector must be the same length as the number of groups within \code{group}. If missing,
 the vector will be generated from the unique values in \code{group}.
-Example: \code{c("Male", "Female")} if \code{color = "gender"} and "gender" is a covariate
+Example: \code{c("Male", "Female")} if \code{group = "gender"} and "gender" is a covariate
 in the data.}
 
 \item{mult}{Multiplication factor for y axis, e.g. to convert mg/L to ng/mL}

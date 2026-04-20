@@ -2,7 +2,7 @@
 % Please edit documentation in R/PM_fit.R
 \name{PM_fit}
 \alias{PM_fit}
-\title{Object to define and run a model and data in Pmetrics}
+\title{Object to define a model and data in Pmetrics}
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
@@ -11,8 +11,7 @@
 \details{
 Data and model objects can be previously created as \link{PM_data} or \link{PM_model} objects,
 or created on the fly when making a new PM_fit object. PM_fit objects contain
-methods to cross-check data and model objects for compatibility, as well as to
-run the analysis.
+methods to cross-check data and model objects for compatibility.
 }
 \keyword{internal}
 \section{Public fields}{

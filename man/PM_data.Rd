@@ -10,7 +10,7 @@ PM_data R6 objects containing raw, standardized and valid data, and methods
 to process the data
 }
 \details{
-\emph{PM_data} objects are passed to \link{PM_fit} objects to initiate a
+\emph{PM_data} objects are passed to the \verb{$fit} method of compiled \link{PM_model} objects to initiate a
 population analysis. The object is created by reading a delimited file in
 the current working directory. The data will be transformed into the standard
 format which is the same for all engines, with a report of any assumptions
@@ -29,7 +29,7 @@ There are a number of methods
 defined for a PM_data object, including to write the standard data back
 to a file for future use, to summarize and to plot the object, to
 conduct a non-compartmental analysis on the raw data using
-\link{makeNCA}, to calculate an AUC using \link{makeAUC}, and to add event rows, which
+\link{make_NCA}, to calculate an AUC using \link{make_AUC}, and to add event rows, which
 is particularly useful for making simulation templates on the fly.
 }
 \examples{
@@ -160,12 +160,12 @@ Calculate AUC
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{makeAUC}.}
+\item{\code{...}}{Arguments passed to \link{make_AUC}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-See \link{makeAUC}.
+See \link{make_AUC}.
 }
 
 }
@@ -181,12 +181,12 @@ Perform non-compartmental analysis
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Arguments passed to \link{makeNCA}.}
+\item{\code{...}}{Arguments passed to \link{make_NCA}.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-See \link{makeNCA}.
+See \link{make_NCA}.
 }
 
 }

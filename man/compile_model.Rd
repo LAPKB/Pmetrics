@@ -23,3 +23,4 @@ Result of the compilation process.
 \description{
 Compiles the text representation of a model into a binary file.
 }
+\keyword{internal}

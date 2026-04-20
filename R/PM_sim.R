@@ -872,9 +872,9 @@ PM_sim <- R6::R6Class(
     #' @description
     #' `r lifecycle::badge("stable")`
     #' Calculates the AUC of the specified simulation
-    #' @param ... Arguments passed to [makeAUC].
+    #' @param ... Arguments passed to [make_AUC].
     auc = function(...) {
-      rlang::try_fetch(makeAUC(self$data, ...),
+      rlang::try_fetch(make_AUC(self$data, ...),
         error = function(e) {
           cli::cli_warn("Unable to generate AUC.", parent = e)
           return(NULL)
