@@ -409,7 +409,7 @@ transpile_fa <- function(
 
   find_max_idx <- function(expr) {
     if (is.call(expr) && as.character(expr[[1]]) == "[" &&
-      as.character(expr[[2]]) == "fa" &&
+      tolower(as.character(expr[[2]])) == "fa" &&
       is.numeric(expr[[3]])) {
       return(as.integer(expr[[3]]))
     }
@@ -449,7 +449,7 @@ transpile_lag <- function(
 
   find_max_idx <- function(expr) {
     if (is.call(expr) && as.character(expr[[1]]) == "[" &&
-      as.character(expr[[2]]) == "lag" &&
+      tolower(as.character(expr[[2]])) == "lag" &&
       is.numeric(expr[[3]])) {
       return(as.integer(expr[[3]]))
     }
