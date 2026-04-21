@@ -1881,7 +1881,10 @@ PM_model <- R6::R6Class(
       if (blocks$eqn[1] != "") {
         arg_list$eqn <- eval(parse(text = glue::glue("function() {{\n  {paste(blocks$eqn, collapse = '\n  ')}\n}}")))
       } else {
-        arg_list$eqn <- NULL
+        cli::cli_abort(c("x" = "Algebraic model logic has changed as of Pmetrics 3.0.0.", 
+        "i" = "Model name should be included in the #EQN block for analytical models.",
+        "i" = "Refer to model_lib() for model names to include in #EQN block and correct parameters in #PRI block"))
+        # arg_list$eqn <- NULL
       }
 
       # out/err
