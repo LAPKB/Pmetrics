@@ -12,4 +12,3 @@ Temporary build path.
 \description{
 Retrieves the temporary path used for building models.
 }
-\keyword{internal}

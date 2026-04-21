@@ -503,7 +503,7 @@ This is the main method to run a population analysis.
   cycles = 100,
   prior = "sobol",
   points = 100,
-  idelta = 0.1,
+  idelta = 1,
   tad = 0,
   seed = 23,
   overwrite = FALSE,
@@ -582,7 +582,7 @@ missing the globally maximally likely parameter value distribution,
 but the slower the run.}
 
 \item{\code{idelta}}{How often to generate posterior predictions in units of time.
-Default is 0.1, which means a prediction is generated every 0.1 hours (6 minutes)
+Default is 1, which means a prediction is generated every hour (60 minutes)
 if the unit of time is hours. Predictions are made at this interval until the time
 of the last event (dose or observation) or until \code{tad} if that value is greater
 than the time of the last dose or observation in the data.}

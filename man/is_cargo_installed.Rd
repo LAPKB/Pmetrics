@@ -12,4 +12,3 @@ TRUE if Cargo is installed, FALSE otherwise.
 \description{
 Checks if Cargo is installed on the system.
 }
-\keyword{internal}
