@@ -18,13 +18,14 @@ use tracing_subscriber::layer::SubscriberExt;
 
 use crate::logs::RFormatLayer;
 
-fn validate_paths(data_path: &str, model_path: &str) {
+fn validate_paths(data_path: &str, model_path: &str) -> Result<()> {
     if !std::path::Path::new(data_path).exists() {
-        panic!("Data path does not exist: {}", data_path);
+        return Err(anyhow::anyhow!("Data path does not exist: {}", data_path));
     }
     if !std::path::Path::new(model_path).exists() {
-        panic!("Model path does not exist: {}", model_path);
+        return Err(anyhow::anyhow!("Model path does not exist: {}", model_path));
     }
+    Ok(())
 }
 
 fn read_pmetrics_for_kind(data_path: &str, kind: &str) -> Result<Data> {
@@ -50,22 +51,17 @@ fn simulate_one(
     spp: &[f64],
     kind: &str,
 ) -> Result<Dataframe<SimulationRow>> {
-    validate_paths(data_path, model_path);
+    validate_paths(data_path, model_path)?;
     let data = read_pmetrics_for_kind(data_path, kind)?;
     let subjects = data.subjects();
+    let first_subject = subjects
+        .first()
+        .ok_or_else(|| anyhow::anyhow!("Data set contains no subjects"))?;
     let rows = match kind {
-        "ode" => executor::simulate::<ODE>(
-            model_path.into(),
-            subjects.first().unwrap(),
-            &spp.to_vec(),
-            0,
-        )?,
-        "analytical" => executor::simulate::<Analytical>(
-            model_path.into(),
-            subjects.first().unwrap(),
-            &spp.to_vec(),
-            0,
-        )?,
+        "ode" => executor::simulate::<ODE>(model_path.into(), first_subject, &spp.to_vec(), 0)?,
+        "analytical" => {
+            executor::simulate::<Analytical>(model_path.into(), first_subject, &spp.to_vec(), 0)?
+        }
         _ => {
             return Err(anyhow::format_err!(
                 "{} is not a supported model type",
@@ -73,7 +69,8 @@ fn simulate_one(
             ));
         }
     };
-    Ok(rows.into_dataframe().unwrap())
+    rows.into_dataframe()
+        .map_err(|e| anyhow::anyhow!("Failed to build data frame: {}", e))
 }
 
 /// Simulates all subjects in the data set using the model at the given path.
@@ -89,46 +86,55 @@ fn simulate_all(
     model_path: &str,
     theta: RMatrix<f64>,
     kind: &str,
-) -> Dataframe<SimulationRow> {
+) -> Result<Dataframe<SimulationRow>> {
     use rayon::prelude::*;
 
-    validate_paths(data_path, model_path);
-    let theta = parse_theta(theta);
-    let data = read_pmetrics_for_kind(data_path, kind).expect("Failed to parse data");
+    validate_paths(data_path, model_path)?;
+    let theta = parse_theta(theta)?;
+    let data = read_pmetrics_for_kind(data_path, kind)?;
     let subjects = data.subjects();
 
     let rows: Vec<_> = match kind {
         "ode" => theta
             .par_iter()
             .enumerate()
-            .flat_map(|(i, spp)| {
+            .map(|(i, spp)| {
                 subjects
                     .par_iter()
-                    .flat_map(|subject| {
-                        executor::simulate::<ODE>(model_path.into(), subject, spp, i).unwrap()
-                    })
-                    .collect::<Vec<_>>()
+                    .map(|subject| executor::simulate::<ODE>(model_path.into(), subject, spp, i))
+                    .collect::<Result<Vec<_>>>()
+                    .map(|v| v.into_iter().flatten().collect::<Vec<_>>())
             })
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .flatten()
             .collect(),
         "analytical" => theta
             .par_iter()
             .enumerate()
-            .flat_map(|(i, spp)| {
+            .map(|(i, spp)| {
                 subjects
                     .par_iter()
-                    .flat_map(|subject| {
+                    .map(|subject| {
                         executor::simulate::<Analytical>(model_path.into(), subject, spp, i)
-                            .unwrap()
                     })
-                    .collect::<Vec<_>>()
+                    .collect::<Result<Vec<_>>>()
+                    .map(|v| v.into_iter().flatten().collect::<Vec<_>>())
             })
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .flatten()
             .collect(),
         _ => {
-            panic!("{} is not a supported model type", kind);
+            return Err(anyhow::format_err!(
+                "{} is not a supported model type",
+                kind
+            ));
         }
     };
 
-    rows.into_dataframe().unwrap()
+    rows.into_dataframe()
+        .map_err(|e| anyhow::anyhow!("Failed to build data frame: {}", e))
 }
 
 /// Fits the model at the given path to the data at the given path using the provided parameters.
@@ -150,39 +156,31 @@ pub fn fit(
     RFormatLayer::reset_global_timer();
     setup_logs()?;
     println!("Initializing model fit...");
-    validate_paths(data, model_path);
+    validate_paths(data, model_path)?;
     let data = read_pmetrics_for_kind(data, kind)?;
     match kind {
-        "ode" => match executor::fit::<ODE>(model_path.into(), data, params, output_path.into()) {
-            Ok(_) => {}
-            Err(err) => {
-                println!("{}", err)
-            }
-        },
+        "ode" => executor::fit::<ODE>(model_path.into(), data, params, output_path.into())?,
         "analytical" => {
-            match executor::fit::<Analytical>(model_path.into(), data, params, output_path.into()) {
-                Ok(_) => {}
-                Err(err) => {
-                    println!("{}", err)
-                }
-            }
+            executor::fit::<Analytical>(model_path.into(), data, params, output_path.into())?
         }
         err => return Err(anyhow::format_err!("{} is not a supported model type", err)),
     };
     Ok(())
 }
 
-fn parse_theta(matrix: RMatrix<f64>) -> Vec<Vec<f64>> {
+fn parse_theta(matrix: RMatrix<f64>) -> Result<Vec<Vec<f64>>> {
     let nspp = matrix.nrows();
     let ndim = matrix.ncols();
-    let real_vector = matrix.as_real_vector().unwrap();
+    let real_vector = matrix
+        .as_real_vector()
+        .ok_or_else(|| anyhow::anyhow!("theta matrix must contain real values"))?;
     let mut theta = vec![vec![0.0; ndim]; nspp];
     for i in 0..nspp {
         for j in 0..ndim {
             theta[i][j] = real_vector[i + j * nspp];
         }
     }
-    theta
+    Ok(theta)
 }
 
 /// Compiles the text representation of a model into a binary file.
@@ -202,7 +200,8 @@ fn compile_model(
     kind: &str,
 ) -> Result<()> {
     let params: Vec<String> = params.iter().map(|x| x.to_string()).collect();
-    let model_txt = std::fs::read_to_string(model_path).expect("Failed to read model file");
+    let model_txt = std::fs::read_to_string(model_path)
+        .map_err(|e| anyhow::anyhow!("Failed to read model file '{}': {}", model_path, e))?;
     let template_path = std::path::PathBuf::from(template_path);
     match kind {
         "ode" => build::compile::<ODE>(
