@@ -576,7 +576,7 @@ print.PM_compare <- function(x, ...){
     df_tab <- knitr::kable(df_chr, format = "simple")
 
     # rebuild the data frame
-    df2 <- map_vec(df_tab, \(x) str_split(x, "(?<=\\s)(?=\\S)"))
+    df2 <- purrr::map_vec(df_tab, \(x) stringr::str_split(x, "(?<=\\s)(?=\\S)"))
     df2 <- as.data.frame(do.call(rbind, df2))
 
     # replace best rows in each metric column with highlighted versions
