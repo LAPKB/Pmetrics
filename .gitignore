@@ -51,7 +51,7 @@ data-raw/Runs/
 inst/Examples/
 tests/testthat/Runs/
 Examples
-!inst/Examples/
+inst/Examples/
 Experimental
 other/
 1
@@ -70,3 +70,4 @@ src/rust/vendor
 
 # Old files
 Archived
+
