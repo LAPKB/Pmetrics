@@ -1888,7 +1888,6 @@ PM_model <- R6::R6Class(
           "i" = "For a user-defined ODE model, include at least one equation in #EQN, e.g. {.code dx[1] = -ke * x[1]}.",
           "i" = "Refer to {.fn model_lib} for library model names and required parameters in the #PRI block."
         ))
-        # arg_list$eqn <- NULL
       }
 
       # out/err
