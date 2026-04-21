@@ -1,5 +1,5 @@
 use anyhow::bail;
-use extendr_api::{Conversions, List};
+use extendr_api::{Conversions, List, Robj};
 use pmcore::prelude::*;
 use std::collections::HashMap;
 
@@ -8,7 +8,7 @@ pub(crate) fn settings(
     params: &Vec<String>,
     output_path: &str,
 ) -> Result<Settings> {
-    let settings = settings.into_hashmap();
+    let settings: HashMap<&str, Robj> = HashMap::try_from(&settings).unwrap();
     let ranges = settings.get("ranges").unwrap().as_list().unwrap();
     let ranges = robj_to_hashmap(ranges);
     let parameters = parse_parameters(ranges, params)?;
@@ -31,7 +31,8 @@ pub(crate) fn settings(
 
     for (i, (_, em)) in error_models_raw.iter().enumerate() {
         let outeq = i + 1;
-        let em = em.as_list().unwrap().into_hashmap();
+        let em_list = em.as_list().unwrap();
+        let em: HashMap<&str, Robj> = HashMap::try_from(&em_list).unwrap();
         let gamlam = em.get("initial").unwrap().as_real().unwrap();
         let type_vec = em.get("type").unwrap().as_string_vector().unwrap();
         let err_type = type_vec.first().unwrap();
@@ -47,25 +48,27 @@ pub(crate) fn settings(
                             gamlam,
                         )
                     } else {
-                    AssayErrorModel::additive(
-                        ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
-                        gamlam,
-                    )},
+                        AssayErrorModel::additive(
+                            ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
+                            gamlam,
+                        )
+                    },
                 )?;
             }
             "proportional" => {
                 ems = ems.add(
                     outeq,
-                                 if fixed.to_bool() {
+                    if fixed.to_bool() {
                         AssayErrorModel::proportional_fixed(
                             ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
                             gamlam,
                         )
                     } else {
-                    AssayErrorModel::proportional(
-                        ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
-                        gamlam,
-                    )},
+                        AssayErrorModel::proportional(
+                            ErrorPoly::new(coeff[0], coeff[1], coeff[2], coeff[3]),
+                            gamlam,
+                        )
+                    },
                 )?;
             }
             err => {
