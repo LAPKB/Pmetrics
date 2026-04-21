@@ -325,7 +325,7 @@ transpile_analytic_eqn <- function(
     if (length(eqns) > 0) {
       eqns_char <- map_chr(eqns, \(x) paste(deparse(x, width.cutoff = 500L), collapse = "\n"))
       # check for ODE, which should not be present
-      if (any(stringr::str_detect(eqns_char, regex("dx\\[\\d+\\]", ignore_case = FALSE)))) {
+      if (any(stringr::str_detect(eqns_char, regex("dx\\[\\d+\\]", ignore_case = TRUE)))) {
         cli::cli_abort(c(
           "x" = "You appear to have included both a model library template and ODE.",
           "i" = "EQN block must contain ODEs or a single library model template name, not both."
