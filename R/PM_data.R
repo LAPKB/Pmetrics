@@ -289,23 +289,11 @@ PM_data <- R6::R6Class("PM_data",
           cli::cli_abort(c("x" = "Time is required to add the first event."))
         }
       }
-      # check for addl and if present, expand
-      if ("addl" %in% arg_names) {
-        addl_lines <- to_add %>% dplyr::filter(!is.na(addl) & addl > 0)
-        if (nrow(addl_lines) > 0) {
-          if (!"input" %in% names(addl_lines)) addl_lines$input <- 1
-          new_lines <- addl_lines %>%
-            tidyr::uncount(addl, .remove = F) %>%
-            dplyr::group_by(id, time, input) %>%
-            dplyr::mutate(time = ii * dplyr::row_number() + time)
-
-          to_add <- dplyr::bind_rows(to_add, new_lines) %>%
-            dplyr::arrange(id, time) %>%
-            dplyr::mutate(
-              addl = ifelse(addl == -1, -1, NA),
-              ii = ifelse(addl == -1, ii, NA)
-            )
-        }
+      # addl will be expanded in validate
+      
+      # Ensure input is set to 1 for all dose events (EVID=1)
+      if (!"input" %in% names(to_add) && "dose" %in% names(to_add)) {
+        to_add$input <- ifelse(!is.na(to_add$dose), 1, NA)
       }
       new_data <- dplyr::bind_rows(self$data, to_add) %>% dplyr::arrange(id, time)
 
@@ -360,13 +348,19 @@ PM_data <- R6::R6Class("PM_data",
 
       if (!"addl" %in% dataNames) {
         dataObj$addl <- NA
-        msg <- c(msg, "ADDL set to missing for all records.\n")
+          msg <- c(msg, "ADDL set to missing for all records.\n")
+        } else {
+          # ADDL present in raw data
+          addl_present <- any(!is.na(dataObj$addl))
+          if (addl_present && ("ii" %in% dataNames) && any(!is.na(dataObj$ii))) {
+            msg <- c(msg, "ADDL doses were expanded at II intervals.\n")
+          }
       }
 
-      if (!"ii" %in% dataNames) {
-        dataObj$ii <- NA
-        msg <- c(msg, "II set to missing for all records.\n")
-      }
+        if (!"ii" %in% dataNames) {
+          dataObj$ii <- NA
+          msg <- c(msg, "II set to missing for all records.\n")
+        }
 
       if (!"input" %in% dataNames) {
         dataObj$input <- ifelse(is.na(dataObj$dose), NA, 1)
