@@ -72,7 +72,7 @@ NPex$model$plot()
 }
 }
 \seealso{
-\link{PM_model}, \code{\link[ggraph:ggraph]{ggraph::ggraph()}}, \code{\link[ggplot2:ggplot]{ggplot2::ggplot()}}
+\link{PM_model}, \code{\link[ggplot2:ggplot]{ggplot2::ggplot()}}
 
 Other PMplots: 
 \code{\link{plot.PM_cov}()},
