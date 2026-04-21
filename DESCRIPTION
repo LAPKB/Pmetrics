@@ -30,7 +30,6 @@ Imports:
     flextable,
     fs,
     ggplot2,
-    ggraph,
     htmlwidgets,
     jsonlite,
     lifecycle,

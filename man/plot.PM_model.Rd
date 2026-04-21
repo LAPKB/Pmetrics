@@ -60,7 +60,7 @@ A plot object of the model.
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
-Plots a \link{PM_model} based on differential equations using network plots from tidygraph and ggraph packages.
+Plots a \link{PM_model} based on differential equations using ggplot.
 }
 \details{
 This accepts a \link{PM_model} object and creates a network plot where nodes are compartments
@@ -72,7 +72,7 @@ NPex$model$plot()
 }
 }
 \seealso{
-\link{PM_model}, \code{\link[ggraph:ggraph]{ggraph::ggraph()}}, \code{\link[ggplot2:ggplot]{ggplot2::ggplot()}}
+\link{PM_model}, \code{\link[ggplot2:ggplot]{ggplot2::ggplot()}}
 
 Other PMplots: 
 \code{\link{plot.PM_cov}()},
