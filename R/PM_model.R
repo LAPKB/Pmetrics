@@ -2184,7 +2184,7 @@ interp <- function(type = "lm") {
 #' @description
 #' `r lifecycle::badge("stable")`
 #'
-#' Plots a [PM_model] based on differential equations using network plots from tidygraph and ggraph packages.
+#' Plots a [PM_model] based on differential equations using ggplot.
 #'
 #' @details
 #' This accepts a [PM_model] object and creates a network plot where nodes are compartments
