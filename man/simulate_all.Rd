@@ -21,4 +21,3 @@ Simulation results.
 \description{
 Simulates all subjects in the data set using the given model.
 }
-\keyword{internal}

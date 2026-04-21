@@ -29,7 +29,7 @@ or AUC values using Bayesian optimization.
 
 \item{\code{start}}{Start specification provided by user (numeric hours or datetime string)}
 
-\item{\code{start_offset}}{Resolved numeric offset (hours) used internally}
+\item{\code{start_offset}}{Resolved numeric offset (hours) used internally; NULL means use target times as-is}
 
 \item{\code{future_requested_doses}}{Numeric vector of originally requested future doses (0 = optimize, non-zero = fixed)}
 
@@ -132,6 +132,7 @@ Choose values closer to 1 when the patient history is sparse or not believed to 
 
 \item{\code{start}}{Start time for the future regimen. Can be either:
 \itemize{
+\item \code{NULL}: use the supplied future/target times as-is, without appending them after past data.
 \item Numeric hours (default \code{0}): relative to the last event date/time in past data, or if no past data,
 relative to the next local clock hour.
 \item Date-time character string: interpreted as an absolute start date/time and converted to an internal hour offset.

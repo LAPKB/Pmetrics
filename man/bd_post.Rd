@@ -104,7 +104,7 @@ a \code{PM_data} object; or a path to a CSV file.}
 
 \item{\code{prior_weight}}{Numeric between 0 and 1 indicating the weight of bias in the optimization (default: 0.5)}
 
-\item{\code{start}}{Start time for future regimen. Can be either numeric hours (default: \code{0}) or a date-time
+\item{\code{start}}{Start time for future regimen. Can be either \code{NULL}, numeric hours (default: \code{0}), or a date-time
 character string. Ambiguous formats are resolved using the \code{date_format} Pmetrics option
 (see \link{setPMoptions}). Accepted string formats:
 \itemize{
