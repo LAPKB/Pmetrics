@@ -478,7 +478,7 @@ map(~ .x %>% mutate(pred.type = c("pop", "post"))) %>%
 list_rbind(names_to = "run") %>%
 pivot_wider(id_cols = c(run), names_from = c(pred.type), names_glue = "{pred.type}{stringr::str_to_title({.value})}", values_from = c(int, sl, r2))
 
-results <- bind_cols(results, op_tbl %>% select(-run))
+results <- bind_cols(results, op_tbl %>% dplyr::select(-run))
 results$pval <- t
 
 
@@ -487,15 +487,23 @@ results$pval <- t
 # for slope and R2, best is the closest to 1
 metric_cols <- names(results)[!names(results) %in% c("run", "nvar", "converged", "pval")]
 
-best_idx <- purrr::map(metric_cols, function(col) {
+best_idx <- vector("list", length(metric_cols))
+names(best_idx) <- metric_cols
+
+for (j in seq_along(metric_cols)) {
+  col <- metric_cols[[j]]
   x <- suppressWarnings(as.numeric(results[[col]]))
   valid <- which(!is.na(x))
+
   if (length(valid) == 0) {
-    return(integer(0))
+    best_idx[[j]] <- integer(0)
+    next
   }
+
   target <- ifelse(grepl("Sl|R2", col), 1, 0)
-  valid[which(abs(x[valid] - target) == min(abs(x[valid] - target)))]
-})
+  dist_to_target <- abs(x[valid] - target)
+  best_idx[[j]] <- valid[dist_to_target == min(dist_to_target)]
+}
 
 best_counts <- integer(nobj)
 for (idx in best_idx) {
@@ -505,10 +513,9 @@ for (idx in best_idx) {
 }
 
 results$best <- best_counts
-attr(results, "highlight") <- list(
-  metric_cols = setdiff(metric_cols, "best"),
-  best_col = "best"
-)
+attr(results, "best_rows_by_col") <- best_idx
+attr(results, "best_cols") <- unlist(best_idx)
+
 
 class(results) <- c("PM_compare", "data.frame")
 
@@ -549,5 +556,77 @@ return(results)
 #' @method print PM_compare
 #' @export
 print.PM_compare <- function(x, ...){
-  cli_df(x) # in PM_utilities
+
+  highlight <- attr(x, "best_rows_by_col")
+  if (is.null(highlight)) {
+    highlight <- vector("list", 0)
+  }
+
+  # Convert all columns to character for uniform formatting
+  df_chr <- x %>%
+    mutate(across(where(is.double), ~ round2(.x))) %>%
+    mutate(across(everything(), ~ as.character(.x, stringsAsFactors = FALSE)))
+
+
+  if (length(highlight)>0) { # highlight minimums in requested columns
+    # find which row had the most "bests"
+    best <- which(x$best == max(x$best))
+
+    # create table to get the spacing
+    df_tab <- knitr::kable(df_chr, format = "simple")
+
+    # rebuild the data frame
+    df2 <- map_vec(df_tab, \(x) str_split(x, "(?<=\\s)(?=\\S)"))
+    df2 <- as.data.frame(do.call(rbind, df2))
+
+    # replace best rows in each metric column with highlighted versions
+    # first 2 rows are headers and spacers, so need to add 2 to model row index
+    for (p in seq_along(highlight)) {
+      rows_to_highlight <- highlight[[p]]
+      if (length(rows_to_highlight) == 0) {
+        next
+      }
+      table_col <- p + 3
+      table_rows <- rows_to_highlight + 2
+      df2[table_rows, table_col] <- stringr::str_replace_all(
+        df2[table_rows, table_col],
+        "(\\d+(?:\\.\\d+)?)(\\s+)",
+        "{.red \\1}\\2"
+      )
+    }
+
+    # now replace the overall best row with highlighted version
+    best_col <- ncol(df2)
+    df2[best + 2, best_col] <- stringr::str_replace_all(
+      df2[best + 2, best_col],
+      "(\\d+(?:\\.\\d+)?)(\\s+)",
+      "{.red \\1}\\2"
+    )
+
+    # print header
+    header <- df2[1, ] %>%
+      stringr::str_replace_all(" ", "\u00A0") %>%
+      paste(collapse = "")
+    cli::cli_text("{.strong {header}}")
+    cli::cli_div(theme = list(span.red = list(color = "red", "font-weight" = "bold")))
+
+    # replace ≥2 spaces with non-breaking spaces
+    for (i in 2:nrow(df2)) {
+      cli::cli_text(paste(df2[i, ], collapse = "") %>% stringr::str_replace_all(" ", "\u00A0") %>% stringr::str_replace_all("strong\u00A0+", "strong ") %>% stringr::str_replace_all("red\u00A0+", "red "))
+    }
+    cli::cli_end()
+  } else { # no highlighting
+
+    # create table
+    df_tab <- knitr::kable(df_chr, format = "simple")
+
+    # print header
+    header <- df_tab[1] %>% stringr::str_replace_all(" ", "\u00A0")
+    cli::cli_text("{.strong {header}}")
+
+    # print each row
+    for (i in 2:length(df_tab)) {
+      cli::cli_text(df_tab[i] %>% stringr::str_replace_all(" ", "\u00A0"))
+    }
+  }
 }
