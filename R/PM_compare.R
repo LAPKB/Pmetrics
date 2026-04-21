@@ -514,7 +514,7 @@ for (idx in best_idx) {
 
 results$best <- best_counts
 attr(results, "best_rows_by_col") <- best_idx
-attr(results, "best_cols") <- unlist(best_idx)
+attr(results, "best_rows") <- unlist(best_idx)
 
 
 class(results) <- c("PM_compare", "data.frame")
