@@ -483,8 +483,7 @@ Plot the model.
 \if{html}{\out{</div>}}
 }
 \subsection{Details}{
-This method plots the model using the
-\code{\link[=plot.PM_model]{plot.PM_model()}} function.
+This method plots the model using \link{plot.PM_model}.
 }
 
 }
