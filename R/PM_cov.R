@@ -615,10 +615,10 @@ plot.PM_cov <- function(x,
     
     nvar <- ncol(sumX) - ncov - 2 # subtract id, icen
     # get start and end column numbers for covariates and par
-    covStart <- 2
-    covEnd <- 1 + ncov
-    parStart <- covEnd + 1
-    parEnd <- ncol(sumX) - 1 # leave out icen column
+    parStart <- 2
+    parEnd <- 1 + nvar
+    covStart <- parEnd + 1
+    covEnd <- ncol(sumX) - 1 # leave out icen column
     
     
     cov.cross <- data.frame(matrix(NA, ncol = nvar, nrow = ncov, dimnames = list(cov = names(sumX)[covStart:covEnd], par = names(sumX)[parStart:parEnd])))
