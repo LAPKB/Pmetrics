@@ -207,18 +207,21 @@ PM_pta <- R6::R6Class(
             "i" = "See help for {.fn PM_pta}."
           ))
         }
-        
+ 
         ########### new PTA calculation ##################
         # need to get it into a list of PMsim objects
         if (dataType == 0) { # PM_sim object
           if (inherits(simdata$data, "PM_simlist")) { # multiple sims
             simdata <- simdata$data
           } else { # just one sim
+
+            simdata$data$obs <- simdata$data$obs %>% mutate(id = dplyr::dense_rank(id)) # ensure numeric
             simdata <- split(simdata$data$obs, as.factor(simdata$data$obs$id))
           }
         }
-        
+   
         if (dataType == 1) { # PM_sim_data object
+          simdata$obs <- simdata$obs %>% mutate(id = dplyr::dense_rank(id)) # ensure numeric
           simdata <- split(simdata, as.factor(simdata$id)) # split by id
         }
         
@@ -449,7 +452,6 @@ PM_pta <- R6::R6Class(
         maxpb <- sum(unlist(purrr::map(target, \(x) ifelse(inherits(x, "PMpta.targ"), 1, length(x))))) * n_reg # target * simulations
         pb <- txtProgressBar(min = 0, max = maxpb, style = 3)
         
-        
         ###### MAKE THE PTA OBJECT
         master_pta <- purrr::map(1:n_reg, \(x){
           purrr::map(1:n_type, \(y) tidyr::expand_grid(
@@ -477,6 +479,7 @@ PM_pta <- R6::R6Class(
             success_ratio = success[[y]],
             start = start[y],
             end = end[y]
+            #sim_data = list(simdata[[x]])
           )) %>% # end inner map
           purrr::list_rbind()
         }) %>% # end outer map
@@ -487,6 +490,7 @@ PM_pta <- R6::R6Class(
           paste0("pta_", stringr::str_replace_all(type, "-", "")), # call the appropriate pta function below
           list( # arguments to the pta function
             sims = simdata[[reg_num]],
+            #sims = sim_data,
             .target = target,
             .simTarg = simTarg,
             .start = start,
@@ -509,6 +513,7 @@ PM_pta <- R6::R6Class(
           start, end
         ) %>%
         ungroup() # remove rowwise
+          
         
         # add intersection if multiple target types
         # browser()
@@ -548,7 +553,7 @@ PM_pta <- R6::R6Class(
           
           class(master_pta) <- c("PM_pta_data", "list")
           return(master_pta)
-        },
+    },
         populate = function(pta) {
           self$data <- pta
           return(self)
@@ -641,7 +646,6 @@ PM_pta <- R6::R6Class(
   pta_specific <- function(sims, .target, .simTarg, .start, .end, .pb) {
     cycle <- utils::getTxtProgressBar(.pb)
     utils::setTxtProgressBar(.pb, cycle + 1)
-    
     concs <- sims %>%
     group_by(nsim) %>%
     filter(time == .start)
