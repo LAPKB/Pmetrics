@@ -10,6 +10,7 @@
 #' @aliases Pmetrics
 #' @author Michael Neely MD
 #' \url{http://www.lapk.org}
+#' @useDynLib Pmetrics, .registration = TRUE
 #' @keywords internal
 #' "_PACKAGE"
 #'

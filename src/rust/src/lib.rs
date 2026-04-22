@@ -267,7 +267,7 @@ fn model_parameters(model_path: &str, kind: &str) -> Result<Vec<String>> {
 /// @return Temporary build path.
 /// @export
 #[extendr]
-fn temporary_path() -> String {
+pub fn temporary_path() -> String {
     build::temp_path().to_string_lossy().to_string()
 }
 

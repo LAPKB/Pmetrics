@@ -191,16 +191,6 @@ impl BestDosePosteriorHandle {
         let target_enum = parse_target_type(target_type)?;
         let dose_range = DoseRange::new(dose_min, dose_max);
 
-        dbg!(
-            "Starting optimization with target type: {:?}, dose range: [{}, {}], bias weight: {}, time offset: {:?}, target data rows: {}",
-            target_enum,
-            dose_min,
-            dose_max,
-            bias_weight,
-            time_offset,
-            &target_data
-        );
-
         self.posterior
             .optimize(
                 target_data,

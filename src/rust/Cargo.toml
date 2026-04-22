@@ -9,7 +9,8 @@ name = 'pm_rs'
 
 [dependencies]
 extendr-api = "=0.9.0"
-pmcore = { version = "=0.25.2", features = ["exa"] }
+# pmcore = { version = "=0.25.2", features = ["exa"] }
+pmcore = { git = "https://github.com/LAPKB/PMcore.git", branch="fix/pmetrics-analytical", features = ["exa"] }
 libloading = "0.9"
 
 rayon = "1.10.0"

@@ -1380,9 +1380,8 @@ dependencies = [
 
 [[package]]
 name = "pmcore"
-version = "0.25.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56359b47b12acc12b49b61e98c2405f8750e586a3241e8417bdfa5c59d6aa71d"
+version = "0.25.1"
+source = "git+https://github.com/LAPKB/PMcore.git?branch=fix%2Fpmetrics-analytical#8e99683e1d33fafb7c6eb56227aa353b530c48a7"
 dependencies = [
  "anyhow",
  "argmin",
