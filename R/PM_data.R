@@ -437,13 +437,17 @@ private = list(
   ungroup() %>%
   select(-block)
     
-  dataObj_orig <- dataObj_orig %>%
-  group_by(id) %>%
-  mutate(block = cumsum(evid == 4)) %>%
-  group_by(id, block) %>%
-  arrange(time, desc(evid), .by_group = TRUE) %>%
-  ungroup() %>%
-  select(-block)
+  if ("evid" %in% names(dataObj_orig)) {
+    dataObj_orig <- dataObj_orig %>%
+      group_by(id) %>%
+      mutate(block = cumsum(evid == 4)) %>%
+      group_by(id, block) %>%
+      arrange(time, desc(evid), .by_group = TRUE) %>%
+      ungroup() %>%
+      select(-block)
+  } else {
+    dataObj_orig <- dataObj_orig %>% arrange(id, time, out)
+  }
   
   
   validData <- PMcheck(data = list(standard = dataObj, original = dataObj_orig), path = path, fix = TRUE, quiet = quiet)
