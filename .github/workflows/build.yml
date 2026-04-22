@@ -6,12 +6,14 @@ on:
   pull_request:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.os }}
     env:
-      PAK_FORCE_SOURCE_INSTALL: true
-      PAK_IGNORE_PLATFORM: true
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
