@@ -1535,6 +1535,23 @@ PM_model <- R6::R6Class(
         cli::cli_abort(c("x" = "theta must have the same number of columns as the number of parameters."))
       }
 
+      # Validate that all model covariates are present as columns in the
+      # template data. Missing covariates would cause a Rust panic in
+      # `fetch_cov!` and crash the R session, so abort early with a
+      # clear message.
+      model_covs <- tolower(self$model_list$covariates)
+      if (length(model_covs) > 0) {
+        template_data <- if (!is.null(data$standard_data)) data$standard_data else data$data
+        data_cols <- tolower(names(template_data))
+        missing_covs <- setdiff(model_covs, data_cols)
+        if (length(missing_covs) > 0) {
+          cli::cli_abort(c(
+            "x" = "Simulation template is missing model covariate{?s}: {.val {missing_covs}}.",
+            "i" = "Add the missing covariate{?s} to the template data (e.g. via {.fn addEvent}) before simulating."
+          ))
+        }
+      }
+
 
       temp_csv <- tempfile(fileext = ".csv")
       data$save(temp_csv, header = FALSE)
