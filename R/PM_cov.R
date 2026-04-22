@@ -634,4 +634,3 @@ plot.PM_cov <- function(x,
     }
     return(cov.cross)
   }
-  

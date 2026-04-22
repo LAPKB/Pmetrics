@@ -775,7 +775,7 @@ PM_sim <- R6::R6Class(
         if (length(covariate) == 0 || !"cov" %in% names(covariate)) {
           if (inherits(poppar, "PM_result")) {
             covariate$cov <- poppar$cov
-            msg <- c(msg, "Covariate statistics obtained from {deparse(substitute(poppar))}}$cov}.")
+            msg <- c(msg, "Covariate statistics obtained from {.code PM_result$cov}.")
           } else {
             cli::cli_abort(c(
               "x" = "The {.arg covariate$cov} argument must be supplied if `poppar` is not a {.fn PM_result} object.",
@@ -2281,8 +2281,8 @@ plot.PM_sim <- function(
     lconfint <- tapply(sim$out, sim$time, function(x) sort(x)[lower_confint(length(x))])
     uconfint <- tapply(sim$out, sim$time, function(x) sort(x)[upper_confint(length(x))])
 
-    sim_quant_df$lowerCI <- unlist(lconfint)
-    sim_quant_df$upperCI <- unlist(uconfint)
+    sim_quant_df$lowerCI <- as.numeric(unlist(lconfint))
+    sim_quant_df$upperCI <- as.numeric(unlist(uconfint))
 
     # plot main data
     p <- sim_quant_df %>%

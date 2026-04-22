@@ -19,7 +19,13 @@ pub(crate) fn simulate<E: Equation + Send>(
     spp_index: usize,
 ) -> Result<Vec<SimulationRow>> {
     let (_lib, (model, meta)) = unsafe { load::<E>(model_path) };
-    assert!(meta.get_params().len() == support_point.len());
+    if meta.get_params().len() != support_point.len() {
+        return Err(anyhow::anyhow!(
+            "Support point has {} values but model expects {} parameters",
+            support_point.len(),
+            meta.get_params().len()
+        ));
+    }
     let predictions: SubjectPredictions = model
         .estimate_predictions(subject, support_point)?
         .get_predictions()
@@ -38,7 +44,10 @@ pub(crate) fn fit<E: Equation + Send>(
     output_path: PathBuf,
 ) -> std::result::Result<(), anyhow::Error> {
     let (_lib, (eq, meta)) = unsafe { load::<E>(model_path) };
-    let settings = settings(params, meta.get_params(), output_path.to_str().unwrap())?;
+    let output_path_str = output_path
+        .to_str()
+        .ok_or_else(|| anyhow::anyhow!("Output path contains invalid UTF-8: {:?}", output_path))?;
+    let settings = settings(params, meta.get_params(), output_path_str)?;
     let mut algorithm = dispatch_algorithm(settings, eq, data)?;
     let mut result = algorithm.fit()?;
     result.write_outputs()?;

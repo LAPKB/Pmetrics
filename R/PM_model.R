@@ -535,9 +535,9 @@ PM_model <- R6::R6Class(
       } else {
         NA_integer_
       }
-      n_out <- get_max_assignment_index(self$arg_list$out, "y")
+      n_out <- get_assignments(self$arg_list$out, "y")
       n_out_slots <- if (type == "Analytical") {
-        index_vector_size(n_out)
+        index_vector_size(get_max_index(self$arg_list$out, "y"))
       } else {
         NA_integer_
       }
@@ -1535,6 +1535,23 @@ PM_model <- R6::R6Class(
         cli::cli_abort(c("x" = "theta must have the same number of columns as the number of parameters."))
       }
 
+      # Validate that all model covariates are present as columns in the
+      # template data. Missing covariates would cause a Rust panic in
+      # `fetch_cov!` and crash the R session, so abort early with a
+      # clear message.
+      model_covs <- tolower(self$model_list$covariates)
+      if (length(model_covs) > 0) {
+        template_data <- if (!is.null(data$standard_data)) data$standard_data else data$data
+        data_cols <- tolower(names(template_data))
+        missing_covs <- setdiff(model_covs, data_cols)
+        if (length(missing_covs) > 0) {
+          cli::cli_abort(c(
+            "x" = "Simulation template is missing model covariate{?s}: {.val {missing_covs}}.",
+            "i" = "Add the missing covariate{?s} to the template data (e.g. via {.fn addEvent}) before simulating."
+          ))
+        }
+      }
+
 
       temp_csv <- tempfile(fileext = ".csv")
       data$save(temp_csv, header = FALSE)
@@ -2184,7 +2201,7 @@ interp <- function(type = "lm") {
 #' @description
 #' `r lifecycle::badge("stable")`
 #'
-#' Plots a [PM_model] based on differential equations using network plots from tidygraph and ggraph packages.
+#' Plots a [PM_model] based on differential equations using ggplot.
 #'
 #' @details
 #' This accepts a [PM_model] object and creates a network plot where nodes are compartments
@@ -2232,7 +2249,7 @@ interp <- function(type = "lm") {
 #' @param ... Not used.
 #' @return A plot object of the model.
 #' @author Markus Hovd, Julian Otalvaro, Michael Neely
-#' @seealso [PM_model], [ggraph::ggraph()], [ggplot2::ggplot()]
+#' @seealso [PM_model], [ggplot2::ggplot()]
 #' @export
 #' @examples
 #' \dontrun{
