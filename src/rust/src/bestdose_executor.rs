@@ -3,7 +3,11 @@ use extendr_api::prelude::*;
 use pmcore::bestdose::{BestDosePosterior, BestDoseResult, DoseRange, Target};
 use pmcore::prelude::{data, ODE};
 use pmcore::routines::initialization::parse_prior;
-use std::path::PathBuf;
+use std::{
+    any::Any,
+    path::PathBuf,
+    sync::{Arc, Mutex},
+};
 
 /// Helper to parse target type from string
 pub(crate) fn parse_target_type(target_str: &str) -> std::result::Result<Target, String> {
@@ -187,6 +191,16 @@ impl BestDosePosteriorHandle {
         let target_enum = parse_target_type(target_type)?;
         let dose_range = DoseRange::new(dose_min, dose_max);
 
+        dbg!(
+            "Starting optimization with target type: {:?}, dose range: [{}, {}], bias weight: {}, time offset: {:?}, target data rows: {}",
+            target_enum,
+            dose_min,
+            dose_max,
+            bias_weight,
+            time_offset,
+            &target_data
+        );
+
         self.posterior
             .optimize(
                 target_data,
@@ -245,6 +259,61 @@ fn dims_to_integers(dim: (i32, i32)) -> std::result::Result<Integers, String> {
 
 fn names_to_strings(names: &[String]) -> Strings {
     Strings::from_values(names.iter().map(|s| s.as_str()))
+}
+
+fn panic_payload_to_string(payload: &(dyn Any + Send)) -> String {
+    if let Some(message) = payload.downcast_ref::<&str>() {
+        (*message).to_string()
+    } else if let Some(message) = payload.downcast_ref::<String>() {
+        message.clone()
+    } else {
+        "panic with non-string payload".to_string()
+    }
+}
+
+fn panic_info_to_string(info: &std::panic::PanicHookInfo<'_>) -> String {
+    let location = info
+        .location()
+        .map(|location| format!("{}:{}", location.file(), location.line()))
+        .unwrap_or_else(|| "unknown location".to_string());
+
+    format!(
+        "{} at {}",
+        panic_payload_to_string(info.payload()),
+        location
+    )
+}
+
+fn run_with_panic_hook<T, F>(context: &'static str, operation: F) -> std::result::Result<T, String>
+where
+    F: FnOnce() -> std::result::Result<T, String>,
+{
+    let panic_message = Arc::new(Mutex::new(None::<String>));
+    let panic_message_for_hook = Arc::clone(&panic_message);
+    let previous_hook = std::panic::take_hook();
+
+    std::panic::set_hook(Box::new(move |info| {
+        let formatted = panic_info_to_string(info);
+        if let Ok(mut slot) = panic_message_for_hook.lock() {
+            *slot = Some(formatted.clone());
+        }
+        tracing::error!(context = context, panic = %formatted, "panic intercepted");
+    }));
+
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(operation));
+    std::panic::set_hook(previous_hook);
+
+    match result {
+        Ok(result) => result,
+        Err(payload) => {
+            let panic_message = panic_message
+                .lock()
+                .ok()
+                .and_then(|slot| slot.clone())
+                .unwrap_or_else(|| panic_payload_to_string(payload.as_ref()));
+            Err(format!("{} panicked: {}", context, panic_message))
+        }
+    }
 }
 
 pub(crate) fn prepare_bestdose_posterior(
@@ -333,21 +402,50 @@ pub(crate) fn bestdose_optimize_internal(
 ) -> Robj {
     let time_offset = time_offset.into_option();
 
-    match handle.try_addr() {
-        Ok(inner) => match inner.optimize(
-            PathBuf::from(target_data_path),
-            time_offset,
-            dose_min,
-            dose_max,
-            bias_weight,
-            target_type,
-        ) {
-            Ok(result) => match convert_bestdose_result_to_r(result) {
-                Ok(robj) => robj,
-                Err(e) => Robj::from(format!("Failed to convert result: {}", e)),
-            },
-            Err(e) => Robj::from(format!("BestDose optimization failed: {}", e)),
-        },
-        Err(e) => Robj::from(format!("Invalid BestDose handle: {}", e)),
+    tracing::info!(
+        target_data_path = target_data_path,
+        time_offset = ?time_offset,
+        dose_min = dose_min,
+        dose_max = dose_max,
+        bias_weight = bias_weight,
+        target_type = target_type,
+        "bestdose_optimize_internal parameters"
+    );
+
+    match run_with_panic_hook("bestdose_optimize_internal", || match handle.try_addr() {
+        Ok(inner) => {
+            tracing::info!(
+                handle = %format!("{:p}", inner as *const BestDosePosteriorHandle),
+                target_data_path = target_data_path,
+                time_offset = ?time_offset,
+                dose_min = dose_min,
+                dose_max = dose_max,
+                bias_weight = bias_weight,
+                target_type = target_type,
+                "bestdose_optimize_internal invoking optimize"
+            );
+
+            match inner.optimize(
+                PathBuf::from(target_data_path),
+                time_offset,
+                dose_min,
+                dose_max,
+                bias_weight,
+                target_type,
+            ) {
+                Ok(result) => match convert_bestdose_result_to_r(result) {
+                    Ok(robj) => Ok(robj),
+                    Err(e) => Ok(Robj::from(format!("Failed to convert result: {}", e))),
+                },
+                Err(e) => Ok(Robj::from(format!("BestDose optimization failed: {}", e))),
+            }
+        }
+        Err(e) => {
+            tracing::error!(handle_error = %e, "bestdose_optimize_internal received an invalid handle");
+            Ok(Robj::from(format!("Invalid BestDose handle: {}", e)))
+        }
+    }) {
+        Ok(robj) => robj,
+        Err(e) => Robj::from(format!("BestDose optimization panicked: {}", e)),
     }
 }
