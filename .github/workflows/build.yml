@@ -2,21 +2,23 @@ name: R Package Check
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.os }}
     env:
-      PAK_FORCE_SOURCE_INSTALL: true
-      PAK_IGNORE_PLATFORM: true
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
     steps:
       - uses: actions/checkout@v4
 
@@ -26,7 +28,19 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: "src/rust -> target"
+          workspaces: ". -> target"
+          cache-on-failure: true
+          cache-all-crates: true
+
+      - name: Warm Cargo registry (pre-fetch dependencies)
+        shell: bash
+        run: |
+          # R CMD check copies the package to a throwaway dir and rebuilds
+          # Rust from scratch there, so target/ artifacts can't be reused.
+          # But ~/.cargo/registry and ~/.cargo/git ARE reused via the cache
+          # above. Pre-fetching here populates that registry so the in-check
+          # build skips all network/index work and resolves instantly.
+          cargo fetch --manifest-path src/rust/Cargo.toml
 
       - name: Set up Pandoc
         uses: r-lib/actions/setup-pandoc@v2
@@ -55,6 +69,7 @@ jobs:
           needs: check
 
       - name: Verify roxygen outputs are current
+        if: runner.os == 'Linux'
         run: |
           Rscript -e 'roxygen2::roxygenise()'
           if ! git diff --quiet man NAMESPACE inst/NEWS.Rd 2>/dev/null; then
@@ -67,4 +82,4 @@ jobs:
       - name: Check package
         uses: r-lib/actions/check-r-package@v2
         with:
-          error-on: '"error"'
+          error-on: "\"error\""
