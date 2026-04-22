@@ -2,9 +2,9 @@ name: R Package Check
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   R-CMD-check:
@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
     steps:
       - uses: actions/checkout@v4
 
@@ -26,7 +26,9 @@ jobs:
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: "src/rust -> target"
+          workspaces: ". -> target"
+          cache-on-failure: true
+          cache-all-crates: true
 
       - name: Set up Pandoc
         uses: r-lib/actions/setup-pandoc@v2
@@ -55,6 +57,7 @@ jobs:
           needs: check
 
       - name: Verify roxygen outputs are current
+        if: runner.os == 'Linux'
         run: |
           Rscript -e 'roxygen2::roxygenise()'
           if ! git diff --quiet man NAMESPACE inst/NEWS.Rd 2>/dev/null; then
@@ -67,4 +70,4 @@ jobs:
       - name: Check package
         uses: r-lib/actions/check-r-package@v2
         with:
-          error-on: '"error"'
+          error-on: "\"error\""
