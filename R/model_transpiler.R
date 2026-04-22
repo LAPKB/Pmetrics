@@ -240,9 +240,9 @@ expr_to_rust <- function(
     # If
     "if" = {
       cond <- rust_args[[1]]
-      then_code <- expr_to_rust(args[[2]], params, covs, declared, index_mode = index_mode)
+      then_code <- expr_to_rust(args[[2]], params, covs, declared)
       if (length(args) == 3) {
-        else_code <- expr_to_rust(args[[3]], params, covs, declared, index_mode = index_mode)
+        else_code <- expr_to_rust(args[[3]], params, covs, declared)
         sprintf("if %s { %s } else { %s };", cond, then_code, else_code)
       } else {
         sprintf("if %s { %s };", cond, then_code)
