@@ -775,7 +775,7 @@ PM_sim <- R6::R6Class(
         if (length(covariate) == 0 || !"cov" %in% names(covariate)) {
           if (inherits(poppar, "PM_result")) {
             covariate$cov <- poppar$cov
-            msg <- c(msg, "Covariate statistics obtained from {deparse(substitute(poppar))}}$cov}.")
+            msg <- c(msg, "Covariate statistics obtained from {.code PM_result$cov}.")
           } else {
             cli::cli_abort(c(
               "x" = "The {.arg covariate$cov} argument must be supplied if `poppar` is not a {.fn PM_result} object.",
