@@ -30,6 +30,16 @@ jobs:
           cache-on-failure: true
           cache-all-crates: true
 
+      - name: Warm Cargo registry (pre-fetch dependencies)
+        shell: bash
+        run: |
+          # R CMD check copies the package to a throwaway dir and rebuilds
+          # Rust from scratch there, so target/ artifacts can't be reused.
+          # But ~/.cargo/registry and ~/.cargo/git ARE reused via the cache
+          # above. Pre-fetching here populates that registry so the in-check
+          # build skips all network/index work and resolves instantly.
+          cargo fetch --manifest-path src/rust/Cargo.toml
+
       - name: Set up Pandoc
         uses: r-lib/actions/setup-pandoc@v2
 
