@@ -2624,7 +2624,7 @@ server <- function(input, output, session) {
 
           if (sim_line) { # yes have line
             if (!def_sim_line_fmt) { # not default format?
-              line <- list(probs = sim_probs, color = sim_col, width = sim_lwd, dash = sim_dash)
+              line <- list(probs = as.numeric(sim_probs), color = sim_col, width = sim_lwd, dash = sim_dash)
               line <- line[!line %in% def_sim_args] # keep only non-defaults
               if (length(line) == 0) line <- TRUE
             } else { # default format
@@ -2772,7 +2772,6 @@ server <- function(input, output, session) {
             "obs = \"(\\S+)\"",
             "obs = \\1"
           )
-
 
           p <- do_plot(args)
           if (code) {

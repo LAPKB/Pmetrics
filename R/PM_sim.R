@@ -2281,8 +2281,8 @@ plot.PM_sim <- function(
     lconfint <- tapply(sim$out, sim$time, function(x) sort(x)[lower_confint(length(x))])
     uconfint <- tapply(sim$out, sim$time, function(x) sort(x)[upper_confint(length(x))])
 
-    sim_quant_df$lowerCI <- unlist(lconfint)
-    sim_quant_df$upperCI <- unlist(uconfint)
+    sim_quant_df$lowerCI <- as.numeric(unlist(lconfint))
+    sim_quant_df$upperCI <- as.numeric(unlist(uconfint))
 
     # plot main data
     p <- sim_quant_df %>%
