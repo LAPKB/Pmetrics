@@ -102,7 +102,8 @@ bd <- R6::R6Class(
                               max_cycles = 500,
                               settings = NULL,
                               posterior = NULL,
-                              quiet = FALSE) {
+                              quiet = FALSE,
+                              simulate = FALSE) {
             if (!is.null(future)) {
                 if (is.list(future)) {
                     future_spec <- private$.build_future_data(future)
@@ -157,8 +158,11 @@ bd <- R6::R6Class(
                 private$.extend_past_to_start(self$start_offset)
             }
 
-            private$.sim_past()
-            private$.sim_future()
+            if (simulate) {
+                cli::cli_alert("Simulating predictions for past and future data...")
+                private$.sim_past()
+                private$.sim_future()
+            }
 
             invisible(self)
         },
