@@ -193,6 +193,7 @@ ui <- fluidPage(
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
         background-color: #f8f9fa;
       }
+  
       .well {
         background-color: #ffffff;
         border: 1px solid #e9ecef;
@@ -409,7 +410,8 @@ ui <- fluidPage(
             div(class = "btn-row",
                 actionButton("param_add_row", "Add", icon = icon("plus"), class = "btn-sm btn-outline-secondary"),
                 actionButton("param_del_row", "Delete", icon = icon("trash"), class = "btn-sm btn-outline-danger"),
-                actionButton("save_params_csv", "Save", icon = icon("download"), class = "btn-sm btn-outline-success")
+                #actionButton("save_params_csv", "Save", icon = icon("download"), class = "btn-sm btn-outline-success"),
+                downloadButton("download_params_csv", "Save", icon = icon("download"), class = "btn-sm btn-outline-success")
             ),
             tags$small(
               actionLink("load_defaults", "Load example", style = "color: #6c757d;")
@@ -586,7 +588,7 @@ server <- function(input, output, session) {
       selection = "multiple",
       rownames = FALSE,
       editable = list(target = "cell", disable = list(columns = c())), 
-      options = list(dom = 't', scrollX = TRUE, pageLength = 8)
+      options = list(dom = 'tip', scrollX = TRUE, pageLength = 8)
     )
   })
 
@@ -691,70 +693,51 @@ server <- function(input, output, session) {
     edges_tbl(default_corr_edges)
   }, ignoreInit = TRUE)
   
-  # --- SAVE PARAMETERS CSV ---
-  observeEvent(input$save_params_csv, {
-    save_path <- tcltk::tk_getSaveFile(
-      initialdir = getwd(),
-      initialfile = "parameters.csv",
-      title = "Save Parameters",
-      filetypes = "{{CSV Files} {.csv}} {{All Files} {*}}"
-    )
-    
-    if (length(save_path) > 0 && nchar(as.character(save_path)) > 0) {
-      if (!grepl("\\.csv$", save_path, ignore.case = TRUE)) {
-        save_path <- paste0(save_path, ".csv")
-      }
-      tryCatch({
-        readr::write_csv(params_tbl(), save_path)
-        showNotification(paste("Parameters saved to:", save_path), type = "message")
-      }, error = function(e) {
-        showNotification(paste("Error saving file:", e$message), type = "error")
-      })
+  # --- SAVE PARAMETERS CSV (downloadHandler) ---
+  output$download_params_csv <- downloadHandler(
+    filename = function() {
+      "parameters.csv"
+    },
+    content = function(file) {
+      readr::write_csv(params_tbl(), file)
     }
-  })
+  )
   
-  # --- SAVE CORRELATIONS CSV ---
-  observeEvent(input$save_corr_csv, {
-    save_path <- tcltk::tk_getSaveFile(
-      initialdir = getwd(),
-      initialfile = "correlations.csv",
-      title = "Save Correlations",
-      filetypes = "{{CSV Files} {.csv}} {{All Files} {*}}"
-    )
-    
-    if (length(save_path) > 0 && nchar(as.character(save_path)) > 0) {
-      if (!grepl("\\.csv$", save_path, ignore.case = TRUE)) {
-        save_path <- paste0(save_path, ".csv")
-      }
-      tryCatch({
-        readr::write_csv(edges_tbl(), save_path)
-        showNotification(paste("Correlations saved to:", save_path), type = "message")
-      }, error = function(e) {
-        showNotification(paste("Error saving file:", e$message), type = "error")
-      })
+  # --- SAVE CORRELATIONS CSV (downloadHandler) ---
+  output$download_corr_csv <- downloadHandler(
+    filename = function() {
+      "correlations.csv"
+    },
+    content = function(file) {
+      readr::write_csv(edges_tbl(), file)
     }
-  })
+  )
 
   observeEvent(input$param_file, {
     req(input$param_file)
     df <- readr::read_csv(input$param_file$datapath, show_col_types = FALSE)
-    
+
     # Expected column names based on current settings
     iiv_col <- if (input$iiv_input_type == "omega2") "omega2_iiv" else "cv_iiv"
     theta_unc_col <- if (input$rse_input_type == "se") "se_theta" else "rse_theta"
     iiv_unc_col <- if (input$rse_input_type == "se") "se_iiv" else "rse_iiv"
-    
+
     need_cols <- c("param", "theta", theta_unc_col, iiv_col, iiv_unc_col)
     miss <- setdiff(need_cols, names(df))
-    validate(need(length(miss) == 0, paste("Missing columns in parameters CSV:", paste(miss, collapse=", "),
-                                           "\nExpected:", paste(need_cols, collapse=", "))))
-    
+    if (length(miss) > 0) {
+      showNotification(
+        paste0("Error: Missing columns in parameters CSV: ", paste(miss, collapse=", "),
+               "\nExpected: ", paste(need_cols, collapse=", ")), type = "error", duration = 8
+      )
+      return()
+    }
+
     # Rename to internal standard names
     df <- df |>
       rename(rse_theta = !!theta_unc_col, cv_iiv = !!iiv_col, rse_iiv = !!iiv_unc_col) |>
       mutate(param = as.character(param)) |>
       mutate(across(c(theta, rse_theta, cv_iiv, rse_iiv), as.numeric))
-    
+
     # Add min/max columns if missing, with defaults
     if (!"min" %in% names(df)) {
       df$min <- 0
@@ -768,6 +751,7 @@ server <- function(input, output, session) {
     }
     df <- df |> arrange(param)
     params_tbl(df)
+    showNotification("Parameters updated from uploaded CSV.", type = "message", duration = 4)
     updateRadioButtons(session, "param_mode", selected = "manual")
   }, ignoreInit = TRUE)
 
