@@ -80,7 +80,8 @@ across multiple optimizations, use \code{bd_post$new()} followed by \verb{$optim
   max_cycles = 500,
   settings = NULL,
   posterior = NULL,
-  quiet = FALSE
+  quiet = FALSE,
+  simulate = FALSE
 )}\if{html}{\out{</div>}}
 }
 
