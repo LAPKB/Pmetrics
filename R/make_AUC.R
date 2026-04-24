@@ -168,7 +168,7 @@ make_AUC <- function(data = NULL,
           sum(diffTimes[(tmax + 1):(N - 1)] * diffConc[(tmax + 1):(N - 1)] / logConc[(tmax + 1):(N - 1)])
         )
       }
-      
+  
       return(auc)
     }
     
@@ -181,7 +181,7 @@ make_AUC <- function(data = NULL,
     
     # reorder according to original
     AUCdf <- AUCdf[match(unique(data3[[group]]), AUCdf[[group]]), ]
-    
+    browser()
     return(AUCdf)
   }
 
