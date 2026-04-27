@@ -118,21 +118,23 @@ make_AUC <- function(data = NULL,
     if (!"icen" %in% names(data2)) data2$icen <- "median" # add icen if missing
     if (is.null(include)) include <- unique(data2[[group]])
     if (is.null(exclude)) exclude <- NA
-    
-    group_sym <- rlang::sym(group)
+
+    group_vars <- c(group, "outeq", "block")
+    if ("nsim" %in% names(data2)) group_vars <- c(group_vars, "nsim")
+    group_syms <- rlang::syms(group_vars)
     # filter to create object to pass to auc calculation
     data3 <- data2 %>%
-    dplyr::filter(
-      outeq == !!outeq,
-      block == !!block,
-      !!group_sym %in% include,
-      !(!!group_sym) %in% exclude,
-      time >= start & time <= end,
-      icen == !!icen,
-      !is.na(out)
-    ) %>%
-    dplyr::select(!!group_sym, time, out) %>%
-    dplyr::group_by(!!group_sym)
+      dplyr::filter(
+        outeq == !!outeq,
+        block == !!block,
+        !!rlang::sym(group) %in% include,
+        !(!!rlang::sym(group)) %in% exclude,
+        time >= start & time <= end,
+        icen == !!icen,
+        !is.na(out)
+      ) %>%
+      dplyr::select(dplyr::all_of(c(group_vars, "time", "out"))) %>%
+      dplyr::group_by(!!!group_syms)
     
     if (nrow(data3) < 2) {
       cli::cli_warn(c("!" = "You have selected fewer than 2 rows in your data.", "i" = "Check the values of {.code include}, {.code exclude}, {.code outeq}, {.code block}, {.code start}, and {.code end}."))
@@ -168,20 +170,23 @@ make_AUC <- function(data = NULL,
           sum(diffTimes[(tmax + 1):(N - 1)] * diffConc[(tmax + 1):(N - 1)] / logConc[(tmax + 1):(N - 1)])
         )
       }
-      
+  
       return(auc)
     }
     
     # calculate AUC
-    AUCdf <- tidyr::nest(data3, pk = !(!!group_sym)) %>%
-    dplyr::mutate(tau = sapply(pk, get_auc, addZero, method)) %>%
-    dplyr::select(!!group_sym, tau)
-    
+    AUCdf <- tidyr::nest(data3, pk = -dplyr::all_of(group_vars)) %>%
+      dplyr::mutate(tau = sapply(pk, get_auc, addZero, method)) %>%
+      dplyr::select(dplyr::all_of(group_vars), tau)
+
+    # Reorder AUCdf to match the order of id (or group) in the input data
+    # Only applies if group is present in both
+    if (group %in% names(AUCdf) && group %in% names(data2)) {
+      id_order <- unique(data3[[group]])
+      AUCdf <- AUCdf[match(AUCdf[[group]], id_order), , drop = FALSE]
+    }
+
     class(AUCdf) <- c("PMauc", class(AUCdf))
-    
-    # reorder according to original
-    AUCdf <- AUCdf[match(unique(data3[[group]]), AUCdf[[group]]), ]
-    
     return(AUCdf)
   }
 

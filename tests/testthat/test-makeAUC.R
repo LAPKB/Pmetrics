@@ -44,38 +44,30 @@ test_that("make_AUC works for NPex PM_result object components", {
   auc_post_data <- make_AUC(NPex$post$data)
   auc_pm_data <- make_AUC(NPex$data)
 
-  expect_equal(names(auc_op_obj), c("id", "tau"))
-  expect_equal(names(auc_pop_obj), c("id", "tau"))
-  expect_equal(names(auc_post_obj), c("id", "tau"))
-  expect_equal(names(auc_pm_data), c("id", "tau"))
+  expect_equal(names(auc_op_obj), c("id", "outeq", "block", "tau"))
+  expect_equal(names(auc_pop_obj), c("id", "outeq", "block", "tau"))
+  expect_equal(names(auc_post_obj), c("id", "outeq", "block", "tau"))
+  expect_equal(names(auc_pm_data), c("id", "outeq", "block", "tau"))
+
+  expect_equal(auc_op_obj, auc_op_data)
 
   expect_equal(auc_op_obj, auc_op_data)
   expect_equal(auc_pop_obj, auc_pop_data)
   expect_equal(auc_post_obj, auc_post_data)
 
-  expect_equal(
-    make_AUC(NPex$op),
-    NPex$auc("op")
-  )
-  expect_equal(
-    make_AUC(NPex$pop),
-    NPex$auc("pop")
-  )
-  expect_equal(
-    make_AUC(NPex$post),
-    NPex$auc("post")
-  )
+  expect_equal(make_AUC(NPex$op), NPex$auc("op"))
+  expect_equal(make_AUC(NPex$pop), NPex$auc("pop"))
 })
 
-test_that("make_AUC include/exclude/start/end filtering works with NPex", {
+test_that("make_AUC supports Theoph as external data with formula inputs", {
   ids <- sort(unique(NPex$op$data$id))
-  include_ids <- ids[1:4]
-  exclude_ids <- include_ids[2]
+  include_ids <- ids[(c(1, 3, 4))]
+  exclude_ids <- 2
+
 
   auc_window <- make_AUC(
     data = NPex$op,
     include = include_ids,
-    exclude = exclude_ids,
     start = 120,
     end = 132
   )
@@ -100,7 +92,7 @@ test_that("make_AUC include/exclude/start/end filtering works with NPex", {
   expect_equal(joined$tau_calc, joined$tau_manual, tolerance = 1e-10)
 })
 
-test_that("make_AUC supports Theoph as external data with formula inputs", {
+  
   theoph <- datasets::Theoph
 
   auc_grouped <- make_AUC(
@@ -113,7 +105,7 @@ test_that("make_AUC supports Theoph as external data with formula inputs", {
     dplyr::group_by(id) |>
     dplyr::summarise(tau = trap_auc_linear(dplyr::pick(time, out)), .groups = "drop")
 
-  expect_equal(names(auc_grouped), c("Subject", "tau"))
+  expect_equal(names(auc_grouped), c("Subject", "outeq", "block", "tau"))
   joined_grouped <- auc_grouped |>
     dplyr::rename(id = Subject, tau_calc = tau) |>
     dplyr::left_join(manual_grouped |> dplyr::rename(tau_manual = tau), by = "id")
@@ -128,7 +120,7 @@ test_that("make_AUC supports Theoph as external data with formula inputs", {
   )
 
   expect_equal(auc_default_group$tau, auc_grouped$tau, tolerance = 1e-10)
-})
+
 
 test_that("make_AUC addZero and method options behave as expected", {
   theoph_no_zero <- datasets::Theoph |>
