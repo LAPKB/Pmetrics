@@ -77,7 +77,7 @@ Encoding: UTF-8
 VignetteBuilder: knitr
 LazyData: true
 LazyDataCompression: xz
-Config/rextendr/version: 0.4.2
+Config/rextendr/version: 0.5.0
 Config/testthat/edition: 3
 Config/Needs/website: 
     r-lib/pkgdown,

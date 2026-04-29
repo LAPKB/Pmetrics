@@ -23,4 +23,3 @@ Result of the fitting process.
 \description{
 Fits the model at the given path to the data at the given path using the provided parameters.
 }
-\keyword{internal}

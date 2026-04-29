@@ -63,7 +63,7 @@ inst/Learn/_freeze/
 data-raw/Runs/
 tests/testthat/Runs/
 Examples
-!inst/Examples/
+inst/Examples/
 Experimental
 other/
 1
@@ -85,3 +85,4 @@ src/Makevars.win
 
 # Old files
 Archived
+

@@ -17,4 +17,3 @@ List of model parameters.
 \description{
 Retrieves the model parameters from the compiled model at the given path.
 }
-\keyword{internal}

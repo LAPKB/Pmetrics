@@ -15,4 +15,3 @@ Path to the build directory.
 \description{
 Dummy function to cache compilation artifacts.
 }
-\keyword{internal}

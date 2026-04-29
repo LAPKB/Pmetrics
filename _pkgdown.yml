@@ -51,6 +51,8 @@ reference:
   - PM_load
   - PM_result
   - PM_valid
+  - bd
+  - bd_post
 - title: Project management
   desc: Functions for project management and workflow
 - contents:
