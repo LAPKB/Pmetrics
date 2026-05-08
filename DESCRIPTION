@@ -1,84 +1,93 @@
-Package: Pmetrics
-License: GPL (>= 3)
-Title: Pmetrics for Population Modeling and Simulation
 Type: Package
-Roxygen: list(markdown = TRUE)
-Description: Pmetrics is short for pharmacometrics, the discipline of modeling drug kinetics and effects on biologic systems, including disease progression. Models can be used to simulate novel therapeutic dosing regimens and/or populations, informing trial design and dosing strategies. The package supports primarily non-parametric but also parametric pharmacometric modeling and simulation with functions to run and analyze the output from all three components of the Pmetrics software suite for population pharmacometric data analysis: 1) IT2B (Iterative Two-Stage Bayesian) for parametric models; 2) NPAG (Non-parametric Adaptive Grid) for non-paramametric models; 3) Simulator for semi-parametric Monte-Carlo simulations. 
-Authors@R: c(
-  person("Michael", "Neely", email = "mneely@usc.edu", role = c("aut", "cre")),
-  person("Julián", "Otálvaro", email = "juliandavid347@gmail.com", role = "aut"),
-  person("Markus", "Hovd", email = "", role = "aut"),
-  person("Walter", "Yamada", email = "", role= "ctb"),
-  person("Alan", "Schumitzky", email = "", role = "ctb"),
-  person("Rong", "Chen", email = "", role = "ctb"),
-  person("Michael", "van Guilder", email = "", role = "ctb"),
-  person("David", "Bayard", email = "", role = "ctb"),
-  person("Robert", "Leary", email = "", role = "ctb")
-    )
+Package: Pmetrics
+Title: Pmetrics for Population Modeling and Simulation
 Version: 3.1.3
+Authors@R: c(
+    person("Michael", "Neely", , "mneely@usc.edu", role = c("aut", "cre")),
+    person("Julián", "Otálvaro", , "juliandavid347@gmail.com", role = "aut"),
+    person("Markus", "Hovd", role = "aut"),
+    person("Walter", "Yamada", role = "ctb"),
+    person("Alan", "Schumitzky", role = "ctb"),
+    person("Rong", "Chen", role = "ctb"),
+    person("Michael", "van Guilder", role = "ctb"),
+    person("David", "Bayard", role = "ctb"),
+    person("Robert", "Leary", role = "ctb")
+  )
+Description: Pmetrics is short for pharmacometrics, the discipline of
+    modeling drug kinetics and effects on biologic systems, including
+    disease progression. Models can be used to simulate novel therapeutic
+    dosing regimens and/or populations, informing trial design and dosing
+    strategies. The package supports primarily non-parametric but also
+    parametric pharmacometric modeling and simulation with functions to
+    run and analyze the output from all three components of the Pmetrics
+    software suite for population pharmacometric data analysis: 1) IT2B
+    (Iterative Two-Stage Bayesian) for parametric models; 2) NPAG
+    (Non-parametric Adaptive Grid) for non-paramametric models; 3)
+    Simulator for semi-parametric Monte-Carlo simulations.
+License: GPL (>= 3)
 URL: https://lapkb.github.io/Pmetrics/
 BugReports: https://github.com/LAPKB/Pmetrics/issues
-SystemRequirements: Cargo (>= 1.82) (Rust's package manager), rustc
 Depends: 
     R (>= 4.2)
 Imports:
     bslib,
     cli,
+    clipr,
     crayon,
-    DT,
     dplyr,
+    DT,
     flextable,
     fs,
     ggplot2,
+    glue,
+    graphics,
+    grDevices,
+    grid,
+    htmltools,
     htmlwidgets,
     jsonlite,
+    knitr,
     lifecycle,
     lubridate,
     magrittr,
     MASS,
+    mclust,
+    npde,
     openxlsx,
     pander,
     plotly,
+    progress,
     purrr,
     R6,
+    RColorBrewer,
     readr,
-    remotes,
+    reticulate,
     rlang,
     rmarkdown,
+    rstudioapi,
     shiny,
     stats,
     stringr,
     tibble,
     tidyr,
+    tools,
     trelliscopejs,
+    TruncatedNormal,
     utils,
-    glue
-Suggests:
-    clipr,
-    data.table,
-    devtools,
-    ggpubr,
-    gt,
-    htmltools,
-    knitr,
-    mclust,
-    npde,
-    pandoc,
-    progress,
-    quarto,
-    RColorBrewer,
-    RcppTOML,
-    rstudioapi,
-    reticulate,
-    testthat,
     withr
-RoxygenNote: 7.3.3
-Encoding: UTF-8
-VignetteBuilder: knitr
-LazyData: true
-LazyDataCompression: xz
+Suggests:
+    covr,
+    datasets,
+    pkgdown,
+    testthat
+VignetteBuilder: 
+    knitr
+Config/Needs/website: r-lib/pkgdown, quarto
 Config/rextendr/version: 0.4.2
 Config/testthat/edition: 3
-Config/Needs/website: 
-    r-lib/pkgdown,
-    quarto
+Encoding: UTF-8
+LazyData: true
+LazyDataCompression: xz
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+SystemRequirements: Cargo (>= 1.82) (Rust's package manager), rustc

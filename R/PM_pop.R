@@ -385,7 +385,7 @@ plot.PM_pop <- function(
     if (!all(is.na(allsub$group)) && any(allsub$group != "")) { # there was grouping
       n_colors <- length(levels(allsub$group))
       if (!is.null(user_color)) {
-        if (length(user_color) == 1 && checkRequiredPackages("RColorBrewer") &&
+        if (length(user_color) == 1 && requireNamespace("RColorBrewer", quietly = TRUE) &&
             user_color %in% rownames(RColorBrewer::brewer.pal.info)) {
           max_colors <- RColorBrewer::brewer.pal.info[user_color, "maxcolors"]
           colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, user_color))(n_colors)
@@ -394,7 +394,7 @@ plot.PM_pop <- function(
         }
       } else if (n_colors == 1) {
         colors <- rep(marker$color[[1]], n_colors)
-      } else if (checkRequiredPackages("RColorBrewer")) {
+      } else   if (requireNamespace("RColorBrewer", quietly = TRUE)) {
         n_pal <- min(max(n_colors, 3L), 9L)
         colors <- rep(RColorBrewer::brewer.pal(n_pal, "Set1"), length.out = n_colors)
       } else {
@@ -445,7 +445,7 @@ plot.PM_pop <- function(
     if (print) print(p)
   } else { # overlay = FALSE, ie. split them
 
-    if (!checkRequiredPackages("trelliscopejs")) {
+    if (!requireNamespace("trelliscopejs", quietly = TRUE)) {
       cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
     }
     sub_split <- x %>%
