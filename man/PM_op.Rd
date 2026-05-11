@@ -34,159 +34,162 @@ allows you to access them in an S3 way, e.g. \code{run1$op$time} if \code{run1} 
 Michael Neely, Julian Otalvaro
 }
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{id}}{subject identification}
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{id}}{subject identification}
 
-\item{\code{time}}{observation time in relative units, usually hours}
+    \item{\code{time}}{observation time in relative units, usually hours}
 
-\item{\code{obs}}{observation}
+    \item{\code{obs}}{observation}
 
-\item{\code{cens}}{censoring information: "none" for observed, "bloq" for below limit of quantification, "aloq" for above limit of quantification}
+    \item{\code{cens}}{censoring information: "none" for observed, "bloq" for below limit of quantification, "aloq" for above limit of quantification}
 
-\item{\code{pred}}{prediction}
+    \item{\code{pred}}{prediction}
 
-\item{\code{pred.type}}{Population predictions based on Bayesian prior parameter value distribution,
+    \item{\code{pred.type}}{Population predictions based on Bayesian prior parameter value distribution,
 or individual predictions based on Bayesian posterior parameter value distributions}
 
-\item{\code{icen}}{Predictions based on mean or median of Bayesian \code{pred.type}parameter values}
+    \item{\code{icen}}{Predictions based on mean or median of Bayesian \code{pred.type}parameter values}
 
-\item{\code{outeq}}{output equation number}
+    \item{\code{outeq}}{output equation number}
 
-\item{\code{block}}{dosing block number for each subject, as defined by dose resets (evid=4).}
+    \item{\code{block}}{dosing block number for each subject, as defined by dose resets (evid=4).}
 
-\item{\code{obsSD}}{standard deviation of the observation based on the assay error polynomial}
+    \item{\code{obsSD}}{standard deviation of the observation based on the assay error polynomial}
 
-\item{\code{d}}{prediction error, \code{pred} - \code{obs}}
+    \item{\code{d}}{prediction error, \code{pred} - \code{obs}}
 
-\item{\code{ds}}{squared prediction error}
+    \item{\code{ds}}{squared prediction error}
 
-\item{\code{wd}}{weighted prediction error, which is the prediction error divided by the \code{obsSD}}
+    \item{\code{wd}}{weighted prediction error, which is the prediction error divided by the \code{obsSD}}
 
-\item{\code{wds}}{weighted squared prediction error}
+    \item{\code{wds}}{weighted squared prediction error}
 
-\item{\code{data}}{A data frame of class \strong{PM_op_data} combining all the above fields as its columns}
-}
-\if{html}{\out{</div>}}
+    \item{\code{data}}{A data frame of class \strong{PM_op_data} combining all the above fields as its columns}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-PM_op-new}{\code{PM_op$new()}}
-\item \href{#method-PM_op-plot}{\code{PM_op$plot()}}
-\item \href{#method-PM_op-summary}{\code{PM_op$summary()}}
-\item \href{#method-PM_op-auc}{\code{PM_op$auc()}}
-\item \href{#method-PM_op-clone}{\code{PM_op$clone()}}
-}
+  \itemize{
+    \item \href{#method-PM_op-initialize}{\code{PM_op$new()}}
+    \item \href{#method-PM_op-plot}{\code{PM_op$plot()}}
+    \item \href{#method-PM_op-summary}{\code{PM_op$summary()}}
+    \item \href{#method-PM_op-auc}{\code{PM_op$auc()}}
+    \item \href{#method-PM_op-clone}{\code{PM_op$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_op-new"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_op-new}{}}}
-\subsection{Method \code{new()}}{
-Create new object populated with observed vs. predicted data
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_op$new(PMdata = NULL, path = ".", ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
+\if{html}{\out{<a id="method-PM_op-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_op-initialize}{}}}
+\subsection{\code{PM_op$new()}}{
+  Create new object populated with observed vs. predicted data
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_op$new(PMdata = NULL, path = ".", ...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
 .}
-
-\item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
+      \item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
 .}
-
-\item{\code{...}}{Not currently used.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-Creation of new \code{PM_op} object is automatic at the end of a run and not generally necessary
+      \item{\code{...}}{Not currently used.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    Creation of new \code{PM_op} object is automatic at the end of a run and not generally necessary
 for the user to do.
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_op-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_op-plot}{}}}
-\subsection{Method \code{plot()}}{
-Plot method
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_op$plot(...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_op$plot()}}{
+  Plot method
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_op$plot(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Arguments passed to \link{plot.PM_op}}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    See \link{plot.PM_op}.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments passed to \link{plot.PM_op}}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-See \link{plot.PM_op}.
-}
-
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_op-summary"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_op-summary}{}}}
-\subsection{Method \code{summary()}}{
-Summary method
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_op$summary(...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_op$summary()}}{
+  Summary method
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_op$summary(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Arguments passed to \link{summary.PM_op}}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    See \link{summary.PM_op}.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments passed to \link{summary.PM_op}}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-See \link{summary.PM_op}.
-}
-
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_op-auc"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_op-auc}{}}}
-\subsection{Method \code{auc()}}{
-Calculate AUC
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_op$auc(...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_op$auc()}}{
+  Calculate AUC
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_op$auc(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Arguments passed to \link{make_AUC}}
+      \item{\code{data}}{The object to use for AUC calculation}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    See \link{make_AUC}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments passed to \link{make_AUC}}
-
-\item{\code{data}}{The object to use for AUC calculation}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-See \link{make_AUC}
-}
-
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_op-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_op-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_op$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{PM_op$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_op$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

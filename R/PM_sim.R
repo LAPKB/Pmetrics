@@ -862,6 +862,14 @@ PM_sim <- R6::R6Class(
 
     #' @description
     #' `r lifecycle::badge("stable")`
+    #' Calculate optimal sampling times
+    #' @param ... Additional parameters, refer to [PM_opt]
+    opt = function(...) {
+      PM_opt$new(self, ...)
+    },
+
+    #' @description
+    #' `r lifecycle::badge("stable")`
     #' Estimates the Probability of Target Attaintment (PTA), based on the results
     #' of the current Simulation.
     #' @param ... Additional parameters, refer to [PM_pta].
@@ -2176,7 +2184,6 @@ plot.PM_sim <- function(
       "i" = "See help for {.fn PM_sim}."
     ))
   }
-
 
   # include/exclude template ids
   if (missing(include)) include <- unique(simout$obs$id)

@@ -99,7 +99,17 @@ PM_valid <- R6::R6Class(
     #'
     #' @export
     initialize = function(result, tad = FALSE, binCov, doseC, timeC, tadC, limits, ...) {
-      checkRequiredPackages(c("mclust", "npde"))
+      if (requireNamespace("mclust", quietly = TRUE) && requireNamespace("npde", quietly = TRUE)) {
+        require(mclust, quietly = TRUE)
+        require(npde, quietly = TRUE)
+      } else {
+        cli::cli_abort(c(
+          "x" = "Packages {.pkg mclust} and {.pkg npde} are required to create a PM_valid object.",
+          "i" = "Install these packages and try again."
+        ))
+      }
+      
+      
 
       if (!inherits(result, "PM_result")) {
         cli::cli_abort(c(
@@ -337,14 +347,6 @@ PM_valid <- R6::R6Class(
   ), # end public
   private = list(
     make = function(result, tad = F, binCov, doseC, timeC, tadC, limits, ...) {
-      # verify packages used in this function
-      if (!checkRequiredPackages(c("mclust", "npde"), quietly = FALSE)) {
-        return(invisible(NULL))
-      } else {
-        require(mclust, quietly = TRUE)
-        require(npde, quietly = TRUE)
-      }
-
       # save current wd
       currwd <- getwd()
 
@@ -824,6 +826,10 @@ PM_valid <- R6::R6Class(
       }
 
       # now set the cluster bins
+      dataSub$dcBin <- NA_integer_
+      dataSub$timeBin <- NA_integer_
+      dataSub$tadBin <- NA_integer_
+
       dcClusters <- stats::kmeans(dataSubDC, centers = clamp_centers(dataSubDC, doseC), nstart = 50)
       dataSub$dcBin[dataSub$evid > 0] <- dcClusters$cluster # m=dose,covariate bins
 
@@ -1611,9 +1617,6 @@ plot.PM_valid <- function(x,
   }
 
   if (type == "npde") {
-    if (!checkRequiredPackages("npde", quietly = FALSE)) {
-      return(invisible(NULL))
-    }
     if (!tad) {
       if (is.null(x$npde)) stop("No npde object found.  Re-run $validate or make_valid.\n")
       if (inherits(x$npde[[outeq]], "NpdeObject")) {
@@ -1691,12 +1694,7 @@ plot.PMvalid <- function(x, type = "vpc", tad = FALSE, icen = "median", outeq = 
                          col.obs.ci = "blue", col.obs.med = "red", col.sim.ci = "dodgerblue", col.sim.med = "lightpink",
                          axis.x = NULL,
                          axis.y = NULL, ...) {
-  # parse dots
-  # arglist <- list(...)
-  # names_theme <- names(formals(ggplot2::theme)) #check for elements of ggplot2::theme
-  # argsTheme <- arglist[which(names(arglist) %in% names_theme)]
 
-  # checkRequiredPackages("ggplot2")
   if (outeq > max(x$opDF$outeq)) {
     stop(paste("Your data do not contain", outeq, "output equations.\n"))
   }

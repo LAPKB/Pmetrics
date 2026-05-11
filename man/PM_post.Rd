@@ -37,9 +37,9 @@ powerful approach to data manipulation upon which Pmetrics is built.
 Michael Neely, Julian Otalvaro
 }
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{data}}{A data frame with the following columns:
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{data}}{A data frame with the following columns:
 \itemize{
 \item \strong{id} Subject id
 \item \strong{time} Time of predictions in decimal hours
@@ -48,128 +48,131 @@ Michael Neely, Julian Otalvaro
 \item \strong{pred} Predicted output for each outeq
 \item \strong{block} Observation blocks within subjects as defined by \emph{EVID=4} dosing events
 }}
-}
-\if{html}{\out{</div>}}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-PM_post-new}{\code{PM_post$new()}}
-\item \href{#method-PM_post-plot}{\code{PM_post$plot()}}
-\item \href{#method-PM_post-summary}{\code{PM_post$summary()}}
-\item \href{#method-PM_post-auc}{\code{PM_post$auc()}}
-\item \href{#method-PM_post-clone}{\code{PM_post$clone()}}
-}
+  \itemize{
+    \item \href{#method-PM_post-initialize}{\code{PM_post$new()}}
+    \item \href{#method-PM_post-plot}{\code{PM_post$plot()}}
+    \item \href{#method-PM_post-summary}{\code{PM_post$summary()}}
+    \item \href{#method-PM_post-auc}{\code{PM_post$auc()}}
+    \item \href{#method-PM_post-clone}{\code{PM_post$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_post-new"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_post-new}{}}}
-\subsection{Method \code{new()}}{
-Create new object populated with Bayesian posterior predicted data at
+\if{html}{\out{<a id="method-PM_post-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_post-initialize}{}}}
+\subsection{\code{PM_post$new()}}{
+  Create new object populated with Bayesian posterior predicted data at
 regular, frequent intervals
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_post$new(PMdata = NULL, path = ".", ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_post$new(PMdata = NULL, path = ".", ...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
 .}
-
-\item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
+      \item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
 .}
-
-\item{\code{...}}{Not currently used.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-Creation of new \code{PM_post} object is automatic and not generally necessary
+      \item{\code{...}}{Not currently used.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    Creation of new \code{PM_post} object is automatic and not generally necessary
 for the user to do.
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_post-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_post-plot}{}}}
-\subsection{Method \code{plot()}}{
-Plot method
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_post$plot(...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_post$plot()}}{
+  Plot method
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_post$plot(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Arguments passed to \link{plot.PM_pop}}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    See \link{plot.PM_pop}.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments passed to \link{plot.PM_pop}}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-See \link{plot.PM_pop}.
-}
-
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_post-summary"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_post-summary}{}}}
-\subsection{Method \code{summary()}}{
-Summary method
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_post$summary(...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_post$summary()}}{
+  Summary method
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_post$summary(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Arguments passed to \link{summary.PM_pop}}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    See \link{summary.PM_post}.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments passed to \link{summary.PM_pop}}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-See \link{summary.PM_post}.
-}
-
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_post-auc"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_post-auc}{}}}
-\subsection{Method \code{auc()}}{
-Calculate AUC
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_post$auc(...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_post$auc()}}{
+  Calculate AUC
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_post$auc(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Arguments passed to \link{make_AUC}}
+      \item{\code{data}}{The object to use for AUC calculation}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    See \link{make_AUC}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments passed to \link{make_AUC}}
-
-\item{\code{data}}{The object to use for AUC calculation}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-See \link{make_AUC}
-}
-
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_post-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_post-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_post$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{PM_post$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_post$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

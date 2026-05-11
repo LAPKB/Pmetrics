@@ -874,12 +874,31 @@ observeEvent(input$copy_df_btn, {
   n_row <- nrow(mat_data)
   n_col <- ncol(mat_data)
   col_names <- colnames(mat_data)
+
+  # Guardrails for editor/clipboard limits (especially long single-line paste in RStudio)
+  max_cells_for_clipboard <- 50000L
+  max_chars_for_clipboard <- 1000000L
+  values_per_line <- 20L
+
+  if ((n_row * n_col) > max_cells_for_clipboard) {
+    showNotification(
+      paste0(
+        "Copy cancelled: dataset is too large for reliable script paste (",
+        n_row, " x ", n_col, "). Use Save as CSV instead."
+      ),
+      type = "warning",
+      duration = 8
+    )
+    return(invisible(NULL))
+  }
   
   # Format each column as a vector
   col_strings <- sapply(seq_len(n_col), function(j) {
     col_vals <- mat_data[, j]
-    formatted_vals <- paste(format(col_vals, scientific = FALSE, trim = TRUE), collapse = ", ")
-    sprintf('  %s = c(%s)', col_names[j], formatted_vals)
+    formatted_vals <- format(col_vals, scientific = FALSE, trim = TRUE)
+    value_groups <- split(formatted_vals, ceiling(seq_along(formatted_vals) / values_per_line))
+    value_block <- paste(vapply(value_groups, paste, character(1), collapse = ", "), collapse = ",\n    ")
+    sprintf('  %s = c(\n    %s\n  )', col_names[j], value_block)
   })
   
   # Join columns with comma and newline
@@ -890,6 +909,18 @@ observeEvent(input$copy_df_btn, {
     'theta <- data.frame(\n%s\n)',
     cols_str
   )
+
+  if (nchar(r_code, type = "chars") > max_chars_for_clipboard) {
+    showNotification(
+      paste0(
+        "Copy cancelled: generated R code is too large for reliable clipboard/script paste. ",
+        "Use Save as CSV instead."
+      ),
+      type = "warning",
+      duration = 8
+    )
+    return(invisible(NULL))
+  }
   
   # Copy to clipboard
   tryCatch({

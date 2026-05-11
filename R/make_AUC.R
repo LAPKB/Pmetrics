@@ -110,7 +110,7 @@ make_AUC <- function(data = NULL,
       data2 <- data %>% dplyr::mutate(time = get(x.name), out = get(y.name))
     }
     
-    
+
     # create dummy variables if missing
     if (!group %in% names(data2)) data2[[group]] <- 1 # add id if missing
     if (!"outeq" %in% names(data2)) data2$outeq <- 1 # add outeq if missing
@@ -120,7 +120,7 @@ make_AUC <- function(data = NULL,
     if (is.null(exclude)) exclude <- NA
 
     group_vars <- c(group, "outeq", "block")
-    if ("nsim" %in% names(data2)) group_vars <- c(group_vars, "nsim")
+    if (!"nsim" %in% group && "nsim" %in% names(data2)) group_vars <- c(group_vars, "nsim")
     group_syms <- rlang::syms(group_vars)
     # filter to create object to pass to auc calculation
     data3 <- data2 %>%
@@ -182,8 +182,13 @@ make_AUC <- function(data = NULL,
     # Reorder AUCdf to match the order of id (or group) in the input data
     # Only applies if group is present in both
     if (group %in% names(AUCdf) && group %in% names(data2)) {
-      id_order <- unique(data3[[group]])
-      AUCdf <- AUCdf[match(AUCdf[[group]], id_order), , drop = FALSE]
+      id_order <- unique(data2[[group]])
+      group_factor <- factor(AUCdf[[group]], levels = id_order)
+      if ("nsim" %in% names(AUCdf)) {
+        AUCdf <- AUCdf[order(group_factor, AUCdf$nsim), , drop = FALSE]
+      } else {
+        AUCdf <- AUCdf[order(group_factor), , drop = FALSE]
+      }
     }
 
     class(AUCdf) <- c("PMauc", class(AUCdf))
