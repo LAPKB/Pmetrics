@@ -160,20 +160,20 @@ ITex$final$plot(Ke ~ V)
 }
 }
 \seealso{
-\link{PM_final}, \link[plotly:schema]{plotly::schema}
+\link{PM_final}, \link[plotly:schema]{schema}
 
-Other PMplots: 
-\code{\link{plot.PM_cov}()},
-\code{\link{plot.PM_cycle}()},
-\code{\link{plot.PM_data}()},
-\code{\link{plot.PM_model}()},
-\code{\link{plot.PM_op}()},
-\code{\link{plot.PM_opt}()},
-\code{\link{plot.PM_pop}()},
-\code{\link{plot.PM_post}()},
-\code{\link{plot.PM_pta}()},
-\code{\link{plot.PM_sim}()},
-\code{\link{plot.PM_valid}()}
+Other PMplots:
+\code{\link[=plot.PM_cov]{plot.PM_cov()}},
+\code{\link[=plot.PM_cycle]{plot.PM_cycle()}},
+\code{\link[=plot.PM_data]{plot.PM_data()}},
+\code{\link[=plot.PM_model]{plot.PM_model()}},
+\code{\link[=plot.PM_op]{plot.PM_op()}},
+\code{\link[=plot.PM_opt]{plot.PM_opt()}},
+\code{\link[=plot.PM_pop]{plot.PM_pop()}},
+\code{\link[=plot.PM_post]{plot.PM_post()}},
+\code{\link[=plot.PM_pta]{plot.PM_pta()}},
+\code{\link[=plot.PM_sim]{plot.PM_sim()}},
+\code{\link[=plot.PM_valid]{plot.PM_valid()}}
 }
 \author{
 Michael Neely

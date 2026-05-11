@@ -17,5 +17,4 @@ simulations.
 Michael Neely MD
 \url{http://www.lapk.org}
 }
-\keyword{"_PACKAGE"}
 \keyword{internal}

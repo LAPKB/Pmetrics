@@ -442,15 +442,16 @@ PM_pta <- R6::R6Class(
         
         # calculate number of iterations for progress bar
         if (!simTarg) {
-          cat("\nCalculating PTA for each simulated regimen and target...\n")
+          cli::cli_text("Calculating PTA for each simulated regimen and target...")
         } else {
-          cat("\nCalculating PTA for each simulated regimen using simulated targets...\n")
+          cli::cli_text("Calculating PTA for each simulated regimen using simulated targets...")
         }
         flush.console()
         
         # create the progress bar
         maxpb <- sum(unlist(purrr::map(target, \(x) ifelse(inherits(x, "PMpta.targ"), 1, length(x))))) * n_reg # target * simulations
-        pb <- txtProgressBar(min = 0, max = maxpb, style = 3)
+        pb <- progress::progress_bar$new(total = maxpb, clear = FALSE, force = TRUE, show_after = 0)
+        on.exit(pb$terminate(), add = TRUE)
         
         ###### MAKE THE PTA OBJECT
         master_pta <- purrr::map(1:n_reg, \(x){
@@ -572,9 +573,7 @@ PM_pta <- R6::R6Class(
     # ACCESSORY INTERNAL FUNCTIONS --------------------------------------------
     
     pta_auc <- function(sims, .target, .simTarg, .start, .end, .pb) {
-      cycle <- utils::getTxtProgressBar(.pb)
-      utils::setTxtProgressBar(.pb, cycle + 1)
-      
+      .pb$tick()
       auc <- rlang::try_fetch(make_AUC(sims, out ~ time | nsim, start = .start, end = .end),
       error = function(e) {
         cli::cli_warn("Unable to generate AUC.", parent = e)
@@ -597,8 +596,7 @@ PM_pta <- R6::R6Class(
   }
   
   pta_min <- function(sims, .target, .simTarg, .start, .end, .pb) {
-    cycle <- utils::getTxtProgressBar(.pb)
-    utils::setTxtProgressBar(.pb, cycle + 1)
+    .pb$tick()
     mins <- sims %>%
     group_by(nsim) %>%
     filter(time >= .start, time <= .end)
@@ -620,8 +618,7 @@ PM_pta <- R6::R6Class(
   }
   
   pta_max <- function(sims, .target, .simTarg, .start, .end, .pb) {
-    cycle <- utils::getTxtProgressBar(.pb)
-    utils::setTxtProgressBar(.pb, cycle + 1)
+    .pb$tick()
     
     maxes <- sims %>%
     group_by(nsim) %>%
@@ -644,8 +641,7 @@ PM_pta <- R6::R6Class(
   }
   
   pta_specific <- function(sims, .target, .simTarg, .start, .end, .pb) {
-    cycle <- utils::getTxtProgressBar(.pb)
-    utils::setTxtProgressBar(.pb, cycle + 1)
+    .pb$tick()
     concs <- sims %>%
     group_by(nsim) %>%
     filter(time == .start)
@@ -664,8 +660,7 @@ PM_pta <- R6::R6Class(
   }
   
   pta_time <- function(sims, .target, .simTarg, .start, .end, .pb) {
-    cycle <- utils::getTxtProgressBar(.pb)
-    utils::setTxtProgressBar(.pb, cycle + 1)
+    .pb$tick()
     
     interval <- diff(sims$time)[1] # will be regular for sims
     
@@ -961,6 +956,24 @@ PM_pta <- R6::R6Class(
         simTarg <- 2
       } else {
         simTarg <- 1
+      }
+
+      # preserve target order when targets are character combinations, e.g. "(0.25)(80)"
+      if (simTarg == 1 && is.character(pta$target)) {
+        target_first <- stringr::str_match(
+          pta$target,
+          "^\\(\\s*([-+]?\\d*\\.?\\d+(?:[eE][-+]?\\d+)?)\\s*\\)"
+        )[, 2]
+        target_first <- suppressWarnings(as.numeric(target_first))
+        if (any(!is.na(target_first))) {
+          target_levels <- pta %>%
+            mutate(.target_first = target_first) %>%
+            distinct(target, .target_first) %>%
+            arrange(.target_first, target) %>%
+            pull(target)
+          pta <- pta %>%
+            mutate(target = factor(target, levels = target_levels, ordered = TRUE))
+        }
       }
       
       
