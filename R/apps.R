@@ -18,23 +18,17 @@ NULL
     list(
       id = "lit_sim",
       title = "Literature model simulator",
-      fn = lit_sim,
-      pkg = "PmetricsLitSim",
-      pkg_fun = "lit_sim"
+      fn = lit_sim
     ),
     list(
       id = "model_lib",
       title = "Model library browser",
-      fn = model_lib,
-      pkg = "PmetricsModelLib",
-      pkg_fun = "model_lib"
+      fn = model_lib
     ),
     list(
       id = "pm_plot",
       title = "Pmetrics plot helper",
-      fn = pm_plot,
-      pkg = "PmetricsPmPlot",
-      pkg_fun = "pm_plot"
+      fn = pm_plot
     )
     # list(
     #   id = "pm_run",
@@ -44,7 +38,7 @@ NULL
   )
 }
 
-.launch_golem_app <- function(pkg, fun, launch.browser = TRUE) {
+.launch_golem_app <- function(pkg, fun, launch.browser = TRUE,...) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
     cli::cli_abort(c(
       "x" = "The {.pkg {pkg}} package is required to launch this app.",
@@ -53,7 +47,7 @@ NULL
   }
 
   app_fun <- getExportedValue(pkg, fun)
-  app_fun(launch.browser = launch.browser)
+  app_fun(launch.browser = launch.browser, ...)
 }
 
 #' @rdname apps
@@ -64,8 +58,13 @@ lit_sim <- function(launch.browser = TRUE) {
 
 #' @rdname apps
 #' @export
-pm_plot <- function(launch.browser = TRUE) {
-  .launch_golem_app("PmetricsPmPlot", "run_app", launch.browser = launch.browser)
+pm_plot <- function(launch.browser = TRUE, data_env = .GlobalEnv) {
+  .launch_golem_app(
+    "PmetricsPmPlot",
+    "run_app",
+    launch.browser = launch.browser,
+    data_env = data_env
+  )
 }
 
 # #' @rdname apps
