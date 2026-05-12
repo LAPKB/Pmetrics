@@ -60,7 +60,7 @@ lit_sim <- function(launch.browser = TRUE) {
 #' @export
 pm_plot <- function(launch.browser = TRUE, data_env = .GlobalEnv) {
   .launch_golem_app(
-    "PmetricsPmPlot",
+    "PmetricsPlot",
     "run_app",
     launch.browser = launch.browser,
     data_env = data_env
