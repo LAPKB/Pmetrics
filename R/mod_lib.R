@@ -129,7 +129,8 @@ generate_model_code_text <- function(lib_model) {
 #' compiled `PM_model` and copy the code automatically.
 #' @param show Logical. If `TRUE` (default), launches the Shiny browser app.
 #'   If `FALSE`, returns the model tibble invisibly without launching the app.
-#' @param launch.browser Logical. Passed to [shiny::runApp()] when `show = TRUE`.
+#' @param launch.browser Logical. Passed to the standalone app package's
+#'   `run_app()` function when `show = TRUE`.
 #' @return Invisibly, a tibble of all model templates.
 #' @export
 model_lib <- function(show = TRUE, launch.browser = TRUE) {
@@ -143,11 +144,13 @@ model_lib <- function(show = TRUE, launch.browser = TRUE) {
   )
   
   if (show) {
-    app_dir <- system.file("apps", "model_lib", package = "Pmetrics")
-    if (identical(app_dir, "") || !dir.exists(app_dir)) {
-      stop("Could not find the packaged model_lib app directory.", call. = FALSE)
+    if (!requireNamespace("PmetricsModelLib", quietly = TRUE)) {
+      cli::cli_abort(c(
+        "x" = "The {.pkg PmetricsModelLib} package is required to launch model_lib.",
+        "i" = "Install it locally (e.g., remotes::install_local()) and try again."
+      ))
     }
-    shiny::runApp(appDir = app_dir, launch.browser = launch.browser)
+    getExportedValue("PmetricsModelLib", "run_app")(launch.browser = launch.browser)
   }
   
   return(invisible(mod_table))

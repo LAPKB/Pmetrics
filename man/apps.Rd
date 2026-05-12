@@ -4,7 +4,7 @@
 \alias{apps}
 \alias{lit_sim}
 \alias{pm_plot}
-\title{Launch packaged Shiny apps}
+\title{Launch standalone Pmetrics apps}
 \usage{
 lit_sim(launch.browser = TRUE)
 
@@ -16,12 +16,13 @@ apps(launch.browser = TRUE)
 \item{launch.browser}{Logical. Should the app launch in a browser?}
 }
 \value{
-Invisibly returns the value from \code{\link[shiny:runApp]{shiny::runApp()}} for launcher
-functions. \code{apps()} returns invisibly \code{NULL} on cancel/invalid input.
+Invisibly returns the value from the standalone app package's
+\code{run_app()} function for launcher functions. \code{apps()} returns invisibly
+\code{NULL} on cancel/invalid input.
 }
 \description{
-\code{lit_sim()}, \code{model_lib()}, and \code{pm_plot()} launch specific packaged
-apps from \code{inst/apps}.
+\code{lit_sim()}, \code{model_lib()}, and \code{pm_plot()} launch standalone golem app
+packages.
 }
 \details{
 \code{apps()} shows an interactive numbered menu (via \code{cli}) and launches the

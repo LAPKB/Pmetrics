@@ -66,10 +66,13 @@ Suggests:
     pandoc,
     progress,
     quarto,
+    PmetricsLitSim,
+    PmetricsModelLib,
+    PmetricsPmPlot,
     RColorBrewer,
     RcppTOML,
-    rstudioapi,
     reticulate,
+    rstudioapi,
     testthat,
     withr
 RoxygenNote: 7.3.3

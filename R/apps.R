@@ -1,14 +1,15 @@
-#' Launch packaged Shiny apps
+#' Launch standalone Pmetrics apps
 #'
-#' `lit_sim()`, `model_lib()`, and `pm_plot()` launch specific packaged
-#' apps from `inst/apps`.
+#' `lit_sim()`, `model_lib()`, and `pm_plot()` launch standalone golem app
+#' packages.
 #'
 #' `apps()` shows an interactive numbered menu (via `cli`) and launches the
 #' selected app using `readline()` input.
 #'
 #' @param launch.browser Logical. Should the app launch in a browser?
-#' @return Invisibly returns the value from [shiny::runApp()] for launcher
-#'   functions. `apps()` returns invisibly `NULL` on cancel/invalid input.
+#' @return Invisibly returns the value from the standalone app package's
+#'   `run_app()` function for launcher functions. `apps()` returns invisibly
+#'   `NULL` on cancel/invalid input.
 #' @name apps
 NULL
 
@@ -17,17 +18,23 @@ NULL
     list(
       id = "lit_sim",
       title = "Literature model simulator",
-      fn = lit_sim
+      fn = lit_sim,
+      pkg = "PmetricsLitSim",
+      pkg_fun = "lit_sim"
     ),
     list(
       id = "model_lib",
       title = "Model library browser",
-      fn = model_lib
+      fn = model_lib,
+      pkg = "PmetricsModelLib",
+      pkg_fun = "model_lib"
     ),
     list(
       id = "pm_plot",
       title = "Pmetrics plot helper",
-      fn = pm_plot
+      fn = pm_plot,
+      pkg = "PmetricsPmPlot",
+      pkg_fun = "pm_plot"
     )
     # list(
     #   id = "pm_run",
@@ -37,29 +44,28 @@ NULL
   )
 }
 
-.launch_packaged_app <- function(app_id, launch.browser = TRUE) {
-  app_dir <- system.file("apps", app_id, package = "Pmetrics")
-
-  if (identical(app_dir, "") || !dir.exists(app_dir)) {
-    stop(
-      sprintf("Could not find packaged app directory for '%s'.", app_id),
-      call. = FALSE
-    )
+.launch_golem_app <- function(pkg, fun, launch.browser = TRUE) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    cli::cli_abort(c(
+      "x" = "The {.pkg {pkg}} package is required to launch this app.",
+      "i" = "Install it locally (e.g., remotes::install_local()) and try again."
+    ))
   }
 
-  shiny::runApp(appDir = app_dir, launch.browser = launch.browser)
+  app_fun <- getExportedValue(pkg, fun)
+  app_fun(launch.browser = launch.browser)
 }
 
 #' @rdname apps
 #' @export
 lit_sim <- function(launch.browser = TRUE) {
-  .launch_packaged_app("lit_sim", launch.browser = launch.browser)
+  .launch_golem_app("PmetricsLitSim", "run_app", launch.browser = launch.browser)
 }
 
 #' @rdname apps
 #' @export
 pm_plot <- function(launch.browser = TRUE) {
-  .launch_packaged_app("pm_plot", launch.browser = launch.browser)
+  .launch_golem_app("PmetricsPmPlot", "run_app", launch.browser = launch.browser)
 }
 
 # #' @rdname apps
