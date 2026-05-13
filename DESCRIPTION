@@ -71,25 +71,15 @@ Imports:
     tools,
     trelliscopejs,
     TruncatedNormal,
-    utils,
-    glue
+    utils
 Suggests:
-    clipr,
     data.table,
     devtools,
     ggpubr,
     gt,
-    htmltools,
-    knitr,
-    mclust,
-    npde,
     pandoc,
-    progress,
     quarto,
-    RColorBrewer,
     RcppTOML,
-    reticulate,
-    rstudioapi,
     testthat,
     withr
 VignetteBuilder: 
