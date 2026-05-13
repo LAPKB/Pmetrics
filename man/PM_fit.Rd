@@ -15,133 +15,143 @@ methods to cross-check data and model objects for compatibility.
 }
 \keyword{internal}
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{data}}{\link{PM_data} object}
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{data}}{\link{PM_data} object}
 
-\item{\code{model}}{\link{PM_model} object}
-}
-\if{html}{\out{</div>}}
+    \item{\code{model}}{\link{PM_model} object}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-PM_fit-new}{\code{PM_fit$new()}}
-\item \href{#method-PM_fit-run}{\code{PM_fit$run()}}
-\item \href{#method-PM_fit-save}{\code{PM_fit$save()}}
-\item \href{#method-PM_fit-load}{\code{PM_fit$load()}}
-\item \href{#method-PM_fit-check}{\code{PM_fit$check()}}
-\item \href{#method-PM_fit-clone}{\code{PM_fit$clone()}}
-}
+  \itemize{
+    \item \href{#method-PM_fit-initialize}{\code{PM_fit$new()}}
+    \item \href{#method-PM_fit-run}{\code{PM_fit$run()}}
+    \item \href{#method-PM_fit-save}{\code{PM_fit$save()}}
+    \item \href{#method-PM_fit-load}{\code{PM_fit$load()}}
+    \item \href{#method-PM_fit-check}{\code{PM_fit$check()}}
+    \item \href{#method-PM_fit-clone}{\code{PM_fit$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_fit-new"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_fit-new}{}}}
-\subsection{Method \code{new()}}{
-Create a new object
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_fit$new(data = data, model = model)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{data}}{Either the name of a  \link{PM_data}
+\if{html}{\out{<a id="method-PM_fit-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_fit-initialize}{}}}
+\subsection{\code{PM_fit$new()}}{
+  Create a new object
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_fit$new(data = data, model = model)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{data}}{Either the name of a  \link{PM_data}
 object in memory or the quoted name of a Pmetrics
 data file in the current working directory, which will crate a \link{PM_data}
 object on the fly. However, if created on the fly, this object
 will not be available to other
 methods or other instances of \link{PM_fit}.}
-
-\item{\code{model}}{Similarly, this is either the name of a \link{PM_model}
+      \item{\code{model}}{Similarly, this is either the name of a \link{PM_model}
 object in memory or the quoted name of a Pmetrics text model file
 in the current working directory. Again, if created on the fly,
 the object will not be available to other
 methods or other instances of \link{PM_fit}.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_fit-run"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_fit-run}{}}}
-\subsection{Method \code{run()}}{
-Run a fit of model to the data (deprecated)
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_fit$run()}\if{html}{\out{</div>}}
-}
-
-\subsection{Details}{
-The \verb{$run} method for \code{PM_fit} objects has been deprecated in
+\subsection{\code{PM_fit$run()}}{
+  Run a fit of model to the data (deprecated)
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_fit$run()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    The \verb{$run} method for \code{PM_fit} objects has been deprecated in
 favor of the \verb{$fit} method in \code{\link[=PM_model]{PM_model()}}.
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_fit-save"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_fit-save}{}}}
-\subsection{Method \code{save()}}{
-Save the current PM_fit object to a .rds file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_fit$save(file_name = "PMfit.rds")}\if{html}{\out{</div>}}
+\subsection{\code{PM_fit$save()}}{
+  Save the current PM_fit object to a .rds file.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_fit$save(file_name = "PMfit.rds")}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{file_name}}{Name of the file to be created. The
+default is "PMfit.rds".}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file_name}}{Name of the file to be created. The
-default is "PMfit.rds".}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_fit-load"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_fit-load}{}}}
-\subsection{Method \code{load()}}{
-\code{PM_fit} objects contain a \code{save} method which invokes \link{saveRDS} to write
+\subsection{\code{PM_fit$load()}}{
+  \code{PM_fit} objects contain a \code{save} method which invokes \link{saveRDS} to write
 the object to the hard drive as an .rds file. This is the corresponding load
 function.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_fit$load(file_name)}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_fit$load(file_name)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{file_name}}{Name of the file to be read, the default is "PMfit.rds".}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A \code{PM_fit} object.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file_name}}{Name of the file to be read, the default is "PMfit.rds".}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A \code{PM_fit} object.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_fit-check"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_fit-check}{}}}
-\subsection{Method \code{check()}}{
-Checks for errors in data and model objects and agreement between them.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_fit$check()}\if{html}{\out{</div>}}
+\subsection{\code{PM_fit$check()}}{
+  Checks for errors in data and model objects and agreement between them.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_fit$check()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_fit-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_fit-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_fit$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{PM_fit$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_fit$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

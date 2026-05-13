@@ -46,7 +46,6 @@
 #' @export
 
 NM2PM <- function(data, ctl) {
-  # checkRequiredPackages("chron")
   msg <- "NONMEM file conversion report:\n"
   # check data file name
   while (!file.exists(data)) {

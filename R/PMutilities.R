@@ -294,628 +294,14 @@ fortranize <- function(block) {
 }
 
 
-# convert new model template to model fortran file
-makeModel <- function(model = "model.txt", data = "data.csv", engine, backend = getPMoptions("backend"), write = T, quiet = F) {
-  blocks <- parseBlocks(model)
-
-  # check for reserved variable names
-  reserved <- c(
-    "ndim", "t", "x", "xp", "rpar", "ipar", "p", "r", "b", "npl", "numeqt", "ndrug", "nadd", "rateiv", "cv",
-    "n", "nd", "ni", "nup", "nuic", "np", "nbcomp", "psym", "fa", "lag", "tin", "tout"
-  )
-  conflict <- c(match(tolower(blocks$primVar), reserved, nomatch = -99), match(tolower(blocks$secVar), reserved, nomatch = -99), match(tolower(blocks$covar), reserved, nomatch = -99))
-  nconflict <- sum(conflict != -99)
-  if (nconflict > 0) {
-    msg <- paste("\n", paste(paste("'", reserved[conflict[conflict != -99]], "'", sep = ""), collapse = ", "), " ", c("is a", "are")[1 + as.numeric(nconflict > 1)], " reserved ", c("name", "names")[1 + as.numeric(nconflict > 1)], ", regardless of case.\nPlease choose non-reserved parameter/covariate names.\n", sep = "")
-    return(list(status = -1, msg = msg))
-  }
-
-  # check all blocks statements for more than maxwidth characters and insert line break if necessary
-  maxwidth <- 60
-  blocks <- chunks(x = blocks, maxwidth = maxwidth)
-
-  # ensure in fortran format: dX -> XP and [] -> ()
-  blocks <- purrr::map(blocks, fortranize)
-
-  # primary variable definitions
-  npvar <- length(blocks$primVar)
-  psym <- vector("character", npvar)
-  pvardef <- psym
-  if (length(grep(";", blocks$primVar)) > 0) {
-    # using ';' as separator
-    sep <- ";"
-  } else {
-    if (length(grep(",", blocks$primVar)) > 0) {
-      # using ',' as separator
-      sep <- ","
-    } else {
-      return(list(status = -1, msg = "\nPrimary variables should be defined as 'var,lower_val,upper_val' or 'var,fixed_val'.\n"))
-    }
-  }
-
-  # find out if any are fixed to be positive only for IT2B
-  fixedpos <- grep("\\+", blocks$primVar)
-  if (length(fixedpos) > 0) blocks$primVar <- gsub("\\+", "", blocks$primVar)
-
-  # find out if any are to be fixed (constant)
-  fixcon <- grep("!", blocks$primVar)
-  nofix <- length(fixcon)
-  if (nofix > 0) blocks$primVar <- gsub("!", "", blocks$primVar)
 
 
-  # get limits [a,b] on primary variables
-  splitprimVar <- strsplit(blocks$primVar, sep)
-  a <- as.numeric(unlist(lapply(splitprimVar, function(x) x[2])))
-  b <- as.numeric(unlist(lapply(splitprimVar, function(x) x[3])))
-
-  # set parameter type: 1 for random, 0 for constant, -1 for random but pos (IT2B only) and 2 for fixed random
-  ptype <- c(1, 2)[1 + as.numeric(is.na(b))]
-  # if any fixed constant variables are present, set ptype to 0
-  if (nofix > 0) ptype[fixcon] <- 0
-
-  # npvar is total number of parameters
-  # nvar is number of random (estimated) parameters
-  # nranfix is number of fixed (but unknown) parameters
-  # nofix is number of constant parameters
-  nranfix <- sum(as.numeric(is.na(b))) - nofix
-  nvar <- npvar - nofix - nranfix
-
-  if ((engine$alg == "IT" | engine$alg == "ERR") & length(fixedpos) > 0) ptype[fixedpos] <- -1
-
-  if (nofix > 0) {
-    valfix <- a[which(ptype == 0)]
-  } else {
-    valfix <- NA
-  }
-
-  if (nranfix > 0) {
-    valranfix <- a[which(ptype == 2)]
-  } else {
-    valranfix <- NA
-  }
-
-  ab.df <- data.frame(a = a[which(ptype == 1)], b = b[which(ptype == 1)])
-
-
-  # replace a,b with SIM limits argument if it is present
-  if (engine$alg == "SIM" & !all(is.na(engine$limits))) {
-    if (nrow(engine$limits) == nvar) {
-      # make sure same row number
-      replA <- engine$limits[, 1]
-      replB <- engine$limits[, 2]
-      ab.df$a[!is.na(replA)] <- replA[!is.na(replA)]
-      ab.df$b[!is.na(replB)] <- replB[!is.na(replB)]
-    } else {
-      return(list(status = -1, msg = "Your limit block does not have the same number of parameters as the model file.\n"))
-    }
-  }
-
-  if (nofix > 0 & any(is.na(valfix))) {
-    return(list(status = -1, msg = "One or more variables did not have any boundaries.\n"))
-  }
-  if (nranfix > 0 & any(is.na(valranfix))) {
-    return(list(status = -1, msg = "One or more variables did not have any boundaries.\n"))
-  }
-
-  # set grid point index for NPAG if not supplied
-  if (engine$indpts == -99) {
-    indpts <- switch(nvar,
-      1,
-      1,
-      3,
-      4,
-      6
-    )
-    if (is.null(indpts)) indpts <- 100 + nvar - 5
-    if (indpts > 108) indpts <- 108
-  } else {
-    indpts <- engine$indpts
-  }
-
-
-  # transform ab
-  if (nrow(ab.df) > 0) {
-    ab <- paste(t(as.matrix(ab.df)))
-    ab <- c(paste(ab[1:(length(ab) - 1)], "t", sep = ""), ab[length(ab)])
-    ab[seq(1, 2 * nvar, 2)] <- sub("t", "    ", ab[seq(1, 2 * nvar, 2)])
-    ab[seq(2, 2 * nvar, 2)] <- sub("t", "\n", ab[seq(2, 2 * nvar, 2)])
-    ab <- paste(ab, collapse = "")
-  }
-
-  blocks$primVar <- unlist(lapply(splitprimVar, function(x) x[1]))
-
-  for (i in 1:npvar) {
-    psym[i] <- paste("PSYM(", i, ")='", blocks$primVar[i], "'", sep = "")
-    pvardef[i] <- paste(blocks$primVar[i], "=P(", i, ")", sep = "")
-  }
-
-
-  # covariate definitions
-  if (blocks$covar[1] != "") {
-    ncov <- length(blocks$covar)
-    interpol <- grep("!", blocks$covar)
-    blocks$covar <- gsub("!", "", blocks$covar)
-    covardef <- vector("character", ncov)
-    for (i in 1:ncov) {
-      covardef[i] <- paste(blocks$covar[i], "=CV(", i, ")", sep = "")
-    }
-    if (!identical(1:ncov, which(tolower(engine$covnames) %in% tolower(blocks$covar)))) {
-      return(list(status = -1, msg = "The covariate set in your model file was not in the same order as in your data file.\n"))
-    }
-  } else {
-    covardef <- ""
-    interpol <- grep("!", blocks$covar)
-  }
-  if (engine$ncov > 0) {
-    ctype <- rep(2, engine$ncov)
-  } else {
-    ctype <- -99
-  }
-  # set covariate type based on number of covariates in data file, default is 2, interpolated
-  if (length(interpol) > 0) ctype[interpol] <- 1 # change those in model file with "!" to constant
-
-  # secondary variable definitions
-  svardef <- blocks$secVar
-
-  # get secondary variables and remove continuation lines beginning with "&"
-  secVarNames <- gsub("[[:blank:]]", "", unlist(lapply(strsplit(svardef, "="), function(x) x[1])))
-  secVarNames[is.na(secVarNames)] <- ""
-  oldContLines <- grep("^\\+", secVarNames)
-  if (length(oldContLines > 0)) {
-    return(list(status = -1, msg = "\nThe model file format has changed.  Please replace '+' with '&' in all continuation lines.\n"))
-  }
-  contLines <- grep("^&", secVarNames)
-
-  if (length(contLines) > 0) {
-    secVarNames <- secVarNames[-contLines]
-    svardef <- gsub("^&", "", svardef)
-  }
-
-  # take out any extra declarations in eqn to add to declarations in subroutine
-  diffdec <- grep("COMMON|EXTERNAL|DIMENSION", blocks$eqn, ignore.case = T)
-  if (length(diffdec) > 0) {
-    diffstate <- blocks$eqn[diffdec]
-    blocks$eqn <- blocks$eqn[-diffdec]
-  } else {
-    diffstate <- ""
-  }
-
-  # detect N
-  if (blocks$eqn[1] == "" | grepl("^\\{algebraic:", blocks$eqn[1])) {
-    if ("KE" %in% toupper(secVarNames) | "KE" %in% toupper(blocks$primVar)) {
-      N <- -1
-    } else {
-      N <- 0
-    }
-  } else {
-    # get number of equations and verify with data file
-    # find statements with XP(digit) or dX[digit]
-    compLines <- grep("XP\\([[:digit:]]+\\)|dX\\[[[:digit:]]+\\]", blocks$eqn, ignore.case = T)
-    if (length(compLines) == 0) {
-      N <- 0
-    } else {
-      compStatements <- sapply(blocks$eqn[compLines], function(x) strparse("XP\\([[:digit:]]+\\)|dX\\[[[:digit:]]+\\]", x))
-      compNumbers <- sapply(compStatements, function(x) strparse("[[:digit:]]+", x))
-      # get max number
-      N <- max(as.numeric(compNumbers))
-    }
-  }
-
-  # figure out model if N = -1 and if so, assign values to required KA,KE,V,KCP,KPC
-  # in future, use {algebraic: xx} which is in model files now to select correct algebraic model
-  # for now, comment the eqn lines in fortran if present
-  if (length(grep("^\\{algebraic:", blocks$eqn[1])) > 0) {
-    blocks$eqn[1] <- "This model uses algebraic solutions. Differential equations provided here for reference only."
-    blocks$eqn <- purrr::map_chr(blocks$eqn, \(x) paste0("! ", x))
-  }
-
-
-  reqVars <- c("KA", "KE", "KCP", "KPC", "V")
-  matchVars <- match(reqVars, toupper(c(blocks$primVar, secVarNames)))
-  if (N == -1) {
-    if (any(is.na(matchVars))) {
-      missVars <- reqVars[is.na(matchVars)]
-      if ("KE" %in% toupper(missVars)) {
-        return(list(status = -1, msg = "\nYou have specified an algebraic model, which requires a variable named 'KE'\n"))
-      }
-      if ("V" %in% toupper(missVars)) {
-        return(list(status = -1, msg = "\nYou have specified an algebraic model, which requires a variable named 'V'\n"))
-      }
-      missVarValues <- paste(missVars, "=0", sep = "")
-      if (length(missVarValues) > 0) svardef <- c(svardef, missVarValues)
-      svardef <- svardef[svardef != ""]
-      # add new secondary variables that won't be estimated
-      secVarNames <- c(secVarNames, missVars)
-      secVarNames <- secVarNames[secVarNames != ""]
-    } else {
-      missVars <- NA
-    }
-  } else {
-    if (any(is.na(matchVars))) {
-      missVars <- reqVars[is.na(matchVars)]
-    } else {
-      missVars <- NA
-    }
-  }
-
-  # extract bolus inputs and create bolus block, then remove bolus[x] from equations
-  bolus <- purrr::map(blocks$eqn, ~ stringr::str_extract_all(.x, regex("B[\\[\\(]\\d+|BOL[\\[\\(]\\d+|BOLUS[\\[\\(]\\d+", ignore_case = TRUE), simplify = FALSE))
-  blocks$bolus <- purrr::imap(bolus, \(x, idx){
-    if (length(x[[1]]) > 0) {
-      paste0("NBCOMP(", stringr::str_extract(x[[1]], "\\d+$"), ") = ", idx)
-    }
-  }) %>% unlist()
-  blocks$eqn <- purrr::map(blocks$eqn, \(x) stringr::str_replace_all(x, regex("(\\+*|-*|\\**)\\s*B[\\[\\(]\\d+[\\]\\)]|(\\+*|-*|\\**)\\s*BOL[\\[\\(]\\d+[\\]\\)]|(\\+*|-*|\\**)\\s*BOLUS[\\[\\(]\\d+[\\]\\)]", ignore_case = TRUE), "")) %>%
-    unlist()
-
-  # replace R[x] or R(x) with RATEIV(x)
-  blocks$eqn <- purrr::map(blocks$eqn, \(x) stringr::str_replace_all(x, regex("R[\\[\\(](\\d+)[\\]\\)]", ignore_case = TRUE), "RATEIV\\(\\1\\)")) %>%
-    unlist()
-
-  # get number of equations and verify with data file
-  # find statements with Y(digit) or Y[digit]
-  outputLines <- grep("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", blocks$output, ignore.case = T)
-  if (length(outputLines) == 0) {
-    return(list(status = -1, msg = "\nYou must have at least one output equation of the form 'Y[1] = ...'\n"))
-  }
-  # extract numbers
-  outputStatements <- sapply(blocks$output[outputLines], function(x) strparse("Y\\([[:digit:]]+\\)|Y\\[[[:digit:]]+\\]", x))
-  outputNumbers <- sapply(outputStatements, function(x) strparse("[[:digit:]]", x))
-  # get max number
-  modelnumeqt <- max(as.numeric(outputNumbers))
-  if (modelnumeqt != engine$numeqt) {
-    return(list(status = -1, msg = "\nThe number of output equations in the model file\ndoes not match the maximum value of outeq in your datafile.\n"))
-  }
-
-  # remove leading ampersands from getfa, getix, gettlag if present
-  oldContLines <- grep("^\\+", c(blocks$f, blocks$ini, blocks$lag))
-  if (length(oldContLines > 0)) {
-    return(list(status = -1, msg = "\nThe model file format has changed.  Please replace '+' with '&' in all continuation lines.\n"))
-  }
-  if (length(grep("^&", blocks$f) > 0)) blocks$f <- gsub("^&", "", blocks$f)
-  if (length(grep("^&", blocks$ini) > 0)) blocks$ini <- gsub("^&", "", blocks$ini)
-  if (length(grep("^&", blocks$lag) > 0)) blocks$lag <- gsub("^&", "", blocks$lag)
-
-  # variable declarations for fortran and make sure not >maxwidth characters
-  if (secVarNames[1] != "") {
-    vardec <- paste("REAL*8 ", paste(blocks$primVar, collapse = ","), ",", paste(secVarNames, collapse = ","), sep = "")
-  } else {
-    vardec <- paste("REAL*8 ", paste(blocks$primVar, collapse = ","), sep = "")
-  }
-  if (blocks$covar[1] != "") {
-    vardec <- paste(vardec, ",", paste(blocks$covar, collapse = ","), sep = "")
-  }
-  if (nchar(vardec) > maxwidth) {
-    vardec <- paste(unlist(strsplit(vardec, ",")), collapse = ",\n     &  ")
-  }
-
-  # error
-  blocks$error <- tolower(gsub("[[:space:]]", "", blocks$error))
-  # check to make sure coefficient lines are the same number as outputs
-  nErrCoeff <- length(blocks$error) - 1
-  if (nErrCoeff != modelnumeqt) {
-    return(list(status = -1, msg = paste("\nThere ", c("is", "are")[1 + as.numeric(nErrCoeff > 1)], " ",
-      nErrCoeff, c(" line", " lines")[1 + as.numeric(nErrCoeff > 1)],
-      " of error coefficients in the model file, but ",
-      modelnumeqt, " output ", c("equation", "equations")[1 + as.numeric(modelnumeqt > 1)],
-      ".\nThese must be the same.\n",
-      sep = ""
-    )))
-  }
-  # get assay error only if SIMrun
-  if (engine$alg == "SIM") {
-    gamlam <- grep("^g|^l", blocks$error)
-    if (length(gamlam) > 0) {
-      # gamma/lambda is specified in file
-      asserr <- unlist(strsplit(blocks$error[-gamlam], sep))
-    } else {
-      asserr <- unlist(strsplit(blocks$error, sep))
-    }
-  } else {
-    # this is not a SIMrun
-    # get gamma or lambda if present and assay error coefficients
-    gamlam <- grep("^g|^l", blocks$error)
-    if (length(gamlam) > 0) {
-      # gamma/lambda is specified in file
-      fixed <- grep("!", blocks$error[gamlam[1]])
-      ierr <- unlist(strsplit(blocks$error[gamlam[1]], "="))
-      ierrtype <- gsub("[[:space:]]", "", tolower(substr(ierr[1], 1, 1)))
-
-      # NPAG error parameters
-      # IERRMOD
-      # 1 SD WITH GAMMA(IEQ) FIXED
-      # 2 SD*GAMMA, GAMMA(IEQ) IS TO BE ESTIMATED EACH CYCLE.
-      # 3 SD+LAMBDA, LAMBDA(IEQ) IS TO BE ESTIMATED EACH CYCLE.
-      #
-      #
-      # IASS
-      # 0 IF Cs ENTERED PATIENT x PATIENT;
-      # 2 IF ONE SET OF ABOVE Cs USED FOR ALL PATIENTS;
-      # 1 IF Cs ALREADY IN PATIENT FILES WILL BE USED; IF A
-      # PATIENT HAS NO C'S, THEN POPULATION C'S WILL BE USED.
-
-      if (engine$alg == "NP") {
-        if (length(fixed) > 0) {
-          # gamma is fixed (error for lambda)
-          if (ierrtype == "l") {
-            return(list(status = -1, msg = "\nFixed lambda is not currently implemented in NPAG.\nPlease correct the error block in your model file.\n"))
-          }
-          blocks$error[gamlam[1]] <- gsub("!", "", blocks$error[gamlam[1]])
-          ierrmod <- 1 # set to fixed gamma
-          gamlam0 <- as.numeric(gsub("!", "", ierr[2])) # but multiply assay error coefficients by fixed amount later
-          asserr <- gsub(sep, "  ", blocks$error[-gamlam])
-          iass <- rep(1, engine$numeqt)
-          assfix <- grep("!", asserr) # check for asserr override
-          if (length(assfix) > 0) {
-            iass[assfix] <- 2
-            asserr <- paste(gsub("!", "", asserr), collapse = "\n")
-          }
-        } else {
-          # gamma/lambda are to be estimated
-          ierrmod <- switch(ierrtype,
-            g = 2,
-            l = 3
-          )
-          gamlam0 <- as.numeric(ierr[2])
-          asserr <- gsub(sep, "  ", blocks$error[-gamlam])
-          iass <- rep(1, engine$numeqt)
-          assfix <- grep("!", asserr) # check for asserr override
-          if (length(assfix) > 0) {
-            iass[assfix] <- 2
-            asserr <- paste(gsub("!", "", asserr), collapse = "\n")
-          }
-        }
-        asserr <- paste(gsub("!", "", asserr), collapse = "\n") # clean up asserr
-        iass <- paste(iass, collapse = "     ") # clean up iass
-      }
-
-      # IT2B error parameters
-      # IERRMOD
-      # 1 IF GAMMA(IEQ) IS TO REMAIN 1.0 THROUGHOUT THE ANALYSIS;
-      # 0 IF THE UPDATED ESTIMATE OF GAMMA(IEQ) IS TO BE ESTIMATED EACH CYCLE.
-      # 2 IF Cs ARE TO BE ESTIMATED.
-      #
-      #
-      # IASS
-      # 0 IF Cs ENTERED PATIENT x PATIENT;
-      # 2 IF ONE SET OF ABOVE Cs USED FOR ALL PATIENTS;
-      # 1 IF Cs ALREADY IN PATIENT FILES WILL BE USED; IF A
-      # PATIENT HAS NO C'S, THEN POPULATION C'S WILL BE USED.
-
-      # IQVAL
-      # 0 IF OUTPUT EQ. HAS ITS Cs ENTERED BY USER (NOT
-      # ESTIMATED BY assbigxx.exe) AND IERRTYPE(IEQ) = 1
-      # 1 IF OUTPUT EQ. HAS ITS Cs ENTERED BY USER (NOT
-      # ESTIMATED BY assbigxx.exe) AND IERRTYPE(IEQ) = 0
-      # 4 IF OUTPUT EQ. HAD ITS Cs ESTIMATED PREVIOUSLY
-      # BY assbigxx.exe.
-
-      if (engine$alg == "IT") {
-        if (ierrtype == "l") {
-          return(list(status = -1, msg = "\nLambda is not currently implemented in IT2B\nPlease correct the error block in your model file.\n"))
-        }
-        if (length(fixed) > 0) {
-          ierrmod <- rep(1, engine$numeqt) # set to fixed gamma, always 1
-          iqval <- rep(0, engine$numeqt)
-          asserr <- gsub(sep, "  ", blocks$error[-gamlam])
-        } else {
-          ierrmod <- rep(0, engine$numeqt) # set to estimated gamma, always starting at 1
-          iqval <- rep(1, engine$numeqt)
-          asserr <- gsub(sep, "  ", blocks$error[-gamlam])
-        }
-        iass <- rep(1, engine$numeqt) # 1 for datafile or general source for asserr
-        assfix <- grep("!", asserr) # check for general only (override)
-        if (length(assfix) > 0) {
-          asserr <- gsub("!", "", asserr)
-          iass[assfix] <- 2
-        }
-        comberr <- paste(ierrmod, asserr, iass, iqval, sep = "\n", collapse = "\n")
-      }
-      if (engine$alg == "ERR") {
-        if (ierrtype == "l") {
-          return(list(status = -1, msg = "\nLambda is not currently implemented in IT2B/Error.\nPlease correct the error block in your model file.\n"))
-        }
-        ierrmod <- rep(2, engine$numeqt) # set to estimated gamma, always starting at 1
-        iqval <- rep(0, engine$numeqt)
-        asserr <- gsub(sep, "  ", blocks$error[-gamlam])
-        iass <- rep(1, engine$numeqt) # 1 for datafile or general source for asserr
-        assfix <- grep("!", asserr) # check for general only (override)
-        if (length(assfix) > 0) {
-          iass[assfix] <- 2
-          asserr <- gsub("!", "", asserr)
-        }
-        comberr <- paste(ierrmod, asserr, iass, iqval, sep = "\n", collapse = "\n")
-      }
-    } else {
-      # gamma/lambda was omitted from file
-      return(list(status = -1, msg = "Please specify a gamma or lambda error model in your\nmodel file error block."))
-    }
-  }
-
-
-
-
-
-  # write report
-  if (!quiet) {
-    cat(paste("\nModel solver mode: ", switch(letters[N + 2],
-      a = "Algebraic",
-      b = "Exact",
-      "ODE"
-    ), sep = ""))
-    if (N > 0) {
-      numcomp <- N
-      absorb <- F
-    }
-    if (N == 0) {
-      numcomp <- 1
-      absorb <- F
-    }
-    if (N == -1) {
-      if (identical(missVars, c("KA", "KCP", "KPC"))) {
-        numcomp <- 1
-        absorb <- F
-      }
-      if (identical(missVars, c("KCP", "KPC"))) {
-        numcomp <- 2
-        absorb <- T
-      }
-      if (identical(missVars, "KA")) {
-        numcomp <- 2
-        absorb <- F
-      }
-      if (identical(missVars, NA)) {
-        numcomp <- 3
-        absorb <- T
-      }
-    }
-    cat(paste("\nNumber of compartments: ", numcomp, c(", including an absorptive compartment", "")[1 + as.numeric(!absorb)], sep = ""))
-    cat(paste("\nPrimary Variables: ", paste(blocks$primVar, collapse = ", "), sep = ""))
-    if ((engine$alg == "IT" | engine$alg == "ERR") & length(fixedpos) > 0) {
-      cat(paste(" (", paste(blocks$primVar[fixedpos], collapse = ", "), " fixed to be positive)", sep = ""))
-    }
-    cat(paste("\nCovariates in data file: ", c(paste(engine$covnames, collapse = ", "), "None")[1 + as.numeric(is.na(engine$covnames[1]))]))
-    cat(paste("\nCovariates used in model file: ", c(paste(blocks$covar, collapse = ", "), "None")[1 + as.numeric(blocks$covar[1] == "")]))
-    cat(paste("\nSecondary Variables: ", paste(secVarNames, collapse = ", "), sep = ""))
-    cat(paste("\nModel conditions: ", c("bioavailability term defined, ", "no bioavailability term defined, ")[1 + as.numeric(blocks$f[1] == "")],
-      c("initial conditions are not zero, ", "initial conditions are zero, ")[1 + as.numeric(blocks$ini[1] == "")],
-      c("lag term defined", "no lag term defined")[1 + as.numeric(blocks$lag[1] == "")],
-      sep = ""
-    ))
-    if (engine$alg != "SIM") cat(paste("\nNumber of cycles to run:", engine$cycles))
-    cat("\n\n")
-  }
-  # end if quiet
-  if (getPMoptions("backend") == "rust") {
-    model_file <- "main.rs"
-  } else {
-    model_file <- modelFor
-  }
-
-  ret_list <- list(
-    status = 1, N = N, ptype = ptype, model = model_file,
-    ctype = ctype, nvar = nvar, nofix = nofix, nranfix = nranfix,
-    valfix = valfix, ab = ab.df, indpts = indpts,
-    asserr = asserr, blocks = blocks
-  )
-  return(ret_list)
-}
-# end makeModel function
-
-
-###### END NICELY FROM CRASHED NPrun or ITrun
-
-endNicely <- function(message, model = -99, data = -99) {
-  files <- Sys.glob("*", T)
-  if ("mQRZZZ.txt" %in% files) {
-    file.remove(model)
-    file.rename("mQRZZZ.txt", model)
-    files <- Sys.glob("*", T)
-  }
-  cleanUp <- Sys.glob(c(
-    "fort.*", "XQZPJ*.ZMQ", "extnum", "npag*.*", "CHMAX*.*", "SAVEINST.TMP", "go", "np_prep*", "np_run*", "nplog.txt", "NPcontrol", "npscript*",
-    "it2b*.*", "itas*.*", "it_prep*", "it_run*", "itlog.txt", "ITcontrol", "itscript*", "instr.inx",
-    "assdriv.f", "err_prep*", "err_run*", "ERRcontrol", "errscript*", "errlog.txt"
-  ))
-
-  if (length(cleanUp) > 0) file.remove(cleanUp)
-  stop(message, call. = F)
-}
-
-
-# the following two functions come from FelixS (http://www.r-bloggers.com/weighted-t-test-in-r/)
-# weighted variance, inspired by a function from Gavin Simpson on R-Help
-var.wt <- function(x, w, na.rm = FALSE) {
-  if (na.rm) {
-    w <- w[i <- !is.na(x)]
-    x <- x[i]
-  }
-  sum.w <- sum(w)
-  return((sum(w * x^2) * sum.w - sum(w * x)^2) / (sum.w^2 - sum(w^2)))
-}
-
-# weighted t test
-weighted.t.test <- function(x, w, mu, conf.level = 0.95, alternative = "two.sided", na.rm = TRUE) {
-  if (!missing(conf.level) &
-    (length(conf.level) != 1 || !is.finite(conf.level) ||
-      conf.level < 0 || conf.level > 1)) {
-    stop("'conf.level' must be a single number between 0 and 1")
-  }
-  # see if x came from PM_op object
-  if (all(inherits(x, c("PM_op_data", "data.frame"), which = T))) {
-    w <- 1 / x$obsSD**2
-    x <- x$d
-    mu <- 0
-  }
-
-  if (na.rm) {
-    w <- w[i <- !is.na(x)]
-    x <- x[i]
-  }
-
-  # to achieve consistent behavior in loops, return NA-structure in case of complete missings
-  if (sum(is.na(x)) == length(x)) {
-    return(list(estimate = NA, se = NA, conf.int = NA, statistic = NA, df = NA, p.value = NA))
-  }
-
-  # if only one value is present: this is the best estimate, no significance test provided
-  if (sum(!is.na(x)) == 1) {
-    warning("Warning weighted.t.test: only one value provided; this value is returned without test of significance!", call. = FALSE)
-    return(list(estimate = x[which(!is.na(x))], se = NA, conf.int = NA, statistic = NA, df = NA, p.value = NA))
-  }
-
-  x.w <- weighted.mean(x, w, na.rm = na.rm)
-  var.w <- var.wt(x, w, na.rm = na.rm)
-  df <- length(x) - 1
-  t.value <- sqrt(length(x)) * ((x.w - mu) / sqrt(var.w))
-  se <- sqrt(var.w) / sqrt(length(x))
-
-  if (alternative == "less") {
-    pval <- pt(t.value, df)
-    cint <- c(-Inf, x.w + se * qt(conf.level, df))
-  } else if (alternative == "greater") {
-    pval <- pt(t.value, df, lower.tail = FALSE)
-    cint <- c(x.w - se * qt(conf.level, df), Inf)
-  } else {
-    pval <- 2 * pt(-abs(t.value), df)
-    alpha <- 1 - conf.level
-    cint <- x.w + se * qt(1 - alpha / 2, df) * c(-1, 1)
-  }
-
-  names(t.value) <- "t"
-  return(list(estimate = x.w, se = se, conf.int = cint, statistic = t.value, df = df, p.value = pval))
-}
 
 # get the next line when building a file like instructions
 getNext <- function(build) {
   return(length(build) + 1)
 }
 
-# file name check
-FileNameOK <- function(filename) {
-  baseName <- basename(filename)
-  # strip extension
-  baseName2 <- strsplit(baseName, "\\.")[[1]][1]
-  if (nchar(baseName2) > 8) {
-    return(FALSE)
-  } else {
-    return(TRUE)
-  }
-}
-
-FileExists <- function(filename) {
-  if (!file.exists(filename)) {
-    while (!file.exists(filename)) { # oops, filename doesn't exist
-      cat(paste0(filename, " does not exist in ", getwd(), ".\n"))
-      filename <- tryCatch(readline("Enter another filename or 'ESC' to quit: \n"),
-        interrupt = function(e) {
-          stop("No filename. Function aborted.\n", call. = F)
-        }
-      )
-    }
-  }
-  return(filename)
-}
 
 
 # Get OS version ----------------------------------------------------------
@@ -927,16 +313,6 @@ getOS <- function() {
     Linux = 3
   )
   return(OS)
-}
-
-# This might be a solution: https://community.rstudio.com/t/how-to-get-rstudio-ide-to-use-the-correct-terminal-path-in-mac-os-x/131528/3
-isM1 <- function() {
-  OS <- getOS()
-  isM1 <- F
-  if (OS == 1 && Sys.info()[5] == "arm64") { # This means it is a M1-chip based apple computer
-    isM1 <- T
-  }
-  isM1
 }
 
 
@@ -1002,69 +378,6 @@ getCov <- function(mdata) {
   return(list(ncov = ncov, covnames = covnames, covstart = covstart, covend = covend))
 }
 
-# getOSname ------------------------------------------------------------------
-
-# function to retrieve osname in osx,windows,or linux
-getOSname <- function() {
-  # https://askubuntu.com/questions/46627/how-can-i-make-a-script-that-opens-terminal-windows-and-executes-commands-in-the
-  sysinf <- Sys.info()
-  if (!is.null(sysinf)) {
-    os <- sysinf["sysname"]
-    if (os == "Darwin") {
-      os <- "osx"
-    }
-  } else {
-    ## mystery machine
-    os <- .Platform$OS.type
-    if (grepl("^darwin", R.version$os)) {
-      os <- "osx"
-    }
-    if (grepl("linux-gnu", R.version$os)) {
-      os <- "linux"
-    }
-  }
-  tolower(os)
-}
-
-
-# check for installed packages --------------------------------------------
-
-checkRequiredPackages <- function(pkg, repos = "CRAN", quietly = TRUE) {
-  managePkgs <- function(thisPkg) {
-    if (requireNamespace(thisPkg, quietly = TRUE)) {
-      return("ok") # package is installed
-    } else { # package is not installed
-      cat(paste0("The package ", thisPkg, " is required and will be installed.\n"))
-      if (repos == "CRAN") {
-        install.packages(thisPkg, dependencies = TRUE, verbose = FALSE, quiet = TRUE) # try to install
-      } else {
-        tryCatch(remotes::install_github(repos), error = function(e) FALSE)
-      }
-      if (requireNamespace(thisPkg, quietly = TRUE)) { # check again
-        return("ok") # now it is installed and ok
-      } else {
-        return(thisPkg)
-      } # nope, still didn't install
-    }
-  }
-
-  msg <- pkg %>%
-    map_chr(managePkgs) %>%
-    keep(~ . != "ok")
-
-  if (length(msg) > 0) {
-    if (!quietly) {
-      cat(
-        crayon::red("\nError:"), "The following packages needed for this function did not install:",
-        paste(msg, collapse = ", ")
-      )
-    }
-    return(invisible(FALSE))
-  } else {
-    return(invisible(TRUE)) # all packages present or installed
-  }
-}
-
 
 # Time after dose ---------------------------------------------------------
 
@@ -1088,23 +401,12 @@ calcTAD <- function(rawData) {
 }
 
 
-# obsStatus -----------------------------------------------------------
 
-# classify observations
-# data should be a vector
-obsStatus <- function(data) {
-  present <- which(data != -99)
-  missing <- which(data == -99)
-  return(list(present = present, missing = missing))
-}
-
-obsStatus <- function(data) {
-  status <- ifelse(data == -99, TRUE, FALSE)
-  return(status)
-}
-
-
-# import recycled text into documentation
+#' Import recycled text into documentation
+#' @param name The name of the text file
+#' @export
+#' @keywords internal
+#' 
 template <- function(name) {
   insert <- readLines(paste0("man-roxygen/", name, ".R")) %>%
     stringr::str_replace("#' ", "") %>%
@@ -1117,7 +419,70 @@ template <- function(name) {
 
 
 
-# WEIGHTED SUMMARY FUNCTIONS ---------------------------------------------------------------
+# WEIGHTED STAT FUNCTIONS ---------------------------------------------------------------
+
+# the following two functions come from FelixS (http://www.r-bloggers.com/weighted-t-test-in-r/)
+# weighted variance, inspired by a function from Gavin Simpson on R-Help
+var.wt <- function(x, w, na.rm = FALSE) {
+  if (na.rm) {
+    w <- w[i <- !is.na(x)]
+    x <- x[i]
+  }
+  sum.w <- sum(w)
+  return((sum(w * x^2) * sum.w - sum(w * x)^2) / (sum.w^2 - sum(w^2)))
+}
+
+# weighted t test
+weighted.t.test <- function(x, w, mu, conf.level = 0.95, alternative = "two.sided", na.rm = TRUE) {
+  if (!missing(conf.level) &
+    (length(conf.level) != 1 || !is.finite(conf.level) ||
+      conf.level < 0 || conf.level > 1)) {
+    stop("'conf.level' must be a single number between 0 and 1")
+  }
+  # see if x came from PM_op object
+  if (all(inherits(x, c("PM_op_data", "data.frame"), which = T))) {
+    w <- 1 / x$obsSD**2
+    x <- x$d
+    mu <- 0
+  }
+
+  if (na.rm) {
+    w <- w[i <- !is.na(x)]
+    x <- x[i]
+  }
+
+  # to achieve consistent behavior in loops, return NA-structure in case of complete missings
+  if (sum(is.na(x)) == length(x)) {
+    return(list(estimate = NA, se = NA, conf.int = NA, statistic = NA, df = NA, p.value = NA))
+  }
+
+  # if only one value is present: this is the best estimate, no significance test provided
+  if (sum(!is.na(x)) == 1) {
+    warning("Warning weighted.t.test: only one value provided; this value is returned without test of significance!", call. = FALSE)
+    return(list(estimate = x[which(!is.na(x))], se = NA, conf.int = NA, statistic = NA, df = NA, p.value = NA))
+  }
+
+  x.w <- weighted.mean(x, w, na.rm = na.rm)
+  var.w <- var.wt(x, w, na.rm = na.rm)
+  df <- length(x) - 1
+  t.value <- sqrt(length(x)) * ((x.w - mu) / sqrt(var.w))
+  se <- sqrt(var.w) / sqrt(length(x))
+
+  if (alternative == "less") {
+    pval <- pt(t.value, df)
+    cint <- c(-Inf, x.w + se * qt(conf.level, df))
+  } else if (alternative == "greater") {
+    pval <- pt(t.value, df, lower.tail = FALSE)
+    cint <- c(x.w - se * qt(conf.level, df), Inf)
+  } else {
+    pval <- 2 * pt(-abs(t.value), df)
+    alpha <- 1 - conf.level
+    cint <- x.w + se * qt(1 - alpha / 2, df) * c(-1, 1)
+  }
+
+  names(t.value) <- "t"
+  return(list(estimate = x.w, se = se, conf.int = cint, statistic = t.value, df = df, p.value = pval))
+}
 
 # modified from Hmisc functions
 
@@ -1454,8 +819,6 @@ cli_df <- function(df) {
     mutate(across(where(is.double), ~ round2(.x))) %>%
     mutate(across(everything(), ~ as.character(.x, stringsAsFactors = FALSE)))
 
-
-  
 
     # create table
     df_tab <- knitr::kable(df_chr, format = "simple")

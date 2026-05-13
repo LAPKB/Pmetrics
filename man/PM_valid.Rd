@@ -24,7 +24,7 @@ themselves.
 \examples{
 
 ## ------------------------------------------------
-## Method `PM_valid$new`
+## Method `PM_valid$new()`
 ## ------------------------------------------------
 
 \dontrun{
@@ -39,79 +39,73 @@ valid <- NPex$validate(limits = c(0, 3))
 Michael Neely
 }
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{simdata}}{Simulated data created in the validation process}
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{simdata}}{Simulated data created in the validation process}
 
-\item{\code{timeBinMedian}}{Median times for cluster bins}
+    \item{\code{timeBinMedian}}{Median times for cluster bins}
 
-\item{\code{tadBinMedian}}{Median times after previous doses for cluster bins}
+    \item{\code{tadBinMedian}}{Median times after previous doses for cluster bins}
 
-\item{\code{opDF}}{Observed-predicted data frame}
+    \item{\code{opDF}}{Observed-predicted data frame}
 
-\item{\code{npde}}{Data for Normalized Prediction Distribution Error}
+    \item{\code{npde}}{Data for Normalized Prediction Distribution Error}
 
-\item{\code{npde_tad}}{Data for Normalized Prediction Distribution Error
+    \item{\code{npde_tad}}{Data for Normalized Prediction Distribution Error
 using Time After Dose if available}
 
-\item{\code{npde_stats}}{Captured NPDE console summaries for later replay}
-}
-\if{html}{\out{</div>}}
+    \item{\code{npde_stats}}{Captured NPDE console summaries for later replay}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-PM_valid-new}{\code{PM_valid$new()}}
-\item \href{#method-PM_valid-show_npde_stats}{\code{PM_valid$show_npde_stats()}}
-\item \href{#method-PM_valid-summary}{\code{PM_valid$summary()}}
-\item \href{#method-PM_valid-plot}{\code{PM_valid$plot()}}
-\item \href{#method-PM_valid-clone}{\code{PM_valid$clone()}}
-}
+  \itemize{
+    \item \href{#method-PM_valid-initialize}{\code{PM_valid$new()}}
+    \item \href{#method-PM_valid-show_npde_stats}{\code{PM_valid$show_npde_stats()}}
+    \item \href{#method-PM_valid-summary}{\code{PM_valid$summary()}}
+    \item \href{#method-PM_valid-plot}{\code{PM_valid$plot()}}
+    \item \href{#method-PM_valid-clone}{\code{PM_valid$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_valid-new"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_valid-new}{}}}
-\subsection{Method \code{new()}}{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\if{html}{\out{<a id="method-PM_valid-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_valid-initialize}{}}}
+\subsection{\code{PM_valid$new()}}{
+  \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
 This function will create an object suitable for plotting visual predictive
 checks (VPCs) and prediction-corrected visual
 predictive checks (pcVPCs).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_valid$new(result, tad = FALSE, binCov, doseC, timeC, tadC, limits, ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{result}}{The result of a prior run, usually supplied by calling the
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_valid$new(result, tad = FALSE, binCov, doseC, timeC, tadC, limits, ...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{result}}{The result of a prior run, usually supplied by calling the
 \verb{$validate()} method of a \link{PM_result} at the end of a run, or later loaded with \link{PM_load}.}
-
-\item{\code{tad}}{Boolean operator to use time after dose rather than time after start.  Default is \code{FALSE}.}
-
-\item{\code{binCov}}{A character vector of the names of covariates which are included in the model, i.e. in the
+      \item{\code{tad}}{Boolean operator to use time after dose rather than time after start.  Default is \code{FALSE}.}
+      \item{\code{binCov}}{A character vector of the names of covariates which are included in the model, i.e. in the
 model equations and which need to be binned.  For example \code{binCov='wt'} if "wt" is included in a
 model equation like V=V0*wt, or \code{binCov=c( 'wt', 'crcl')} if both "wt" and "crcl"
 are included in model equations.}
-
-\item{\code{doseC}}{An integer with the number of dose/covariate bins to cluster, if known from a previous run of
+      \item{\code{doseC}}{An integer with the number of dose/covariate bins to cluster, if known from a previous run of
 this function.  Including this value will skip the clustering portion for doses/covariates.}
-
-\item{\code{timeC}}{An integer with the number of observation time bins to cluster, if known from a previous run of
+      \item{\code{timeC}}{An integer with the number of observation time bins to cluster, if known from a previous run of
 this function.  Including this value will skip the clustering portion for observation times.}
-
-\item{\code{tadC}}{An integer with the number of time after dose bins to cluster, if known from a previous run of
+      \item{\code{tadC}}{An integer with the number of time after dose bins to cluster, if known from a previous run of
 this function.  Including this value will skip the clustering portion for time after dose. This argument
 will be ignored if \code{tad=FALSE}.}
-
-\item{\code{limits}}{Limits on simulated parameters. See \link{PM_sim}.}
-
-\item{\code{...}}{Other parameters to be passed to \link{PM_sim}, especially \code{limits}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-The function will guide the user
+      \item{\code{limits}}{Limits on simulated parameters. See \link{PM_sim}.}
+      \item{\code{...}}{Other parameters to be passed to \link{PM_sim}, especially \code{limits}.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    The function will guide the user
 through appropriate clustering of doses, covariates and sample times for
 prediction correction using the methods of Bergstrand et al (2011).
 \emph{NOTE:} Including \code{tad} is only
@@ -122,10 +116,9 @@ sampling occurs after the average concentrations
 are the same from dose to dose.  Otherwise observations are \emph{NOT}
 superimposable and \code{tad} should
 \emph{NOT} be used, i.e. should be set to \code{FALSE}.
-}
-
-\subsection{Returns}{
-An R6 object  of class \code{PM_valid}, which is a list with the following.
+  }
+  \subsection{Returns}{
+    An R6 object  of class \code{PM_valid}, which is a list with the following.
 \itemize{
 \item simdata The combined, simulated files for all subjects using the population mean values and each subject
 as a template. This object will be automatically saved to the run, to be loaded with
@@ -138,90 +131,93 @@ This will be \code{NA} if \code{tad = FALSE}.
 \item npde_tad NPDE with time after dose rather than absolute time, if \code{tad = TRUE}
 \item npde_stats Captured NPDE console summary text, replayable with \verb{$show_npde_stats()}.
 }
+  }
+  \subsection{Examples}{
+    \if{html}{\out{<div class="r example copy">}}
+    \preformatted{valid <- NPex$validate(limits = c(0, 3))
 }
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{\dontrun{
-valid <- NPex$validate(limits = c(0, 3))
-}
-
-}
-\if{html}{\out{</div>}}
-
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_valid-show_npde_stats"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_valid-show_npde_stats}{}}}
-\subsection{Method \code{show_npde_stats()}}{
-Replay captured NPDE summary statistics.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_valid$show_npde_stats(outeq = 1, tad = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{PM_valid$show_npde_stats()}}{
+  Replay captured NPDE summary statistics.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_valid$show_npde_stats(outeq = 1, tad = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{outeq}}{Output equation number to replay.}
+      \item{\code{tad}}{Logical; replay TAD-based NPDE stats.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{outeq}}{Output equation number to replay.}
-
-\item{\code{tad}}{Logical; replay TAD-based NPDE stats.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_valid-summary"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_valid-summary}{}}}
-\subsection{Method \code{summary()}}{
-Summarize a \link{PM_valid} object. Reports NPDE distribution statistics and a
+\subsection{\code{PM_valid$summary()}}{
+  Summarize a \link{PM_valid} object. Reports NPDE distribution statistics and a
 Numerical Predictive Check (NPC) for each output equation. TAD-based results
 are included automatically when TAD validation was performed.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_valid$summary(probs = c(0.05, 0.5, 0.95))}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_valid$summary(probs = c(0.05, 0.5, 0.95))}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{probs}}{Numeric vector of quantile cut-points for the NPC.
+Default is \code{c(0.05, 0.5, 0.95)}.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{probs}}{Numeric vector of quantile cut-points for the NPC.
-Default is \code{c(0.05, 0.5, 0.95)}.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_valid-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_valid-plot}{}}}
-\subsection{Method \code{plot()}}{
-Plot method. Calls \link{plot.PM_valid}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_valid$plot(...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_valid$plot()}}{
+  Plot method. Calls \link{plot.PM_valid}.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_valid$plot(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Arguments to pass to [plot.PM_valid].}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments to pass to [plot.PM_valid].}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_valid-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_valid-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_valid$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{PM_valid$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_valid$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

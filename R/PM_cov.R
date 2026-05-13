@@ -466,7 +466,7 @@ plot.PM_cov <- function(x,
       loessLine$color <- NULL
       
       n_colors <- length(unique(dat$id))
-      if (checkRequiredPackages("RColorBrewer")) {
+      if (requireNamespace("RColorBrewer", quietly = TRUE)) {
         palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
         max_colors <- palettes$maxcolors[match(colors, palettes$name)]
         # expand colors as needed
@@ -634,3 +634,4 @@ plot.PM_cov <- function(x,
     }
     return(cov.cross)
   }
+  

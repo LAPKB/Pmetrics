@@ -21,7 +21,10 @@ cleanup_exa_tmp <- function() {
 }
 
 local_exa_tmp_cleanup <- function(env = parent.frame()) {
-  withr::defer(cleanup_exa_tmp(), envir = env)
+  keep_temp_template <- tolower(Sys.getenv("PMETRICS_TEST_KEEP_EXA_TMP", unset = "true")) %in% c("true", "1", "yes")
+  if (!keep_temp_template) {
+    withr::defer(cleanup_exa_tmp(), envir = env)
+  }
   invisible(NULL)
 }
 

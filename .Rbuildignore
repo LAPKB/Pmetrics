@@ -44,3 +44,4 @@ Experimental
 
 ^Images/
 ^README\.Rmd$
+^dev$

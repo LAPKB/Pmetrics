@@ -1723,7 +1723,7 @@ plot.PM_data <- function(
     
     
     highlight_base_color <- marker$color[[1]]
-    if (length(marker$color) == 1 && checkRequiredPackages("RColorBrewer") &&
+    if (length(marker$color) == 1 && requireNamespace("RColorBrewer", quietly = TRUE) &&
     marker$color[[1]] %in% rownames(RColorBrewer::brewer.pal.info)) {
       max_c <- RColorBrewer::brewer.pal.info[marker$color[[1]], "maxcolors"]
       highlight_base_color <- RColorBrewer::brewer.pal(max_c, marker$color[[1]])[[1]]
@@ -2020,7 +2020,7 @@ plot.PM_data <- function(
       n_groups <- length(group_levels)
       
       if (!is.null(user_color)) {
-        if (length(user_color) == 1 && checkRequiredPackages("RColorBrewer") &&
+        if (length(user_color) == 1 && requireNamespace("RColorBrewer", quietly = TRUE) &&
         user_color %in% rownames(RColorBrewer::brewer.pal.info)) {
           max_c <- RColorBrewer::brewer.pal.info[user_color, "maxcolors"]
           color_palette <- colorRampPalette(RColorBrewer::brewer.pal(max_c, user_color))(n_groups)
@@ -2029,7 +2029,7 @@ plot.PM_data <- function(
         }
       } else if (n_groups == 1) {
         color_palette <- rep(marker$color[[1]], n_groups)
-      } else if (checkRequiredPackages("RColorBrewer")) {
+      } else   if (requireNamespace("RColorBrewer", quietly = TRUE)) {
         n_pal <- min(max(n_groups, 3L), 9L)  # brewer.pal: min 3, max 9 for Set1
         color_palette <- rep(RColorBrewer::brewer.pal(n_pal, "Set1"), length.out = n_groups)
       } else {
@@ -2230,7 +2230,7 @@ plot.PM_data <- function(
       return(invisible(p))
     } else { # overlay = FALSE, ie. split them
       
-      if (!checkRequiredPackages("trelliscopejs")) {
+      if (!requireNamespace("trelliscopejs", quietly = TRUE)) {
         cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
       }
       
