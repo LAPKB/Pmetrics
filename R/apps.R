@@ -7,6 +7,9 @@
 #' selected app using `readline()` input.
 #'
 #' @param launch.browser Logical. Should the app launch in a browser?
+#' @param data_env Environment passed to `pm_plot()` containing the data
+#'   objects the app should discover and use. Defaults to `.GlobalEnv`.
+#'   Ignored by launchers that do not accept this argument.
 #' @return Invisibly returns the value from the standalone app package's
 #'   `run_app()` function for launcher functions. `apps()` returns invisibly
 #'   `NULL` on cancel/invalid input.
