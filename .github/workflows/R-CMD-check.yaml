@@ -42,7 +42,7 @@ jobs:
           # But ~/.cargo/registry and ~/.cargo/git ARE reused via the cache
           # above. Pre-fetching here populates that registry so the in-check
           # build skips all network/index work and resolves instantly.
-          cargo fetch --manifest-path src/rust/Cargo.toml
+          rustup run stable cargo fetch --manifest-path src/rust/Cargo.toml
 
       - name: Set up Pandoc
         uses: r-lib/actions/setup-pandoc@v2
