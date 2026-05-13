@@ -17,7 +17,7 @@ Description: Pmetrics is short for pharmacometrics, the discipline of
     modeling drug kinetics and effects on biologic systems, including
     disease progression. Models can be used to simulate novel therapeutic
     dosing regimens and/or populations, informing trial design and dosing
-    strategies. The package supports primarily non-parametric but aims to support 
+    strategies. The package supports primarily non-parametric but aims to support
     parametric pharmacometric modeling and simulation with functions to
     run and analyze the output from all three components of the Pmetrics
     software suite for population pharmacometric data analysis.
@@ -79,6 +79,9 @@ Suggests:
     ggpubr,
     gt,
     pandoc,
+    PmetricsLitSim,
+    PmetricsPlot,
+    PmetricsModelLib,
     quarto,
     RcppTOML,
     testthat

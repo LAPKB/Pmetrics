@@ -147,7 +147,7 @@ model_lib <- function(show = TRUE, launch.browser = TRUE) {
     if (!requireNamespace("PmetricsModelLib", quietly = TRUE)) {
       cli::cli_abort(c(
         "x" = "The {.pkg PmetricsModelLib} package is required to launch model_lib.",
-        "i" = "Install it using install.packages('PmetricsModelLib', repos = 'https://lapkb.r-universe.dev'."
+        "i" = "Install it using install.packages('PmetricsModelLib', repos = 'https://lapkb.r-universe.dev')."
       ))
     }
     getExportedValue("PmetricsModelLib", "run_app")(launch.browser = launch.browser)
