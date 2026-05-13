@@ -42,7 +42,7 @@ NULL
   if (!requireNamespace(pkg, quietly = TRUE)) {
     cli::cli_abort(c(
       "x" = "The {.pkg {pkg}} package is required to launch this app.",
-      "i" = "Install it locally (e.g., remotes::install_local()) and try again."
+      "i" = "See the {.url https://lapkb.r-universe.dev} repository for installation instructions."
     ))
   }
 
