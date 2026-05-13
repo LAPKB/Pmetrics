@@ -59,6 +59,7 @@ jobs:
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck, any::roxygen2
+          extra-repositories: https://lapkb.r-universe.dev
           needs: check
         continue-on-error: true
         id: install-deps
@@ -68,6 +69,7 @@ jobs:
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck, any::roxygen2
+          extra-repositories: https://lapkb.r-universe.dev
           needs: check
 
       - name: Verify roxygen outputs are current

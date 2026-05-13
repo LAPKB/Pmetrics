@@ -73,6 +73,7 @@ Imports:
     TruncatedNormal,
     utils,
     withr
+Additional_repositories: https://lapkb.r-universe.dev
 Suggests:
     data.table,
     devtools,
