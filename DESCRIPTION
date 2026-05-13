@@ -88,7 +88,6 @@ Config/Needs/website: r-lib/pkgdown, quarto
 Config/rextendr/version: 0.4.2
 Config/roxygen2/version: 8.0.0
 Config/testthat/edition: 3
-Config/testthat/parallel: true
 Encoding: UTF-8
 LazyData: true
 LazyDataCompression: xz
