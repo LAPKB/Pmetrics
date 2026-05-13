@@ -30,6 +30,12 @@
 #' @importFrom bslib accordion accordion_panel card navset_card_tab nav_panel
 #' @importFrom lifecycle deprecated
 #' @importFrom DT datatable
+#' @importFrom mclust Mclust
+#' @importFrom npde autonpde
+#' @importFrom parallel makeCluster stopCluster clusterExport parLapply
+#' @importFrom progress progress_bar
+#' @importFrom TruncatedNormal rtmvnorm
+#' @importFrom withr with_dir
 #'
 NULL
 

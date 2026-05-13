@@ -196,28 +196,3 @@ make_AUC <- function(data = NULL,
   }
 
 
-#' @rdname make_AUC
-#' @export
-makeAUC <- function(data = NULL,
-  formula = NULL,
-  include = NULL, exclude = NULL,
-  start = 0, end = Inf,
-  icen = "median",
-  outeq = 1, block = 1,
-  method = "linear",
-  addZero = F) {
-    make_AUC(
-      data = data,
-      formula = formula,
-      include = include,
-      exclude = exclude,
-      start = start,
-      end = end,
-      icen = icen,
-      outeq = outeq,
-      block = block,
-      method = method,
-      addZero = addZero
-    )
-  }
-  
