@@ -1,7 +1,7 @@
 Type: Package
 Package: Pmetrics
 Title: Pmetrics for Population Modeling and Simulation
-Version: 3.1.3
+Version: 3.1.4
 Authors@R: c(
     person("Michael", "Neely", , "mneely@usc.edu", role = c("aut", "cre")),
     person("Julián", "Otálvaro", , "juliandavid347@gmail.com", role = "aut"),
@@ -71,7 +71,8 @@ Imports:
     tools,
     trelliscopejs,
     TruncatedNormal,
-    utils
+    utils,
+    withr
 Suggests:
     data.table,
     devtools,
@@ -80,8 +81,7 @@ Suggests:
     pandoc,
     quarto,
     RcppTOML,
-    testthat,
-    withr
+    testthat
 VignetteBuilder: 
     knitr
 Config/Needs/website: r-lib/pkgdown, quarto
