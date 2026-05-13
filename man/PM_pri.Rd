@@ -10,70 +10,75 @@ This is used internally by the \code{PM_model} class.
 }
 \keyword{internal}
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{min}}{Minimum value of the range.}
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{min}}{Minimum value of the range.}
 
-\item{\code{max}}{Maximum value of the range.}
+    \item{\code{max}}{Maximum value of the range.}
 
-\item{\code{mean}}{Mean value of the range, calculated as (min + max) / 2.}
+    \item{\code{mean}}{Mean value of the range, calculated as (min + max) / 2.}
 
-\item{\code{sd}}{Standard deviation of the range, calculated as (max - min) / 6.}
-}
-\if{html}{\out{</div>}}
+    \item{\code{sd}}{Standard deviation of the range, calculated as (max - min) / 6.}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-PM_pri-new}{\code{PM_pri$new()}}
-\item \href{#method-PM_pri-print}{\code{PM_pri$print()}}
-\item \href{#method-PM_pri-clone}{\code{PM_pri$clone()}}
-}
+  \itemize{
+    \item \href{#method-PM_pri-initialize}{\code{PM_pri$new()}}
+    \item \href{#method-PM_pri-print}{\code{PM_pri$print()}}
+    \item \href{#method-PM_pri-clone}{\code{PM_pri$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_pri-new"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_pri-new}{}}}
-\subsection{Method \code{new()}}{
-Initialize a new range object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_pri$new(min, max)}\if{html}{\out{</div>}}
+\if{html}{\out{<a id="method-PM_pri-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_pri-initialize}{}}}
+\subsection{\code{PM_pri$new()}}{
+  Initialize a new range object.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_pri$new(min, max)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{min}}{Minimum value of the range.}
+      \item{\code{max}}{Maximum value of the range.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{min}}{Minimum value of the range.}
-
-\item{\code{max}}{Maximum value of the range.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_pri-print"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_pri-print}{}}}
-\subsection{Method \code{print()}}{
-Print the range.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_pri$print()}\if{html}{\out{</div>}}
+\subsection{\code{PM_pri$print()}}{
+  Print the range.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_pri$print()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_pri-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_pri-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_pri$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{PM_pri$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_pri$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }
