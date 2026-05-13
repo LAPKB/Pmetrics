@@ -17,13 +17,10 @@ Description: Pmetrics is short for pharmacometrics, the discipline of
     modeling drug kinetics and effects on biologic systems, including
     disease progression. Models can be used to simulate novel therapeutic
     dosing regimens and/or populations, informing trial design and dosing
-    strategies. The package supports primarily non-parametric but also
+    strategies. The package supports primarily non-parametric but aims to support 
     parametric pharmacometric modeling and simulation with functions to
     run and analyze the output from all three components of the Pmetrics
-    software suite for population pharmacometric data analysis: 1) IT2B
-    (Iterative Two-Stage Bayesian) for parametric models; 2) NPAG
-    (Non-parametric Adaptive Grid) for non-paramametric models; 3)
-    Simulator for semi-parametric Monte-Carlo simulations.
+    software suite for population pharmacometric data analysis.
 License: GPL (>= 3)
 URL: https://lapkb.github.io/Pmetrics/
 BugReports: https://github.com/LAPKB/Pmetrics/issues
@@ -91,24 +88,20 @@ Suggests:
     quarto,
     PmetricsLitSim,
     PmetricsModelLib,
-    PmetricsPmPlot,
+    PmetricsPlot,
     RColorBrewer,
     RcppTOML,
     reticulate,
     rstudioapi,
     testthat,
     withr
-Suggests:
-    covr,
-    datasets,
-    pkgdown,
-    testthat
 VignetteBuilder: 
     knitr
 Config/Needs/website: r-lib/pkgdown, quarto
 Config/rextendr/version: 0.4.2
 Config/roxygen2/version: 8.0.0
 Config/testthat/edition: 3
+Config/testthat/parallel: true
 Encoding: UTF-8
 LazyData: true
 LazyDataCompression: xz
