@@ -48,7 +48,7 @@ install.packages("Pmetrics", repos = "https://lapkb.r-universe.dev")
 
 For updating the package and for easier future installations, you can
 run the following command to add the `r-universe` repository to your
-`R.profile`
+`.Rprofile`
 
 ``` r
 write('options(repos = c(CRAN = "https://cloud.r-project.org", LAPKB = "https://lapkb.r-universe.dev"))', "~/.Rprofile", append = TRUE)
@@ -60,7 +60,7 @@ each time.
 
 Note: if you are a Windows user and experience an error while installing
 Pmetrics that mentions `Linker.exe`. That means the Rust toolchain is
-missconfigured to your system. To fix it, open a terminal (CMD or
+misconfigured to your system. To fix it, open a terminal (CMD or
 PowerShell) and execute the following two lines:
 
 ``` bash
@@ -77,18 +77,18 @@ developing and working with Pmetrics.
 
 - [RStudio](https://posit.co/download/rstudio-desktop/) is the oldest
   and most stable IDE, developed by [Posit](https://posit.co). Most
-  users who only program in R use Rstudio. It has a simple interface
+  users who only program in R use RStudio. It has a simple interface
   with many R-specific buttons and menus. It is relatively easy to learn
   and use, but does not support other programming languages.
 
 - [Positron](https://positron.posit.co) is a newer alternative also from
-  Posit. Posit are now mostly developing Positron rather than Rstudio.
+  Posit. Posit are now mostly developing Positron rather than RStudio.
   Positron primarily supports users who work in R and Python. However,
   it is built upon [VS Code](https://code.visualstudio.com), which gives
   Positron access to thousands of extensions, including multiple AI
   tools to assist with coding and data analysis, and Positron can
   support additional programming languages. It is far more powerful than
-  Rstudio, but has a steeper learning curve and currently fewer
+  RStudio, but has a steeper learning curve and currently fewer
   R-specific buttons and menus. VS Code users will find Positron
   familiar.
 

@@ -14,6 +14,10 @@ apps(launch.browser = TRUE)
 }
 \arguments{
 \item{launch.browser}{Logical. Should the app launch in a browser?}
+
+\item{data_env}{Environment passed to \code{pm_plot()} containing the data
+objects the app should discover and use. Defaults to \code{.GlobalEnv}.
+Ignored by launchers that do not accept this argument.}
 }
 \value{
 Invisibly returns the value from the standalone app package's
