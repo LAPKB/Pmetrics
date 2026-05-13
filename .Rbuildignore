@@ -43,3 +43,4 @@ Experimental
 ^Cargo\.lock$
 
 ^Images/
+^README\.Rmd$
