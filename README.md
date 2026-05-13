@@ -1,7 +1,7 @@
 
 <!-- badges: start --> [![R-universe
 version](https://LAPKB.r-universe.dev/Pmetrics/badges/version)](https://LAPKB.r-universe.dev/Pmetrics)
-[![R-CMD-check](https://github.com/LAPKB/Pmetrics/actions/workflows/build.yaml/badge.svg)](https://github.com/LAPKB/Pmetrics/actions/workflows/build.yaml)
+[![R-CMD-check](https://github.com/LAPKB/Pmetrics/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/LAPKB/Pmetrics/actions/workflows/R-CMD-check.yaml)
 
 <!-- badges: end -->
 
