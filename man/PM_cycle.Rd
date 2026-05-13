@@ -35,9 +35,9 @@ allows you to access them in an S3 way, e.g. \code{run1$cycle$mean} if \code{run
 Michael Neely, Julian Otalvaro
 }
 \section{Public fields}{
-  \if{html}{\out{<div class="r6-fields">}}
-  \describe{
-    \item{\code{data}}{A list with the following elements, which can also be extracted by name.
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{data}}{A list with the following elements, which can also be extracted by name.
 e.e. \code{run1$cycle$objective}, which is equivalent to \code{run1$cycle$data$objective}.
 \strong{names} Vector of names of the random parameters
 \strong{objective} A tibble of -2*Log-likelihood, AIC and BIC at each cycle
@@ -46,144 +46,140 @@ e.e. \code{run1$cycle$objective}, which is equivalent to \code{run1$cycle$data$o
 \strong{median} A tibble of cycle number and the median of each random parameter at each cycle, normalized to initial median
 \strong{sd} A tibble of cycle number and the standard deviation of each random parameter at each cycle, normalized to initial standard deviation
 \strong{status} Status of the last cycle: "Converged", "Maximum cycles reached", or "Posterior".}
-  }
-  \if{html}{\out{</div>}}
+}
+\if{html}{\out{</div>}}
 }
 \section{Active bindings}{
-  \if{html}{\out{<div class="r6-active-bindings">}}
-  \describe{
-    \item{\code{names}}{Vector of names of the random parameters}
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{names}}{Vector of names of the random parameters}
 
-    \item{\code{objective}}{A tibble of -2*Log-likelihood, AIC and BIC at each cycle}
+\item{\code{objective}}{A tibble of -2*Log-likelihood, AIC and BIC at each cycle}
 
-    \item{\code{gamlam}}{A tibble of cycle number and gamma or lambda at each cycle for each output equation}
+\item{\code{gamlam}}{A tibble of cycle number and gamma or lambda at each cycle for each output equation}
 
-    \item{\code{mean}}{A tibble of cycle number and the mean of each random parameter
+\item{\code{mean}}{A tibble of cycle number and the mean of each random parameter
 at each cycle, normalized to initial mean}
 
-    \item{\code{median}}{A tibble of cycle number and the median of each random
+\item{\code{median}}{A tibble of cycle number and the median of each random
 parameter at each cycle,  normalized to initial median}
 
-    \item{\code{sd}}{A tibble of cycle number and the standard deviation of each random parameter
+\item{\code{sd}}{A tibble of cycle number and the standard deviation of each random parameter
 at each cycle,  normalized to initial standard deviation}
 
-    \item{\code{status}}{Status of the last cycle: "Converged", "Maximum cycles reached", or "Posterior"}
-  }
-  \if{html}{\out{</div>}}
+\item{\code{status}}{Status of the last cycle: "Converged", "Maximum cycles reached", or "Posterior"}
+}
+\if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-  \itemize{
-    \item \href{#method-PM_cycle-initialize}{\code{PM_cycle$new()}}
-    \item \href{#method-PM_cycle-plot}{\code{PM_cycle$plot()}}
-    \item \href{#method-PM_cycle-summary}{\code{PM_cycle$summary()}}
-    \item \href{#method-PM_cycle-print}{\code{PM_cycle$print()}}
-    \item \href{#method-PM_cycle-clone}{\code{PM_cycle$clone()}}
-  }
+\itemize{
+\item \href{#method-PM_cycle-new}{\code{PM_cycle$new()}}
+\item \href{#method-PM_cycle-plot}{\code{PM_cycle$plot()}}
+\item \href{#method-PM_cycle-summary}{\code{PM_cycle$summary()}}
+\item \href{#method-PM_cycle-print}{\code{PM_cycle$print()}}
+\item \href{#method-PM_cycle-clone}{\code{PM_cycle$clone()}}
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_cycle-initialize"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_cycle-initialize}{}}}
-\subsection{\code{PM_cycle$new()}}{
-  Create new object populated with  cycle information
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_cycle$new(PMdata = NULL, path = ".", ...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
-.}
-      \item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
-.}
-      \item{\code{...}}{Not currently used.}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    Creation of new \code{PM_cycle} object is automatic and not generally necessary
-for the user to do.
-  }
+\if{html}{\out{<a id="method-PM_cycle-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_cycle-new}{}}}
+\subsection{Method \code{new()}}{
+Create new object populated with  cycle information
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_cycle$new(PMdata = NULL, path = ".", ...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
+.}
+
+\item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
+.}
+
+\item{\code{...}}{Not currently used.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+Creation of new \code{PM_cycle} object is automatic and not generally necessary
+for the user to do.
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_cycle-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_cycle-plot}{}}}
-\subsection{\code{PM_cycle$plot()}}{
-  Plot method
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_cycle$plot(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Arguments passed to \link{plot.PM_cycle}}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    See \link{plot.PM_cycle}.
-  }
+\subsection{Method \code{plot()}}{
+Plot method
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_cycle$plot(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{plot.PM_cycle}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+See \link{plot.PM_cycle}.
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_cycle-summary"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_cycle-summary}{}}}
-\subsection{\code{PM_cycle$summary()}}{
-  Summary method
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_cycle$summary(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Arguments passed to \link{summary.PM_cycle}}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    See \link{summary.PM_cycle}.
-  }
+\subsection{Method \code{summary()}}{
+Summary method
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_cycle$summary(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{summary.PM_cycle}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+See \link{summary.PM_cycle}.
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_cycle-print"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_cycle-print}{}}}
-\subsection{\code{PM_cycle$print()}}{
-  Print method
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_cycle$print()}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    Prints the last cycle summary information.
-  }
+\subsection{Method \code{print()}}{
+Print method
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_cycle$print()}\if{html}{\out{</div>}}
 }
 
+\subsection{Details}{
+Prints the last cycle summary information.
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_cycle-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_cycle-clone}{}}}
-\subsection{\code{PM_cycle$clone()}}{
-  The objects of this class are cloneable with this method.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_cycle$clone(deep = FALSE)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{deep}}{Whether to make a deep clone.}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_cycle$clone(deep = FALSE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
 }

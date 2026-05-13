@@ -21,7 +21,7 @@ can be found in the documentation for \verb{$new} method below.
 \examples{
 
 ## ------------------------------------------------
-## Method `PM_sim$new()`
+## Method `PM_sim$new`
 ## ------------------------------------------------
 
 \dontrun{
@@ -79,9 +79,9 @@ Michael Neely
 }
 \keyword{internal}
 \section{Public fields}{
-  \if{html}{\out{<div class="r6-fields">}}
-  \describe{
-    \item{\code{data}}{A list of class \emph{PM_sim} that contains the following elements.
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{data}}{A list of class \emph{PM_sim} that contains the following elements.
 \itemize{
 \item \strong{obs} Observations for all simulated templates as a data frame with these columns:
 \itemize{
@@ -126,51 +126,50 @@ this is a data frame of such matrices, one for each template in the \code{data} 
 and an \code{id} column to identify the template in the \code{data} source.
 Again, this can be useful as a check against the original covariance in \code{poppar}.
 }}
-  }
-  \if{html}{\out{</div>}}
+}
+\if{html}{\out{</div>}}
 }
 \section{Active bindings}{
-  \if{html}{\out{<div class="r6-active-bindings">}}
-  \describe{
-    \item{\code{obs}}{Same as \code{obs} element in the \code{data} field.}
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{obs}}{Same as \code{obs} element in the \code{data} field.}
 
-    \item{\code{amt}}{Same as \code{amt} element in the \code{data} field.}
+\item{\code{amt}}{Same as \code{amt} element in the \code{data} field.}
 
-    \item{\code{parValues}}{Same as \code{parValues} element in the \code{data} field.}
+\item{\code{parValues}}{Same as \code{parValues} element in the \code{data} field.}
 
-    \item{\code{totalSets}}{Same as \code{totalSets} element in the \code{data} field.}
+\item{\code{totalSets}}{Same as \code{totalSets} element in the \code{data} field.}
 
-    \item{\code{totalMeans}}{Same as \code{totalMeans} element in the \code{data} field.}
+\item{\code{totalMeans}}{Same as \code{totalMeans} element in the \code{data} field.}
 
-    \item{\code{totalCov}}{Same as \code{totalCov} element in the \code{data} field.}
-  }
-  \if{html}{\out{</div>}}
+\item{\code{totalCov}}{Same as \code{totalCov} element in the \code{data} field.}
+}
+\if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-  \itemize{
-    \item \href{#method-PM_sim-initialize}{\code{PM_sim$new()}}
-    \item \href{#method-PM_sim-save}{\code{PM_sim$save()}}
-    \item \href{#method-PM_sim-plot}{\code{PM_sim$plot()}}
-    \item \href{#method-PM_sim-opt}{\code{PM_sim$opt()}}
-    \item \href{#method-PM_sim-pta}{\code{PM_sim$pta()}}
-    \item \href{#method-PM_sim-auc}{\code{PM_sim$auc()}}
-    \item \href{#method-PM_sim-summary}{\code{PM_sim$summary()}}
-    \item \href{#method-PM_sim-run}{\code{PM_sim$run()}}
-    \item \href{#method-PM_sim-load}{\code{PM_sim$load()}}
-    \item \href{#method-PM_sim-clone}{\code{PM_sim$clone()}}
-  }
+\itemize{
+\item \href{#method-PM_sim-new}{\code{PM_sim$new()}}
+\item \href{#method-PM_sim-save}{\code{PM_sim$save()}}
+\item \href{#method-PM_sim-plot}{\code{PM_sim$plot()}}
+\item \href{#method-PM_sim-opt}{\code{PM_sim$opt()}}
+\item \href{#method-PM_sim-pta}{\code{PM_sim$pta()}}
+\item \href{#method-PM_sim-auc}{\code{PM_sim$auc()}}
+\item \href{#method-PM_sim-summary}{\code{PM_sim$summary()}}
+\item \href{#method-PM_sim-run}{\code{PM_sim$run()}}
+\item \href{#method-PM_sim-load}{\code{PM_sim$load()}}
+\item \href{#method-PM_sim-clone}{\code{PM_sim$clone()}}
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_sim-initialize"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_sim-initialize}{}}}
-\subsection{\code{PM_sim$new()}}{
-  This function simulates outputs from given inputs and a model.
+\if{html}{\out{<a id="method-PM_sim-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_sim-new}{}}}
+\subsection{Method \code{new()}}{
+This function simulates outputs from given inputs and a model.
 It can be called directly
 or via the \verb{$sim} method for \link{PM_result} objects.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_sim$new(
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$new(
   poppar,
   model,
   data,
@@ -187,13 +186,13 @@ or via the \verb{$sim} method for \link{PM_result} objects.
   makecsv = NULL,
   quiet = FALSE,
   ...
-)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{poppar}}{One of five things:
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{poppar}}{One of five things:
 \enumerate{
 \item A \link{PM_result} object containing the final population parameter
 distribution from a model run, a model object, and a data object.
@@ -284,13 +283,15 @@ treated as the parameters to be used for one simulation.
 sim1 <- PM_sim$new(poppar = poppar, model = run1$model, data = run1$data)
 }\if{html}{\out{</div>}}
 }}
-      \item{\code{model}}{Name of a suitable \link{PM_model} object or a model file template
+
+\item{\code{model}}{Name of a suitable \link{PM_model} object or a model file template
 in the working directory. If missing, and \code{poppar} is a \link{PM_result},
 the model within the \verb{$model} field of the \link{PM_result} object will be used.
 If \code{model} is missing and \code{poppar} is not a \link{PM_result}, then
 Pmetrics will attempt to load a model file in the working directory
 called "model.txt" as the default name.}
-      \item{\code{data}}{Either a \link{PM_data} object or a character vector
+
+\item{\code{data}}{Either a \link{PM_data} object or a character vector
 with the file name of a Pmetrics data file in the working directory
 that contains \strong{template} regimens and observation times.
 The value for outputs can be coded as any number(s) other than -99.  The
@@ -301,7 +302,8 @@ the data within the \verb{$data} field of the \link{PM_result} object will be us
 If \code{data} is missing and \code{poppar} is not a \link{PM_result}, then
 Pmetrics will attempt to load a data template file in the working directory
 called "data.csv" as the default name.}
-      \item{\code{limits}}{If limits are specified, each simulated parameter set that
+
+\item{\code{limits}}{If limits are specified, each simulated parameter set that
 contains a value outside of the limits will be ignored and another set will
 be generated.  Four options exist for limits.
 \itemize{
@@ -333,25 +335,30 @@ verify the simulation, but only those sets within the specified limits will
 be used to generate output(s) and the means and covariances of the retained
 sets may (and likely will be) different than those specified by
 \code{poppar}.}
-      \item{\code{split}}{Boolean operator controlling whether to split an NPAG
+
+\item{\code{split}}{Boolean operator controlling whether to split an NPAG
 \link{PM_final} object into one distribution per support point, with means
 equal to the vector of parameter values for that point, and covariance
 equal to the population covariance divided by the number of support points.
 Default for NPAG \link{PM_final} objects is \code{TRUE}, otherwise
 \code{FALSE}.}
-      \item{\code{include}}{A vector of subject IDs in the \code{data} to iterate
+
+\item{\code{include}}{A vector of subject IDs in the \code{data} to iterate
 through, with each subject serving as the source of an independent
 simulation.  Default is \code{NA} and all subjects in the data file will be used.}
-      \item{\code{exclude}}{A vector of subject IDs to exclude in the simulation, e.g.
+
+\item{\code{exclude}}{A vector of subject IDs to exclude in the simulation, e.g.
 \code{exclude = c(4, 6:14, 16:20)}. Default is \code{NA} and
 all subjects in the data file will be used, i.e. none excluded.
 Using both \code{include} and \code{exclude} criteria may result in conflicts.}
-      \item{\code{nsim}}{The number of simulated profiles to create, per subject.  Default
+
+\item{\code{nsim}}{The number of simulated profiles to create, per subject.  Default
 is 1000.  Entering 0 will result in one profile being simulated from each
 point in the non-parametric prior (for NPAG final objects only). If \code{poppar}
 is supplied as a data frame of parameter values, \code{nsim} is ignored and the
 number of simulated profiles will equal the number of rows in that data frame.}
-      \item{\code{predInt}}{The interval in fractional hours for simulated predicted
+
+\item{\code{predInt}}{The interval in fractional hours for simulated predicted
 outputs at times other than those specified in the template \code{data}.
 The default is 0, which means there will be simulated outputs only at times
 specified in the data file (see below).  Values greater than 0 result in
@@ -370,7 +377,8 @@ predictions is 594, so the prediction interval must be sufficiently long to
 accommodate this for a given number of output equations and total time to
 simulate over.  If \code{predInt} is set so that this cap is exceeded,
 predictions will be truncated.}
-      \item{\code{covariate}}{Pmetrics can simulate values for some/all covariates
+
+\item{\code{covariate}}{Pmetrics can simulate values for some/all covariates
 declared in the \code{cov} block of the \link{PM_model}.
 This argument is a list with the following named elements.
 \itemize{
@@ -492,7 +500,8 @@ Cases 1 or 2 when age was a covariate in the data and model.
 A character vector (not a list) of model covariates to fix and not simulate.
 Values in the template data will be used and not simulated.
 Example: \code{covariate = list(..., fix = c("wt", "age"))}.}
-      \item{\code{usePost}}{Boolean, default \code{FALSE}. Only applicable when \code{poppar} contains an
+
+\item{\code{usePost}}{Boolean, default \code{FALSE}. Only applicable when \code{poppar} contains an
 NPAG \link{PM_final} object. If \code{TRUE}, the mean
 posterior parameter values and covariances for each subject,
 modified by \code{include} or \code{exclude},
@@ -502,10 +511,12 @@ Normally one uses the same data file as used to make the model final
 parameter distribution in \code{poppar}, but if different templates are
 desired, the number must be equivalent to the number of included subjects
 from whom the posteriors are obtained.}
-      \item{\code{seed}}{The seed for the random number generator.  For \code{nsub} > 1,
+
+\item{\code{seed}}{The seed for the random number generator.  For \code{nsub} > 1,
 should be a vector of length equal to \code{nsub}. Shorter vectors will be
 recycled as necessary.  Default is -17.}
-      \item{\code{noise}}{A named list to add noise to most template data fields,
+
+\item{\code{noise}}{A named list to add noise to most template data fields,
 including covariates.
 The default is \code{NULL}, which means no noise will be added.
 The name of each element in the list should correspond to
@@ -550,7 +561,8 @@ Example:
 out = list(c(0.1, 0.001), mode = "exp")))
 }\if{html}{\out{</div>}}
 }}
-      \item{\code{makecsv}}{A character vector for the name of the single .csv file to be
+
+\item{\code{makecsv}}{A character vector for the name of the single .csv file to be
 made for all simulated "subjects".  If no file extension is included, ".csv"
 will be added, e.g. "simout" will become "simout.csv". If an extension is included,
 Pmetrics will use it, e.g. "simout.ssv" will save under that name.
@@ -560,14 +572,16 @@ be of the form \emph{id_nsim}, e.g. 1_1 through 1_10 through for the first
 data template id,
 2_1 through 2_10 for the second template id, etc. if 10 simulations are made
 from each subject in the data template.}
-      \item{\code{quiet}}{Boolean operator controlling whether a model summary report is
+
+\item{\code{quiet}}{Boolean operator controlling whether a model summary report is
 given.  Default is \code{FALSE}.}
-      \item{\code{...}}{Catch deprecated arguments.}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    The Monte Carlo simulator in Pmetrics generates randomly sampled sets of
+
+\item{\code{...}}{Catch deprecated arguments.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+The Monte Carlo simulator in Pmetrics generates randomly sampled sets of
 parameters from the \emph{PRIMARY} block of
 a model according to a prior distribution and calculates outputs based upon
 a template data file. It is a powerful tool for parametric or
@@ -617,13 +631,15 @@ parameter sets and corresponding observations.
 Simulator output is returned as a \link{PM_sim} object.
 Output may also be directed to a new Pmetrics .csv data file
 using the \code{makecsv} argument.
-  }
-  \subsection{Returns}{
-    A \link{PM_sim} object.
-  }
-  \subsection{Examples}{
-    \if{html}{\out{<div class="r example copy">}}
-    \preformatted{# Load results of NPAG run
+}
+
+\subsection{Returns}{
+A \link{PM_sim} object.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+# Load results of NPAG run
 run1 <- PM_load(1)
 
 # Two methods to simulate
@@ -668,193 +684,180 @@ sim2 <- mod$sim(poppar = poppar, data = "temp1.csv",
    nsim = 15, include = 1:4, limits = NA,
    noise = list(out = list(coeff = c(0.02, 0.1, 0, 0)))
 )
-}
-    \if{html}{\out{</div>}}
-  }
+
 }
 
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_sim-save"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-save}{}}}
-\subsection{\code{PM_sim$save()}}{
-  \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\subsection{Method \code{save()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Save the current PM_sim object into a .rds file.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_sim$save(file_name = "PMsim.rds")}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{file_name}}{Name of the file to be created, the default is PMsim.rds}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$save(file_name = "PMsim.rds")}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file_name}}{Name of the file to be created, the default is PMsim.rds}
+}
+\if{html}{\out{</div>}}
+}
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_sim-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-plot}{}}}
-\subsection{\code{PM_sim$plot()}}{
-  \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\subsection{Method \code{plot()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Plot \code{PM_sim} object.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_sim$plot(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Arguments passed to \link{plot.PM_sim}.}
-      \item{\code{at}}{Index of the PM_sim object to be plotted. Default is 1.
-result.}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$plot(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{plot.PM_sim}.}
+
+\item{\code{at}}{Index of the PM_sim object to be plotted. Default is 1.
+result.}
+}
+\if{html}{\out{</div>}}
+}
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_sim-opt"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-opt}{}}}
-\subsection{\code{PM_sim$opt()}}{
-  \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\subsection{Method \code{opt()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Calculate optimal sampling times
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_sim$opt(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Additional parameters, refer to \link{PM_opt}}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$opt(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Additional parameters, refer to \link{PM_opt}}
+}
+\if{html}{\out{</div>}}
+}
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_sim-pta"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-pta}{}}}
-\subsection{\code{PM_sim$pta()}}{
-  \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\subsection{Method \code{pta()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Estimates the Probability of Target Attaintment (PTA), based on the results
 of the current Simulation.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_sim$pta(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Additional parameters, refer to \link{PM_pta}.}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$pta(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Additional parameters, refer to \link{PM_pta}.}
+}
+\if{html}{\out{</div>}}
+}
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_sim-auc"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-auc}{}}}
-\subsection{\code{PM_sim$auc()}}{
-  \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\subsection{Method \code{auc()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Calculates the AUC of the specified simulation
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_sim$auc(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Arguments passed to \link{make_AUC}.}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$auc(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{make_AUC}.}
+}
+\if{html}{\out{</div>}}
+}
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_sim-summary"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-summary}{}}}
-\subsection{\code{PM_sim$summary()}}{
-  \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\subsection{Method \code{summary()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Summarize simulation
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_sim$summary(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Parameters passed to \link{summary.PM_sim}.}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$summary(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Parameters passed to \link{summary.PM_sim}.}
+}
+\if{html}{\out{</div>}}
+}
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_sim-run"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-run}{}}}
-\subsection{\code{PM_sim$run()}}{
-  \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+\subsection{Method \code{run()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 Deprecated method to run a simulation. Replaced by \code{PM_sim$new()} to be
 consistent with R6.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_sim$run(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Not used.}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$run(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Not used.}
+}
+\if{html}{\out{</div>}}
+}
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_sim-load"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-load}{}}}
-\subsection{\code{PM_sim$load()}}{
-  \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+\subsection{Method \code{load()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 Deprecated method to load a prior simulation. Replaced by \code{PM_sim$new()} to be
 consistent with R6.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_sim$load(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Not used.}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$load(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Not used.}
+}
+\if{html}{\out{</div>}}
+}
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_sim-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-clone}{}}}
-\subsection{\code{PM_sim$clone()}}{
-  The objects of this class are cloneable with this method.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_sim$clone(deep = FALSE)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{deep}}{Whether to make a deep clone.}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_sim$clone(deep = FALSE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
 }

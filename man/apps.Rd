@@ -8,7 +8,7 @@
 \usage{
 lit_sim(launch.browser = TRUE)
 
-pm_plot(launch.browser = TRUE)
+pm_plot(launch.browser = TRUE, data_env = .GlobalEnv)
 
 apps(launch.browser = TRUE)
 }

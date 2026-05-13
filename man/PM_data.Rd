@@ -35,7 +35,7 @@ is particularly useful for making simulation templates on the fly.
 \examples{
 
 ## ------------------------------------------------
-## Method `PM_data$addEvent()`
+## Method `PM_data$addEvent`
 ## ------------------------------------------------
 
 \dontrun{
@@ -44,53 +44,53 @@ out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
 }
 }
 \section{Public fields}{
-  \if{html}{\out{<div class="r6-fields">}}
-  \describe{
-    \item{\code{data}}{Data frame containing the data to be modeled}
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{data}}{Data frame containing the data to be modeled}
 
-    \item{\code{standard_data}}{Data frame containing standardized version of the data}
+\item{\code{standard_data}}{Data frame containing standardized version of the data}
 
-    \item{\code{pop}}{The \verb{$data} field from a \link{PM_pop} object. This makes it easy to add population predictions to a raw data plot. This field will be \code{NULL} until the \link{PM_data} object is added to the \link{PM_result} after a run. As examples:
+\item{\code{pop}}{The \verb{$data} field from a \link{PM_pop} object. This makes it easy to add population predictions to a raw data plot. This field will be \code{NULL} until the \link{PM_data} object is added to the \link{PM_result} after a run. As examples:
 \itemize{
 \item \code{dat <- PM_data$new("data.csv")}. Here, \code{dat$pop} will be \code{NULL}.
 \item \code{run1 <- PM_load(1)}. Here, \code{run1$data$pop} will be the same as \code{run1$pop$data}.
 }}
 
-    \item{\code{post}}{The \verb{$data} field from a \link{PM_post} object. See details in the \code{pop} argument above.}
-  }
-  \if{html}{\out{</div>}}
+\item{\code{post}}{The \verb{$data} field from a \link{PM_post} object. See details in the \code{pop} argument above.}
+}
+\if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-  \itemize{
-    \item \href{#method-PM_data-initialize}{\code{PM_data$new()}}
-    \item \href{#method-PM_data-save}{\code{PM_data$save()}}
-    \item \href{#method-PM_data-auc}{\code{PM_data$auc()}}
-    \item \href{#method-PM_data-nca}{\code{PM_data$nca()}}
-    \item \href{#method-PM_data-plot}{\code{PM_data$plot()}}
-    \item \href{#method-PM_data-print}{\code{PM_data$print()}}
-    \item \href{#method-PM_data-summary}{\code{PM_data$summary()}}
-    \item \href{#method-PM_data-addEvent}{\code{PM_data$addEvent()}}
-    \item \href{#method-PM_data-clone}{\code{PM_data$clone()}}
-  }
+\itemize{
+\item \href{#method-PM_data-new}{\code{PM_data$new()}}
+\item \href{#method-PM_data-save}{\code{PM_data$save()}}
+\item \href{#method-PM_data-auc}{\code{PM_data$auc()}}
+\item \href{#method-PM_data-nca}{\code{PM_data$nca()}}
+\item \href{#method-PM_data-plot}{\code{PM_data$plot()}}
+\item \href{#method-PM_data-print}{\code{PM_data$print()}}
+\item \href{#method-PM_data-summary}{\code{PM_data$summary()}}
+\item \href{#method-PM_data-addEvent}{\code{PM_data$addEvent()}}
+\item \href{#method-PM_data-clone}{\code{PM_data$clone()}}
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_data-initialize"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_data-initialize}{}}}
-\subsection{\code{PM_data$new()}}{
-  Create new data object
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_data$new(data = NULL, dt = NULL, quiet = FALSE, validate = TRUE, ...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{data}}{A quoted name of a file with full path if not
+\if{html}{\out{<a id="method-PM_data-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_data-new}{}}}
+\subsection{Method \code{new()}}{
+Create new data object
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$new(data = NULL, dt = NULL, quiet = FALSE, validate = TRUE, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{data}}{A quoted name of a file with full path if not
 in the working directory, an unquoted name of a data frame
 in the current R environment, or a \link{PM_data} object, which will rebuild it.}
-      \item{\code{dt}}{Pmetrics will try a variety of date/time formats. If all 16 of
+
+\item{\code{dt}}{Pmetrics will try a variety of date/time formats. If all 16 of
 them fail, use this parameter to specify the correct format as a
 character vector whose
 first element is date format and second is time. Use the following abbreviations:
@@ -106,175 +106,175 @@ Always check to make sure that dates/times were parsed correctly and the
 relative times in the \code{PM_data$standard_data} field look correct.
 Other date/time formats are possible. See \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} for these.
 }}
-      \item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
-      \item{\code{validate}}{Check for errors. Default is \code{TRUE}. Strongly recommended.}
-      \item{\code{...}}{Other arguments (not currently used).}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    Creation of a new \link{PM_data} objects from a file or
+
+\item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
+
+\item{\code{validate}}{Check for errors. Default is \code{TRUE}. Strongly recommended.}
+
+\item{\code{...}}{Other arguments (not currently used).}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+Creation of a new \link{PM_data} objects from a file or
 a data frame. Data will be standardized and checked
 automatically to a fully specified, valid data object.
-  }
 }
 
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_data-save"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_data-save}{}}}
-\subsection{\code{PM_data$save()}}{
-  Save data to file
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_data$save(file_name, ...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{file_name}}{A quoted name of the file to create
-with full path if not
-in the working directory.}
-      \item{\code{...}}{Arguments passed to \link{PMwriteMatrix}}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    Saves a delimited file (e.g. comma-separated)
-from the \code{standard_data} field
-  }
+\subsection{Method \code{save()}}{
+Save data to file
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$save(file_name, ...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file_name}}{A quoted name of the file to create
+with full path if not
+in the working directory.}
+
+\item{\code{...}}{Arguments passed to \link{PMwriteMatrix}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+Saves a delimited file (e.g. comma-separated)
+from the \code{standard_data} field
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_data-auc"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_data-auc}{}}}
-\subsection{\code{PM_data$auc()}}{
-  Calculate AUC
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_data$auc(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Arguments passed to \link{make_AUC}.}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    See \link{make_AUC}.
-  }
+\subsection{Method \code{auc()}}{
+Calculate AUC
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$auc(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{make_AUC}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+See \link{make_AUC}.
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_data-nca"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_data-nca}{}}}
-\subsection{\code{PM_data$nca()}}{
-  Perform non-compartmental analysis
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_data$nca(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Arguments passed to \link{make_NCA}.}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    See \link{make_NCA}.
-  }
+\subsection{Method \code{nca()}}{
+Perform non-compartmental analysis
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$nca(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{make_NCA}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+See \link{make_NCA}.
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_data-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_data-plot}{}}}
-\subsection{\code{PM_data$plot()}}{
-  Plot method
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_data$plot(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Arguments passed to \link{plot.PM_data}}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    See \link{plot.PM_data}.
-  }
+\subsection{Method \code{plot()}}{
+Plot method
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$plot(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{plot.PM_data}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+See \link{plot.PM_data}.
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_data-print"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_data-print}{}}}
-\subsection{\code{PM_data$print()}}{
-  Print method
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_data$print(standard = F, viewer = T, ...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{standard}}{Display the standardized data if \code{TRUE}.
-Default is \code{FALSE}.}
-      \item{\code{viewer}}{Display the Viewer if \code{TRUE}.
-Default is \code{TRUE}.}
-      \item{\code{...}}{Other arguments to \link{print.data.frame}. Only
-passed if \code{viewer = FALSE}.}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    Displays the PM_data object in a variety of ways.
-  }
+\subsection{Method \code{print()}}{
+Print method
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$print(standard = F, viewer = T, ...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{standard}}{Display the standardized data if \code{TRUE}.
+Default is \code{FALSE}.}
+
+\item{\code{viewer}}{Display the Viewer if \code{TRUE}.
+Default is \code{TRUE}.}
+
+\item{\code{...}}{Other arguments to \link{print.data.frame}. Only
+passed if \code{viewer = FALSE}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+Displays the PM_data object in a variety of ways.
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_data-summary"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_data-summary}{}}}
-\subsection{\code{PM_data$summary()}}{
-  Summary method
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_data$summary(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Arguments passed to \link{summary.PM_data}.}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    See \link{summary.PM_data}.
-  }
+\subsection{Method \code{summary()}}{
+Summary method
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$summary(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{summary.PM_data}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+See \link{summary.PM_data}.
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_data-addEvent"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_data-addEvent}{}}}
-\subsection{\code{PM_data$addEvent()}}{
-  Add events to PM_data object
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_data$addEvent(..., dt = NULL, quiet = FALSE, validate = FALSE)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Column names and values.}
-      \item{\code{dt}}{Pmetrics will try a variety of date/time formats. If all 16 of
+\subsection{Method \code{addEvent()}}{
+Add events to PM_data object
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$addEvent(..., dt = NULL, quiet = FALSE, validate = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Column names and values.}
+
+\item{\code{dt}}{Pmetrics will try a variety of date/time formats. If all 16 of
 them fail, use this parameter to specify the correct format as a
 character vector whose
 first element is date format and second is time. Use the following abbreviations:
@@ -290,17 +290,19 @@ Always check to make sure that dates/times were parsed correctly and the
 relative times in the \code{PM_data$standard_data} field look correct.
 Other date/time formats are possible. See \code{\link[lubridate:parse_date_time]{lubridate::parse_date_time()}} for these.
 }}
-      \item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
-      \item{\code{validate}}{Validate the new row or not. Default is \code{FALSE} as a new row
+
+\item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
+
+\item{\code{validate}}{Validate the new row or not. Default is \code{FALSE} as a new row
 added to a blank will result in a one-row data object, which is invalid. Also,
 only one event type (dose or observation) should be added at a time, so if the
 new object contains only doses while building, this would cause an error. You
 should set \code{validate = TRUE} for the final addition.}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    Add lines to a PM_data object by supplying named columns and values.
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+Add lines to a PM_data object by supplying named columns and values.
 \code{ID} is always required. \code{Time} is handled differently depending on
 the sequence of \code{addEvent} calls (see \strong{Chaining} below).
 \itemize{
@@ -333,33 +335,35 @@ As we have seen in the examples above, \code{ADDL} and \code{II} are supported.
 to create a blank data object and then add rows.
 This can be particularly useful for creating simulation templates.
 See the example.
-  }
-  \subsection{Examples}{
-    \if{html}{\out{<div class="r example copy">}}
-    \preformatted{PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12,
-out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
-}
-    \if{html}{\out{</div>}}
-  }
 }
 
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+PM_data$new()$addEvent(id = 1, time = 0, dose = 100, addl = 4, ii = 12,
+out = NA, wt = 75)$addEvent(id = 1, time = 60, out = -1)
+}
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_data-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_data-clone}{}}}
-\subsection{\code{PM_data$clone()}}{
-  The objects of this class are cloneable with this method.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_data$clone(deep = FALSE)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{deep}}{Whether to make a deep clone.}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_data$clone(deep = FALSE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
 }

@@ -58,7 +58,7 @@ See \code{\link{points}} for other values of \code{pch}.}
 \item{data_theme}{Default is \dQuote{color}, but could be \dQuote{grey} or \dQuote{gray}.}
 
 \item{plot_theme}{Default is \code{theme_grey()} but could be any complete ggplot2 theme, e.g.
-\code{\link[ggplot2:theme_minimal]{ggplot2::theme_minimal()}}.}
+\code{\link[ggplot2:ggtheme]{ggplot2::theme_minimal()}}.}
 
 \item{col.obs.ci}{Color of the observation confidence interval (set by \code{lower} and \code{upper}).
 Default is blue.}
