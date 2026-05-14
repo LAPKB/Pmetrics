@@ -32,16 +32,14 @@ names(mic1) <- c("mic", "n")
 usethis::use_data(mic1, overwrite = TRUE)
 
 
-
 # Run Files -------------------------------------------------------------------
 
 # model <- readLines(file.path(wd, "model.txt"))
 # usethis::use_data(model, overwrite = TRUE)
 
 # # model file
-#modEx <- PM_model$new(file.path(wd, "model.txt"))
+# modEx <- PM_model$new(file.path(wd, "model.txt"))
 modEx <- PM_model$new(
-
   pri = list(
     ka = ab(0.100, 0.900),
     ke = ab(0.001, 0.100),
@@ -55,23 +53,19 @@ modEx <- PM_model$new(
     gender = interp(),
     height = interp()
   ),
-  lag = function () 
-  {
-      lag[1] = tlag1
+  lag = function() {
+    lag[1] <- tlag1
   },
-  eqn = function () 
-  {
-      dx[1] = b[1] - ka * x[1]
-      dx[2] = rateiv[1] + ka * x[1] - ke * x[2]
+  eqn = function() {
+    dx[1] <- b[1] - ka * x[1]
+    dx[2] <- rateiv[1] + ka * x[1] - ke * x[2]
   },
-  out = function () 
-  {
-      y[1] = x[2]/v
+  out = function() {
+    y[1] <- x[2] / v
   },
   err = list(
     proportional(5, c(0.0, 0.1, -0.0, 0.0))
   )
-
 )
 usethis::use_data(modEx, overwrite = TRUE)
 
@@ -107,4 +101,3 @@ simEx <- NPex$sim(
   predInt = c(120, 144, 0.5), seed = rep(-17, 4)
 )
 usethis::use_data(simEx, overwrite = TRUE)
-

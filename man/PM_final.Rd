@@ -19,11 +19,10 @@ themselves.
 
 The main results are contained in the \verb{$data} field,
 and it is this field which is passed to the \verb{$plot} and \verb{$summary} methods.
-You can use this \verb{$data} field for custom manipulations, e.g. \code{probs <- run1$final$data$popPoints \%>\% select(prob)}.
+You can use this \verb{$data} field for custom manipulations, e.g. \code{probs <- run1$final$data$popPoints |> select(prob)}.
 This will select the probabilities of the support points.
-If you are unfamiliar with the \verb{\%>\%} pipe function, please type \code{help("\%>\%", "magrittr")}
-into the R console and look online for instructions/tutorials in tidyverse, a
-powerful approach to data manipulation upon which Pmetrics is built.
+If you are unfamiliar with the base R \verb{|>} pipe function, type \code{help("|>")}
+into the R console for documentation and examples.
 
 To provide a more traditional experience in R,
 the \verb{$data} field is also separated by list items into the other data fields within the R6 object,

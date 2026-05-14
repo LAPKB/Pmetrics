@@ -30,10 +30,9 @@
 #' `PM_result` object.
 #'
 #' However, if you wish to manipulate the entire data frame,
-#' use the `data` field, e.g. `trough <- run1$pop$data %>% filter(time == 24)`. If
-#' you are unfamiliar with the `%>%` pipe function, please type `help("%>%", "magrittr")`
-#' into the R console and look online for instructions/tutorials in tidyverse, a
-#' powerful approach to data manipulation upon which Pmetrics is built.
+#' use the `data` field, e.g. `trough <- run1$pop$data |> filter(time == 24)`. If
+#' you are unfamiliar with the base R `|>` pipe function, type `help("|>")`
+#' into the R console for documentation and examples.
 #' @author Michael Neely, Julian Otalvaro
 #' @export
 PM_pop <- R6::R6Class(
@@ -122,16 +121,16 @@ PM_pop <- R6::R6Class(
         return(NA)
       }
 
-      pop <- op_raw %>%
-        select(-post_median, -post_mean) %>%
-        pivot_longer(cols = c(pop_median, pop_mean), values_to = "pred") %>%
-        dplyr::rename(icen = name) %>%
+      pop <- op_raw |>
+        select(-post_median, -post_mean) |>
+        pivot_longer(cols = c(pop_median, pop_mean), values_to = "pred") |>
+        dplyr::rename(icen = name) |>
         mutate(icen = dplyr::case_when(
           icen == "pop_median" ~ "median",
           icen == "pop_mean" ~ "mean"
-        )) %>%
-        mutate(block = block + 1) %>%
-        mutate(outeq = normalize_engine_index(outeq)) %>%
+        )) |>
+        mutate(block = block + 1) |>
+        mutate(outeq = normalize_engine_index(outeq)) |>
         relocate(id, time, icen, outeq, pred, block)
 
       class(pop) <- c("PM_pop_data", "data.frame")
@@ -224,25 +223,26 @@ PM_pop <- R6::R6Class(
 #' @family PMplots
 
 plot.PM_pop <- function(
-    x,
-    include = NULL,
-    exclude = NULL,
-    line = list(join = TRUE),
-    marker = FALSE,
-    out_names = NULL,
-    mult = 1,
-    icen = "median",
-    outeq = 1,
-    block = 1,
-    overlay = TRUE,
-    legend = FALSE,
-    log = FALSE,
-    grid = FALSE,
-    xlab = "Time",
-    ylab = "Output",
-    title = "",
-    xlim, ylim,
-    print = TRUE, ...) {
+  x,
+  include = NULL,
+  exclude = NULL,
+  line = list(join = TRUE),
+  marker = FALSE,
+  out_names = NULL,
+  mult = 1,
+  icen = "median",
+  outeq = 1,
+  block = 1,
+  overlay = TRUE,
+  legend = FALSE,
+  log = FALSE,
+  grid = FALSE,
+  xlab = "Time",
+  ylab = "Output",
+  title = "",
+  xlim, ylim,
+  print = TRUE, ...
+) {
   # Plot parameters ---------------------------------------------------------
 
   x <- if (inherits(x, "PM_pop")) {
@@ -340,9 +340,9 @@ plot.PM_pop <- function(
 
 
   # filter — icen is a single-value filter only; outeq is the sole grouping dimension
-  presub <- x %>%
-    filter(outeq %in% !!outeq, block %in% !!block, icen == !!icen[1]) %>%
-    mutate(group = "") %>%
+  presub <- x |>
+    filter(outeq %in% !!outeq, block %in% !!block, icen == !!icen[1]) |>
+    mutate(group = "") |>
     includeExclude(include, exclude)
 
   # group by outeq only
@@ -360,14 +360,10 @@ plot.PM_pop <- function(
   presub$group <- factor(presub$group)
 
   # select relevant columns
-  sub <- presub %>%
-    select(id, time, pred, outeq, group) %>%
+  sub <- presub |>
+    select(id, time, pred, outeq, group) |>
     ungroup()
   sub$group <- factor(sub$group)
-
-  # remove missing
-  # sub <- sub %>% filter(pred != -99) # obsolete now
-
 
 
   # Plot function ----------------------------------------------------------
@@ -386,7 +382,7 @@ plot.PM_pop <- function(
       n_colors <- length(levels(allsub$group))
       if (!is.null(user_color)) {
         if (length(user_color) == 1 && requireNamespace("RColorBrewer", quietly = TRUE) &&
-            user_color %in% rownames(RColorBrewer::brewer.pal.info)) {
+          user_color %in% rownames(RColorBrewer::brewer.pal.info)) {
           max_colors <- RColorBrewer::brewer.pal.info[user_color, "maxcolors"]
           colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, user_color))(n_colors)
         } else {
@@ -394,7 +390,7 @@ plot.PM_pop <- function(
         }
       } else if (n_colors == 1) {
         colors <- rep(marker$color[[1]], n_colors)
-      } else   if (requireNamespace("RColorBrewer", quietly = TRUE)) {
+      } else if (requireNamespace("RColorBrewer", quietly = TRUE)) {
         n_pal <- min(max(n_colors, 3L), 9L)
         colors <- rep(RColorBrewer::brewer.pal(n_pal, "Set1"), length.out = n_colors)
       } else {
@@ -409,23 +405,23 @@ plot.PM_pop <- function(
       marker$color <- NULL
     }
 
-    p <- allsub %>%
+    p <- allsub |>
       plotly::plot_ly(
         x = ~time, y = ~ pred * mult,
         color = ~group,
         colors = colors,
         name = ~group
-      ) %>%
+      ) |>
       plotly::add_markers(
         marker = marker,
         text = text,
         hovertemplate = hovertemplate
-      ) %>%
+      ) |>
       plotly::add_lines(
         line = line,
         showlegend = FALSE
       )
-    p <- p %>% plotly::layout(
+    p <- p |> plotly::layout(
       xaxis = layout$xaxis,
       yaxis = layout$yaxis,
       title = layout$title,
@@ -440,7 +436,7 @@ plot.PM_pop <- function(
 
   # call the plot function and display appropriately
   if (overlay) {
-    sub <- sub %>% dplyr::group_by(id)
+    sub <- sub |> dplyr::group_by(id)
     p <- dataPlot(sub, overlay = TRUE)
     if (print) print(p)
   } else { # overlay = FALSE, ie. split them
@@ -448,11 +444,11 @@ plot.PM_pop <- function(
     if (!requireNamespace("trelliscopejs", quietly = TRUE)) {
       cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
     }
-    sub_split <- x %>%
-      nest(data = -id) %>%
+    sub_split <- sub |>
+      nest(data = -id) |>
       mutate(panel = trelliscopejs::map_plot(data, \(x) dataPlot(x, overlay = FALSE)))
-    p <- sub_split %>%
-      ungroup() %>%
+    p <- sub_split |>
+      ungroup() |>
       trelliscopejs::trelliscope(name = "Data", nrow = nrows, ncol = ncols)
     if (print) print(p)
   }
@@ -495,9 +491,10 @@ plot.PM_pop <- function(
 #' @export
 
 summary.PM_pop <- function(
-    object, digits = max(3, getOption("digits") - 3),
-    icen = "median",
-    outeq = 1, ...) {
+  object, digits = max(3, getOption("digits") - 3),
+  icen = "median",
+  outeq = 1, ...
+) {
   sumWrk <- function(data) {
     sumstat <- matrix(NA, nrow = 7, ncol = 2, dimnames = list(c("Min", "25%", "Median", "75%", "Max", "Mean", "SD"), c("Time", "Pred")))
     # min
@@ -526,7 +523,7 @@ summary.PM_pop <- function(
     object <- object$data
   }
 
-  object <- object %>% filter(outeq == !!outeq, icen == !!icen)
+  object <- object |> filter(outeq == !!outeq, icen == !!icen)
   if (all(is.na(object$pred))) {
     result <- NA
   } else {

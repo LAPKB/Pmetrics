@@ -19,5 +19,5 @@ Both use \link{plot.PM_cycle}.
 \examples{
 # There is no example we can think of to filter or otherwise process a PM_cycle object,
 # but we provide this function for completeness.
-NPex$cycle$data \%>\% plot()
+NPex$cycle$data |> plot()
 }

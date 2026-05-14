@@ -20,10 +20,9 @@
 #' * **cov** Written to the standard of [PM_cov()]
 #' @author Michael Neely and Markus Hovd
 #' @export
-#' @keywords internal 
+#' @keywords internal
 
 PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
- 
   if (is.character(fit) && file.exists(file.path(path, "../inputs", fit))) {
     # fit is a character string pointing to a file, load it
     fit_object <- readRDS(file.path(path, "../inputs", fit))
@@ -32,90 +31,91 @@ PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
     fit_object <- NULL
   }
 
-  
+
   if (!dir.exists(path)) {
     cli::cli_abort(c("x" = "The directory {.path {path}} does not exist."))
-}
-
-# assumes pred.csv and settings.json are in wd
-op <- rlang::try_fetch(PM_op$new(path = path),
-error = function(e) {
-  cli::cli_warn("Unable to create {.cls PM_op} object", parent = e)
-  return(NULL)
-}
-)
-
-# assumes theta.csv and posterior.csv are in wd
-final <- rlang::try_fetch(PM_final$new(path = path),
-error = function(e) {
-  cli::cli_warn("Unable to create {.cls PM_final} object", parent = e)
-  return(NULL)
-}
-)
-
-# assumes cycles.csv, and settings.json are in wd
-cycle <- rlang::try_fetch(PM_cycle$new(path = path),
-error = function(e) {
-  cli::cli_warn("Unable to create {.cls PM_cycle} object", parent = e)
-  return(NULL)
-}
-)
-
-# assumes pred.csv is in wd
-pop <- rlang::try_fetch(PM_pop$new(path = path),
-error = function(e) {
-  cli::cli_warn("Unable to create {.cls PM_pop} object", parent = e)
-  return(NULL)
-}
-)
-
-# assumes pred.csv is in wd
-post <- rlang::try_fetch(PM_post$new(path = path),
-error = function(e) {
-  cli::cli_warn("Unable to create {.cls PM_post} object", parent = e)
-  return(NULL)
-}
-)
-
-cov <- rlang::try_fetch(PM_cov$new(path = path),
-error = function(e) {
-  cli::cli_warn("Unable to create {.cls PM_cov} object", parent = e)
-  return(NULL)
-}
-)
-
-core <- list(
-  data = fit_object$data,
-  model = fit_object$model,
-  model_binary_path = if (!is.null(fit_object) && inherits(fit_object$model, "PM_model")) fit_object$model$binary_path else NULL,
-  op = op,
-  cov = cov,
-  post = post,
-  pop = pop,
-  cycle = cycle,
-  final = final,
-  backend = "rust",
-  algorithm = "NPAG",
-  numeqt = 1,
-  converge = cycle$data$converged,
-  config = rlang::try_fetch(jsonlite::fromJSON(suppressWarnings(readLines(file.path(path, "settings.json"), warn = FALSE))),
-  sys = as.list(Sys.info()) %>% keep(names(.) %in% c("sysname", "machine")) %>% paste(collapse = " "),
-  
-  error = function(e) {
-    cli::cli_warn(c("!" = "Unable to read {.file {file.path(path, 'settings.json')}}"))
-    return(NULL)
   }
-)
-)
 
-class(core) <- "PM_result"
-
-
-if (write) {
-  suppressWarnings(
-    save(core, file = file.path(path, "PMout.Rdata"))
+  # assumes pred.csv and settings.json are in wd
+  op <- rlang::try_fetch(PM_op$new(path = path),
+    error = function(e) {
+      cli::cli_warn("Unable to create {.cls PM_op} object", parent = e)
+      return(NULL)
+    }
   )
-}
 
-return(invisible(core))
+  # assumes theta.csv and posterior.csv are in wd
+  final <- rlang::try_fetch(PM_final$new(path = path),
+    error = function(e) {
+      cli::cli_warn("Unable to create {.cls PM_final} object", parent = e)
+      return(NULL)
+    }
+  )
+
+  # assumes cycles.csv, and settings.json are in wd
+  cycle <- rlang::try_fetch(PM_cycle$new(path = path),
+    error = function(e) {
+      cli::cli_warn("Unable to create {.cls PM_cycle} object", parent = e)
+      return(NULL)
+    }
+  )
+
+  # assumes pred.csv is in wd
+  pop <- rlang::try_fetch(PM_pop$new(path = path),
+    error = function(e) {
+      cli::cli_warn("Unable to create {.cls PM_pop} object", parent = e)
+      return(NULL)
+    }
+  )
+
+  # assumes pred.csv is in wd
+  post <- rlang::try_fetch(PM_post$new(path = path),
+    error = function(e) {
+      cli::cli_warn("Unable to create {.cls PM_post} object", parent = e)
+      return(NULL)
+    }
+  )
+
+  cov <- rlang::try_fetch(PM_cov$new(path = path),
+    error = function(e) {
+      cli::cli_warn("Unable to create {.cls PM_cov} object", parent = e)
+      return(NULL)
+    }
+  )
+
+  config <- rlang::try_fetch(jsonlite::fromJSON(suppressWarnings(readLines(file.path(path, "settings.json"), warn = FALSE))),
+      error = function(e) {
+        cli::cli_warn(c("!" = "Unable to read {.file {file.path(path, 'settings.json')}}"))
+        return(NULL)
+      }
+    )
+
+  core <- list(
+    data = fit_object$data,
+    model = fit_object$model,
+    model_binary_path = if (!is.null(fit_object) && inherits(fit_object$model, "PM_model")) fit_object$model$binary_path else NULL,
+    op = op,
+    cov = cov,
+    post = post,
+    pop = pop,
+    cycle = cycle,
+    final = final,
+    converge = cycle$data$converged,
+    config = config,
+    sys = {
+      info <- as.list(Sys.info())
+      info |> keep(names(info) %in% c("sysname", "machine")) |> paste(collapse = " ")
+    }
+  )
+
+  class(core) <- "PM_result"
+
+
+  if (write) {
+    suppressWarnings(
+      save(core, file = file.path(path, "PMout.Rdata"))
+    )
+  }
+
+  return(invisible(core))
 }

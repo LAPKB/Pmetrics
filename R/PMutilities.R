@@ -108,7 +108,6 @@ logAxis <- function(side, grid = F, ...) {
 }
 
 
-
 # sample from multivariate normal distribution, code modified from mvtnorm package
 rmnorm <- function(n, mean, sigma) {
   sigma1 <- sigma
@@ -123,8 +122,9 @@ rmnorm <- function(n, mean, sigma) {
 
 # density function for the multivariate normal distribution, code from mvtnorm package
 dmv_norm <- function(
-    x, mean = rep(0, p), sigma = diag(p), log = FALSE,
-    checkSymmetry = TRUE) {
+  x, mean = rep(0, p), sigma = diag(p), log = FALSE,
+  checkSymmetry = TRUE
+) {
   if (is.vector(x)) {
     x <- matrix(x, ncol = length(x))
   }
@@ -173,14 +173,11 @@ openHTML <- function(x) pander::openFileInOS(x)
 # indpts,ab,corden,nvar,nactve,iaddl,icyctot,par
 
 
-
 random_name <- function() {
   n <- 1
   a <- do.call(paste0, replicate(5, sample(LETTERS, n, TRUE), FALSE))
   paste0(a, sprintf("%04d", sample(9999, n, TRUE)), sample(LETTERS, n, TRUE))
 }
-
-
 
 
 # check for numeric id and convert to number if necessary
@@ -294,14 +291,10 @@ fortranize <- function(block) {
 }
 
 
-
-
-
 # get the next line when building a file like instructions
 getNext <- function(build) {
   return(length(build) + 1)
 }
-
 
 
 # Get OS version ----------------------------------------------------------
@@ -401,22 +394,19 @@ calcTAD <- function(rawData) {
 }
 
 
-
 #' Import recycled text into documentation
 #' @param name The name of the text file
 #' @export
 #' @keywords internal
-#' 
+#'
 template <- function(name) {
-  insert <- readLines(paste0("man-roxygen/", name, ".R")) %>%
-    stringr::str_replace("#' ", "") %>%
+  insert <- readLines(paste0("man-roxygen/", name, ".R")) |>
+    stringr::str_replace("#' ", "") |>
     stringr::str_replace("<br>", "  \n")
   insert <- c(insert, "  \n")
   insert <- paste(insert, collapse = " ")
   return(insert)
 }
-
-
 
 
 # WEIGHTED STAT FUNCTIONS ---------------------------------------------------------------
@@ -487,10 +477,11 @@ weighted.t.test <- function(x, w, mu, conf.level = 0.95, alternative = "two.side
 # modified from Hmisc functions
 
 wtd.table <- function(
-    x, weights = NULL,
-    type = c("list", "table"),
-    normwt = TRUE,
-    na.rm = TRUE) {
+  x, weights = NULL,
+  type = c("list", "table"),
+  normwt = TRUE,
+  na.rm = TRUE
+) {
   type <- match.arg(type)
   if (!length(weights)) {
     weights <- rep(1, length(x))
@@ -570,9 +561,10 @@ wtd.mean <- function(x, weights = NULL, normwt = "ignored", na.rm = TRUE) {
 
 
 wtd.quantile <- function(
-    x, weights = NULL, probs = c(0, 0.25, 0.5, 0.75, 1),
-    normwt = TRUE,
-    na.rm = TRUE) {
+  x, weights = NULL, probs = c(0, 0.25, 0.5, 0.75, 1),
+  normwt = TRUE,
+  na.rm = TRUE
+) {
   if (!length(weights)) {
     return(quantile(x, probs = probs, na.rm = na.rm))
   }
@@ -614,10 +606,11 @@ wtd.quantile <- function(
 }
 
 wtd.var <- function(
-    x, weights = NULL,
-    normwt = TRUE,
-    na.rm = TRUE,
-    method = c("unbiased", "ML")) {
+  x, weights = NULL,
+  normwt = TRUE,
+  na.rm = TRUE,
+  method = c("unbiased", "ML")
+) {
   if (any(weights == 1)) {
     return(0)
   }
@@ -647,7 +640,6 @@ wtd.var <- function(
   xbar <- sum(weights * x) / sw
   sum(weights * ((x - xbar)^2)) / (sw - 1)
 }
-
 
 
 # Check if all values numeric ---------------------------------------------
@@ -703,8 +695,6 @@ all_is_numeric <- function(x, what = c("test", "vector", "nonnum"), extras = c(
 }
 
 
-
-
 # Save Flextable ---------------------------------------------------------
 
 #' @title Save a flextable object to a file
@@ -749,7 +739,6 @@ save_flextable <- function(x) {
 }
 
 
-
 # Ask with warning --------------------------------------------------------
 
 #' @title Ask with warning
@@ -774,8 +763,8 @@ cli_ask <- function(text, prompt = ">> ", ...) {
 #' @title Convert a function to a character string
 #' @keywords internal
 func_to_char <- function(fun) {
-  deparse(fun, width.cutoff = 500L) %>%
-    stringr::str_trim("left") %>%
+  deparse(fun, width.cutoff = 500L) |>
+    stringr::str_trim("left") |>
     purrr::discard(\(x) stringr::str_detect(x, "function|\\{|\\}"))
 }
 
@@ -813,24 +802,23 @@ round2 <- function(x, digits = getPMoptions("digits")) {
 #' @export
 #' @keywords internal
 cli_df <- function(df) {
-  
   # Convert all columns to character for uniform formatting
-  df_chr <- df %>%
-    mutate(across(where(is.double), ~ round2(.x))) %>%
+  df_chr <- df |>
+    mutate(across(where(is.double), ~ round2(.x))) |>
     mutate(across(everything(), ~ as.character(.x, stringsAsFactors = FALSE)))
 
 
-    # create table
-    df_tab <- knitr::kable(df_chr, format = "simple")
+  # create table
+  df_tab <- knitr::kable(df_chr, format = "simple")
 
-    # print header
-    header <- df_tab[1] %>% stringr::str_replace_all(" ", "\u00A0")
-    cli::cli_text("{.strong {header}}")
+  # print header
+  header <- df_tab[1] |> stringr::str_replace_all(" ", "\u00A0")
+  cli::cli_text("{.strong {header}}")
 
-    # print each row
-    for (i in 2:length(df_tab)) {
-      cli::cli_text(df_tab[i] %>% stringr::str_replace_all(" ", "\u00A0"))
-    }
+  # print each row
+  for (i in 2:length(df_tab)) {
+    cli::cli_text(df_tab[i] |> stringr::str_replace_all(" ", "\u00A0"))
+  }
 }
 
 #' @title Convert correlation matrix to covariance matrix
@@ -983,14 +971,13 @@ clear_build <- function() {
 latestR <- function() {
   sysname <- tolower(Sys.info()[["sysname"]])
   r_arch <- tolower(R.version$arch)
-  r_release_endpoint <- switch(
-    sysname,
+  r_release_endpoint <- switch(sysname,
     windows = "r-release-win",
     darwin = if (grepl("arm64|aarch64", r_arch)) "r-release-macos-arm64" else "r-release-macos",
     linux = "r-release-tarball",
     "r-release"
   )
-  
+
   jsonlite::fromJSON(sprintf("https://api.r-hub.io/rversions/%s", r_release_endpoint))
 }
 
@@ -1029,8 +1016,7 @@ pm_update_interval_days <- function() {
   }
   mode <- tolower(as.character(mode))
 
-  switch(
-    mode,
+  switch(mode,
     always = 0,
     daily = 1,
     weekly = 7,
@@ -1186,15 +1172,15 @@ downloadR <- function(r_info = latestR(), destdir = path.expand("~/Downloads")) 
   if (is.null(download_url) || length(download_url) == 0 || is.na(download_url)) {
     download_url <- r_info$url
   }
-  
+
   if (is.null(download_url) || length(download_url) == 0 || is.na(download_url)) {
     cli::cli_abort("No downloadable URL was returned by the rversions API for this platform.")
   }
-  
+
   if (!dir.exists(destdir)) {
     dir.create(destdir, recursive = TRUE)
   }
-  
+
   destfile <- file.path(destdir, basename(download_url))
   utils::download.file(download_url, destfile = destfile, mode = "wb")
   destfile

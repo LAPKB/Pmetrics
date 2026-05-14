@@ -25,7 +25,9 @@ See \link{plot.PM_data} for details on how to format the plot.
 \examples{
 \dontrun{
 # filter then plot the standard_data data frame from a PM_data object
-dataEx$standard_data \%>\% filter(gender == 0) \%>\% plot()
+dataEx$standard_data |>
+  filter(gender == 0) |>
+  plot()
 }
 
 }

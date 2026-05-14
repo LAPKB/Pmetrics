@@ -15,7 +15,7 @@ make_AUC(
   outeq = 1,
   block = 1,
   method = "linear",
-  addZero = F
+  addZero = FALSE
 )
 }
 \arguments{

@@ -1,10 +1,12 @@
 # Centralize Pmetrics colors for tables
 
 make_color <- function(hex, alpha = 1) {
-  if(alpha > 1) alpha <- 1
-  if(alpha < 0) alpha <- 0
-  if(!grepl("^#?[A-Fa-f0-9]{6}$", hex)){
-    rgb_vals <- tryCatch(grDevices::col2rgb(hex), error = function(e) {-1})
+  if (alpha > 1) alpha <- 1
+  if (alpha < 0) alpha <- 0
+  if (!grepl("^#?[A-Fa-f0-9]{6}$", hex)) {
+    rgb_vals <- tryCatch(grDevices::col2rgb(hex), error = function(e) {
+      -1
+    })
     if (any(rgb_vals == -1)) {
       cli::cli_abort("Invalid color name or hex code provided.")
     }
@@ -65,6 +67,3 @@ pink <- function(alpha = 1) {
 brown <- function(alpha = 1) {
   make_color(hex = "#996633", alpha = alpha)
 }
-
-
-

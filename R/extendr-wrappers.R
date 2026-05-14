@@ -17,7 +17,7 @@ NULL
 #' @param kind Kind of model, which can either be "ODE" or "Analytical".
 #' @return Simulation results.
 #' @keywords internal
-#'@export
+#' @export
 simulate_one <- function(data_path, model_path, spp, kind) .Call(wrap__simulate_one, data_path, model_path, spp, kind)
 
 #' Simulates all subjects in the data set using the model at the given path.

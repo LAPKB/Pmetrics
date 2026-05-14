@@ -23,12 +23,11 @@
     }
     cli::cli_end(ul)
     pm_maybe_notify_updates()
-    
   }
-  
+
   # Set user options for the session
   setPMoptions(launch.app = FALSE)
-  
+
   # Build model library
   # build_model_lib()
 }

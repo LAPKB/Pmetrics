@@ -147,7 +147,6 @@
 "badData"
 
 
-
 #' Example model for an NPAG/IT2B run. There are 4 parameters in the model: lag time of absorption (Tlag1),
 #' rate constant of absorption (Ka), volume (V) and rate constant of elmination (Ke).
 #' There are 5 covariates: weight in kg (WT), whether from Africa or not (AFRICA), age in years (AGE),

@@ -33,15 +33,10 @@ NULL
       title = "Pmetrics plot helper",
       fn = pm_plot
     )
-    # list(
-    #   id = "pm_run",
-    #   title = "Legacy Pmetrics run helper",
-    #   fn = pm_run_app
-    # )
   )
 }
 
-.launch_golem_app <- function(pkg, fun, launch.browser = TRUE,...) {
+.launch_golem_app <- function(pkg, fun, launch.browser = TRUE, ...) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
     cli::cli_abort(c(
       "x" = "The {.pkg {pkg}} package is required to launch this app.",
@@ -70,11 +65,6 @@ pm_plot <- function(launch.browser = TRUE, data_env = .GlobalEnv) {
   )
 }
 
-# #' @rdname apps
-# #' @export
-# pm_run <- function(launch.browser = TRUE) {
-#   .launch_packaged_app("pm_run", launch.browser = launch.browser)
-# }
 
 #' @rdname apps
 #' @export

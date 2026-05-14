@@ -19,7 +19,7 @@
 #' methods to cross-check data and model objects for compatibility.
 #' @importFrom stringr str_glue
 #' @export
-#' @keywords internal 
+#' @keywords internal
 
 PM_fit <- R6::R6Class(
   "PM_fit",
@@ -138,7 +138,6 @@ PM_fit <- R6::R6Class(
     }
   )
 ) # end PM_fit
-
 
 
 #' @export

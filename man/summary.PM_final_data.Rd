@@ -17,5 +17,5 @@ Summarizes the raw data (\code{class: PM_final_data}) from a \link{PM_final} obj
 Both use \link{summary.PM_final}.
 }
 \examples{
-NPex$final$data \%>\% summary()
+NPex$final$data |> summary()
 }

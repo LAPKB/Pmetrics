@@ -61,7 +61,6 @@ makeErrorPoly <- function(obs, sd, data, outeq = 1, col = "red", cex = 3, pch = 
   }
 
 
-
   r.1 <- round(summary(lm.1)$r.squared, 5)
   if (!bad.2) {
     r.2 <- round(summary(lm.2)$r.squared, 5)

@@ -76,19 +76,19 @@ test_that("Analytical models allow multi-line secondary conditionals", {
       wt = interp()
     ),
     sec = function() {
-      v = v0 * wt
+      v <- v0 * wt
       if (gender < 1) {
-        v = v0 * 0.8
+        v <- v0 * 0.8
       }
     },
     eqn = function() {
       two_comp_bolus
     },
     lag = function() {
-      lag[1] = 0
+      lag[1] <- 0
     },
     out = function() {
-      y[1] = x[2] / v
+      y[1] <- x[2] / v
     },
     err = list(
       proportional(5, c(0.1, 0.15, 0, 0))
@@ -99,7 +99,7 @@ test_that("Analytical models allow multi-line secondary conditionals", {
   expect_s3_class(mod, "PM_model")
   sec_code <- paste(deparse(mod$arg_list$sec), collapse = "\n")
   expect_true(grepl("if (gender < 1)", sec_code, fixed = TRUE))
-  expect_true(grepl("v = v0 * wt", sec_code, fixed = TRUE))
+  expect_true(grepl("v <- v0 * wt", sec_code, fixed = TRUE))
 })
 
 # test_that("Load model",{

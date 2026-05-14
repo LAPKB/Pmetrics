@@ -18,9 +18,9 @@ Both use \link{summary.PM_op}.
 }
 \examples{
 \dontrun{
-NPex$op$data \%>\%
-  dplyr::filter(pred > 5) \%>\%
-  dplyr::filter(pred < 10) \%>\%
+NPex$op$data |>
+  dplyr::filter(pred > 5) |>
+  dplyr::filter(pred < 10) |>
   summary()
 }
 }

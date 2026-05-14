@@ -72,10 +72,9 @@
 #' @author Michael Neely
 #' @export
 
-make_NCA <- function(x, postPred = F, include, exclude, input = 1, icen = "median", outeq = 1, block = 1,
+make_NCA <- function(x, postPred = FALSE, include, exclude, input = 1, icen = "median", outeq = 1, block = 1,
                      start = 0, end = Inf, first = NA, last = NA, terminal = 3) {
   # declare global variables
-  whichtime <- NULL
   id <- NULL
 
   if (!"PM_result" %in% class(x)) stop("You must specify a PM_result object.")
@@ -84,12 +83,12 @@ make_NCA <- function(x, postPred = F, include, exclude, input = 1, icen = "media
   post <- x$post$data
 
   timeFilter <- function(idkeep, thisStartTime, thisEndTime) {
-    dataSub <- mdata %>% filter(id == idkeep & time >= thisStartTime & time <= thisEndTime)
+    dataSub <- mdata |> filter(id == idkeep & time >= thisStartTime & time <= thisEndTime)
     return(dataSub)
   }
 
   timeFilterPost <- function(idkeep, thisStartTime, thisEndTime) {
-    dataSub <- post %>% filter(id == idkeep, time >= thisStartTime, time <= thisEndTime)
+    dataSub <- post |> filter(id == idkeep, time >= thisStartTime, time <= thisEndTime)
     return(dataSub)
   }
 
@@ -102,7 +101,7 @@ make_NCA <- function(x, postPred = F, include, exclude, input = 1, icen = "media
 
     if (!is.na(first)) {
       if (length(first) < nsub) first <- c(first, rep(tail(first, 1), nsub))
-      startTimes <- sapply(1:length(doseTimes), function(x) doseTimes[[x]][first[x]])
+      startTimes <- sapply(seq_along(doseTimes), function(x) doseTimes[[x]][first[x]])
 
       if (all(is.na(last))) { # missing last
         endTimes <- tapply(mdata$time[mdata$evid == 0], mdata$id[mdata$evid == 0], max)
@@ -142,7 +141,7 @@ make_NCA <- function(x, postPred = F, include, exclude, input = 1, icen = "media
     mdata2 <- purrr::pmap(.l = list(
       idkeep = unique(mdata$id), thisStartTime = startTimes,
       thisEndTime = endTimes
-    ), .f = timeFilter) %>%
+    ), .f = timeFilter) |>
       dplyr::bind_rows()
 
     return(list(mdata2, startTimes, endTimes))
@@ -172,7 +171,7 @@ make_NCA <- function(x, postPred = F, include, exclude, input = 1, icen = "media
     # then calculate time after dose and previous dose
     doseTime <- 0
     prevDose <- 0
-    for (i in 1:nrow(mdata2)) {
+    for (i in seq_len(nrow(mdata2))) {
       if (mdata2$evid[i] != 0) {
         doseTime <- mdata2$time[i]
         prevDose <- mdata2$dose[i]
@@ -206,7 +205,7 @@ make_NCA <- function(x, postPred = F, include, exclude, input = 1, icen = "media
     post2 <- purrr::pmap(.l = list(
       idkeep = unique(post$id), thisStartTime = startTimes,
       thisEndTime = endTimes
-    ), .f = timeFilterPost) %>%
+    ), .f = timeFilterPost) |>
       dplyr::bind_rows()
 
 
@@ -240,7 +239,7 @@ make_NCA <- function(x, postPred = F, include, exclude, input = 1, icen = "media
     post4 <- post4[order(post4$id, post4$time, -post4$evid), ]
 
     # then calculate time after dose and previous dose
-    for (i in 1:nrow(post4)) {
+    for (i in seq_len(nrow(post4))) {
       if (post4$evid[i] != 0) {
         doseTime <- post4$time[i]
         prevDose <- post4$dose[i]
@@ -280,17 +279,17 @@ make_NCA <- function(x, postPred = F, include, exclude, input = 1, icen = "media
     if (!missing(exclude)) {
       mdata <- subset(mdata, !sub("[[:space:]]+", "", as.character(mdata$id)) %in% as.character(exclude))
       post <- subset(post, !sub("[[:space:]]+", "", as.character(post$id)) %in% as.character(exclude))
-      if (length(unique(mdata$id)) == 0) stop("No subjects left to analyze.", call. = F)
+      if (length(unique(mdata$id)) == 0) stop("No subjects left to analyze.", call. = FALSE)
     }
 
     if (postPred) {
       # check if any subjects are still missing from the post object after include/exclude are done, exclude them from the analysis and warn user
       missing_from_post <- setdiff(unique(mdata$id), unique(post$id)) # there should never be more in post than in mdata
       if (length(missing_from_post) != 0) {
-        warning("Subjects No. ", paste(missing_from_post, collapse = ", "), " are missing from the post object and were excluded.", call. = F)
+        warning("Subjects No. ", paste(missing_from_post, collapse = ", "), " are missing from the post object and were excluded.", call. = FALSE)
         mdata <- subset(mdata, !sub("[[:space:]]+", "", as.character(mdata$id)) %in% as.character(missing_from_post))
         post <- subset(post, !sub("[[:space:]]+", "", as.character(post$id)) %in% as.character(missing_from_post))
-        if (length(unique(mdata$id)) == 0) stop("No subjects left to analyze.", call. = F)
+        if (length(unique(mdata$id)) == 0) stop("No subjects left to analyze.", call. = FALSE)
       }
       dataList <- conv_post(post = post, mdata = mdata, input = input, outeq = outeq, block = block, icen = icen, start = start, end = end, first = first, last = last)
     } else {

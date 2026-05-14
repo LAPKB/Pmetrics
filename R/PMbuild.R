@@ -14,9 +14,7 @@
 #' @export
 
 
-
 PM_build <- function() {
-  
   if (is_rustup_installed()) {
     cli::cli_text("Rust was detected in your system, Fetching dependencies and building base project.")
     template_path <- resolve_template_path()

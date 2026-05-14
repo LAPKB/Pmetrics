@@ -28,10 +28,9 @@ allows you to access them in an S3 way, e.g. \code{run1$post$time} if \code{run1
 \code{PM_result} object.
 
 However, if you wish to manipulate the entire data frame,
-use the \code{data} field, e.g. \code{trough <- run1$post$data \%>\% filter(time == 24)}. If
-you are unfamiliar with the \verb{\%>\%} pipe function, please type \code{help("\%>\%", "magrittr")}
-into the R console and look online for instructions/tutorials in tidyverse, a
-powerful approach to data manipulation upon which Pmetrics is built.
+use the \code{data} field, e.g. \code{trough <- run1$post$data |> filter(time == 24)}. If
+you are unfamiliar with the base R \verb{|>} pipe function, type \code{help("|>")}
+into the R console for documentation and examples.
 }
 \author{
 Michael Neely, Julian Otalvaro

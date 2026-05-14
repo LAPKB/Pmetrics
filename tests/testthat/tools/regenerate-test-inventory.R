@@ -32,7 +32,7 @@ extract_testthat_calls <- function(file) {
       first_arg <- trimws(capture[2])
 
       if (grepl('^\".*\"$', first_arg)) {
-        return(sub('^\"(.*)\"$', '\\1', first_arg))
+        return(sub('^\"(.*)\"$', "\\1", first_arg))
       }
 
       return(first_arg)
@@ -52,10 +52,10 @@ extract_testthat_calls <- function(file) {
 }
 
 generate_test_inventory <- function(
-    pkg_root = ".",
-    tests_path = file.path("tests", "testthat"),
-    output_path = file.path("tests", "testthat", "test-inventory.csv"),
-    write_csv = TRUE
+  pkg_root = ".",
+  tests_path = file.path("tests", "testthat"),
+  output_path = file.path("tests", "testthat", "test-inventory.csv"),
+  write_csv = TRUE
 ) {
   pkg_root <- normalizePath(pkg_root, winslash = "/", mustWork = TRUE)
   tests_dir <- file.path(pkg_root, tests_path)

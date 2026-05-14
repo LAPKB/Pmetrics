@@ -17,5 +17,5 @@ Plots the raw data (\code{class: PM_final_data}) from a \link{PM_final} object i
 Both use \link{plot.PM_final}.
 }
 \examples{
-NPex$final$data \%>\% plot()
+NPex$final$data |> plot()
 }

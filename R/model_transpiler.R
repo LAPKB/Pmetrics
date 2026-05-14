@@ -95,8 +95,9 @@ has_nonliteral_index <- function(fn_or_expr, targets) {
 
 # Convert an R expression to Rust code (recursive)
 expr_to_rust <- function(
-    expr, params = NULL, covs = NULL,
-    declared = new.env(parent = emptyenv())) {
+  expr, params = NULL, covs = NULL,
+  declared = new.env(parent = emptyenv())
+) {
   declared_has <- function(name) isTRUE(get0(name, envir = declared, inherits = FALSE))
   declared_add <- function(name) assign(name, TRUE, envir = declared)
 
@@ -277,7 +278,8 @@ expr_to_rust <- function(
 
 # Helpers: convert list of statements to Rust and indent blocks
 stmts_to_rust <- function(
-    exprs, params = NULL, covs = NULL) {
+  exprs, params = NULL, covs = NULL
+) {
   lines <- vapply(
     exprs,
     expr_to_rust,
@@ -302,16 +304,16 @@ transpile_ode_eqn <- function(fun, params, covs, sec) {
     paste(params, collapse = ", "),
     paste(sec, collapse = ", ")
   )
-  body_rust <- stmts_to_rust(exprs, params, covs) %>%
-    stringr::str_replace_all("bolus\\[", "b\\[") %>%
+  body_rust <- stmts_to_rust(exprs, params, covs) |>
+    stringr::str_replace_all("bolus\\[", "b\\[") |>
     stringr::str_replace_all("r\\[", "rateiv\\[")
   sprintf("%s\n%s\n }", header, indent(body_rust, spaces = 4))
 }
 
 
-
 transpile_analytic_eqn <- function(
-    fun, params, covs) {
+  fun, params, covs
+) {
   if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
     found <- get_found_model(fun)
     if (length(found) == 1) { # NA
@@ -370,23 +372,23 @@ transpile_analytic_eqn <- function(
   )
   body_rust <- stmts_to_rust(exprs)
   # remap parameters
-  # req_par <- get(tem)$parameters %>%
-  #   tolower() %>%
+  # req_par <- get(tem)$parameters |>
+  #   tolower() |>
 
 
   # this block needs to write the equations, e.g. p[0] = ke, based on the parameters in the model template,
   # not the parameters in the model. The model parameters may have different names, but are checked earlier.
 
-  req_par <- model_lib(show = FALSE) %>%
-    filter(Name == tem) %>%
-    select(Parameters) %>%
-    stringr::str_split(", ", simplify = TRUE) %>%
-    unlist() %>%
-    tolower() %>%
-    purrr::discard(~ .x == "v" & !tem %in% c("one_comp_iv_cl", "two_comp_bolus_cl")) %>% # don't include V for models that don't need it in equations
+  req_par <- model_lib(show = FALSE) |>
+    filter(Name == tem) |>
+    select(Parameters) |>
+    stringr::str_split(", ", simplify = TRUE) |>
+    unlist() |>
+    tolower() |>
+    purrr::discard(~ .x == "v" & !tem %in% c("one_comp_iv_cl", "two_comp_bolus_cl")) |> # don't include V for models that don't need it in equations
     purrr::imap_chr(\(x, y){
       sprintf("p[%i] = %s;", y - 1, x)
-    }) %>%
+    }) |>
     paste(collapse = "\n")
 
   sprintf("%s\n%s\n%s\n }", header, indent(body_rust, spaces = 4), indent(req_par, spaces = 4))
@@ -400,7 +402,8 @@ transpile_sec <- function(fun) {
 
 
 transpile_fa <- function(
-    fun, params, covs, sec) {
+  fun, params, covs, sec
+) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
     as.list(body(fun)[-1])
   } else {
@@ -440,7 +443,8 @@ transpile_fa <- function(
 
 
 transpile_lag <- function(
-    fun, params, covs, sec) {
+  fun, params, covs, sec
+) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
     as.list(body(fun)[-1])
   } else {
@@ -479,7 +483,8 @@ transpile_lag <- function(
 }
 
 transpile_ini <- function(
-    fun, params, covs, sec) {
+  fun, params, covs, sec
+) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
     "|p, t, cov, x| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",
@@ -492,7 +497,8 @@ transpile_ini <- function(
 }
 
 transpile_out <- function(
-    fun, params, covs, sec) {
+  fun, params, covs, sec
+) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
     "|x, p, t, cov, y| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s);\n%s",
@@ -579,9 +585,9 @@ reserved_name_conflicts <- function(blocks) {
         return(NA_character_)
       }
     })
-  }) %>%
-    unlist() %>%
-    purrr::discard(\(d) is.na(d)) %>%
+  }) |>
+    unlist() |>
+    purrr::discard(\(d) is.na(d)) |>
     unique()
 
   return(conflicts)

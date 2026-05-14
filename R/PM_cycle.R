@@ -21,11 +21,10 @@
 #'
 #' The main results are contained in the `$data` field,
 #' and it is this field which is passed to the `$plot` and `$summary` methods.
-#' You can use this `$data` field for custom manipulations, e.g. `last <- run1$cycle$data$aic %>% tail(1)`.
+#' You can use this `$data` field for custom manipulations, e.g. `last <- run1$cycle$data$aic |> tail(1)`.
 #' This will report the last cycle aic.
-#' If you are unfamiliar with the `%>%` pipe function, please type `help("%>%", "magrittr")`
-#' into the R console and look online for instructions/tutorials in tidyverse, a
-#' powerful approach to data manipulation upon which Pmetrics is built.
+#' If you are unfamiliar with the base R `|>` pipe function, type `help("|>")`
+#' into the R console for documentation and examples.
 #'
 #' To provide a more traditional experience in R,
 #' the `$data` field is also separated by list items into the other data fields within the R6 object,
@@ -152,7 +151,7 @@ PM_cycle <- R6::R6Class(
             post_mean = readr::col_double(),
             post_median = readr::col_double()
           ), show_col_types = FALSE
-        ) %>% filter(!is.na(obs))
+        ) |> filter(!is.na(obs))
       } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_op
         class(data$data) <- c("PM_cycle_data", "list")
         return(data$data)
@@ -194,9 +193,8 @@ PM_cycle <- R6::R6Class(
       }
 
 
-
-      cycle_data <- raw %>%
-        pivot_longer(cols = ends_with(c("mean", "median", "sd"))) %>%
+      cycle_data <- raw |>
+        pivot_longer(cols = ends_with(c("mean", "median", "sd"))) |>
         separate_wider_delim(name, delim = ".", names = c("parameter", "statistic"))
 
       num_params <- nrow((config$parameters$parameters))
@@ -206,29 +204,29 @@ PM_cycle <- R6::R6Class(
       bic <- num_params * log(length(unique(op_raw$id))) + raw$neg2ll
       names(bic) <- raw$cycle
 
-      mean <- cycle_data %>%
-        filter(statistic == "mean") %>%
-        select(cycle, value, parameter) %>%
-        pivot_wider(names_from = parameter, values_from = value) %>%
-        arrange(cycle) %>%
+      mean <- cycle_data |>
+        filter(statistic == "mean") |>
+        select(cycle, value, parameter) |>
+        pivot_wider(names_from = parameter, values_from = value) |>
+        arrange(cycle) |>
         mutate(across(.cols = -cycle, .fns = function(x) {
           x / dplyr::first(x)
         }))
 
-      sd <- cycle_data %>%
-        filter(statistic == "sd") %>%
-        select(cycle, value, parameter) %>%
-        pivot_wider(names_from = parameter, values_from = value) %>%
-        arrange(cycle) %>%
+      sd <- cycle_data |>
+        filter(statistic == "sd") |>
+        select(cycle, value, parameter) |>
+        pivot_wider(names_from = parameter, values_from = value) |>
+        arrange(cycle) |>
         mutate(across(.cols = -cycle, .fns = function(x) {
           x / dplyr::first(x)
         }))
 
-      median <- cycle_data %>%
-        filter(statistic == "median") %>%
-        select(cycle, value, parameter) %>%
-        pivot_wider(names_from = parameter, values_from = value) %>%
-        arrange(cycle) %>%
+      median <- cycle_data |>
+        filter(statistic == "median") |>
+        select(cycle, value, parameter) |>
+        pivot_wider(names_from = parameter, values_from = value) |>
+        arrange(cycle) |>
         mutate(across(.cols = -cycle, .fns = function(x) {
           x / dplyr::first(x)
         }))
@@ -238,11 +236,11 @@ PM_cycle <- R6::R6Class(
       n_cyc <- max(cycle_data$cycle)
 
       # gamlam
-      model_types <- decode_error_model_rows(config$errormodels$models, op_raw$outeq) %>%
-        dplyr::filter(.data$outeq %in% observed_outeq) %>%
+      model_types <- decode_error_model_rows(config$errormodels$models, op_raw$outeq) |>
+        dplyr::filter(.data$outeq %in% observed_outeq) |>
         dplyr::select(outeq, type)
 
-      gamlam <- raw %>% select(starts_with("gamlam"))
+      gamlam <- raw |> select(starts_with("gamlam"))
       if (ncol(gamlam) == 0) {
         gamlam <- tibble::tibble(
           cycle = numeric(),
@@ -254,16 +252,16 @@ PM_cycle <- R6::R6Class(
         if (ncol(gamlam) == 1 && n_out > 1) {
           gamlam <- cbind(gamlam, replicate((n_out - 1), gamlam[, 1]))
         }
-        gamlam <- gamlam %>%
+        gamlam <- gamlam |>
           pivot_longer(
             cols = everything(),
             values_to = "value", names_to = c("type", "outeq"),
             names_sep = "\\."
-          ) %>%
-          mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
-          select(cycle, value, outeq) %>%
-          arrange(cycle, outeq) %>%
-          mutate(outeq = normalize_engine_index(as.numeric(outeq))) %>%
+          ) |>
+          mutate(cycle = rep(1:n_cyc, each = n_out)) |>
+          select(cycle, value, outeq) |>
+          arrange(cycle, outeq) |>
+          mutate(outeq = normalize_engine_index(as.numeric(outeq))) |>
           dplyr::right_join(model_types, by = "outeq")
       }
 
@@ -272,7 +270,7 @@ PM_cycle <- R6::R6Class(
 
       res <- list(
         names = config$parameters$parameters$name,
-        objective = raw %>% select(cycle, neg2ll) %>% mutate(aic = aic, bic = bic),
+        objective = raw |> select(cycle, neg2ll) |> mutate(aic = aic, bic = bic),
         gamlam = gamlam,
         mean = mean,
         sd = sd,
@@ -368,16 +366,17 @@ PM_cycle <- R6::R6Class(
 #' @family PMplots
 
 plot.PM_cycle <- function(
-    x,
-    line = TRUE,
-    marker = TRUE,
-    colors,
-    linetypes,
-    omit,
-    grid = TRUE,
-    xlab, ylab,
-    print = TRUE,
-    ...) {
+  x,
+  line = TRUE,
+  marker = TRUE,
+  colors,
+  linetypes,
+  omit,
+  grid = TRUE,
+  xlab, ylab,
+  print = TRUE,
+  ...
+) {
   if (inherits(x, "PM_cycle")) {
     data <- x$data
   } else {
@@ -395,7 +394,7 @@ plot.PM_cycle <- function(
   nvar <- if (inherits(data$mean, "matrix")) {
     ncol(data$mean)
   } else {
-    ncol(data$mean %>% select(-cycle))
+    ncol(data$mean |> select(-cycle))
   }
 
   line <- amendLine(line, default = list(color = "dodgerblue", width = 2))
@@ -481,7 +480,7 @@ plot.PM_cycle <- function(
     "<b>-2 * Log-Likelihood</b>",
     "-2 * Log-Likelihood"
   )
-  p1 <- graph_data %>%
+  p1 <- graph_data |>
     plotly::plot_ly(
       x = ~cycle, y = ~neg2ll,
       type = "scatter",
@@ -490,7 +489,7 @@ plot.PM_cycle <- function(
       marker = marker,
       showlegend = FALSE,
       hovertemplate = "Cycle: %{x:i}<br>-2*LL: %{y:.3f}<extra></extra>"
-    ) %>%
+    ) |>
     layout(
       xaxis = layout$xaxis,
       yaxis = layout$yaxis
@@ -504,9 +503,9 @@ plot.PM_cycle <- function(
     "AIC/BIC"
   )
 
-  p2 <- graph_data %>%
-    select(-neg2ll) %>%
-    pivot_longer(cols = -cycle, names_to = "type", values_to = "value") %>%
+  p2 <- graph_data |>
+    select(-neg2ll) |>
+    pivot_longer(cols = -cycle, names_to = "type", values_to = "value") |>
     plotly::plot_ly(
       x = ~cycle, y = ~value, type = "scatter", mode = "lines+markers",
       color = ~type,
@@ -518,7 +517,7 @@ plot.PM_cycle <- function(
       marker = list(size = marker$size, symbol = marker$symbol),
       hovertemplate = "Cycle: %{x:i}<br>%{text}: %{y:.3f}<extra></extra>",
       showlegend = FALSE
-    ) %>%
+    ) |>
     layout(
       xaxis = layout$xaxis,
       yaxis = layout$yaxis
@@ -548,31 +547,31 @@ plot.PM_cycle <- function(
 
     gamlam <- tibble::as_tibble(gamlam_mat)
     names(gamlam) <- coln
-    gamlam <- gamlam %>%
-      dplyr::mutate(cycle = seq_len(n_cyc_local)) %>%
+    gamlam <- gamlam |>
+      dplyr::mutate(cycle = seq_len(n_cyc_local)) |>
       tidyr::pivot_longer(
         cols = -cycle,
         values_to = "value",
         names_to = c("type", "outeq"),
         names_sep = "\\.",
         values_drop_na = FALSE
-      ) %>%
-      dplyr::mutate(outeq = normalize_engine_index(as.numeric(outeq))) %>%
-      dplyr::select(cycle, value, outeq, type) %>%
+      ) |>
+      dplyr::mutate(outeq = normalize_engine_index(as.numeric(outeq))) |>
+      dplyr::select(cycle, value, outeq, type) |>
       dplyr::arrange(cycle, outeq)
   }
-  
+
   # Use the reconstructed gamlam for plotting when needed; otherwise use
   # the `data$gamlam` already present.
   gamlam_plot <- if (exists("gamlam")) gamlam else data$gamlam
-  p3 <- gamlam_plot %>%
+  p3 <- gamlam_plot |>
     mutate(
       type = ifelse(type == "Additive", "Lambda", "Gamma"),
       outeq = as.factor(outeq),
       # Create list-column for customdata with multiple values per point
       text = paste0("Outeq ", outeq, "<br>", type)
-    ) %>%
-    filter(cycle %in% include) %>%
+    ) |>
+    filter(cycle %in% include) |>
     plotly::plot_ly(
       x = ~cycle, y = ~value, type = "scatter", mode = "lines+markers",
       color = ~outeq,
@@ -587,12 +586,11 @@ plot.PM_cycle <- function(
         "%{text}<extra></extra>: %{y:.3f}<br>"
       ),
       showlegend = FALSE
-    ) %>%
+    ) |>
     layout(
       xaxis = layout$xaxis,
       yaxis = layout$yaxis
     )
-
 
 
   # normalized plots
@@ -604,8 +602,8 @@ plot.PM_cycle <- function(
     )
     layout$yaxis$range <- range
 
-    .p <- graph_data[[.par]] %>%
-      pivot_longer(cols = -cycle, names_to = "par") %>%
+    .p <- graph_data[[.par]] |>
+      pivot_longer(cols = -cycle, names_to = "par") |>
       plot_ly(
         x = ~cycle, y = ~value, type = "scatter", mode = "markers+lines",
         color = ~par,
@@ -618,7 +616,7 @@ plot.PM_cycle <- function(
         hovertemplate = paste0("Cycle: %{x:i}<br>Parameter: %{text}<br>", .par, ": %{y:.3f}<br><extra></extra>"),
         showlegend = FALSE,
         legendgroup = "Normalized"
-      ) %>%
+      ) |>
       layout(
         xaxis = layout$xaxis,
         yaxis = layout$yaxis
@@ -629,11 +627,11 @@ plot.PM_cycle <- function(
   # update objects if needed
   if (is.matrix(data$mean)) {
     n_cyc <- max(data$cycnum)
-    data$mean <- tibble::tibble(cycle = 1:n_cyc) %>%
+    data$mean <- tibble::tibble(cycle = 1:n_cyc) |>
       dplyr::bind_cols(tidyr::as_tibble(data$mean))
-    data$median <- tibble::tibble(cycle = 1:n_cyc) %>%
+    data$median <- tibble::tibble(cycle = 1:n_cyc) |>
       dplyr::bind_cols(tidyr::as_tibble(data$median))
-    data$sd <- tibble::tibble(cycle = 1:n_cyc) %>%
+    data$sd <- tibble::tibble(cycle = 1:n_cyc) |>
       dplyr::bind_cols(tidyr::as_tibble(data$sd))
   }
 
@@ -651,14 +649,13 @@ plot.PM_cycle <- function(
   if (!all(is.na(data$sd))) {
     p6 <- normalized_plot("SD", graph_range)
   } else {
-    p6 <- plotly::plotly_empty(type = "scatter", mode = "markers", showlegend = F) %>%
+    p6 <- plotly::plotly_empty(type = "scatter", mode = "markers", showlegend = F) |>
       layout(title = list(
         text = "Initial standard deviation = 0.\nAssay error may be too large.",
         yref = "paper",
         y = 0.5
       ))
   }
-
 
 
   p_r1 <- plotly::subplot(p1, p2, p3,
@@ -676,7 +673,7 @@ plot.PM_cycle <- function(
     titleX = T, shareX = F,
     titleY = T,
     margin = c(0.05, 0.05, 0, 0.05)
-  ) %>%
+  ) |>
     layout(legend = list(y = 0.4))
 
   if (print) print(p)
@@ -695,7 +692,7 @@ plot.PM_cycle <- function(
 #' @examples
 #' # There is no example we can think of to filter or otherwise process a PM_cycle object,
 #' # but we provide this function for completeness.
-#' NPex$cycle$data %>% plot()
+#' NPex$cycle$data |> plot()
 #' @export
 #'
 plot.PM_cycle_data <- function(x, ...) {
@@ -778,7 +775,7 @@ summary.PM_cycle <- function(object, cycle = NULL, digits = 3, ...) {
     ll = round(object$objective$neg2ll[cyc], digits),
     aic = round(object$objective$aic[cyc], digits),
     bic = round(object$objective$bic[cyc], digits),
-    gamlam = object$gamlam %>% filter(cycle == cyc) %>% mutate(value = round(value, digits)),
+    gamlam = object$gamlam |> filter(cycle == cyc) |> mutate(value = round(value, digits)),
     mean = round(object$mean[cyc, ], digits),
     sd = round(object$sd[cyc, ], digits),
     median = round(object$median[cyc, ], digits)
@@ -839,10 +836,9 @@ print.summary.PM_cycle <- function(x, ...) {
 
   cli::cli_h3("Normalized parameter values:")
   cli::cli_end()
-  par_tbl <- bind_rows(x$mean, x$sd, x$median) %>% mutate(stat = c("mean", "sd", "median"))
+  par_tbl <- bind_rows(x$mean, x$sd, x$median) |> mutate(stat = c("mean", "sd", "median"))
   print(par_tbl)
 }
-
 
 
 #' @title Summarize PM_cycle_data objects
@@ -856,7 +852,7 @@ print.summary.PM_cycle <- function(x, ...) {
 #' @examples
 #' # There is no example we can think of to filter or otherwise process a PM_cycle object,
 #' # but we provide this function for completeness.
-#' NPex$cycle$data %>% summary()
+#' NPex$cycle$data |> summary()
 #' # all the below are the same
 #' # summary(NPex$cycle$data)
 #' # summary(NPex$cycle)

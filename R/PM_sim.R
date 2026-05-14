@@ -198,7 +198,7 @@ PM_sim <- R6::R6Class(
     #' to simulate. This is useful when you already have fixed parameter values, such as
     #' `NPex$final$popPoints`. Each row will generate one simulated profile, so `nsim` is
     #' ignored and the number of simulated profiles will equal the number of rows in the
-    #' data frame. If a `$prob` column is present, it will be ignored, since each row is 
+    #' data frame. If a `$prob` column is present, it will be ignored, since each row is
     #' treated as the parameters to be used for one simulation.
     #'
     #'     ```
@@ -579,7 +579,7 @@ PM_sim <- R6::R6Class(
       }
 
       # check to make sure any arguments in ... are not misspelled or otherwise unrecognized
-      allArgs <- formals(PM_sim$public_methods$initialize) %>% names()
+      allArgs <- formals(PM_sim$public_methods$initialize) |> names()
       # exclude the variadic placeholder from validation
       allArgs <- setdiff(allArgs, "...")
       dotArgs <- names(dots)
@@ -592,7 +592,6 @@ PM_sim <- R6::R6Class(
           "i" = "Check for case errors or misspellings. Refer to {.help PM_sim} for a list of valid arguments."
         ))
       }
-
 
 
       if (missing(poppar)) {
@@ -661,7 +660,7 @@ PM_sim <- R6::R6Class(
         case <- 7
 
         # parse poppar list
-        poppar_elements <- names(poppar) %>% purrr::discard(~ .x == "wt")
+        poppar_elements <- names(poppar) |> purrr::discard(~ .x == "wt")
 
         if (length(poppar_elements) == 2 && all(c("mean", "sd") %in% poppar_elements)) { # mean and SD only
           poppar$cov <- diag(poppar$sd^2) # make covariance matrix
@@ -794,7 +793,6 @@ PM_sim <- R6::R6Class(
             "i" = "See ?PM_sim for help."
           ))
         }
-
 
 
         # check if user specified covariate with posterior simulation?
@@ -966,15 +964,14 @@ PM_sim <- R6::R6Class(
       }
 
 
-
       ###### MODEL
 
       # get information from model
       arg_list <- model$arg_list
       mod_list <- model$model_list
       mod_npar <- length(mod_list$parameters) # number of random parameters
-      # mod_nfix <- sum(map(mod_list$pri, \(x) x$mode == "constant") %>% unlist()) # number of constant parameters
-      # mod_nranfix <- sum(map(mod_list$pri, \(x) x$mode == "fixed") %>% unlist()) # number of random but fixed parameters
+      # mod_nfix <- sum(map(mod_list$pri, \(x) x$mode == "constant") |> unlist()) # number of constant parameters
+      # mod_nranfix <- sum(map(mod_list$pri, \(x) x$mode == "fixed") |> unlist()) # number of random but fixed parameters
       mod_numeqt <- mod_list$n_out
       mod_asserr <- map(mod_list$err, \(x) x$coeff)
 
@@ -1054,7 +1051,7 @@ PM_sim <- R6::R6Class(
         if (length(limits) == 1) { # e.g. limits = 3, multiply upper...
           limits <- c(1, limits) # ...and set lower multiplier to 1
         }
-        parLimits <- orig_lim %>% mutate(
+        parLimits <- orig_lim |> mutate(
           min = min * limits[1],
           max = max * limits[2]
         )
@@ -1085,8 +1082,6 @@ PM_sim <- R6::R6Class(
       }
 
 
-
-
       # COVARIATES ----------------------------------------------------
 
       # if covariate is not null and simulating more than 1 new subject,
@@ -1103,8 +1098,8 @@ PM_sim <- R6::R6Class(
             pars <- poppar$postMean # get the parameter values
           } else { # manual poppar prior, so simulate arbitrary number of parameters
 
-            poppar <- poppar %>%
-              purrr::set_names(c("wt", "popMean", "popCov")) %>%
+            poppar <- poppar |>
+              purrr::set_names(c("wt", "popMean", "popCov")) |>
               c(list(popCor = cov2cor(.$popCov))) # keeps it consistent with PM_final_data
 
             weights <- poppar$wt
@@ -1124,9 +1119,9 @@ PM_sim <- R6::R6Class(
             pars <- map(1:length(weights), \(i) {
               tryCatch(suppressWarnings(TruncatedNormal::rtmvnorm(n = samples_per_mode[i], mean = means[i, ], sigma = cov_matrix, lb = rep(0, ncol(means[i, ])))),
                 error = function(e) NULL
-              ) %>% as.data.frame()
-            }) %>%
-              list_rbind() %>%
+              ) |> as.data.frame()
+            }) |>
+              list_rbind() |>
               rlang::set_names(names(means))
           }
           # Generate samples for each covariate
@@ -1140,24 +1135,24 @@ PM_sim <- R6::R6Class(
               "i" = "Please check your covariance matrix."
             ))
           }
-          samples <- tryCatch(TruncatedNormal::rtmvnorm(n = nrow(pars), mean = means, sigma = cov_matrix, lb = rep(0, length(means))), error = function(e) NULL) %>%
-            tibble::as_tibble(.name_repair = "minimal") %>%
+          samples <- tryCatch(TruncatedNormal::rtmvnorm(n = nrow(pars), mean = means, sigma = cov_matrix, lb = rep(0, length(means))), error = function(e) NULL) |>
+            tibble::as_tibble(.name_repair = "minimal") |>
             rlang::set_names(names(means))
 
           # in either case, combine the pars and covariates and proceed
-          CVsum <- bind_cols(pars, samples, .name_repair = "minimal") %>% mutate(icen = "mean")
+          CVsum <- bind_cols(pars, samples, .name_repair = "minimal") |> mutate(icen = "mean")
         } else { # we had a PM_final_data as covariate$cov
           CVsum <- covariate$cov$summary(icen = "mean")
         }
 
         # take out fixed covariates not to be simulated
         if (length(covariate$fix) > 0) {
-          CVsum <- CVsum %>% select(.cols = -!!covariate$fix)
+          CVsum <- CVsum |> select(.cols = -!!covariate$fix)
         }
         # remove covariates that are missing because they have all the same value
         # this also drops id and icen columns
-        CVsum <- CVsum %>%
-          select(where(~ dplyr::n_distinct(.) > 1)) %>%
+        CVsum <- CVsum |>
+          select(where(~ dplyr::n_distinct(.) > 1)) |>
           select(-id)
 
         # get correlation matrix
@@ -1191,7 +1186,7 @@ PM_sim <- R6::R6Class(
 
 
         # get SD of covariates
-        covSD <- CVsum %>% summarize(across(last_col(offset = nsimcov - 1):last_col(), \(x) sd(x, na.rm = TRUE)))
+        covSD <- CVsum |> summarize(across(last_col(offset = nsimcov - 1):last_col(), \(x) sd(x, na.rm = TRUE)))
 
         # grab their names
         covs2sim <- names(covSD)
@@ -1213,7 +1208,7 @@ PM_sim <- R6::R6Class(
         dimnames(covMat) <- dimnames(corMat)
 
         # get means of covariates
-        covMean <- CVsum %>% summarize(across(covs2sim, \(x) mean(x, na.rm = TRUE)))
+        covMean <- CVsum |> summarize(across(covs2sim, \(x) mean(x, na.rm = TRUE)))
 
         # set means of named variables, and use population values for others
         if (length(covariate$mean) > 0) {
@@ -1229,12 +1224,12 @@ PM_sim <- R6::R6Class(
         }
 
 
-        meanVector <- poppar$popMean %>% tibble::add_column(!!!as.list(covMean))
+        meanVector <- poppar$popMean |> tibble::add_column(!!!as.list(covMean))
         # get the covariate limits
         # get min of original population covariates
-        covMin <- CVsum %>% summarize(across(covs2sim, \(x) min(x, na.rm = TRUE)))
+        covMin <- CVsum |> summarize(across(covs2sim, \(x) min(x, na.rm = TRUE)))
         # and get max of original population covariates
-        covMax <- CVsum %>% summarize(across(covs2sim, \(x) max(x, na.rm = TRUE)))
+        covMax <- CVsum |> summarize(across(covs2sim, \(x) max(x, na.rm = TRUE)))
 
         orig_covlim <- tibble::tibble(par = covs2sim, min = unlist(covMin), max = unlist(covMax))
         covLimits <- orig_covlim
@@ -1250,8 +1245,8 @@ PM_sim <- R6::R6Class(
 
           #  figure out which covariates have different limits and change them
 
-          covUpdates <- tibble::enframe(covariate$limits, name = "par", value = "rng") %>%
-            tidyr::unnest_wider(rng, names_sep = "") %>%
+          covUpdates <- tibble::enframe(covariate$limits, name = "par", value = "rng") |>
+            tidyr::unnest_wider(rng, names_sep = "") |>
             dplyr::rename(min = rng1, max = rng2)
 
           covLimits <- dplyr::rows_update(covLimits, covUpdates, by = "par")
@@ -1298,17 +1293,15 @@ PM_sim <- R6::R6Class(
         poppar$popCov <- covMat
 
 
-
-
         # if split is true, then remake (augment) popPoints by adding mean covariate prior to each point
         if (split) {
           add_vector_columns <- function(df, v) {
             v_df <- as_tibble(as.list(v)) # convert named vector to one-row tibble
-            df %>% bind_cols(v_df[rep(1, nrow(df)), ]) # replicate the row to match df
+            df |> bind_cols(v_df[rep(1, nrow(df)), ]) # replicate the row to match df
           }
 
-          poppar$popPoints <- poppar$popPoints %>%
-            add_vector_columns(covMean) %>%
+          poppar$popPoints <- poppar$popPoints |>
+            add_vector_columns(covMean) |>
             select(-prob, everything(), prob)
         }
       } else {
@@ -1321,13 +1314,12 @@ PM_sim <- R6::R6Class(
       # limits on parameters
 
 
-
       # NOISE -------------------------------------------------------------------
 
       if (!all(is.null(noise))) {
         # will ignore obs noise for now but add after simulation
         if ("out" %in% names(noise)) {
-          noise1 <- noise %>% purrr::list_assign(out = rlang::zap())
+          noise1 <- noise |> purrr::list_assign(out = rlang::zap())
           noise2 <- noise["out"]
         } else {
           noise1 <- noise
@@ -1377,7 +1369,7 @@ PM_sim <- R6::R6Class(
             toInclude = toInclude, msg = msg
           )
           # get the template for this subject
-          sub_template <- PM_data$new(template$standard_data %>% filter(id == toInclude[i]), quiet = TRUE)
+          sub_template <- PM_data$new(template$standard_data |> filter(id == toInclude[i]), quiet = TRUE)
 
           # add the simulated values to the list
           data_list <- append(data_list, list(private$getSim(thisPrior, sub_template, mod, noise2, msg = msg)))
@@ -1388,17 +1380,17 @@ PM_sim <- R6::R6Class(
         obs <- purrr::list_rbind(map(data_list, \(x) x$obs))
         amt <- purrr::list_rbind(map(data_list, \(x) x$amt))
 
-        parValues <- purrr::list_rbind(map(data_list, \(x) x$parValues)) %>%
-          mutate(id = rep(toInclude, each = !!nsim), nsim = rep(1:!!nsim, nsub)) %>%
+        parValues <- purrr::list_rbind(map(data_list, \(x) x$parValues)) |>
+          mutate(id = rep(toInclude, each = !!nsim), nsim = rep(1:!!nsim, nsub)) |>
           relocate(id, nsim)
-        total_means <- dplyr::bind_rows(map(data_list, \(x) x$totalMeans)) %>%
-          mutate(id = toInclude) %>%
+        total_means <- dplyr::bind_rows(map(data_list, \(x) x$totalMeans)) |>
+          mutate(id = toInclude) |>
           relocate(id)
-        total_cov <- dplyr::bind_rows(map(data_list, \(x) data.frame(x$totalCov, row.names = NULL))) %>%
+        total_cov <- dplyr::bind_rows(map(data_list, \(x) data.frame(x$totalCov, row.names = NULL))) |>
           mutate(
             id = rep(toInclude, each = npar),
             par = rep(names(poppar$popMean), !!nsub)
-          ) %>%
+          ) |>
           relocate(id, par)
         total_nsim <- tibble::tibble(id = toInclude, n = purrr::map_dbl(data_list, \(x) x$totalSets))
 
@@ -1459,15 +1451,15 @@ PM_sim <- R6::R6Class(
 
         csv <- list()
         for (i in unique(template$standard_data$id)) {
-          this_template <- template$standard_data %>% filter(id == i)
+          this_template <- template$standard_data |> filter(id == i)
           for (j in 1:nsim) {
-            this_sim <- self$obs %>% filter(id == i, nsim == j)
+            this_sim <- self$obs |> filter(id == i, nsim == j)
             this_template$out[this_template$evid == 0] <- this_sim$out
             this_template$id <- paste(i, j, sep = "_")
             if (simWithCov) { # add back simulated covariate values
 
-              this_template <- this_template %>%
-                mutate(!!!set_names(self$parValues %>% select(!!covs2sim) %>% slice(j), covs2sim))
+              this_template <- this_template |>
+                mutate(!!!set_names(self$parValues |> select(!!covs2sim) |> slice(j), covs2sim))
             }
             csv <- append(csv, list(this_template))
           }
@@ -1498,11 +1490,9 @@ PM_sim <- R6::R6Class(
       # get prior density
 
 
-
-
       if (inherits(poppar, "NPAG")) {
         if (nsim == 0) { # simulate each support point once
-          thetas <- poppar$popPoints %>% mutate(prob = 1 / n())
+          thetas <- poppar$popPoints |> mutate(prob = 1 / n())
           total_means <- poppar$popMean
           total_cov <- poppar$popCov
           total_nsim <- 0
@@ -1523,7 +1513,7 @@ PM_sim <- R6::R6Class(
         if (split) {
           popPoints <- poppar$popPoints
           pop_weight <- popPoints$prob
-          pop_mean <- popPoints %>% select(-prob)
+          pop_mean <- popPoints |> select(-prob)
           ndist <- nrow(popPoints)
           pop_cov <- poppar$popCov / ndist
         } else { # not split
@@ -1534,7 +1524,7 @@ PM_sim <- R6::R6Class(
             ndist <- 1
           } else { # simulating from posteriors
             pop_weight <- 1
-            pop_mean <- poppar$postMean[postToUse, ] %>% select(-id)
+            pop_mean <- poppar$postMean[postToUse, ] |> select(-id)
             pop_cov <- poppar$postCov[[postToUse]]
             ndist <- 1
           }
@@ -1579,34 +1569,34 @@ PM_sim <- R6::R6Class(
 
     # call simulator and process results
     getSim = function(thisPrior, template, mod, noise2, msg = NULL) {
-      thetas <- thisPrior$thetas %>%
-        select(-prob) %>%
+      thetas <- thisPrior$thetas |>
+        select(-prob) |>
         as.matrix()
       mod$compile() # check if compiled and if not, do so
       sim_res <- mod$sim(template, thetas)
       sim_res$.id <- template$standard_data$id[match(sim_res$id, template$standard_data$id)]
-      sim_res <- sim_res %>%
-        rename(comp = state_index, nsim = spp_index, amt = state) %>%
+      sim_res <- sim_res |>
+        rename(comp = state_index, nsim = spp_index, amt = state) |>
         mutate(nsim = nsim + 1)
 
       if (identical(mod$model_list$type, "ODE")) {
-        sim_res <- sim_res %>% filter(comp != 0)
+        sim_res <- sim_res |> filter(comp != 0)
       } else {
-        sim_res <- sim_res %>%
+        sim_res <- sim_res |>
           mutate(
             outeq = normalize_engine_index(outeq),
             comp = normalize_engine_index(comp)
           )
       }
 
-      sim_res <- sim_res %>%
-        arrange(.id, comp, nsim, time, outeq) %>%
+      sim_res <- sim_res |>
+        arrange(.id, comp, nsim, time, outeq) |>
         select(-.id)
 
-      obs <- sim_res %>% filter(comp == min(comp, na.rm = TRUE)) %>% # obs are duplicated in every compartment
+      obs <- sim_res |> filter(comp == min(comp, na.rm = TRUE)) |> # obs are duplicated in every compartment
         select(id, nsim, time, out, outeq)
 
-      amt <- sim_res %>%
+      amt <- sim_res |>
         select(id, nsim, time, out = amt, comp)
 
       # add output noise if specified
@@ -1617,8 +1607,8 @@ PM_sim <- R6::R6Class(
       ret <- list(
         obs = obs,
         amt = amt,
-        parValues = thisPrior$thetas %>% select(-prob) %>%
-          mutate(nsim = 1:n()) %>% relocate(nsim),
+        parValues = thisPrior$thetas |> select(-prob) |>
+          mutate(nsim = 1:n()) |> relocate(nsim),
         totalSets = thisPrior$total_nsim,
         totalMeans = thisPrior$total_means,
         totalCov = thisPrior$total_cov,
@@ -1644,9 +1634,9 @@ PM_sim <- R6::R6Class(
       } else if (type == "simlist") {
         N <- length(simout) # number of templates
         nsim <- max(simout[[1]]$obs$id)
-        obs <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 1)), names_to = "id2") %>% rename(nsim = id, id = id2)
-        amt <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 2)), names_to = "id2") %>% rename(nsim = id, id = id2)
-        parValues <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 3)), names_to = "id2") %>% rename(nsim = id, id = id2)
+        obs <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 1)), names_to = "id2") |> rename(nsim = id, id = id2)
+        amt <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 2)), names_to = "id2") |> rename(nsim = id, id = id2)
+        parValues <- purrr::list_rbind(map(1:N, \(x) pluck(simout, x, 3)), names_to = "id2") |> rename(nsim = id, id = id2)
         totalSets <- map(1:N, \(x) simout[[x]]$totalSets)
         totalMeans <- map(1:N, \(x) pluck(simout, x, 5))
         totalCov <- map(1:N, \(x) data.frame(pluck(simout, x, 6)))
@@ -1719,10 +1709,10 @@ PM_sim <- R6::R6Class(
         if (!is.null(this$filter)) {
           filter_status <- "filtered"
           filter_exprs <- rlang::parse_expr(this$filter)
-          filtered_data <- template %>%
+          filtered_data <- template |>
             filter(!!filter_exprs)
           # Keep the rest
-          remaining_data <- template %>%
+          remaining_data <- template |>
             filter(magrittr::not(!!filter_exprs))
         } else {
           filter_status <- ""
@@ -1731,36 +1721,36 @@ PM_sim <- R6::R6Class(
         }
 
         # Get the target
-        target_col <- filtered_data %>% select(id, raw = all_of(this$.col))
+        target_col <- filtered_data |> select(id, raw = all_of(this$.col))
 
 
         # Remove temp row index
-        template <- template %>% select(-index_)
+        template <- template |> select(-index_)
 
         # Add noise
         new_target <- data.frame(1:nrow(target_col))
         names(new_target) <- this$.col
         if (this$mode == "add") {
-          target_col <- target_col %>%
-            rowwise() %>%
+          target_col <- target_col |>
+            rowwise() |>
             mutate(noisy = raw + suppressWarnings(rnorm(1,
               mean = 0,
               sd = this$coeff[[1]] +
                 this$coeff[[2]] * raw +
                 this$coeff[[3]] * raw^2 +
                 this$coeff[[4]] * raw^3
-            ))) %>%
+            ))) |>
             ungroup()
         } else if (this$mode == "exp") {
-          target_col <- target_col %>%
-            rowwise() %>%
+          target_col <- target_col |>
+            rowwise() |>
             mutate(noisy = raw * exp(suppressWarnings(rnorm(1,
               mean = 0,
               sd = this$coeff[[1]] +
                 this$coeff[[2]] * raw +
                 this$coeff[[3]] * raw^2 +
                 this$coeff[[4]] * raw^3
-            )))) %>%
+            )))) |>
             ungroup()
         } else {
           cli::cli_abort("x" = "Mode must be 'add' or 'exp'.")
@@ -1769,8 +1759,8 @@ PM_sim <- R6::R6Class(
         # put back the new noisy column
         filtered_data[[this$.col]] <- target_col$noisy
 
-        combined <- bind_rows(filtered_data, remaining_data) %>%
-          arrange(index_) %>%
+        combined <- bind_rows(filtered_data, remaining_data) |>
+          arrange(index_) |>
           select(-index_)
         # Fix initial times to be 0 in case they were mutated
         combined[!duplicated(combined$id), "time"] <- 0
@@ -1815,14 +1805,14 @@ PM_sim <- R6::R6Class(
       }
 
       # first, add temporary index to ensure id order remains the same
-      dat2 <- template %>%
+      dat2 <- template |>
         mutate(.id = dplyr::dense_rank(id))
 
       # second, add predInt if necessary
       if (!is.na(predTimes[1])) {
         predTimes <- predTimes[predTimes > 0] # remove predictions at time 0
-        dat3 <- dat2 %>%
-          group_by(.id) %>%
+        dat3 <- dat2 |>
+          group_by(.id) |>
           group_map(~ {
             theseTimes <- predTimes[!predTimes %in% .x$time[.x$evid == 0]] # remove prediction times at times that are specified in template
             numPred <- length(theseTimes)
@@ -1835,15 +1825,15 @@ PM_sim <- R6::R6Class(
             newPred[, 10] <- 1 # out
             newPred[, 11] <- rep(1:numeqt, numPred / numeqt) # outeq
             newPred
-          }) %>%
+          }) |>
           bind_rows()
-        new_dat <- bind_rows(dat2, dat3) %>%
-          arrange(.id, time, outeq) %>%
+        new_dat <- bind_rows(dat2, dat3) |>
+          arrange(.id, time, outeq) |>
           select(-.id)
       } else { # predInt was not specified
         new_dat <- template # the original data without .id
       }
-      new_dat <- new_dat %>% mutate(out = ifelse(evid == 0, -1, NA)) # replace all obs with -1 since simulating
+      new_dat <- new_dat |> mutate(out = ifelse(evid == 0, -1, NA)) # replace all obs with -1 since simulating
       return(new_dat)
     } # end makePredInt function
   ) # end private
@@ -1979,24 +1969,25 @@ PM_sim$load <- function(...) {
 #' @family PMplots
 
 plot.PM_sim <- function(
-    x,
-    include,
-    exclude,
-    mult = 1,
-    ci = 0.95,
-    binSize = 0,
-    outeq = 1,
-    line = TRUE,
-    marker = FALSE,
-    obs,
-    quiet = FALSE,
-    legend = FALSE,
-    log = TRUE,
-    grid = FALSE,
-    xlab, ylab,
-    title,
-    xlim, ylim,
-    print = TRUE, ...) {
+  x,
+  include,
+  exclude,
+  mult = 1,
+  ci = 0.95,
+  binSize = 0,
+  outeq = 1,
+  line = TRUE,
+  marker = FALSE,
+  obs,
+  quiet = FALSE,
+  legend = FALSE,
+  log = TRUE,
+  grid = FALSE,
+  xlab, ylab,
+  title,
+  xlim, ylim,
+  print = TRUE, ...
+) {
   if (all(is.na(line))) {
     line <- list(probs = NA)
   } # standardize
@@ -2082,8 +2073,8 @@ plot.PM_sim <- function(
 
 
   probValues <- lineList$probs
-  probFormats <- lineList[-1] %>%
-    purrr::transpose() %>%
+  probFormats <- lineList[-1] |>
+    purrr::transpose() |>
     purrr::simplify_all()
   join <- amendLine(probFormats[[1]])
 
@@ -2188,7 +2179,7 @@ plot.PM_sim <- function(
   # include/exclude template ids
   if (missing(include)) include <- unique(simout$obs$id)
   if (missing(exclude)) exclude <- NA
-  simout$obs <- simout$obs %>% includeExclude(include, exclude)
+  simout$obs <- simout$obs |> includeExclude(include, exclude)
 
   if (!missing(obs)) {
     if (!inherits(obs, c("PM_result", "PM_op"))) {
@@ -2200,11 +2191,11 @@ plot.PM_sim <- function(
     if (inherits(obs, "PM_op")) {
       obs <- obs$data
     }
-    obs <- obs %>%
+    obs <- obs |>
       filter(
         outeq == !!outeq, icen == "median",
         pred.type == "post"
-      ) %>%
+      ) |>
       select(id, time, obs) # just need obs; median and post are arbitrary
   } else {
     obs <- data.frame(time = NA, obs = NA)
@@ -2241,14 +2232,14 @@ plot.PM_sim <- function(
   if (binSize > 0) {
     binned_sim_times <- seq(floor(min(sim_out$time, na.rm = TRUE)), ceiling(max(sim_out$time, na.rm = TRUE)), binSize)
     sim_out$time <- binned_sim_times[.bincode(sim_out$time, binned_sim_times, include.lowest = TRUE)]
-    sim_out <- sim_out %>%
-      group_by(id, time, outeq) %>%
+    sim_out <- sim_out |>
+      group_by(id, time, outeq) |>
       summarize(out = mean(out), .groups = "drop")
     if (!all(is.na(obs$obs))) {
       binned_obs_times <- seq(floor(min(obs$time, na.rm = TRUE)), ceiling(max(obs$time, na.rm = TRUE)), binSize)
       obs$time <- binned_obs_times[.bincode(obs$time, binned_obs_times, include.lowest = TRUE)]
-      obs <- obs %>%
-        group_by(id, time) %>%
+      obs <- obs |>
+        group_by(id, time) |>
         summarize(obs = mean(obs), .groups = "drop")
     }
   }
@@ -2257,21 +2248,21 @@ plot.PM_sim <- function(
   nsim <- nrow(simout$parValues)
 
 
-  sim <- sim_out %>% filter(outeq == !!outeq)
+  sim <- sim_out |> filter(outeq == !!outeq)
   times <- sort(unique(sim$time))
   nobs <- length(times)
 
   if (!all(is.na(probValues)) & nsim >= 10) {
     # make DF of time, quantile and value
-    sim_quant_df <- sim %>%
-      dplyr::group_by(time) %>%
-      group_map(~ quantile(.x$out, probs = probValues, na.rm = TRUE)) %>%
-      dplyr::tibble() %>%
-      tidyr::unnest_longer(1, indices_to = "quantile", values_to = "value") %>%
+    sim_quant_df <- sim |>
+      dplyr::group_by(time) |>
+      group_map(~ quantile(.x$out, probs = probValues, na.rm = TRUE)) |>
+      dplyr::tibble() |>
+      tidyr::unnest_longer(1, indices_to = "quantile", values_to = "value") |>
       dplyr::mutate(
         time = rep(times, each = length(probValues)),
         quantile = readr::parse_number(quantile) / 100
-      ) %>%
+      ) |>
       dplyr::select(time, quantile, value)
 
     lower_confint <- function(n) {
@@ -2292,8 +2283,8 @@ plot.PM_sim <- function(
     sim_quant_df$upperCI <- as.numeric(unlist(uconfint))
 
     # plot main data
-    p <- sim_quant_df %>%
-      group_by(quantile) %>%
+    p <- sim_quant_df |>
+      group_by(quantile) |>
       plotly::plot_ly(x = ~time, y = ~value)
 
     # add confidence intervals
@@ -2302,7 +2293,7 @@ plot.PM_sim <- function(
         cat("\nNote: Confidence intervals for simulation quantiles omitted when nsim < 100\n")
       }
     } else {
-      p <- p %>%
+      p <- p |>
         plotly::add_ribbons(
           ymin = ~lowerCI, ymax = ~upperCI,
           name = "CI",
@@ -2315,8 +2306,8 @@ plot.PM_sim <- function(
 
     # add quantile lines, allowing for the independent formats
     for (i in 1:length(probValues)) {
-      thisQ <- sim_quant_df %>% filter(quantile == probValues[i])
-      p <- p %>% plotly::add_lines(
+      thisQ <- sim_quant_df |> filter(quantile == probValues[i])
+      p <- p |> plotly::add_lines(
         x = ~time, y = ~value, data = thisQ, line = probFormats[[i]],
         hovertemplate = "Time: %{x}<br>Out: %{y}<br>Quantile: %{text}<extra></extra>",
         text = ~quantile,
@@ -2332,13 +2323,13 @@ plot.PM_sim <- function(
           " " = "See {.help PM_sim$plot()} for details."
         ))
       }
-      fill_area <- sim_quant_df %>%
-        filter(quantile %in% lineList$fill$probs) %>%
-        select(time, quantile, value) %>%
-        tidyr::pivot_wider(names_from = quantile, values_from = value) %>%
+      fill_area <- sim_quant_df |>
+        filter(quantile %in% lineList$fill$probs) |>
+        select(time, quantile, value) |>
+        tidyr::pivot_wider(names_from = quantile, values_from = value) |>
         rename(lower = 2, upper = 3)
 
-      p <- p %>%
+      p <- p |>
         plotly::add_ribbons(
           data = fill_area, x = ~time, ymin = ~lower, ymax = ~upper,
           name = "CI",
@@ -2354,7 +2345,7 @@ plot.PM_sim <- function(
 
     # add observations if supplied, and calculate NPC
     if (!all(is.na(obs))) {
-      p <- p %>% add_markers(x = ~time, y = ~obs, data = obs, marker = marker)
+      p <- p |> add_markers(x = ~time, y = ~obs, data = obs, marker = marker)
       obs$sim_quant <- NA
 
       for (i in 1:nrow(obs)) {
@@ -2404,21 +2395,21 @@ plot.PM_sim <- function(
 
 
     # plot all simulated profiles
-    p <- sim %>%
-      mutate(id2 = paste(id, nsim, sep = "_")) %>%
-      group_by(id2) %>%
-      plotly::plot_ly(x = ~time, y = ~out) %>%
+    p <- sim |>
+      mutate(id2 = paste(id, nsim, sep = "_")) |>
+      group_by(id2) |>
+      plotly::plot_ly(x = ~time, y = ~out) |>
       plotly::add_lines(line = join)
     # plot observations if available
     if (!all(is.na(obs))) {
-      p <- p %>% add_markers(x = ~time, y = ~obs, data = obs, marker = marker)
+      p <- p |> add_markers(x = ~time, y = ~obs, data = obs, marker = marker)
     }
     retValue <- list()
   }
 
 
   # common to all plots
-  p <- p %>% plotly::layout(
+  p <- p |> plotly::layout(
     xaxis = layout$xaxis,
     yaxis = layout$yaxis,
     showlegend = layout$showlegend,
@@ -2476,9 +2467,10 @@ plot.PM_sim <- function(
 #' @seealso [PM_sim]
 #' @export
 summary.PM_sim <- function(
-    object, include, exclude, field = "obs", group = NULL,
-    statistics = c("mean", "sd", "median", "min", "max"),
-    digits = getPMoptions("digits"), ...) {
+  object, include, exclude, field = "obs", group = NULL,
+  statistics = c("mean", "sd", "median", "min", "max"),
+  digits = getPMoptions("digits"), ...
+) {
   # get the right data
   if (inherits(object, "PM_sim")) {
     dat <- object$data[[field]]
@@ -2488,7 +2480,7 @@ summary.PM_sim <- function(
       # include/exclude template ids
       if (missing(include)) include <- unique(dat$id)
       if (missing(exclude)) exclude <- NA
-      dat <- dat %>% includeExclude(include, exclude)
+      dat <- dat |> includeExclude(include, exclude)
     }
   } else {
     cli::cli_abort(c("x" = "Object does not appear to be a simulation."))
@@ -2521,8 +2513,8 @@ summary.PM_sim <- function(
       x
     })
   }
-  summ <- summ %>%
-    list_rbind(names_to = "stat") %>%
+  summ <- summ |>
+    list_rbind(names_to = "stat") |>
     mutate(across(where(is.numeric), \(x) round(x, digits)))
   if (length(group) > 0) {
     attr(summ, "group") <- group
@@ -2567,9 +2559,6 @@ print.summary.PM_sim <- function(x, ...) {
     cat("\n", "Grouped by:", paste(crayon::blue(attr(x, "group")), collapse = ", "), "\n")
   }
 }
-
-
-
 
 
 # generate random samples from multivariate, multimodal normal distribution
@@ -2637,21 +2626,21 @@ generate_multimodal_samples <- function(num_samples, weights, means, cov_matrix,
   })
 
 
-  retained <- all_samples %>%
-    map(\(x) x$keep) %>%
-    do.call(rbind, .) %>%
-    tibble::as_tibble(.name_repair = "minimal") %>%
+  retained <- all_samples |>
+    map(\(x) x$keep) |>
+    (\(x) do.call(rbind, x))() |>
+    tibble::as_tibble(.name_repair = "minimal") |>
     mutate(prob = 1 / dplyr::n())
 
-  discarded <- all_samples %>%
-    map(\(x) x$discard) %>%
-    do.call(rbind, .) %>%
-    tibble::as_tibble(.name_repair = "minimal") %>%
+  discarded <- all_samples |>
+    map(\(x) x$discard) |>
+    (\(x) do.call(rbind, x))() |>
+    tibble::as_tibble(.name_repair = "minimal") |>
     mutate(prob = 1 / dplyr::n())
 
   total_means <- apply(rbind(retained, discarded), 2, mean)[1:ncol(cov_matrix)]
-  total_cov <- bind_rows(retained, discarded) %>%
-    select(-prob) %>%
+  total_cov <- bind_rows(retained, discarded) |>
+    select(-prob) |>
     cov()
   total_nsim <- sum(nrow(retained), nrow(discarded)) # sum will ignore NULL values
 
