@@ -20,54 +20,53 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
   if (!is(x, "PM_result")) {
     cli::cli_abort(c("x" = "This function expects a valid PM_result object from PM_load."))
   }
-  
+
   if (missing(template)) {
     template <- getPMoptions("report_template")
   }
-  
+
   if (template == "none") {
     return()
   }
-  
+
   templateFile <- switch(template,
     plotly = system.file("report/templates/plotly.Rmd", package = "Pmetrics"),
     ggplot = system.file("report/templates/ggplot.Rmd", package = "Pmetrics"),
     ggplot_rust = system.file("report/templates/ggplot_rust.Rmd", package = "Pmetrics")
   )
   # templateFile = system.file("report/templates/ggplot.Rmd", package = "Pmetrics")
-  
+
   if (is.null(templateFile)) {
     if (!file.exists(templateFile)) cli::cli_warn(c("!" = "ERROR: {templateFile} does not exist."))
     return(invisible(-1))
   }
-  
-  
+
+
   if (missing(path)) {
     out_path <- tempdir()
   } else {
     out_path <- normalizePath(path, winslash = "/") # knitr needs full path
   }
-  
-  if (is.null(x$final$data) & is.null(x$op$data) & is.null(x$cycle$data)){
+
+  if (is.null(x$final$data) & is.null(x$op$data) & is.null(x$cycle$data)) {
     return(invisible(-1)) # no data found
   } else {
-  rmarkdown::render(
-    input = templateFile,
-    output_file = file.path(out_path, "report.html"),
-    params = list(res = x),
-    clean = TRUE,
-    quiet = quiet,
-  )
-}
+    rmarkdown::render(
+      input = templateFile,
+      output_file = file.path(out_path, "report.html"),
+      params = list(res = x),
+      clean = TRUE,
+      quiet = quiet,
+    )
+  }
 
-  
+
   if (file.exists(file.path(out_path, "report.html"))) {
-    if (show){
+    if (show) {
       pander::openFileInOS(file.path(out_path, "report.html"))
     }
     return(invisible(1))
   } else {
     return(invisible(-1)) # something went wrong and report doesn't exist
   }
-  
-  }
+}

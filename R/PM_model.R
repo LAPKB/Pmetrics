@@ -1616,8 +1616,6 @@ PM_model <- R6::R6Class(
     },
 
 
-
-
     #' @description
     #' Copy model code to clipboard.
     #' @details

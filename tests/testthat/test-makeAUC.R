@@ -92,34 +92,34 @@ test_that("make_AUC supports Theoph as external data with formula inputs", {
   expect_equal(joined$tau_calc, joined$tau_manual, tolerance = 1e-10)
 })
 
-  
-  theoph <- datasets::Theoph
 
-  auc_grouped <- make_AUC(
-    data = theoph,
-    formula = conc ~ Time | Subject
-  )
+theoph <- datasets::Theoph
 
-  manual_grouped <- theoph |>
-    dplyr::transmute(id = Subject, time = Time, out = conc) |>
-    dplyr::group_by(id) |>
-    dplyr::summarise(tau = trap_auc_linear(dplyr::pick(time, out)), .groups = "drop")
+auc_grouped <- make_AUC(
+  data = theoph,
+  formula = conc ~ Time | Subject
+)
 
-  expect_equal(names(auc_grouped), c("Subject", "outeq", "block", "tau"))
-  joined_grouped <- auc_grouped |>
-    dplyr::rename(id = Subject, tau_calc = tau) |>
-    dplyr::left_join(manual_grouped |> dplyr::rename(tau_manual = tau), by = "id")
-  expect_equal(joined_grouped$tau_calc, joined_grouped$tau_manual, tolerance = 1e-10)
+manual_grouped <- theoph |>
+  dplyr::transmute(id = Subject, time = Time, out = conc) |>
+  dplyr::group_by(id) |>
+  dplyr::summarise(tau = trap_auc_linear(dplyr::pick(time, out)), .groups = "drop")
 
-  theoph2 <- theoph |>
-    dplyr::transmute(id = Subject, time = Time, out = conc)
+expect_equal(names(auc_grouped), c("Subject", "outeq", "block", "tau"))
+joined_grouped <- auc_grouped |>
+  dplyr::rename(id = Subject, tau_calc = tau) |>
+  dplyr::left_join(manual_grouped |> dplyr::rename(tau_manual = tau), by = "id")
+expect_equal(joined_grouped$tau_calc, joined_grouped$tau_manual, tolerance = 1e-10)
 
-  auc_default_group <- make_AUC(
-    data = theoph2,
-    formula = out ~ time
-  )
+theoph2 <- theoph |>
+  dplyr::transmute(id = Subject, time = Time, out = conc)
 
-  expect_equal(auc_default_group$tau, auc_grouped$tau, tolerance = 1e-10)
+auc_default_group <- make_AUC(
+  data = theoph2,
+  formula = out ~ time
+)
+
+expect_equal(auc_default_group$tau, auc_grouped$tau, tolerance = 1e-10)
 
 
 test_that("make_AUC addZero and method options behave as expected", {

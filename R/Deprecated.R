@@ -169,7 +169,6 @@ PMsave <- function(...) {
 }
 
 
-
 #' @title Load Pmetrics NPAG or IT2B output
 #' @description
 #' `r lifecycle::badge("deprecated")`
@@ -252,8 +251,6 @@ PMbuild <- function(...) {
 }
 
 
-
-
 #' @title Add CRCL
 #' @description
 #' `r lifecycle::badge("deprecated")`
@@ -266,7 +263,6 @@ PMbuild <- function(...) {
 PMgetCRCL <- function(...) {
   lifecycle::deprecate_warn("3.0.0", "PMgetCRCL()", details = "Use add_renal() to add CRCL or eGFR, depending on method chosen.")
 }
-
 
 
 #' @title Make NCA

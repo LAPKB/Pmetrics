@@ -194,7 +194,6 @@ PM_cycle <- R6::R6Class(
       }
 
 
-
       cycle_data <- raw %>%
         pivot_longer(cols = ends_with(c("mean", "median", "sd"))) %>%
         separate_wider_delim(name, delim = ".", names = c("parameter", "statistic"))
@@ -368,16 +367,17 @@ PM_cycle <- R6::R6Class(
 #' @family PMplots
 
 plot.PM_cycle <- function(
-    x,
-    line = TRUE,
-    marker = TRUE,
-    colors,
-    linetypes,
-    omit,
-    grid = TRUE,
-    xlab, ylab,
-    print = TRUE,
-    ...) {
+  x,
+  line = TRUE,
+  marker = TRUE,
+  colors,
+  linetypes,
+  omit,
+  grid = TRUE,
+  xlab, ylab,
+  print = TRUE,
+  ...
+) {
   if (inherits(x, "PM_cycle")) {
     data <- x$data
   } else {
@@ -561,7 +561,7 @@ plot.PM_cycle <- function(
       dplyr::select(cycle, value, outeq, type) %>%
       dplyr::arrange(cycle, outeq)
   }
-  
+
   # Use the reconstructed gamlam for plotting when needed; otherwise use
   # the `data$gamlam` already present.
   gamlam_plot <- if (exists("gamlam")) gamlam else data$gamlam
@@ -592,7 +592,6 @@ plot.PM_cycle <- function(
       xaxis = layout$xaxis,
       yaxis = layout$yaxis
     )
-
 
 
   # normalized plots
@@ -658,7 +657,6 @@ plot.PM_cycle <- function(
         y = 0.5
       ))
   }
-
 
 
   p_r1 <- plotly::subplot(p1, p2, p3,
@@ -842,7 +840,6 @@ print.summary.PM_cycle <- function(x, ...) {
   par_tbl <- bind_rows(x$mean, x$sd, x$median) %>% mutate(stat = c("mean", "sd", "median"))
   print(par_tbl)
 }
-
 
 
 #' @title Summarize PM_cycle_data objects

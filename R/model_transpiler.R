@@ -95,8 +95,9 @@ has_nonliteral_index <- function(fn_or_expr, targets) {
 
 # Convert an R expression to Rust code (recursive)
 expr_to_rust <- function(
-    expr, params = NULL, covs = NULL,
-    declared = new.env(parent = emptyenv())) {
+  expr, params = NULL, covs = NULL,
+  declared = new.env(parent = emptyenv())
+) {
   declared_has <- function(name) isTRUE(get0(name, envir = declared, inherits = FALSE))
   declared_add <- function(name) assign(name, TRUE, envir = declared)
 
@@ -277,7 +278,8 @@ expr_to_rust <- function(
 
 # Helpers: convert list of statements to Rust and indent blocks
 stmts_to_rust <- function(
-    exprs, params = NULL, covs = NULL) {
+  exprs, params = NULL, covs = NULL
+) {
   lines <- vapply(
     exprs,
     expr_to_rust,
@@ -309,9 +311,9 @@ transpile_ode_eqn <- function(fun, params, covs, sec) {
 }
 
 
-
 transpile_analytic_eqn <- function(
-    fun, params, covs) {
+  fun, params, covs
+) {
   if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
     found <- get_found_model(fun)
     if (length(found) == 1) { # NA
@@ -400,7 +402,8 @@ transpile_sec <- function(fun) {
 
 
 transpile_fa <- function(
-    fun, params, covs, sec) {
+  fun, params, covs, sec
+) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
     as.list(body(fun)[-1])
   } else {
@@ -440,7 +443,8 @@ transpile_fa <- function(
 
 
 transpile_lag <- function(
-    fun, params, covs, sec) {
+  fun, params, covs, sec
+) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") {
     as.list(body(fun)[-1])
   } else {
@@ -479,7 +483,8 @@ transpile_lag <- function(
 }
 
 transpile_ini <- function(
-    fun, params, covs, sec) {
+  fun, params, covs, sec
+) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
     "|p, t, cov, x| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s); %s",
@@ -492,7 +497,8 @@ transpile_ini <- function(
 }
 
 transpile_out <- function(
-    fun, params, covs, sec) {
+  fun, params, covs, sec
+) {
   exprs <- if (is.call(body(fun)) && as.character(body(fun)[[1]]) == "{") as.list(body(fun)[-1]) else list(body(fun))
   header <- sprintf(
     "|x, p, t, cov, y| {\n    fetch_cov!(cov, t, %s);\n    fetch_params!(p, %s);\n%s",

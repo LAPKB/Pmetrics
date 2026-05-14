@@ -24,32 +24,31 @@
 #' @export
 
 PM_help <- function(copy = TRUE) {
-  
   # GitHub repository URL
   github_url <- "https://github.com/LAPKB/Pmetrics"
-  
+
   # Collect system information
   sys_info <- list()
-  
+
   # Package version
   sys_info$package_version <- tryCatch(
     as.character(utils::packageVersion("Pmetrics")),
     error = function(e) "Unknown"
   )
-  
+
   # R version
   sys_info$r_version <- paste0(R.version$major, ".", R.version$minor)
-  
+
   # OS information
   sys_info$os <- Sys.info()["sysname"]
   sys_info$os_release <- Sys.info()["release"]
   sys_info$os_version <- Sys.info()["version"]
-  
+
   # System architecture
   sys_info$machine <- Sys.info()["machine"]
   sys_info$platform <- R.version$platform
   sys_info$arch <- .Platform$r_arch
-  
+
   # IDE
   sys_info$ide <- dplyr::case_when(
     Sys.getenv("RSTUDIO") == "1" ~ "RStudio",
@@ -57,47 +56,56 @@ PM_help <- function(copy = TRUE) {
     TRUE ~ "Other"
   )
   # IDE version
-  sys_info$ide_version <- tryCatch({
-    if (Sys.getenv("RSTUDIO") == "1") {
-      # Check if rstudioapi is available
-      if (requireNamespace("rstudioapi", quietly = TRUE)) {
-        rstudioapi::versionInfo()$version
-      } else {
-        # Fallback: try to get version from environment variable
-        rstudio_version <- Sys.getenv("RSTUDIO_VERSION")
-        if (nzchar(rstudio_version)) {
-          rstudio_version
+  sys_info$ide_version <- tryCatch(
+    {
+      if (Sys.getenv("RSTUDIO") == "1") {
+        # Check if rstudioapi is available
+        if (requireNamespace("rstudioapi", quietly = TRUE)) {
+          rstudioapi::versionInfo()$version
         } else {
-          "RStudio version unknown"
+          # Fallback: try to get version from environment variable
+          rstudio_version <- Sys.getenv("RSTUDIO_VERSION")
+          if (nzchar(rstudio_version)) {
+            rstudio_version
+          } else {
+            "RStudio version unknown"
+          }
         }
-      }
-    } else if (Sys.getenv("POSITRON") == "1") {
+      } else if (Sys.getenv("POSITRON") == "1") {
         positron_version <- Sys.getenv("POSITRON_VERSION")
         if (nzchar(positron_version)) {
           positron_version
         } else {
           "Positron version unknown"
         }
-    } else {
-      "Version unknown"
-    }
-  }, error = function(e) "Version unknown")
-  
+      } else {
+        "Version unknown"
+      }
+    },
+    error = function(e) "Version unknown"
+  )
+
   # Rust version
-  sys_info$rust_version <- tryCatch({
-    rust_output <- system2("rustc", "--version", stdout = TRUE, stderr = FALSE)
-    if (length(rust_output) > 0) rust_output[1] else "Not found"
-  }, error = function(e) "Not found")
-  
+  sys_info$rust_version <- tryCatch(
+    {
+      rust_output <- system2("rustc", "--version", stdout = TRUE, stderr = FALSE)
+      if (length(rust_output) > 0) rust_output[1] else "Not found"
+    },
+    error = function(e) "Not found"
+  )
+
   # Cargo version
-  sys_info$cargo_version <- tryCatch({
-    cargo_output <- system2("cargo", "--version", stdout = TRUE, stderr = FALSE)
-    if (length(cargo_output) > 0) cargo_output[1] else "Not found"
-  }, error = function(e) "Not found")
-  
+  sys_info$cargo_version <- tryCatch(
+    {
+      cargo_output <- system2("cargo", "--version", stdout = TRUE, stderr = FALSE)
+      if (length(cargo_output) > 0) cargo_output[1] else "Not found"
+    },
+    error = function(e) "Not found"
+  )
+
   # Locale
   sys_info$locale <- Sys.getlocale("LC_ALL")
-  
+
   # Create formatted output
   header <- glue::glue(
     "\n",
@@ -107,10 +115,10 @@ PM_help <- function(copy = TRUE) {
     "If you need help or want to report a bug, please visit:\n",
     github_url, "/issues\n\n",
     "The following system information has been copied to your clipboard for inclusion in your report:\n\n",
-    "--------------------------------------------------------------------\n")
-  
+    "--------------------------------------------------------------------\n"
+  )
+
   body <- glue::glue(
-  
     "SYSTEM INFORMATION\n",
     "--------------------------------------------------------------------\n",
     "Pmetrics version:  {sys_info$package_version}\n",
@@ -124,8 +132,9 @@ PM_help <- function(copy = TRUE) {
     "Rust version:      {sys_info$rust_version}\n",
     "Cargo version:     {sys_info$cargo_version}\n",
     "Locale:            {sys_info$locale}\n",
-    "--------------------------------------------------------------------\n\n")
-  
+    "--------------------------------------------------------------------\n\n"
+  )
+
   footer <- glue::glue(
     "ADDITIONAL RESOURCES:\n",
     "  - Documentation: {github_url}\n",
@@ -138,25 +147,27 @@ PM_help <- function(copy = TRUE) {
     "  4. Provide a minimal reproducible example if possible\n\n",
     "====================================================================\n"
   )
-  
+
   # Print output
   cat(paste0(header, body, footer))
-  
+
   # Copy to clipboard if requested
   if (copy) {
     if (requireNamespace("clipr", quietly = TRUE)) {
-      tryCatch({
-        clipr::write_clip(paste0(body))
-        message("\nSystem information copied to clipboard!")
-      }, error = function(e) {
-        warning("Could not copy to clipboard: ", e$message)
-      })
+      tryCatch(
+        {
+          clipr::write_clip(paste0(body))
+          message("\nSystem information copied to clipboard!")
+        },
+        error = function(e) {
+          warning("Could not copy to clipboard: ", e$message)
+        }
+      )
     } else {
       warning("Could not copy to clipboard. Install 'clipr' package for this feature:\n  install.packages('clipr')")
     }
   }
-  
+
   # Return invisibly
   invisible(sys_info)
 }
-

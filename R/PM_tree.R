@@ -11,7 +11,7 @@
 #' @param path The full path to the root folder for the new project.  Default is the
 #' current working directory.
 #' @return A new folder with the name in `project` and the following subfolders:
-#' 
+#'
 #' * **Rscript** The folder containing a skeleton *Analysis.R* script for the project.
 #' * **Runs** The folder for all Pmetrics runs, which will be sequentially numbered.
 #' * **Sim** The folder for all simulations related to the project.

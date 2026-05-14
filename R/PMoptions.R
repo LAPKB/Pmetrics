@@ -6,7 +6,7 @@
 #' @details
 #' This function will get user options for Pmetrics. It will look for a *PMoptions.json* file
 #' in a hidden folder outside of the Pmetrics package. If that does not exist,
-#' it will look for a default options file in the package options folder. See [setPMoptions] for 
+#' it will look for a default options file in the package options folder. See [setPMoptions] for
 #' details on where the options file is stored and how to set options.
 #'
 #' @param opt The option to retrieve.  If omitted, all option values will be returned.
@@ -22,20 +22,20 @@ getPMoptions <- function(opt, warn = TRUE, quiet = FALSE) {
     getOS() == 1 | getOS() == 3 ~ "~/.PMopts", # Mac, Linux
     getOS() == 2 ~ file.path(Sys.getenv("APPDATA"), "PMopts")
   )
-  
+
   if (dir.exists(opt_dir)) { # external options file exists
     PMoptionsFile <- file.path(opt_dir, "PMoptions.json")
   } else { # external options file does not exist
     PMoptionsFile <- paste(system.file("options", package = "Pmetrics"), "PMoptions.json", sep = "/")
   }
-  
-  
+
+
   # if it doesn't exist, warn and exit
   if (!file.exists(PMoptionsFile)) {
     if (warn & !quiet) cli::cli_inform("Run {.help setPMoptions} to create a Pmetrics options file.")
     return(invisible(-1))
   }
-  
+
   # read the options file
   PMopts <- jsonlite::read_json(path = PMoptionsFile, simplifyVector = TRUE)
   if (missing(opt)) {
@@ -61,7 +61,7 @@ getPMoptions <- function(opt, warn = TRUE, quiet = FALSE) {
 #' Also, when the Pmetrics package is first loaded with `library(Pmetrics)`,
 #' this function will be called with `launch.app = TRUE` to read saved options from
 #' a *PMoptions.json* file stored in a folder outside
-#' of the Pmetrics package, so that your options will persist when Pmetrics is updated. 
+#' of the Pmetrics package, so that your options will persist when Pmetrics is updated.
 #'
 #' @param launch.app Launch the app to set options. Default `TRUE`.
 #' @return The user preferences file will be updated.  This will persist from session to session
@@ -70,24 +70,28 @@ getPMoptions <- function(opt, warn = TRUE, quiet = FALSE) {
 #' @export
 
 setPMoptions <- function(launch.app = TRUE) {
-  
-  
   # --- Helper: OS Detection Function ---
   getOS <- function() {
     sysname <- Sys.info()[["sysname"]]
-    if (sysname == "Darwin") return(1)      # Mac
-    if (sysname == "Windows") return(2)     # Windows
-    if (sysname == "Linux") return(3)       # Linux
-    return(0)  # unknown
+    if (sysname == "Darwin") {
+      return(1)
+    } # Mac
+    if (sysname == "Windows") {
+      return(2)
+    } # Windows
+    if (sysname == "Linux") {
+      return(3)
+    } # Linux
+    return(0) # unknown
   }
-  
+
   opt_dir <- dplyr::case_when(
     getOS() %in% c(1, 3) ~ fs::path_expand("~/.PMopts"),
     getOS() == 2 ~ file.path(Sys.getenv("APPDATA"), "PMopts"),
-    TRUE ~ tempdir()  # fallback
+    TRUE ~ tempdir() # fallback
   )
-  
-  fs::dir_create(opt_dir)  # ensure directory exists
+
+  fs::dir_create(opt_dir) # ensure directory exists
   PMoptionsUserFile <- file.path(opt_dir, "PMoptions.json")
 
   PMoptionsDefaultsFile <- file.path(system.file("options", package = "Pmetrics"), "PMoptions.json")
@@ -137,9 +141,8 @@ setPMoptions <- function(launch.app = TRUE) {
   }
 
   opts <- sync_pmoptions()
-  
+
   app <- shiny::shinyApp(
-    
     # --- UI ---
     ui = bslib::page_fluid(
       theme = bslib::bs_theme(
@@ -148,10 +151,9 @@ setPMoptions <- function(launch.app = TRUE) {
         "card-border-radius" = "0.5rem"
       ),
       title = "Pmetrics Options",
-      
       shiny::tags$div(
         class = "container-fluid p-4",
-        
+
         # Header
         shiny::tags$div(
           class = "mb-4",
@@ -162,7 +164,7 @@ setPMoptions <- function(launch.app = TRUE) {
           ),
           shiny::tags$p(class = "text-muted mb-0", "Configure your Pmetrics preferences")
         ),
-        
+
         # Main content layout - use fluidRow for proper spacing
         shiny::fluidRow(
           # Left column
@@ -181,7 +183,7 @@ setPMoptions <- function(launch.app = TRUE) {
                   shiny::column(
                     width = 6,
                     shiny::selectInput(
-                      "sep", 
+                      "sep",
                       bslib::tooltip(
                         shiny::tags$span("Field separator", shiny::icon("circle-question", class = "ms-1 text-muted")),
                         "Character used to separate fields in data files"
@@ -193,7 +195,7 @@ setPMoptions <- function(launch.app = TRUE) {
                   shiny::column(
                     width = 6,
                     shiny::selectInput(
-                      "dec", 
+                      "dec",
                       bslib::tooltip(
                         shiny::tags$span("Decimal mark", shiny::icon("circle-question", class = "ms-1 text-muted")),
                         "Character used as decimal point in numbers"
@@ -217,7 +219,7 @@ setPMoptions <- function(launch.app = TRUE) {
                 )
               )
             ),
-            
+
             # Formatting Options Card
             bslib::card(
               class = "mb-3",
@@ -228,7 +230,7 @@ setPMoptions <- function(launch.app = TRUE) {
               ),
               bslib::card_body(
                 shiny::numericInput(
-                  "digits", 
+                  "digits",
                   bslib::tooltip(
                     shiny::tags$span("Decimal places", shiny::icon("circle-question", class = "ms-1 text-muted")),
                     "Number of decimal places to show in output"
@@ -237,7 +239,7 @@ setPMoptions <- function(launch.app = TRUE) {
                 )
               )
             ),
-            
+
             # Report Generation Card
             bslib::card(
               class = "mb-3",
@@ -248,13 +250,13 @@ setPMoptions <- function(launch.app = TRUE) {
               ),
               bslib::card_body(
                 shiny::selectInput(
-                  "report_template", 
+                  "report_template",
                   bslib::tooltip(
                     shiny::tags$span("Plot library", shiny::icon("circle-question", class = "ms-1 text-muted")),
                     "HTML summary of model fit to open in browser"
                   ),
                   choices = c(
-                    "Interactive (plotly)" = "plotly", 
+                    "Interactive (plotly)" = "plotly",
                     "Static (ggplot2)" = "ggplot2"
                   ),
                   selected = "plotly"
@@ -300,7 +302,7 @@ setPMoptions <- function(launch.app = TRUE) {
               )
             )
           ), # end left column
-          
+
           # Right column - Prediction Error Metrics Card
           shiny::column(
             width = 6,
@@ -315,7 +317,7 @@ setPMoptions <- function(launch.app = TRUE) {
                 shiny::tags$div(
                   class = "mb-3",
                   bslib::input_switch(
-                    "show_metrics", 
+                    "show_metrics",
                     shiny::tags$span(
                       "Show metrics on plots",
                       bslib::tooltip(
@@ -326,43 +328,39 @@ setPMoptions <- function(launch.app = TRUE) {
                     value = TRUE
                   )
                 ),
-                
                 shiny::tags$hr(class = "my-3"),
-                
                 shiny::selectInput(
-                  "bias_method", 
+                  "bias_method",
                   bslib::tooltip(
                     shiny::tags$span("Bias method", shiny::icon("circle-question", class = "ms-1 text-muted")),
                     "Method to calculate prediction bias (accuracy)"
                   ),
                   choices = c(
-                    "Mean Absolute Error (MAE)" = "mae", 
+                    "Mean Absolute Error (MAE)" = "mae",
                     "Mean Weighted Error (MWE)" = "mwe"
                   ),
                   selected = "mwe"
                 ),
-                
                 shiny::selectInput(
-                  "imp_method", 
+                  "imp_method",
                   bslib::tooltip(
                     shiny::tags$span("Imprecision method", shiny::icon("circle-question", class = "ms-1 text-muted")),
                     "Method to calculate prediction imprecision (scatter)"
                   ),
                   choices = c(
-                    "Mean Squared Error (MSE)" = "mse", 
-                    "Mean Weighted Squared Error (MWSE)" = "mwse", 
-                    "Root Mean Squared Error (RMSE)" = "rmse", 
-                    "Mean Bias-Adjusted Squared Error (MBASE)" = "mbase", 
-                    "Mean Bias-Adjusted Weighted Squared Error (MBAWSE)" = "mbawse", 
+                    "Mean Squared Error (MSE)" = "mse",
+                    "Mean Weighted Squared Error (MWSE)" = "mwse",
+                    "Root Mean Squared Error (RMSE)" = "rmse",
+                    "Mean Bias-Adjusted Squared Error (MBASE)" = "mbase",
+                    "Mean Bias-Adjusted Weighted Squared Error (MBAWSE)" = "mbawse",
                     "Root Mean Bias-Adjusted Weighted Squared Error (RMBAWSE)" = "rmbawse"
                   ),
                   selected = "rmbawse"
                 ),
-                
                 shiny::tags$div(
                   class = "mb-3",
                   bslib::input_switch(
-                    "use_percent", 
+                    "use_percent",
                     shiny::tags$span(
                       "Report as percentages",
                       bslib::tooltip(
@@ -373,17 +371,15 @@ setPMoptions <- function(launch.app = TRUE) {
                     value = TRUE
                   )
                 ),
-                
                 shiny::tags$hr(class = "my-3"),
-                
                 shiny::selectInput(
-                  "ic_method", 
+                  "ic_method",
                   bslib::tooltip(
                     shiny::tags$span("Information criterion", shiny::icon("circle-question", class = "ms-1 text-muted")),
                     "Method for model comparison"
                   ),
                   choices = c(
-                    "Akaike Information Criterion (AIC)" = "aic", 
+                    "Akaike Information Criterion (AIC)" = "aic",
                     "Bayesian Information Criterion (BIC)" = "bic"
                   ),
                   selected = "aic"
@@ -392,7 +388,7 @@ setPMoptions <- function(launch.app = TRUE) {
             )
           ) # end right column
         ), # end fluidRow
-        
+
         # Footer with buttons and file location
         shiny::fluidRow(
           shiny::column(
@@ -411,12 +407,12 @@ setPMoptions <- function(launch.app = TRUE) {
                       shiny::tags$div(
                         class = "d-flex gap-2",
                         shiny::actionButton(
-                          "save", 
+                          "save",
                           shiny::tags$span(shiny::icon("floppy-disk", class = "me-1"), "Save"),
                           class = "btn-success"
                         ),
                         shiny::actionButton(
-                          "exit", 
+                          "exit",
                           shiny::tags$span(shiny::icon("xmark", class = "me-1"), "Close"),
                           class = "btn-secondary"
                         )
@@ -451,18 +447,20 @@ setPMoptions <- function(launch.app = TRUE) {
         ) # end footer fluidRow
       ) # end container div
     ),
-    
+
     # --- Server ---
     server = function(input, output, session) {
-      
       # Track if there are unsaved changes
       unsaved_changes <- shiny::reactiveVal(FALSE)
-      
+
       # Load settings from external file
-      settings <- tryCatch({
-        jsonlite::fromJSON(PMoptionsUserFile)
-      }, error = function(e) NULL)
-      
+      settings <- tryCatch(
+        {
+          jsonlite::fromJSON(PMoptionsUserFile)
+        },
+        error = function(e) NULL
+      )
+
       # Apply saved settings to inputs
       if (!is.null(settings)) {
         # Select inputs
@@ -474,7 +472,7 @@ setPMoptions <- function(launch.app = TRUE) {
         if (!is.null(settings$date_format)) shiny::updateSelectInput(session, "date_format", selected = settings$date_format)
         if (!is.null(settings$update_check)) shiny::updateSelectInput(session, "update_check", selected = settings$update_check)
         if (!is.null(settings$update_timeout)) shiny::updateNumericInput(session, "update_timeout", value = settings$update_timeout)
-        
+
         # Bias/imprecision methods - strip percent_ prefix for display
         if (!is.null(settings$bias_method)) {
           shiny::updateSelectInput(session, "bias_method", selected = stringr::str_remove(settings$bias_method, "^percent_"))
@@ -482,7 +480,7 @@ setPMoptions <- function(launch.app = TRUE) {
         if (!is.null(settings$imp_method)) {
           shiny::updateSelectInput(session, "imp_method", selected = stringr::str_remove(settings$imp_method, "^percent_"))
         }
-        
+
         # Switch inputs - bslib::update_switch uses 'id' not 'inputId'
         if (!is.null(settings$show_metrics)) bslib::update_switch(id = "show_metrics", value = settings$show_metrics, session = session)
         if (!is.null(settings$use_percent)) {
@@ -491,7 +489,7 @@ setPMoptions <- function(launch.app = TRUE) {
           bslib::update_switch(id = "use_percent", value = use_pct, session = session)
         }
       }
-      
+
       # Flag to track if initial load is complete
       # We use a timer to wait for the async update cycle to complete:
       # 1) Server sends update messages to client
@@ -500,11 +498,15 @@ setPMoptions <- function(launch.app = TRUE) {
       # This round-trip needs time to complete before we start tracking changes
       initialized <- shiny::reactiveVal(FALSE)
       init_timer <- shiny::reactiveTimer(1000, session)
-      
-      shiny::observeEvent(init_timer(), {
-        initialized(TRUE)
-      }, once = TRUE, ignoreInit = TRUE)
-      
+
+      shiny::observeEvent(init_timer(),
+        {
+          initialized(TRUE)
+        },
+        once = TRUE,
+        ignoreInit = TRUE
+      )
+
       # Mark changes when any input changes (only after initialization)
       shiny::observe({
         # Only mark changes after initial load is complete
@@ -518,7 +520,7 @@ setPMoptions <- function(launch.app = TRUE) {
         input$update_check, input$update_timeout,
         ignoreInit = TRUE
       )
-      
+
       # Display path to user settings file (truncated for display)
       output$settings_path <- shiny::renderText({
         # Truncate path for display if too long
@@ -528,7 +530,7 @@ setPMoptions <- function(launch.app = TRUE) {
         }
         path
       })
-      
+
       # Show save status indicator below the buttons (full width of button container)
       output$save_status <- shiny::renderUI({
         if (unsaved_changes()) {
@@ -542,44 +544,47 @@ setPMoptions <- function(launch.app = TRUE) {
           NULL
         }
       })
-      
+
       ### Action button handlers
-      
+
       # Save updated settings
       shiny::observeEvent(input$save, {
         settings <- list(
-          sep = input$sep, 
-          dec = input$dec, 
-          digits = input$digits, 
+          sep = input$sep,
+          dec = input$dec,
+          digits = input$digits,
           show_metrics = input$show_metrics,
-          bias_method = glue::glue(c("", "percent_")[1 + as.numeric(input$use_percent)], input$bias_method), 
+          bias_method = glue::glue(c("", "percent_")[1 + as.numeric(input$use_percent)], input$bias_method),
           imp_method = glue::glue(c("", "percent_")[1 + as.numeric(input$use_percent)], input$imp_method),
           ic_method = input$ic_method,
           report_template = input$report_template,
           date_format = input$date_format,
           update_check = input$update_check,
           update_timeout = as.numeric(input$update_timeout)
-          # backend = input$backend, 
+          # backend = input$backend,
           # model_template_path = input$model_template_path
         )
-        
-        tryCatch({
-          jsonlite::write_json(settings, PMoptionsUserFile, pretty = TRUE, auto_unbox = TRUE)
-          unsaved_changes(FALSE)
-          shiny::showNotification(
-            shiny::tags$span(shiny::icon("check", class = "me-1"), "Settings saved successfully!"),
-            type = "message", 
-            duration = 3
-          )
-        }, error = function(e) {
-          shiny::showNotification(
-            shiny::tags$span(shiny::icon("times-circle", class = "me-1"), paste("Error saving:", e$message)),
-            type = "error", 
-            duration = 5
-          )
-        })
+
+        tryCatch(
+          {
+            jsonlite::write_json(settings, PMoptionsUserFile, pretty = TRUE, auto_unbox = TRUE)
+            unsaved_changes(FALSE)
+            shiny::showNotification(
+              shiny::tags$span(shiny::icon("check", class = "me-1"), "Settings saved successfully!"),
+              type = "message",
+              duration = 3
+            )
+          },
+          error = function(e) {
+            shiny::showNotification(
+              shiny::tags$span(shiny::icon("times-circle", class = "me-1"), paste("Error saving:", e$message)),
+              type = "error",
+              duration = 5
+            )
+          }
+        )
       })
-      
+
       # # Reset model template path to default
       # shiny::observeEvent(input$reset_model_template, {
       #   shiny::updateTextAreaInput(
@@ -588,7 +593,7 @@ setPMoptions <- function(launch.app = TRUE) {
       #     value   = system.file(package = "Pmetrics")
       #   )
       # })
-      
+
       # Exit the app with confirmation if unsaved changes
       shiny::observeEvent(input$exit, {
         if (unsaved_changes()) {
@@ -605,13 +610,13 @@ setPMoptions <- function(launch.app = TRUE) {
           shiny::stopApp()
         }
       })
-      
+
       # Confirm exit without saving
       shiny::observeEvent(input$confirm_exit, {
         shiny::removeModal()
         shiny::stopApp()
       })
-      
+
       # Open the options file in the default application (cross-platform)
       shiny::observeEvent(input$open_file, {
         os <- getOS()
@@ -632,12 +637,12 @@ setPMoptions <- function(launch.app = TRUE) {
           )
         }
       })
-    } #end server
-  ) #end shinyApp
-    
-    
+    } # end server
+  ) # end shinyApp
+
+
   # Launch the app without trying to launch another browser
-  if(launch.app){
+  if (launch.app) {
     shiny::runApp(app, launch.browser = TRUE)
   }
 
@@ -648,13 +653,6 @@ setPMoptions <- function(launch.app = TRUE) {
   names(pm_option_values) <- paste0("Pmetrics.", names(opts))
   do.call(options, pm_option_values)
   options(Pmetrics.user_options = opts)
-  
+
   return(invisible(NULL))
-    
-    
 } # end of PM_options function
-  
-  
-  
-  
-  

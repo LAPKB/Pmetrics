@@ -198,7 +198,7 @@ PM_sim <- R6::R6Class(
     #' to simulate. This is useful when you already have fixed parameter values, such as
     #' `NPex$final$popPoints`. Each row will generate one simulated profile, so `nsim` is
     #' ignored and the number of simulated profiles will equal the number of rows in the
-    #' data frame. If a `$prob` column is present, it will be ignored, since each row is 
+    #' data frame. If a `$prob` column is present, it will be ignored, since each row is
     #' treated as the parameters to be used for one simulation.
     #'
     #'     ```
@@ -594,7 +594,6 @@ PM_sim <- R6::R6Class(
       }
 
 
-
       if (missing(poppar)) {
         cli::cli_abort(c(
           "x" = "The poppar argument is required.",
@@ -796,7 +795,6 @@ PM_sim <- R6::R6Class(
         }
 
 
-
         # check if user specified covariate with posterior simulation?
         if (usePost) {
           cli::cli_abort(c(
@@ -966,7 +964,6 @@ PM_sim <- R6::R6Class(
       }
 
 
-
       ###### MODEL
 
       # get information from model
@@ -1083,8 +1080,6 @@ PM_sim <- R6::R6Class(
       if (!is.null(parLimits) && nrow(parLimits) != npar) {
         cli::cli_abort(c("x" = "The number of rows in {.arg limits} must match the number of parameters in the model."))
       }
-
-
 
 
       # COVARIATES ----------------------------------------------------
@@ -1298,8 +1293,6 @@ PM_sim <- R6::R6Class(
         poppar$popCov <- covMat
 
 
-
-
         # if split is true, then remake (augment) popPoints by adding mean covariate prior to each point
         if (split) {
           add_vector_columns <- function(df, v) {
@@ -1319,7 +1312,6 @@ PM_sim <- R6::R6Class(
 
       # regardless of covariates or not, 'limits' is the final variable for
       # limits on parameters
-
 
 
       # NOISE -------------------------------------------------------------------
@@ -1496,8 +1488,6 @@ PM_sim <- R6::R6Class(
     # get prior density
     getSimPrior = function(i, poppar, split, postToUse, limits, seed, nsim, toInclude, msg = NULL) {
       # get prior density
-
-
 
 
       if (inherits(poppar, "NPAG")) {
@@ -1979,24 +1969,25 @@ PM_sim$load <- function(...) {
 #' @family PMplots
 
 plot.PM_sim <- function(
-    x,
-    include,
-    exclude,
-    mult = 1,
-    ci = 0.95,
-    binSize = 0,
-    outeq = 1,
-    line = TRUE,
-    marker = FALSE,
-    obs,
-    quiet = FALSE,
-    legend = FALSE,
-    log = TRUE,
-    grid = FALSE,
-    xlab, ylab,
-    title,
-    xlim, ylim,
-    print = TRUE, ...) {
+  x,
+  include,
+  exclude,
+  mult = 1,
+  ci = 0.95,
+  binSize = 0,
+  outeq = 1,
+  line = TRUE,
+  marker = FALSE,
+  obs,
+  quiet = FALSE,
+  legend = FALSE,
+  log = TRUE,
+  grid = FALSE,
+  xlab, ylab,
+  title,
+  xlim, ylim,
+  print = TRUE, ...
+) {
   if (all(is.na(line))) {
     line <- list(probs = NA)
   } # standardize
@@ -2476,9 +2467,10 @@ plot.PM_sim <- function(
 #' @seealso [PM_sim]
 #' @export
 summary.PM_sim <- function(
-    object, include, exclude, field = "obs", group = NULL,
-    statistics = c("mean", "sd", "median", "min", "max"),
-    digits = getPMoptions("digits"), ...) {
+  object, include, exclude, field = "obs", group = NULL,
+  statistics = c("mean", "sd", "median", "min", "max"),
+  digits = getPMoptions("digits"), ...
+) {
   # get the right data
   if (inherits(object, "PM_sim")) {
     dat <- object$data[[field]]
@@ -2567,9 +2559,6 @@ print.summary.PM_sim <- function(x, ...) {
     cat("\n", "Grouped by:", paste(crayon::blue(attr(x, "group")), collapse = ", "), "\n")
   }
 }
-
-
-
 
 
 # generate random samples from multivariate, multimodal normal distribution

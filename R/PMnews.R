@@ -14,7 +14,7 @@
 #' }
 
 #' @export
-#' @keywords internal 
+#' @keywords internal
 
 PMnews <- function(PMversion = packageVersion("Pmetrics")) {
   Version <- NULL # dummy declare to avoid R CMD check flag

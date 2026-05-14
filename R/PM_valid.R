@@ -19,7 +19,7 @@
 #' comprising data fields and associated methods suitable for analysis and plotting of
 #' observed vs. population or individual predicted outputs.
 #'
-#' Because [PM_valid] objects are automatically added to the [PM_result] by calling the 
+#' Because [PM_valid] objects are automatically added to the [PM_result] by calling the
 #' `$validate()` method of a [PM_result] after a
 #' successful run, it is generally not necessary for users to generate [PM_valid] objects
 #' themselves.
@@ -64,7 +64,7 @@ PM_valid <- R6::R6Class(
     #' superimposable and `tad` should
     #' *NOT* be used, i.e. should be set to `FALSE`.
     #'
-    #' @param result The result of a prior run, usually supplied by calling the 
+    #' @param result The result of a prior run, usually supplied by calling the
     #' `$validate()` method of a [PM_result] at the end of a run, or later loaded with [PM_load].
     #' @param tad `r template("tad")`
     #' @param binCov A character vector of the names of covariates which are included in the model, i.e. in the
@@ -108,8 +108,7 @@ PM_valid <- R6::R6Class(
           "i" = "Install these packages and try again."
         ))
       }
-      
-      
+
 
       if (!inherits(result, "PM_result")) {
         cli::cli_abort(c(
@@ -178,7 +177,9 @@ PM_valid <- R6::R6Class(
 
       # Linear interpolation of simulation quantile rank for one observation
       sim_interp <- function(t, y, sim_sum, q_probs) {
-        if (min(sim_sum$time) > t || max(sim_sum$time) < t) return(NA_real_)
+        if (min(sim_sum$time) > t || max(sim_sum$time) < t) {
+          return(NA_real_)
+        }
         lo_t <- max(sim_sum$time[sim_sum$time <= t], na.rm = TRUE)
         hi_t <- min(sim_sum$time[sim_sum$time >= t], na.rm = TRUE)
         rank <- 0
@@ -228,12 +229,14 @@ PM_valid <- R6::R6Class(
             !is.na(.data[[time_col]])
           )
 
-        if (nrow(sim_df) == 0 || nrow(obs_df) == 0) return(NULL)
+        if (nrow(sim_df) == 0 || nrow(obs_df) == 0) {
+          return(NULL)
+        }
 
         sim_quant_df <- build_sim_quant_df(sim_df, time_col, probs)
 
         obs_time <- obs_df[[time_col]]
-        obs_out  <- obs_df$obs
+        obs_out <- obs_df$obs
 
         q_rank <- vapply(
           seq_along(obs_time),
@@ -242,18 +245,20 @@ PM_valid <- R6::R6Class(
         )
 
         not_miss <- sum(!is.na(q_rank))
-        if (not_miss == 0) return(NULL)
+        if (not_miss == 0) {
+          return(NULL)
+        }
 
         pct_below <- vapply(probs, \(p) sum(q_rank < p, na.rm = TRUE) / not_miss, numeric(1))
-        pvals     <- vapply(probs, \(p) {
+        pvals <- vapply(probs, \(p) {
           s <- sum(q_rank < p, na.rm = TRUE)
           tryCatch(binom.test(s, not_miss, p, "two")$p.value, error = \(e) NA_real_)
         }, numeric(1))
 
         npc_tbl <- data.frame(
-          Quantile    = paste0(formatC(probs * 100, format = "f", digits = 1), "%"),
-          Prop_below  = paste0(formatC(pct_below * 100, format = "f", digits = 1), "%"),
-          P_value     = formatC(pvals, format = "f", digits = 3),
+          Quantile = paste0(formatC(probs * 100, format = "f", digits = 1), "%"),
+          Prop_below = paste0(formatC(pct_below * 100, format = "f", digits = 1), "%"),
+          P_value = formatC(pvals, format = "f", digits = 3),
           stringsAsFactors = FALSE
         )
         names(npc_tbl) <- c("Quantile", "Prop. Below", "P-value")
@@ -264,8 +269,8 @@ PM_valid <- R6::R6Class(
           \(i) sim_interp(obs_time[[i]], obs_out[[i]], sim_quant_df, c(0.05, 0.95)),
           numeric(1)
         )
-        in90   <- sum(between_rank >= 0.05 & between_rank < 0.95, na.rm = TRUE)
-        pct90  <- in90 / not_miss
+        in90 <- sum(between_rank >= 0.05 & between_rank < 0.95, na.rm = TRUE)
+        pct90 <- in90 / not_miss
         pval90 <- tryCatch(
           binom.test(in90, not_miss, 0.9, "two")$p.value,
           error = \(e) NA_real_
@@ -475,7 +480,6 @@ PM_valid <- R6::R6Class(
         )
 
         invisible(wss)
-
       }
 
       suggest_clusters <- function(x) {
@@ -632,7 +636,6 @@ PM_valid <- R6::R6Class(
                       "How to use the observation plot",
                       c(
                         "Observations are plotted relative to cluster times."
-                      
                       )
                     ),
                     shiny::plotOutput("time_cluster"),
@@ -664,7 +667,6 @@ PM_valid <- R6::R6Class(
                       "How to use the observation plot",
                       c(
                         "Observations are plotted relative to clustered times after doses."
-                      
                       )
                     ),
                     shiny::plotOutput("tad_cluster"),
@@ -715,22 +717,25 @@ PM_valid <- R6::R6Class(
             suggest_clusters(reactive_cluster_data()$dataSubTime)
           })
 
-          shiny::observeEvent(selected_cov(), {
-            if (needs_dose) {
-              shiny::updateNumericInput(
-                session,
-                "doseC",
-                value = suggested_dose_clusters()
-              )
-            }
-            if (needs_time) {
-              shiny::updateNumericInput(
-                session,
-                "timeC",
-                value = suggested_time_clusters()
-              )
-            }
-          }, ignoreInit = TRUE)
+          shiny::observeEvent(selected_cov(),
+            {
+              if (needs_dose) {
+                shiny::updateNumericInput(
+                  session,
+                  "doseC",
+                  value = suggested_dose_clusters()
+                )
+              }
+              if (needs_time) {
+                shiny::updateNumericInput(
+                  session,
+                  "timeC",
+                  value = suggested_time_clusters()
+                )
+              }
+            },
+            ignoreInit = TRUE
+          )
 
           if (needs_dose) {
             output$dose_class <- shiny::renderPlot({
@@ -927,7 +932,7 @@ PM_valid <- R6::R6Class(
         seed = runif(nsub, -100, 100),
         limits = limits, quiet = TRUE
       ), argsSIM)
-      
+
       cli::cli_bullets(c(">" = "{.strong Step 2}:Simulating one version of each subject using medians of binned data..."))
 
       PRED_bin <- do.call(PM_sim$new, argsSIM1)
@@ -990,7 +995,7 @@ PM_valid <- R6::R6Class(
       if (length(excludeID) > 0) {
         argsSIM2$exclude <- excludeID
       }
-      
+
       cli::cli_bullets(c(">" = "{.strong Step 3}:Simulating {nsim} versions of each subject using original data..."))
       simFull <- do.call(PM_sim$new, argsSIM2)
       # take out observations at time 0 from evid=4 and missing outputs
@@ -1263,7 +1268,7 @@ summary.PM_valid <- function(object, probs = c(0.05, 0.5, 0.95), ...) {
 #'    NPex$validate(limits = c(0, 3)) # creates a PM_valid object and adds it to the $valid field of NPex
 #'    NPex$valid$plot(type = "vpc", tad = TRUE, log = TRUE) # now we can plot it
 #' ```
-#' 
+#'
 #' Plot [PM_valid] objects.
 #' @details
 #' Generates a plot of outputs (typically concentrations) on the y axis and time
@@ -1289,7 +1294,7 @@ summary.PM_valid <- function(object, probs = c(0.05, 0.5, 0.95), ...) {
 #' variability in the data. For an npde plot, one expects to see approximately
 #' normally distributed normalized prediction errors.
 #' @method plot PM_valid
-#' @param x The name of an *PM_valid* data object, which is usually called by 
+#' @param x The name of an *PM_valid* data object, which is usually called by
 #' the `$validate` method for [PM_result]
 #' objects.
 #' @param type Default is "vpc" for a visual predictive check, but could be
@@ -1382,7 +1387,6 @@ plot.PM_valid <- function(x,
 
   opDF <- opDF %>% filter(outeq == !!outeq) # filter to outeq
   simdata <- simdata %>% filter(outeq == !!outeq) # filter to outeq
-
 
 
   # process CI lines
@@ -1538,7 +1542,6 @@ plot.PM_valid <- function(x,
   simCI <- simCI %>% dplyr::arrange(time, q)
 
 
-
   # combine obs and simCI
   quant_pcObs <- quant_pcObs %>%
     dplyr::select(-q) %>%
@@ -1546,7 +1549,6 @@ plot.PM_valid <- function(x,
   quant_Obs <- quant_Obs %>%
     dplyr::select(-q) %>%
     dplyr::bind_cols(simCI[2:4])
-
 
 
   # type specific options
@@ -1645,8 +1647,6 @@ plot.PM_valid <- function(x,
 }
 
 
-
-
 #' @title Plot Pmetrics Validation Objects
 #' @description
 #' `r lifecycle::badge('superseded')`
@@ -1694,7 +1694,6 @@ plot.PMvalid <- function(x, type = "vpc", tad = FALSE, icen = "median", outeq = 
                          col.obs.ci = "blue", col.obs.med = "red", col.sim.ci = "dodgerblue", col.sim.med = "lightpink",
                          axis.x = NULL,
                          axis.y = NULL, ...) {
-
   if (outeq > max(x$opDF$outeq)) {
     stop(paste("Your data do not contain", outeq, "output equations.\n"))
   }

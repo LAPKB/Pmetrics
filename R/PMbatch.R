@@ -1,5 +1,5 @@
-#' @keywords internal 
-#' 
+#' @keywords internal
+#'
 
 PMbatch <- function(type, datafolder, modelfolder, batchname = "batch", ...) {
   data <- list.files(datafolder)
@@ -86,7 +86,7 @@ PMbatch <- function(type, datafolder, modelfolder, batchname = "batch", ...) {
 #' @param batchname name of the folder in which the batch will be executed
 #' @param ... other parameters passed to PM_fit$run(...)
 #' @export
-#' @keywords internal 
+#' @keywords internal
 PM_batch <- function(batch, batchname = "batch", ...) {
   wd <- getwd()
   system(paste0("mkdir ", batchname))
@@ -96,7 +96,6 @@ PM_batch <- function(batch, batchname = "batch", ...) {
     stopifnot(inherits(fit, "PM_fit"))
     fit$run(...)
   }
-
 
 
   setwd(wd)

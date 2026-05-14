@@ -145,8 +145,6 @@ PM_post <- R6::R6Class(
 )
 
 
-
-
 # PLOT --------------------------------------------------------------------
 
 #' @title Plot PM_post Prediction Data
@@ -229,25 +227,26 @@ PM_post <- R6::R6Class(
 #' @family PMplots
 
 plot.PM_post <- function(
-    x,
-    include = NULL,
-    exclude = NULL,
-    line = list(join = TRUE),
-    marker = FALSE,
-    out_names = NULL,
-    mult = 1,
-    icen = "median",
-    outeq = 1,
-    block = 1,
-    overlay = TRUE,
-    legend = FALSE,
-    log = FALSE,
-    grid = FALSE,
-    xlab = "Time",
-    ylab = "Output",
-    title = "",
-    print = TRUE,
-    xlim, ylim, ...) {
+  x,
+  include = NULL,
+  exclude = NULL,
+  line = list(join = TRUE),
+  marker = FALSE,
+  out_names = NULL,
+  mult = 1,
+  icen = "median",
+  outeq = 1,
+  block = 1,
+  overlay = TRUE,
+  legend = FALSE,
+  log = FALSE,
+  grid = FALSE,
+  xlab = "Time",
+  ylab = "Output",
+  title = "",
+  print = TRUE,
+  xlim, ylim, ...
+) {
   # Plot parameters ---------------------------------------------------------
 
   x <- if (inherits(x, "PM_post")) {
@@ -373,7 +372,6 @@ plot.PM_post <- function(
   # sub <- sub %>% filter(pred != -99) # obsolete now
 
 
-
   # Plot function ----------------------------------------------------------
 
   dataPlot <- function(allsub, overlay) {
@@ -390,7 +388,7 @@ plot.PM_post <- function(
       n_colors <- length(levels(allsub$group))
       if (!is.null(user_color)) {
         if (length(user_color) == 1 && requireNamespace("RColorBrewer", quietly = TRUE) &&
-            user_color %in% rownames(RColorBrewer::brewer.pal.info)) {
+          user_color %in% rownames(RColorBrewer::brewer.pal.info)) {
           max_colors <- RColorBrewer::brewer.pal.info[user_color, "maxcolors"]
           colors <- colorRampPalette(RColorBrewer::brewer.pal(max_colors, user_color))(n_colors)
         } else {
@@ -398,7 +396,7 @@ plot.PM_post <- function(
         }
       } else if (n_colors == 1) {
         colors <- rep(marker$color[[1]], n_colors)
-      } else   if (requireNamespace("RColorBrewer", quietly = TRUE)) {
+      } else if (requireNamespace("RColorBrewer", quietly = TRUE)) {
         n_pal <- min(max(n_colors, 3L), 9L)
         colors <- rep(RColorBrewer::brewer.pal(n_pal, "Set1"), length.out = n_colors)
       } else {
@@ -499,9 +497,10 @@ plot.PM_post <- function(
 #' @export
 
 summary.PM_post <- function(
-    object, digits = max(3, getOption("digits") - 3),
-    icen = "median",
-    outeq = 1, ...) {
+  object, digits = max(3, getOption("digits") - 3),
+  icen = "median",
+  outeq = 1, ...
+) {
   sumWrk <- function(data) {
     sumstat <- matrix(NA, nrow = 7, ncol = 2, dimnames = list(c("Min", "25%", "Median", "75%", "Max", "Mean", "SD"), c("Time", "Pred")))
     # min

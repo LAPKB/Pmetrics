@@ -41,7 +41,7 @@ NULL
   )
 }
 
-.launch_golem_app <- function(pkg, fun, launch.browser = TRUE,...) {
+.launch_golem_app <- function(pkg, fun, launch.browser = TRUE, ...) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
     cli::cli_abort(c(
       "x" = "The {.pkg {pkg}} package is required to launch this app.",

@@ -163,7 +163,6 @@ PM_op <- R6::R6Class(
       }
 
 
-
       if (file.exists(file.path(path, "settings.json"))) {
         config <- jsonlite::fromJSON(file.path(path, "settings.json"))
       } else if (inherits(data, "PM_op")) { # file not there, and already PM_op
@@ -228,7 +227,6 @@ PM_op <- R6::R6Class(
     } # end make
   ) # end private
 )
-
 
 
 # PLOT --------------------------------------------------------------------
@@ -341,21 +339,22 @@ PM_op <- R6::R6Class(
 #' }
 #' @family PMplots
 plot.PM_op <- function(
-    x,
-    line = list(lm = NULL, loess = NULL, ref = NULL),
-    marker = TRUE,
-    resid = FALSE,
-    icen = "median", pred.type = "post", outeq = 1, block,
-    include, exclude,
-    mult = 1,
-    legend,
-    log = FALSE,
-    grid = TRUE,
-    xlab, ylab,
-    title,
-    stats = TRUE,
-    print = TRUE,
-    xlim, ylim, ...) {
+  x,
+  line = list(lm = NULL, loess = NULL, ref = NULL),
+  marker = TRUE,
+  resid = FALSE,
+  icen = "median", pred.type = "post", outeq = 1, block,
+  include, exclude,
+  mult = 1,
+  legend,
+  log = FALSE,
+  grid = TRUE,
+  xlab, ylab,
+  title,
+  stats = TRUE,
+  print = TRUE,
+  xlim, ylim, ...
+) {
   if (inherits(x, "PM_op")) {
     x <- x$data
   }
@@ -483,7 +482,6 @@ plot.PM_op <- function(
     title <- ""
   }
   layout$title <- amendTitle(title, default = list(size = 20))
-
 
 
   # PLOTS -------------------------------------------------------------------
@@ -806,9 +804,10 @@ plot.PM_op_data <- function(x, ...) {
 #' @export
 
 summary.PM_op <- function(
-    object, digits = max(3, getOption("digits") - 3),
-    pred.type = "post", icen = "median",
-    outeq = 1, ...) {
+  object, digits = max(3, getOption("digits") - 3),
+  pred.type = "post", icen = "median",
+  outeq = 1, ...
+) {
   argList <- list(...)
   if ("type" %in% names(argList)) {
     cli::cli_inform(c("i" = "{.code type} has been updated to {.code pred.type}.\fPlease update your script."))
@@ -1039,7 +1038,6 @@ print.summary.PM_op <- function(x, digits = getPMoptions("digits"), embed = FALS
     cat("NA\n")
   }
 }
-
 
 
 # Internal functions
