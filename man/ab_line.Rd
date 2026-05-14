@@ -44,10 +44,10 @@ in the layout list.
 \examples{
 \dontrun{
 # add to an existing plot
-NPex$op$plot() \%>\%
+NPex$op$plot() |>
   add_shapes(shapes = ab_line(v = 12))
 # add to a new plot
-plotly::plot_ly(x = 1:10, y = 1:10, type = "scatter", mode = "lines+markers") \%>\%
+plotly::plot_ly(x = 1:10, y = 1:10, type = "scatter", mode = "lines+markers") |>
   plotly::layout(shapes = ab_line(h = 5, line = list(color = "red", dash = "solid")))
 }
 }

@@ -218,8 +218,8 @@ PM_opt <- R6::R6Class(
       if (inherits(poppar, "PM_sim")) {
         case <- 1
         simdata <- poppar
-        popPoints <- simdata$data$parValues %>%
-          select(-nsim) %>%
+        popPoints <- simdata$data$parValues |>
+          select(-nsim) |>
           mutate(prob = 1 / n()) # extract the population points and assign equal probabilities
         # model will be extracted from PM_sim; template data not required
 
@@ -228,8 +228,8 @@ PM_opt <- R6::R6Class(
         case <- 2
         simdata <- list(data = poppar) # construct a pseudo PM_sim object with the data in the $data field
         class(simdata) <- c("PM_sim", "list")
-        popPoints <- simdata$data$parValues %>%
-          select(-nsim) %>%
+        popPoints <- simdata$data$parValues |>
+          select(-nsim) |>
           mutate(prob = 1 / n()) # extract the population points and assign equal probabilities
         # model will be extracted from the list; template data not required
 
@@ -326,7 +326,7 @@ PM_opt <- R6::R6Class(
       cassay <- simdata$data$model$model_list$err[[outeq]]$coeff
 
       # get the simulated outputs
-      obs <- simdata$data$obs %>% filter(outeq == !!outeq)
+      obs <- simdata$data$obs |> filter(outeq == !!outeq)
 
       # filter outputs by mmInt if needed
       if (!missing(mmInt) && !is.null(mmInt)) {
@@ -337,8 +337,8 @@ PM_opt <- R6::R6Class(
         # filter obs by mmInt intervals
         obs <- purrr::map(mmInt, \(t) {
           dplyr::filter(obs, time >= t[1] & time <= t[2])
-        }) %>%
-          dplyr::bind_rows() %>%
+        }) |>
+          dplyr::bind_rows() |>
           dplyr::arrange(id, time)
       } else {
         mmInt <- NULL
@@ -430,7 +430,7 @@ PM_opt <- R6::R6Class(
       split_sim <- split(obs, obs$id)
       all_mm <- map(split_sim, \(x) {
         make_mm(
-          obs = x %>% arrange(nsim, time),
+          obs = x |> arrange(nsim, time),
           popPoints = popPoints,
           cassay = cassay
         )
@@ -438,18 +438,18 @@ PM_opt <- R6::R6Class(
 
       sampleTime <- purrr::map(1:nsamp, \(i) {
         mean(purrr::map_dbl(all_mm, \(x) x$sampleTime[i]), na.rm = TRUE)
-      }) %>% unlist()
+      }) |> unlist()
       bayesRisk <- c(
         mean(purrr::map_dbl(all_mm, \(x) x$bayesRisk), na.rm = TRUE)
       )
 
 
-      mm_res <- bind_rows(all_mm, .id = "id") %>%
-        group_by(id) %>%
-        mutate(sample_idx = row_number()) %>%
+      mm_res <- bind_rows(all_mm, .id = "id") |>
+        group_by(id) |>
+        mutate(sample_idx = row_number()) |>
         pivot_wider(id_cols = c(id, bayesRisk), names_from = sample_idx, values_from = sampleTime, names_prefix = "time_")
 
-      mm_res <- mm_res[match(data$data$id, mm_res$id), ] %>% distinct()
+      mm_res <- mm_res[match(data$data$id, mm_res$id), ] |> distinct()
       if (nrow(mm_res) == 1) mm_res <- NULL # if only one subject, return NULL as it is the same as the sampleTime and bayesRisk
 
 
@@ -865,7 +865,7 @@ plot.PM_opt <- function(x, line = list(probs = NA), times = T, print = TRUE, ...
     }
   ))
 
-  p <- p %>% layout(shapes = shapeList)
+  p <- p |> layout(shapes = shapeList)
 
   if (print) print(p)
   return(p)

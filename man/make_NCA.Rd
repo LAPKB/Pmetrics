@@ -6,7 +6,7 @@
 \usage{
 make_NCA(
   x,
-  postPred = F,
+  postPred = FALSE,
   include,
   exclude,
   input = 1,

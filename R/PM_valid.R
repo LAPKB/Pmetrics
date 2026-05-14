@@ -199,18 +199,18 @@ PM_valid <- R6::R6Class(
 
       # Build a tidy quantile summary from simulated data
       build_sim_quant_df <- function(sim_df, time_col, q_probs) {
-        sim_sub <- sim_df %>%
+        sim_sub <- sim_df |>
           dplyr::select(time = !!rlang::sym(time_col), out)
         times <- sort(unique(sim_sub$time))
-        sim_sub %>%
-          dplyr::group_by(time) %>%
-          dplyr::group_map(~ quantile(.x$out, probs = q_probs, na.rm = TRUE)) %>%
-          dplyr::tibble() %>%
-          tidyr::unnest_longer(col = 1, indices_to = "quantile", values_to = "value") %>%
+        sim_sub |>
+          dplyr::group_by(time) |>
+          dplyr::group_map(~ quantile(.x$out, probs = q_probs, na.rm = TRUE)) |>
+          dplyr::tibble() |>
+          tidyr::unnest_longer(col = 1, indices_to = "quantile", values_to = "value") |>
           dplyr::mutate(
             time     = rep(times, each = length(q_probs)),
             quantile = readr::parse_number(quantile) / 100
-          ) %>%
+          ) |>
           dplyr::select(time, quantile, value)
       }
 
@@ -218,12 +218,12 @@ PM_valid <- R6::R6Class(
       compute_npc <- function(outeq_idx, use_tad = FALSE) {
         time_col <- if (use_tad) "tad" else "time"
 
-        sim_df <- self$simdata$data$obs %>%
+        sim_df <- self$simdata$data$obs |>
           dplyr::filter(
             outeq == outeq_idx,
             !is.na(.data[[time_col]])
           )
-        obs_df <- self$opDF %>%
+        obs_df <- self$opDF |>
           dplyr::filter(
             outeq == outeq_idx,
             !is.na(.data[[time_col]])
@@ -366,20 +366,20 @@ PM_valid <- R6::R6Class(
 
 
       # remove missing observations
-      mdata <- result$data$standard_data %>%
+      mdata <- result$data$standard_data |>
         filter(is.na(out) | out != -99) # preserves doses and non-missing
 
 
       # Handle include/exclude IDs
       if ("include" %in% names(argsSIM)) {
-        mdata <- mdata %>% filter(id %in% argsSIM$include)
+        mdata <- mdata |> filter(id %in% argsSIM$include)
         includeID <- argsSIM$include
         argsSIM$include <- NULL
       } else {
         includeID <- NULL
       }
       if ("exclude" %in% names(argsSIM)) {
-        mdata <- mdata %>% filter(!id %in% argsSIM$exclude)
+        mdata <- mdata |> filter(!id %in% argsSIM$exclude)
         excludeID <- argsSIM$exclude
         argsSIM$exclude <- NULL
       } else {
@@ -414,25 +414,25 @@ PM_valid <- R6::R6Class(
       build_cluster_data <- function(covariates, use_tad = tad) {
         use_cov <- cov_names[cov_names %in% covariates]
 
-        data_sub <- mdata %>%
-          select(id, evid, time, out, dose, all_of(use_cov)) %>%
-          mutate(tad = if (isTRUE(use_tad)) get_tad_values() else NA) %>%
+        data_sub <- mdata |>
+          select(id, evid, time, out, dose, all_of(use_cov)) |>
+          mutate(tad = if (isTRUE(use_tad)) get_tad_values() else NA) |>
           dplyr::relocate(tad, .after = time)
 
-        data_sub_dc <- data_sub %>%
-          filter(evid > 0) %>%
-          select(c("id", "dose", dplyr::all_of(use_cov))) %>%
-          mutate(dose = ifelse(dose == 0, NA, dose)) %>%
-          group_by(id) %>%
+        data_sub_dc <- data_sub |>
+          filter(evid > 0) |>
+          select(c("id", "dose", dplyr::all_of(use_cov))) |>
+          mutate(dose = ifelse(dose == 0, NA, dose)) |>
+          group_by(id) |>
           mutate(dose = {
             first_valid_dose <- dose[!is.na(dose)][1]
             tidyr::replace_na(dose, first_valid_dose)
-          }) %>%
-          fill(everything(), .direction = "down") %>%
+          }) |>
+          fill(everything(), .direction = "down") |>
           ungroup()
 
-        data_sub_time <- data_sub %>%
-          filter(evid == 0) %>%
+        data_sub_time <- data_sub |>
+          filter(evid == 0) |>
           select(time)
 
         data_sub_tad <- if (isTRUE(use_tad)) data_sub$tad[data_sub$evid == 0] else NULL
@@ -536,11 +536,11 @@ PM_valid <- R6::R6Class(
             title(main = paste(label, "has only missing values"))
             return(invisible(NULL))
           }
-          plot_data <- data_sub %>%
+          plot_data <- data_sub |>
             filter(evid == 0, !is.na(out))
 
           if (identical(x_var, "tad")) {
-            plot_data <- plot_data %>% filter(!is.na(tad))
+            plot_data <- plot_data |> filter(!is.na(tad))
           }
 
           plot_formula <- if (identical(x_var, "tad")) {
@@ -855,22 +855,22 @@ PM_valid <- R6::R6Class(
 
       # simulate PRED_bin from pop icen parameter values and median of each bin for each subject
       # first, calculate median of each bin
-      dcMedian <- dataSub %>%
-        dplyr::group_by(bin = dcBin) %>%
-        dplyr::filter(!is.na(dose)) %>%
+      dcMedian <- dataSub |>
+        dplyr::group_by(bin = dcBin) |>
+        dplyr::filter(!is.na(dose)) |>
         dplyr::summarize(dplyr::across(c(dose, !!binCov), \(x) median(x, na.rm = TRUE)))
 
-      timeMedian <- dataSub %>%
-        group_by(bin = timeBin) %>%
-        dplyr::filter(!is.na(timeBin)) %>%
-        dplyr::summarize(time = median(time, na.rm = T)) %>%
+      timeMedian <- dataSub |>
+        group_by(bin = timeBin) |>
+        dplyr::filter(!is.na(timeBin)) |>
+        dplyr::summarize(time = median(time, na.rm = T)) |>
         dplyr::arrange(time)
 
       if (tad) {
-        tadMedian <- dataSub %>%
-          dplyr::group_by(bin = tadBin) %>%
-          dplyr::filter(!is.na(tadBin)) %>%
-          dplyr::summarize(time = median(tad, na.rm = T)) %>%
+        tadMedian <- dataSub |>
+          dplyr::group_by(bin = tadBin) |>
+          dplyr::filter(!is.na(tadBin)) |>
+          dplyr::summarize(time = median(tad, na.rm = T)) |>
           dplyr::arrange(time)
       } else {
         tadMedian <- NA
@@ -936,7 +936,7 @@ PM_valid <- R6::R6Class(
       cli::cli_bullets(c(">" = "{.strong Step 2}:Simulating one version of each subject using medians of binned data..."))
 
       PRED_bin <- do.call(PM_sim$new, argsSIM1)
-      PRED_bin$data$obs <- PRED_bin$data$obs %>% filter(!is.na(out))
+      PRED_bin$data$obs <- PRED_bin$data$obs |> filter(!is.na(out))
 
       # make tempDF subset of PM_op for subject, time, non-missing obs, outeq, pop predictions (PREDij)
       tempDF <- if (inherits(result$op, "PM_op")) {
@@ -945,9 +945,9 @@ PM_valid <- R6::R6Class(
         result$op
       }
 
-      tempDF <- tempDF %>%
-        filter(obs != -99, time > 0, pred.type == "pop", icen == "median") %>%
-        includeExclude(includeID, excludeID) %>%
+      tempDF <- tempDF |>
+        filter(obs != -99, time > 0, pred.type == "pop", icen == "median") |>
+        includeExclude(includeID, excludeID) |>
         arrange(id, time, outeq)
 
       if (tad) {
@@ -999,15 +999,15 @@ PM_valid <- R6::R6Class(
       cli::cli_bullets(c(">" = "{.strong Step 3}:Simulating {nsim} versions of each subject using original data..."))
       simFull <- do.call(PM_sim$new, argsSIM2)
       # take out observations at time 0 from evid=4 and missing outputs
-      simFull$data$obs <- simFull$data$obs %>% filter(time > 0, out != -99)
+      simFull$data$obs <- simFull$data$obs |> filter(time > 0, out != -99)
 
 
       # add TAD for plotting options
       if (tad) {
-        simFull$data$obs$tad <- dataSub %>%
-          dplyr::filter(evid == 0) %>%
-          dplyr::group_by(id) %>%
-          dplyr::group_map(~ rep(.x$tad, nsim)) %>%
+        simFull$data$obs$tad <- dataSub |>
+          dplyr::filter(evid == 0) |>
+          dplyr::group_by(id) |>
+          dplyr::group_map(~ rep(.x$tad, nsim)) |>
           unlist()
       } else {
         simFull$data$obs$tad <- NA
@@ -1016,17 +1016,17 @@ PM_valid <- R6::R6Class(
 
       # pull in time bins from tempDF; only need median as tempDF contains median and mean,
       # but simulation is only from pop means
-      simFull$data$obs$timeBinNum <- dataSub %>%
-        dplyr::filter(evid == 0) %>%
-        dplyr::group_by(id) %>%
-        dplyr::group_map(~ rep(.x$timeBin, nsim)) %>%
+      simFull$data$obs$timeBinNum <- dataSub |>
+        dplyr::filter(evid == 0) |>
+        dplyr::group_by(id) |>
+        dplyr::group_map(~ rep(.x$timeBin, nsim)) |>
         unlist()
 
       # pull in tad bins from tempDF
-      simFull$data$obs$tadBinNum <- dataSub %>%
-        dplyr::filter(evid == 0) %>%
-        dplyr::group_by(id) %>%
-        dplyr::group_map(~ rep(.x$tadBin, nsim)) %>%
+      simFull$data$obs$tadBinNum <- dataSub |>
+        dplyr::filter(evid == 0) |>
+        dplyr::group_by(id) |>
+        dplyr::group_map(~ rep(.x$tadBin, nsim)) |>
         unlist()
 
       # make simulation number 1:nsim
@@ -1036,18 +1036,18 @@ PM_valid <- R6::R6Class(
       # NPDE -------------------------------------------------------------------
 
       # prepare data for npde
-      obs <- tempDF %>% select(id, time, tad, out = obs, outeq)
+      obs <- tempDF |> select(id, time, tad, out = obs, outeq)
 
 
       # remove missing obs
-      obs <- obs %>% filter(out != -99)
+      obs <- obs |> filter(out != -99)
 
       simobs <- simFull$data$obs
       # remove missing simulations
-      simobs <- simobs %>% filter(out != -99)
+      simobs <- simobs |> filter(out != -99)
       simobs$id <- rep(obs$id, times = nsim)
 
-      simobs <- simobs %>% select(id, time, tad, out, outeq)
+      simobs <- simobs |> select(id, time, tad, out, outeq)
 
 
       # get number of outeq
@@ -1060,23 +1060,23 @@ PM_valid <- R6::R6Class(
       prepare_npde_pair <- function(obs_df, sim_df) {
         id_levels <- unique(obs_df$id)
 
-        obs_clean <- obs_df %>%
+        obs_clean <- obs_df |>
           dplyr::mutate(
             id = match(id, id_levels),
             time = suppressWarnings(as.numeric(time)),
             out = suppressWarnings(as.numeric(out))
-          ) %>%
-          filter(!is.na(id), is.finite(time), is.finite(out)) %>%
+          ) |>
+          filter(!is.na(id), is.finite(time), is.finite(out)) |>
           arrange(id, time)
 
-        sim_clean <- sim_df %>%
-          dplyr::filter(id %in% id_levels) %>%
+        sim_clean <- sim_df |>
+          dplyr::filter(id %in% id_levels) |>
           dplyr::mutate(
             id = match(id, id_levels),
             time = suppressWarnings(as.numeric(time)),
             out = suppressWarnings(as.numeric(out))
-          ) %>%
-          dplyr::filter(!is.na(id), is.finite(time), is.finite(out)) %>%
+          ) |>
+          dplyr::filter(!is.na(id), is.finite(time), is.finite(out)) |>
           dplyr::arrange(id, time)
 
         list(obs = data.frame(obs_clean), sim = data.frame(sim_clean))
@@ -1097,26 +1097,26 @@ PM_valid <- R6::R6Class(
       }
 
       for (thisout in 1:nout) {
-        obs_sub <- obs %>%
-          dplyr::filter(outeq == thisout) %>%
-          dplyr::select(id, time, out) %>%
+        obs_sub <- obs |>
+          dplyr::filter(outeq == thisout) |>
+          dplyr::select(id, time, out) |>
           dplyr::arrange(id, time)
-        sim_sub <- simobs %>%
-          dplyr::filter(outeq == thisout, id %in% obs_sub$id) %>%
-          dplyr::select(id, time, out) %>%
+        sim_sub <- simobs |>
+          dplyr::filter(outeq == thisout, id %in% obs_sub$id) |>
+          dplyr::select(id, time, out) |>
           dplyr::arrange(id, time)
         clean_pair <- prepare_npde_pair(obs_sub, sim_sub)
         obs_sub <- clean_pair$obs
         sim_sub <- clean_pair$sim
 
         if (tad) {
-          obs_sub2 <- obs %>%
-            dplyr::filter(outeq == thisout) %>%
-            dplyr::select(id, time = tad, out) %>%
+          obs_sub2 <- obs |>
+            dplyr::filter(outeq == thisout) |>
+            dplyr::select(id, time = tad, out) |>
             dplyr::arrange(id, time)
-          sim_sub2 <- simobs %>%
-            dplyr::filter(outeq == thisout, id %in% obs_sub$id) %>%
-            dplyr::select(id, time = tad, out) %>%
+          sim_sub2 <- simobs |>
+            dplyr::filter(outeq == thisout, id %in% obs_sub$id) |>
+            dplyr::select(id, time = tad, out) |>
             dplyr::arrange(id, time)
           clean_pair_tad <- prepare_npde_pair(obs_sub2, sim_sub2)
           obs_sub2 <- clean_pair_tad$obs
@@ -1385,8 +1385,8 @@ plot.PM_valid <- function(x,
     stop(paste("Your data do not contain", outeq, "output equations.\n"))
   }
 
-  opDF <- opDF %>% filter(outeq == !!outeq) # filter to outeq
-  simdata <- simdata %>% filter(outeq == !!outeq) # filter to outeq
+  opDF <- opDF |> filter(outeq == !!outeq) # filter to outeq
+  simdata <- simdata |> filter(outeq == !!outeq) # filter to outeq
 
 
   # process CI lines
@@ -1494,22 +1494,22 @@ plot.PM_valid <- function(x,
   } else {
     rlang::quo(timeBinMedian)
   }
-  quant_pcObs <- opDF %>%
-    group_by(!!groupVar) %>%
+  quant_pcObs <- opDF |>
+    group_by(!!groupVar) |>
     dplyr::reframe(
       value = quantile(pcObs, probs = c(lower$value, mid$value, upper$value), na.rm = TRUE),
       q = c(lower$value, mid$value, upper$value), .groups = "keep"
-    ) %>%
+    ) |>
     select(-.groups)
   names(quant_pcObs)[1] <- "time"
 
   # calculate lower, 50th and upper percentiles for Yij by time bin
-  quant_Obs <- opDF %>%
-    dplyr::group_by(!!groupVar) %>%
+  quant_Obs <- opDF |>
+    dplyr::group_by(!!groupVar) |>
     reframe(
       value = quantile(obs, probs = c(lower$value, mid$value, upper$value), na.rm = TRUE),
       q = c(lower$value, mid$value, upper$value), .groups = "keep"
-    ) %>%
+    ) |>
     select(-.groups)
   names(quant_Obs)[1] <- "time"
 
@@ -1519,18 +1519,18 @@ plot.PM_valid <- function(x,
   } else {
     rlang::quo(timeBinNum)
   }
-  simCI <- simdata %>%
-    dplyr::group_by(simnum, !!simGroupVar) %>%
+  simCI <- simdata |>
+    dplyr::group_by(simnum, !!simGroupVar) |>
     dplyr::reframe(
       value = quantile(out, probs = c(lower$value, mid$value, upper$value), na.rm = TRUE),
       q = c("lower", "mid", "upper"), .groups = "keep"
-    ) %>%
-    dplyr::group_by(bin = !!simGroupVar, q) %>%
+    ) |>
+    dplyr::group_by(bin = !!simGroupVar, q) |>
     dplyr::reframe(
       value = quantile(value, probs = c(lower$value, upper$value), na.rm = TRUE),
       ci = c(lower$value, upper$value), .groups = "keep"
-    ) %>%
-    dplyr::select(-.groups) %>%
+    ) |>
+    dplyr::select(-.groups) |>
     tidyr::pivot_wider(names_from = ci, values_from = value, names_prefix = "q")
 
   # arrange simCI in order of time, not bin
@@ -1539,15 +1539,15 @@ plot.PM_valid <- function(x,
   } else {
     simCI$time <- x$tadBinMedian$time[match(simCI$bin, x$tadBinMedian$bin)]
   }
-  simCI <- simCI %>% dplyr::arrange(time, q)
+  simCI <- simCI |> dplyr::arrange(time, q)
 
 
   # combine obs and simCI
-  quant_pcObs <- quant_pcObs %>%
-    dplyr::select(-q) %>%
+  quant_pcObs <- quant_pcObs |>
+    dplyr::select(-q) |>
     dplyr::bind_cols(simCI[2:4])
-  quant_Obs <- quant_Obs %>%
-    dplyr::select(-q) %>%
+  quant_Obs <- quant_Obs |>
+    dplyr::select(-q) |>
     dplyr::bind_cols(simCI[2:4])
 
 
@@ -1560,7 +1560,7 @@ plot.PM_valid <- function(x,
     }
     plotData <- list(
       obsQuant = quant_Obs,
-      obs = opDF %>%
+      obs = opDF |>
         select(id, time = !!timeVar, obs)
     )
   }
@@ -1572,30 +1572,30 @@ plot.PM_valid <- function(x,
     }
     plotData <- list(
       obsQuant = quant_pcObs,
-      obs = opDF %>%
+      obs = opDF |>
         dplyr::select(id, time = !!timeVar, obs)
     )
   }
   if (type == "vpc" | type == "pcvpc") {
     # GENERATE THE PLOT
-    p <- plotData$obsQuant %>%
-      dplyr::group_by(q) %>%
+    p <- plotData$obsQuant |>
+      dplyr::group_by(q) |>
       plotly::plot_ly(
         x = ~time, y = ~value,
         colors = c(upper$color, mid$color, lower$color),
         linetypes = c(upper$dash, mid$dash, lower$dash),
         color = ~q,
         linetype = ~q
-      ) %>%
+      ) |>
       # add simulation quantile CIs
       plotly::add_ribbons(
         ymin = ~q0.025, ymax = ~q0.975,
         opacity = upper$opacity,
         line = list(width = 2, color = "white", dash = "solid"),
         hoverinfo = "none"
-      ) %>%
+      ) |>
       # add observation quantiles
-      plotly::add_lines(hovertemplate = "Time: %{x}<br>Out: %{y}<br><extra></extra>") %>%
+      plotly::add_lines(hovertemplate = "Time: %{x}<br>Out: %{y}<br><extra></extra>") |>
       # add observations
       plotly::add_markers(
         data = plotData$obs,
@@ -1603,7 +1603,7 @@ plot.PM_valid <- function(x,
         hovertemplate = "Time: %{x}<br>Out: %{y}<br>ID: %{text}<extra></extra>",
         text = ~id,
         inherit = FALSE
-      ) %>%
+      ) |>
       # add layout
 
       plotly::layout(

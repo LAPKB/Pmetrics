@@ -656,7 +656,7 @@ PM_model <- R6::R6Class(
             ini = ini_list,
             out = out_list
           )
-        ) %>% mutate(ok = purrr::pmap_lgl(across(pri:out), any))
+        ) |> mutate(ok = purrr::pmap_lgl(across(pri:out), any))
 
 
         if (any(!all_lists$ok)) {
@@ -824,8 +824,8 @@ PM_model <- R6::R6Class(
       # pars = self$model_list$parameters
       # cli::cli_text("{.eqs {pars}}")
 
-      self$arg_list$pri %>%
-        purrr::imap(\(x, y) cli::cli_text("{.strong {y}}: [{.strong {x$min}}, {.strong {x$max}}], {.emph ~N({round(x$mean,2)}}, {.emph {round(x$sd,2)})}")) %>%
+      self$arg_list$pri |>
+        purrr::imap(\(x, y) cli::cli_text("{.strong {y}}: [{.strong {x$min}}, {.strong {x$max}}], {.emph ~N({round(x$mean,2)}}, {.emph {round(x$sd,2)})}")) |>
         invisible() # to suppress NULL
 
 
@@ -1086,8 +1086,8 @@ PM_model <- R6::R6Class(
 
       # bolus and infusions
       if (self$model_list$type == "ODE") { # only need to check these for ODE models
-        bolus <- unique(data$standard_data$input[data$standard_data$dur == 0]) %>% purrr::discard(~ is.na(.x))
-        infusion <- unique(data$standard_data$input[data$standard_data$dur > 0]) %>% purrr::discard(~ is.na(.x))
+        bolus <- unique(data$standard_data$input[data$standard_data$dur == 0]) |> purrr::discard(~ is.na(.x))
+        infusion <- unique(data$standard_data$input[data$standard_data$dur > 0]) |> purrr::discard(~ is.na(.x))
         if (length(bolus) > 0) {
           missing_bolus <- bolus[!stringr::str_detect(self$model_list$eqn, paste0("b\\[", bolus, "\\]"))]
           if (length(missing_bolus) > 0) {
@@ -1149,7 +1149,7 @@ PM_model <- R6::R6Class(
       if (is.null(exclude)) {
         exclude <- NA
       }
-      data_filtered <- data$standard_data %>% includeExclude(include, exclude)
+      data_filtered <- data$standard_data |> includeExclude(include, exclude)
 
       if (nrow(data_filtered) == 0) {
         msg <- c(msg, "No subjects remained after filtering.")
@@ -1628,7 +1628,7 @@ PM_model <- R6::R6Class(
         "  pri = list(\n",
         purrr::map_chr(names(arg_list$pri), \(i) {
           sprintf("    %s = ab(%.3f, %.3f)", i, arg_list$pri[[i]]$min, arg_list$pri[[i]]$max)
-        }) %>% paste(collapse = ",\n"),
+        }) |> paste(collapse = ",\n"),
         "\n  ),"
       )
       # cov
@@ -1637,7 +1637,7 @@ PM_model <- R6::R6Class(
           "\n  cov = list(\n",
           purrr::map_chr(names(arg_list$cov), \(i) {
             sprintf("    %s = interp(%s)", i, ifelse(arg_list$cov[[i]] == 0, "\"none\"", ""))
-          }) %>% paste(collapse = ",\n"),
+          }) |> paste(collapse = ",\n"),
           "\n  ),"
         )
       } else {
@@ -1713,7 +1713,7 @@ PM_model <- R6::R6Class(
             ifelse(length(i$coeff) >= 4, i$coeff[4], 0),
             ifelse(i$fixed, ", fixed = TRUE", "")
           )
-        }) %>% paste(collapse = ",\n"),
+        }) |> paste(collapse = ",\n"),
         "\n  )"
       )
       solver <- if (!is.null(arg_list$solver)) {
@@ -1833,7 +1833,7 @@ PM_model <- R6::R6Class(
       arg_list$cov <- purrr::map_vec(const_covar, \(x){
         type <- ifelse(!x, "lm", "none")
         interp(type)
-      }) %>%
+      }) |>
         purrr::set_names(covar_list)
 
 
@@ -1918,10 +1918,10 @@ PM_model <- R6::R6Class(
       const_coeff <- grepl("!", err[-1]) # returns boolean vector, length = nout
       err <- gsub("!", "", err) # remove "!"
 
-      coeff_fxns <- err[-1] %>%
+      coeff_fxns <- err[-1] |>
         purrr::imap(\(x, idx) {
           glue::glue("{err_type}({gamlam_value}, c({x}), {const_coeff[{idx}]})")
-        }) %>%
+        }) |>
         unlist()
 
       arg_list$err <- eval(parse(text = glue::glue("c(\n{paste({coeff_fxns}, collapse = ',\n')}\n)")))
@@ -1985,7 +1985,7 @@ PM_model <- R6::R6Class(
 
 
       # Replace placeholders in the base string with actual values from model_list
-      base <- placeholders %>%
+      base <- placeholders |>
         purrr::reduce(\(x, y) stringr::str_replace(x, stringr::str_c("<", y, ">"), as.character(self$model_list[[y]])), .init = base)
       # Write the model to a file
       writeLines(base, file_path)
@@ -2303,20 +2303,20 @@ plot.PM_model <- function(x,
 
   # filter any equations that are not diffeq or outputs
 
-  eqns <- eqns %>%
+  eqns <- eqns |>
     map(
       purrr::keep,
       stringr::str_detect,
       stringr::regex("dX\\[\\d+\\]|XP\\(\\d+\\)", ignore_case = TRUE)
-    ) %>%
+    ) |>
     unlist()
 
-  outs <- outs %>%
+  outs <- outs |>
     map(
       purrr::keep,
       stringr::str_detect,
       stringr::regex("Y\\[\\d+\\]", ignore_case = TRUE)
-    ) %>%
+    ) |>
     unlist()
 
 
@@ -2718,8 +2718,8 @@ plot.PM_model <- function(x,
       to <- as.numeric(conn$to)
       if (to == 0) next
 
-      from_pos <- layout_df %>% filter(compartment == from)
-      to_pos <- layout_df %>% filter(compartment == to)
+      from_pos <- layout_df |> filter(compartment == from)
+      to_pos <- layout_df |> filter(compartment == to)
 
       key <- paste(sort(c(from, to)), collapse = "-")
       offset <- if (key %in% duplicates) 0.25 else 0
@@ -2779,8 +2779,8 @@ plot.PM_model <- function(x,
     head_df <- bind_rows(arrow_heads)
     label_df <- bind_rows(labels)
 
-    elim_triangles <- layout_df %>%
-      filter(compartment %in% elim_comps) %>%
+    elim_triangles <- layout_df |>
+      filter(compartment %in% elim_comps) |>
       mutate(x = x - 0.4, y = y + 0.2)
 
     p <- ggplot()
@@ -2838,13 +2838,13 @@ plot.PM_model <- function(x,
           return(data.frame(x = NA, y = NA, label = NA))
         }
         txt <- paste0("y[", out$output_num, "]")
-        pos <- layout_df %>% filter(compartment == comp)
+        pos <- layout_df |> filter(compartment == comp)
         data.frame(x = pos$x, y = pos$y - 0.2, label = txt)
       }))
       if (any(is.na(out_df$x))) {
         missing_out <- as.character(which(is.na(out_df$x)))
         cli::cli_warn(c("!" = "{?This/These} output equation{?s} did not contain a parsable compartment number on the right side of the equation and {?was/were} not plotted: {missing_out}."))
-        out_df <- out_df %>% filter(!is.na(x))
+        out_df <- out_df |> filter(!is.na(x))
       } else {
         p <- p + geom_label(
           data = out_df,
@@ -2886,7 +2886,7 @@ plot.PM_model <- function(x,
   })
   result <- extract_connections(expanded_equations)
   elim_count <- sum(sapply(result$connections, function(c) c$to == 0))
-  elim_coeff <- map_chr(result$connections, function(c) if (c$to == 0) c$coeff else NA) %>% keep(~ !is.na(.))
+  elim_coeff <- map_chr(result$connections, function(c) if (c$to == 0) c$coeff else NA) |> keep(~ !is.na(.))
 
   cli::cli_h1("Model elements")
   cli::cli_text("{length(result$compartments)} compartments")

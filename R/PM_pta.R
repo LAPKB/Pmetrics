@@ -215,13 +215,13 @@ PM_pta <- R6::R6Class(
             simdata <- simdata$data
           } else { # just one sim
 
-            simdata$data$obs <- simdata$data$obs %>% mutate(id = dplyr::dense_rank(id)) # ensure numeric
+            simdata$data$obs <- simdata$data$obs |> mutate(id = dplyr::dense_rank(id)) # ensure numeric
             simdata <- split(simdata$data$obs, as.factor(simdata$data$obs$id))
           }
         }
 
         if (dataType == 1) { # PM_sim_data object
-          simdata$obs <- simdata$obs %>% mutate(id = dplyr::dense_rank(id)) # ensure numeric
+          simdata$obs <- simdata$obs |> mutate(id = dplyr::dense_rank(id)) # ensure numeric
           simdata <- split(simdata, as.factor(simdata$id)) # split by id
         }
 
@@ -241,13 +241,13 @@ PM_pta <- R6::R6Class(
         }
 
         if (dataType == 5) { # PM_post object
-          simdata <- simdata$data %>% filter(icen == !!icen & block == !!block)
+          simdata <- simdata$data |> filter(icen == !!icen & block == !!block)
           temp <- list(obs = data.frame(id = simdata$id, time = simdata$time, out = simdata$pred, outeq = simdata$outeq))
           simdata <- list(temp)
         }
 
         if (dataType == 6) { # PM_post_data object
-          simdata <- simdata %>% filter(icen == !!icen & block == !!block)
+          simdata <- simdata |> filter(icen == !!icen & block == !!block)
           temp <- list(obs = data.frame(id = simdata$id, time = simdata$time, out = simdata$pred, outeq = simdata$outeq))
           simdata <- list(temp)
         }
@@ -257,7 +257,7 @@ PM_pta <- R6::R6Class(
             simdata <- simdata$data
           }
           simdata <- makePMmatrixBlock(simdata)
-          simdata <- simdata %>% filter(evid == 0 & block == !!block)
+          simdata <- simdata |> filter(evid == 0 & block == !!block)
           temp <- list(obs = data.frame(id = simdata$id, time = simdata$time, out = simdata$out, outeq = simdata$outeq))
           simdata <- list(temp)
         }
@@ -421,8 +421,8 @@ PM_pta <- R6::R6Class(
 
       # filter and multiply free fraction
       simdata <- purrr::map(1:n_reg, \(x) {
-        simdata[[x]] <- simdata[[x]] %>%
-          filter(outeq == !!outeq, !is.na(out)) %>%
+        simdata[[x]] <- simdata[[x]] |>
+          filter(outeq == !!outeq, !is.na(out)) |>
           mutate(outeq = 1) # after filter, change to 1
         simdata[[x]]$out <- simdata[[x]]$out * free_fraction
         simdata[[x]]
@@ -480,12 +480,12 @@ PM_pta <- R6::R6Class(
           start = start[y],
           end = end[y]
           # sim_data = list(simdata[[x]])
-        )) %>% # end inner map
+        )) |> # end inner map
           purrr::list_rbind()
-      }) %>% # end outer map
-        purrr::list_rbind() %>%
-        mutate(type = stringr::str_replace_all(type, "\\d+", "specific")) %>%
-        rowwise() %>%
+      }) |> # end outer map
+        purrr::list_rbind() |>
+        mutate(type = stringr::str_replace_all(type, "\\d+", "specific")) |>
+        rowwise() |>
         mutate(pdi = list(do.call(
           paste0("pta_", stringr::str_replace_all(type, "-", "")), # call the appropriate pta function below
           list( # arguments to the pta function
@@ -497,57 +497,57 @@ PM_pta <- R6::R6Class(
             .end = end,
             .pb = pb
           )
-        ))) %>%
+        ))) |>
         mutate(success = list(purrr::map_dbl(pdi, \(x) {
           if (stringr::str_detect(type, "-")) {
             x <= success_ratio # will return NA is x is NA
           } else {
             x >= success_ratio
           }
-        }))) %>%
-        mutate(prop_success = sum(success) / length(success)) %>%
-        mutate(label = sim_labels[reg_num]) %>%
+        }))) |>
+        mutate(prop_success = sum(success) / length(success)) |>
+        mutate(label = sim_labels[reg_num]) |>
         dplyr::relocate(
           reg_num, label, target, type,
           success_ratio, prop_success, success, pdi,
           start, end
-        ) %>%
+        ) |>
         ungroup() # remove rowwise
 
 
       # add intersection if multiple target types
       # browser()
       if (n_type > 1) {
-        master_pta <- split(master_pta, master_pta$this_type) %>% # split by target type number
-          .[order(match(names(.), target_type))]
+        master_pta <- split(master_pta, master_pta$this_type) # split by target type number
+        master_pta <- master_pta[order(match(names(master_pta), target_type))]
         master_pta <- map(master_pta, \(x) {
           x$this_type <- NULL
           x
         })
         names(master_pta) <- NULL
-        master_pta$intersect <- master_pta[[1]] %>% select(reg_num, target, success_1 = success, label) # get primary success
+        master_pta$intersect <- master_pta[[1]] |> select(reg_num, target, success_1 = success, label) # get primary success
         for (i in 2:n_type) { # add additional success
           master_pta$intersect[[paste0("success_", i)]] <- master_pta[[i]]$success[match(master_pta[[1]]$reg_num, master_pta[[i]]$reg_num)]
         }
-        all_success <- master_pta$intersect %>%
+        all_success <- master_pta$intersect |>
           select(tidyr::starts_with("success"))
         total_success <- lapply(apply(all_success, 1, function(x) as.data.frame(x)), rowSums) # sum all success matrices for each sim/target
         master_pta$intersect$prop_success <- purrr::map_dbl(total_success, \(x) sum(x == n_type) / length(x))
-        master_pta$intersect <- master_pta$intersect %>%
-          rowwise() %>%
-          mutate(target = paste0("(", c(target, !!target[2:n_type]), ")", collapse = "")) %>%
-          mutate(target = stringr::str_replace(target, "\\(1:(.|\\n)*\\){2}", "(sim)")) %>%
-          mutate(type = paste0("(", target_type, ")", collapse = "")) %>%
-          mutate(success_ratio = paste0("(", success, ")", collapse = "")) %>%
-          mutate(success = list(total_success)) %>%
+        master_pta$intersect <- master_pta$intersect |>
+          rowwise() |>
+          mutate(target = paste0("(", c(target, !!target[2:n_type]), ")", collapse = "")) |>
+          mutate(target = stringr::str_replace(target, "\\(1:(.|\\n)*\\){2}", "(sim)")) |>
+          mutate(type = paste0("(", target_type, ")", collapse = "")) |>
+          mutate(success_ratio = paste0("(", success, ")", collapse = "")) |>
+          mutate(success = list(total_success)) |>
           select(
             reg_num, label, target, type,
             success_ratio, prop_success, success
-          ) %>%
+          ) |>
           ungroup()
       } else { # only one target_type
         master_pta <- list(
-          data = master_pta %>%
+          data = master_pta |>
             select(-this_type),
           intersect = NA
         )
@@ -598,8 +598,8 @@ pta_auc <- function(sims, .target, .simTarg, .start, .end, .pb) {
 
 pta_min <- function(sims, .target, .simTarg, .start, .end, .pb) {
   .pb$tick()
-  mins <- sims %>%
-    group_by(nsim) %>%
+  mins <- sims |>
+    group_by(nsim) |>
     filter(time >= .start, time <= .end)
   if (.simTarg & length(.target) > 1) {
     .target$nsim <- 1:nrow(.target)
@@ -608,8 +608,8 @@ pta_min <- function(sims, .target, .simTarg, .start, .end, .pb) {
     mins$target <- .target
   }
   if (nrow(mins) > 0) {
-    mins <- mins %>%
-      dplyr::summarize(min = min(out, na.rm = TRUE), target = target[1]) %>%
+    mins <- mins |>
+      dplyr::summarize(min = min(out, na.rm = TRUE), target = target[1]) |>
       ungroup()
     pdi <- mins$min / mins$target
   } else {
@@ -621,8 +621,8 @@ pta_min <- function(sims, .target, .simTarg, .start, .end, .pb) {
 pta_max <- function(sims, .target, .simTarg, .start, .end, .pb) {
   .pb$tick()
 
-  maxes <- sims %>%
-    group_by(nsim) %>%
+  maxes <- sims |>
+    group_by(nsim) |>
     filter(time >= .start, time <= .end)
   if (.simTarg & length(.target) > 1) {
     .target$nsim <- 1:nrow(.target)
@@ -631,8 +631,8 @@ pta_max <- function(sims, .target, .simTarg, .start, .end, .pb) {
     maxes$target <- .target
   }
   if (nrow(maxes) > 0) {
-    maxes <- maxes %>%
-      dplyr::summarize(max = max(out, na.rm = TRUE), target = target[1]) %>%
+    maxes <- maxes |>
+      dplyr::summarize(max = max(out, na.rm = TRUE), target = target[1]) |>
       ungroup()
     pdi <- maxes$max / maxes$target
   } else {
@@ -643,8 +643,8 @@ pta_max <- function(sims, .target, .simTarg, .start, .end, .pb) {
 
 pta_specific <- function(sims, .target, .simTarg, .start, .end, .pb) {
   .pb$tick()
-  concs <- sims %>%
-    group_by(nsim) %>%
+  concs <- sims |>
+    group_by(nsim) |>
     filter(time == .start)
   if (.simTarg & length(.target) > 1) {
     .target$nsim <- 1:nrow(.target)
@@ -665,8 +665,8 @@ pta_time <- function(sims, .target, .simTarg, .start, .end, .pb) {
 
   interval <- diff(sims$time)[1] # will be regular for sims
 
-  times <- sims %>%
-    group_by(nsim) %>%
+  times <- sims |>
+    group_by(nsim) |>
     filter(time >= .start, time <= .end)
   if (.simTarg & length(.target) > 1) {
     .target$nsim <- 1:nrow(.target)
@@ -675,38 +675,38 @@ pta_time <- function(sims, .target, .simTarg, .start, .end, .pb) {
     times$target <- .target
   }
   if (nrow(times) > 0) {
-    times <- times %>%
-      mutate(above = interval * (out > target)) %>%
+    times <- times |>
+      mutate(above = interval * (out > target)) |>
       mutate(cross = above - dplyr::lag(above, n = 1))
 
     crossing_rows <- which(times$cross == 0.5 | times$cross == -0.5)
     if (length(crossing_rows) > 0) {
-      crossing1 <- times[c(crossing_rows - 1, crossing_rows), ] %>%
-        arrange(id, time) %>%
-        ungroup() %>%
-        mutate(pair = rep(seq_along(1:(0.5 * dplyr::n())), each = 2)) %>%
+      crossing1 <- times[c(crossing_rows - 1, crossing_rows), ] |>
+        arrange(id, time) |>
+        ungroup() |>
+        mutate(pair = rep(seq_along(1:(0.5 * dplyr::n())), each = 2)) |>
         group_by(pair)
 
-      crossing2 <- crossing1 %>%
+      crossing2 <- crossing1 |>
         summarize(above = interval / (out[2] - out[1]) *
           (target[1] - out[1]))
 
-      crossing3 <- crossing1 %>%
-        filter(above == interval) %>%
-        ungroup() %>%
+      crossing3 <- crossing1 |>
+        filter(above == interval) |>
+        ungroup() |>
         mutate(above = crossing2$above)
 
-      times2 <- times %>%
+      times2 <- times |>
         filter(is.na(cross) | cross == 0)
 
-      pdi <- bind_rows(times2, crossing3) %>%
-        group_by(nsim) %>%
-        summarize(sum = sum(above[-1]) / 24) %>%
+      pdi <- bind_rows(times2, crossing3) |>
+        group_by(nsim) |>
+        summarize(sum = sum(above[-1]) / 24) |>
         pull(sum)
     } else {
-      pdi <- times %>%
-        group_by(nsim) %>%
-        summarize(sum = sum(above[-1]) / 24) %>%
+      pdi <- times |>
+        group_by(nsim) |>
+        summarize(sum = sum(above[-1]) / 24) |>
         pull(sum)
     }
     pdi[pdi > 1] <- 1 # in case of rounding errors
@@ -891,7 +891,7 @@ plot.PM_pta <- function(
   if (at == "intersect") {
     if (length(pta$intersect) > 1) {
       pta <- pta$intersect
-      # %>%
+      # |>
       # mutate(target = as.numeric(stringr::str_extract(target, "\\d+\\.*\\d*")))
     } else {
       pta <- pta[[1]] # no intersect, plot first
@@ -936,7 +936,7 @@ plot.PM_pta <- function(
   }
 
   # filter by include/exclude
-  pta <- pta %>% filter(reg_num %in% simnum)
+  pta <- pta |> filter(reg_num %in% simnum)
 
   n_reg <- length(simnum)
 
@@ -969,12 +969,12 @@ plot.PM_pta <- function(
     )[, 2]
     target_first <- suppressWarnings(as.numeric(target_first))
     if (any(!is.na(target_first))) {
-      target_levels <- pta %>%
-        mutate(.target_first = target_first) %>%
-        distinct(target, .target_first) %>%
-        arrange(.target_first, target) %>%
+      target_levels <- pta |>
+        mutate(.target_first = target_first) |>
+        distinct(target, .target_first) |>
+        arrange(.target_first, target) |>
         pull(target)
-      pta <- pta %>%
+      pta <- pta |>
         mutate(target = factor(target, levels = target_levels, ordered = TRUE))
     }
   }
@@ -1052,17 +1052,17 @@ plot.PM_pta <- function(
       ))
     }
     if (simTarg == 1) { # discrete targets
-      p <- pta %>%
-        group_by(reg_num, target) %>%
-        rowwise() %>%
+      p <- pta |>
+        group_by(reg_num, target) |>
+        rowwise() |>
         mutate(
           lower = quantile(pdi, probs = 0.5 - ci / 2, na.rm = TRUE),
           median = median(pdi),
           upper = quantile(pdi, probs = 0.5 + ci / 2, na.rm = TRUE)
-        ) %>%
-        ungroup() %>%
-        mutate(label = factor(label)) %>%
-        group_by(label) %>%
+        ) |>
+        ungroup() |>
+        mutate(label = factor(label)) |>
+        group_by(label) |>
         plotly::plot_ly(
           x = ~target, y = ~median,
           type = "scatter", mode = "markers+lines",
@@ -1076,14 +1076,14 @@ plot.PM_pta <- function(
           symbol = ~label,
           marker = list(size = marker$size),
           line = list(width = line$width)
-        ) %>%
+        ) |>
         plotly::add_ribbons(
           ymin = ~lower, ymax = ~upper,
           opacity = 0.5, line = list(width = 0),
           marker = list(size = .01), showlegend = FALSE
         )
 
-      p <- p %>% plotly::layout(
+      p <- p |> plotly::layout(
         xaxis = layout$xaxis,
         yaxis = layout$yaxis,
         showlegend = layout$showlegend,
@@ -1092,16 +1092,16 @@ plot.PM_pta <- function(
       )
     } else { # random targets
 
-      p <- pta %>%
-        mutate(simnum = factor(reg_num, labels = simLabels)) %>%
-        group_by(simnum) %>%
-        rowwise() %>%
+      p <- pta |>
+        mutate(simnum = factor(reg_num, labels = simLabels)) |>
+        group_by(simnum) |>
+        rowwise() |>
         mutate(
           lower = quantile(pdi, probs = 0.5 - ci / 2, na.rm = TRUE),
           median = median(pdi),
           upper = quantile(pdi, probs = 0.5 + ci / 2, na.rm = TRUE)
-        ) %>%
-        plotly::plot_ly(x = ~simnum, y = ~median) %>%
+        ) |>
+        plotly::plot_ly(x = ~simnum, y = ~median) |>
         plotly::add_markers(
           error_y = list(
             symmetric = FALSE,
@@ -1113,7 +1113,7 @@ plot.PM_pta <- function(
         )
 
       layout$xaxis <- modifyList(layout$xaxis, list(tickvals = ~simnum, ticktext = ~simLabels))
-      p <- p %>% plotly::layout(
+      p <- p |> plotly::layout(
         xaxis = layout$xaxis,
         yaxis = layout$yaxis,
         showlegend = FALSE,
@@ -1125,9 +1125,9 @@ plot.PM_pta <- function(
 
     if (simTarg == 1) { # set targets
 
-      p <- pta %>%
-        mutate(simnum = factor(reg_num, labels = simLabels)) %>%
-        group_by(simnum) %>%
+      p <- pta |>
+        mutate(simnum = factor(reg_num, labels = simLabels)) |>
+        group_by(simnum) |>
         plotly::plot_ly(
           x = ~target, y = ~prop_success,
           type = "scatter", mode = "lines+markers",
@@ -1143,7 +1143,7 @@ plot.PM_pta <- function(
           line = list(width = line$width)
         )
 
-      p <- p %>% plotly::layout(
+      p <- p |> plotly::layout(
         xaxis = layout$xaxis,
         yaxis = layout$yaxis,
         showlegend = layout$showlegend,
@@ -1152,8 +1152,8 @@ plot.PM_pta <- function(
       )
     } else { # random targets
 
-      p <- pta %>%
-        mutate(simnum = factor(reg_num, labels = simLabels)) %>%
+      p <- pta |>
+        mutate(simnum = factor(reg_num, labels = simLabels)) |>
         plotly::plot_ly(
           x = ~simnum, y = ~prop_success,
           type = "scatter", mode = "lines+markers",
@@ -1161,7 +1161,7 @@ plot.PM_pta <- function(
           marker = list(color = marker$color, symbol = marker$symbol, size = marker$size)
         )
       layout$xaxis <- modifyList(layout$xaxis, list(tickvals = ~simnum, ticktext = ~simLabels))
-      p <- p %>% plotly::layout(
+      p <- p |> plotly::layout(
         xaxis = layout$xaxis,
         yaxis = layout$yaxis,
         showlegend = FALSE,
@@ -1249,13 +1249,13 @@ summary.PM_pta <- function(object, at = "intersect", ci = 0.95, ...) {
 
   if (simTarg == 1) { # discrete targets
 
-    pdi <- pta %>% group_by(reg_num, target)
+    pdi <- pta |> group_by(reg_num, target)
   } else { # random targets
-    pdi <- pta %>% group_by(reg_num)
+    pdi <- pta |> group_by(reg_num)
   }
 
   if (at != "intersect") {
-    pdi <- pdi %>% mutate(
+    pdi <- pdi |> mutate(
       label = label, type = type, prop_success = prop_success,
       median = median(unlist(pdi), na.rm = TRUE),
       lower = quantile(unlist(pdi), probs = 0.5 - ci / 2, na.rm = TRUE),
@@ -1267,10 +1267,10 @@ summary.PM_pta <- function(object, at = "intersect", ci = 0.95, ...) {
       .keep = "none"
     )
   } else {
-    pdi <- pdi %>% mutate(type = type, label = label, prop_success = prop_success, .keep = "none")
+    pdi <- pdi |> mutate(type = type, label = label, prop_success = prop_success, .keep = "none")
   }
 
-  pdi <- pdi %>% ungroup()
+  pdi <- pdi |> ungroup()
 
   return(pdi)
 }

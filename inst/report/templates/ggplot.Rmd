@@ -41,7 +41,7 @@ After `r res$NPdata$icyctot`/`r res$NPdata$icycmax` cycles, the model `r did_con
 ```{r}
 #summary function
 metrics <- function(icen, outeq){
-  pe <- res$op$summary(icen = icen, outeq = outeq)$pe %>%
+  pe <- res$op$summary(icen = icen, outeq = outeq)$pe |>
     rename(`Mean PE` = mpe,
            `Mean weighted PE` = mwpe,
            `Mean square PE` = mspe,
@@ -50,12 +50,12 @@ metrics <- function(icen, outeq){
            `Root mean squared PE (%)` = percent_rmse,
            `Bias-adjusted mean squared PE` = bamspe,
            `Bias-adjusted mean weighted squared PE` = bamwspe
-    ) %>% 
+    ) |> 
     mutate(across(.cols = everything(),
                   .fns = function(x) {
                     round(x, digits = 3)
-                  })) %>% 
-    t() %>% 
+                  })) |> 
+    t() |> 
     datatable(
       colnames = c("Metric", "Value"),
       options = list(
@@ -99,8 +99,8 @@ Points should appear close to, and randomly distributed around, the (dashed) ide
 
 op_plot <- function(icen, pred.type, outeq){
   subtitle <- switch(pred.type, pop = "Population", post = "Individual")
-  p <- res$op$data %>% 
-    filter(icen == !!icen, pred.type == !!pred.type, outeq == !!outeq) %>% 
+  p <- res$op$data |> 
+    filter(icen == !!icen, pred.type == !!pred.type, outeq == !!outeq) |> 
     ggplot(aes(x = pred, y = obs)) +
     geom_abline(slope = 1, intercept = 0, lty = "dashed") +
     geom_point(pch = 21, col = "black", fill = "red") +
@@ -147,8 +147,8 @@ For how to interpret these plots, please review our [website](https://lapkb.gith
 ```{r}
 
 resid_plot <- function(x, y, icen, outeq){
-  p <- res$op$data %>% 
-    filter(icen == !!icen, outeq == !!outeq, pred.type == "post") %>% # Posterior concentrations (not pop)
+  p <- res$op$data |> 
+    filter(icen == !!icen, outeq == !!outeq, pred.type == "post") |> # Posterior concentrations (not pop)
     ggplot(aes(x = {{x}}, y = {{y}})) +
     geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
     geom_smooth(method = "loess", se = FALSE, col = "black") +
@@ -223,10 +223,10 @@ par_lims = data.frame(
   upper = res$final$ab[,2]
 )
 
-par_lims %>% 
+par_lims |> 
   rename(`Parameter` = name,
          `Lower limit` = lower,
-         `Upper limit` = upper) %>% 
+         `Upper limit` = upper) |> 
   datatable(
     options = list(
       searching = FALSE,
@@ -243,9 +243,9 @@ par_lims %>%
 Support points, height correspond to probability
 
 ```{r}
-res$final$popPoints %>% 
-  pivot_longer(cols = -prob) %>% 
-  left_join(par_lims, by = "name") %>% 
+res$final$popPoints |> 
+  pivot_longer(cols = -prob) |> 
+  left_join(par_lims, by = "name") |> 
   ggplot(aes(x = value, y = prob)) +
   geom_segment(aes(xend = value, yend = 0)) +
   geom_vline(aes(xintercept = lower), lty = "dashed", alpha = 0.5) +
@@ -259,16 +259,16 @@ res$final$popPoints %>%
 Posterior parameter density estimates based on the mean and median icen.
 
 ```{r}
-pmean = res$final$postMean %>%
+pmean = res$final$postMean |>
   mutate(type = "Mean")
 
-pmedian = res$final$postMed %>%
+pmedian = res$final$postMed |>
   mutate(type = "Median")
 
-pmean %>% 
-  bind_rows(pmedian) %>%
-  pivot_longer(cols = -c(id, type)) %>%
-  left_join(par_lims, by = "name") %>%
+pmean |> 
+  bind_rows(pmedian) |>
+  pivot_longer(cols = -c(id, type)) |>
+  left_join(par_lims, by = "name") |>
   ggplot(aes(x = value)) +
   geom_density(aes(col = type, fill = type), alpha = 0.5) +
   geom_vline(aes(xintercept = lower), 
@@ -287,13 +287,13 @@ pmean %>%
 
 The following table lists the final support points, in order of decreasing probability
 ```{r}
-res$final$popPoints %>% 
-  arrange(desc(prob)) %>% 
+res$final$popPoints |> 
+  arrange(desc(prob)) |> 
   mutate(across(.cols = everything(), .fns = function(x) {
     round(x, digits = 4)
-  })) %>% 
-  mutate(`Probability (cumulative sum)` = cumsum(prob)) %>% 
-  rename(Probability = prob) %>% 
+  })) |> 
+  mutate(`Probability (cumulative sum)` = cumsum(prob)) |> 
+  rename(Probability = prob) |> 
   datatable(options = list(pageLength = 10, searching = FALSE))
 ```
 
@@ -321,7 +321,7 @@ if (is.null(res$cycle$aic)) {
 
 cycle_info = slice_tail(cycle_info, prop = 0.8)
 
-plot_ll = cycle_info %>% 
+plot_ll = cycle_info |> 
   ggplot(aes(x = cycle, y = ll)) +
   geom_line() +
   labs(subtitle = "-2 x log likelihood",
@@ -330,8 +330,8 @@ plot_ll = cycle_info %>%
   ggpubr::grids() +
   theme(legend.position = "bottom")
 
-plot_aic_bic = cycle_info %>% 
-  pivot_longer(cols = c(AIC, BIC)) %>% 
+plot_aic_bic = cycle_info |> 
+  pivot_longer(cols = c(AIC, BIC)) |> 
   ggplot(aes(x = cycle, y = value, col = name)) +
   geom_line() +
   labs(subtitle = "AIC/BIC",
@@ -340,7 +340,7 @@ plot_aic_bic = cycle_info %>%
   ggpubr::grids() +
   theme(legend.position = "bottom")
 
-plot_gamlam = cycle_info %>% 
+plot_gamlam = cycle_info |> 
   ggplot(aes(x = cycle, y = gamlam)) +
   geom_line() +
   labs(subtitle = "Gamma / Lambda",
@@ -349,11 +349,11 @@ plot_gamlam = cycle_info %>%
   ggpubr::grids() +
   theme(legend.position = "bottom")
 
-plot_mean = res$cycle$data$mean %>% 
-  data.frame() %>% 
-  mutate(cycle = res$cycle$data$cycnum) %>% 
-  slice_tail(prop = 0.8) %>% 
-  pivot_longer(cols = -cycle) %>% 
+plot_mean = res$cycle$data$mean |> 
+  data.frame() |> 
+  mutate(cycle = res$cycle$data$cycnum) |> 
+  slice_tail(prop = 0.8) |> 
+  pivot_longer(cols = -cycle) |> 
   ggplot(aes(x = cycle, y = value, col = name)) +
   geom_line() + 
   labs(subtitle = "Normalized mean",
@@ -362,11 +362,11 @@ plot_mean = res$cycle$data$mean %>%
   ggpubr::grids() +
   theme(legend.position = "bottom")
 
-plot_sd = res$cycle$data$sd %>% 
-  data.frame() %>% 
-  mutate(cycle = res$cycle$data$cycnum) %>% 
-  slice_tail(prop = 0.8) %>% 
-  pivot_longer(cols = -cycle) %>% 
+plot_sd = res$cycle$data$sd |> 
+  data.frame() |> 
+  mutate(cycle = res$cycle$data$cycnum) |> 
+  slice_tail(prop = 0.8) |> 
+  pivot_longer(cols = -cycle) |> 
   ggplot(aes(x = cycle, y = value, col = name)) +
   geom_line() + 
   labs(subtitle = "Normalized standard deviation",
@@ -375,11 +375,11 @@ plot_sd = res$cycle$data$sd %>%
   ggpubr::grids() +
   theme(legend.position = "bottom")
 
-plot_median = res$cycle$data$median %>% 
-  data.frame() %>% 
-  mutate(cycle = res$cycle$data$cycnum) %>% 
-  slice_tail(prop = 0.8) %>% 
-  pivot_longer(cols = -cycle) %>% 
+plot_median = res$cycle$data$median |> 
+  data.frame() |> 
+  mutate(cycle = res$cycle$data$cycnum) |> 
+  slice_tail(prop = 0.8) |> 
+  pivot_longer(cols = -cycle) |> 
   ggplot(aes(x = cycle, y = value, col = name)) +
   geom_line() + 
   labs(subtitle = "Normalized median",

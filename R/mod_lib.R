@@ -8,7 +8,7 @@ mod_lib_names <- function() {
 alt_mod_lib_names <- function() {
   alt_map <- purrr::map_df(mod_list, \(x) {
     tibble(primary = x$name, alt = x$alt_names)
-  }) %>%
+  }) |>
     tidyr::unnest_longer(alt)
   return(alt_map)
 }
@@ -40,10 +40,10 @@ get_found_model <- function(fun) {
   if (any(found_pri)) { # found a primary model name
     found_model_name <- expr_to_char(eqns[[which(found_pri)]])
   } else { # found an alternative model name
-    found_model_name <- alt_map %>%
-      filter(alt == expr_to_char(eqns[[which(found_alt)]])) %>%
-      pull(primary) %>%
-      unique() %>%
+    found_model_name <- alt_map |>
+      filter(alt == expr_to_char(eqns[[which(found_alt)]])) |>
+      pull(primary) |>
+      unique() |>
       head(1)
   }
 

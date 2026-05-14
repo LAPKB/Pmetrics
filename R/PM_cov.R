@@ -24,10 +24,9 @@
 #' and it is this field which is passed to the `$plot` and `$summary` methods.
 #' You can use this `$data` field for custom manipulations, although usually this
 #' is better done on the `summary` object, e.g.,
-#' `run1$cov$summary() %>% select(africa, gender) %>% table()`.
-#' If you are unfamiliar with the `%>%` pipe function, please type `help("%>%", "magrittr")`
-#' into the R console and look online for instructions/tutorials in tidyverse, a
-#' powerful approach to data manipulation upon which Pmetrics is built.
+#' `run1$cov$summary() |> select(africa, gender) |> table()`.
+#' If you are unfamiliar with the base R `|>` pipe function, type `help("|>")`
+#' into the R console for documentation and examples.
 #'
 #'
 #' This output of this function is suitable for exploration of covariate-
@@ -121,18 +120,18 @@ PM_cov <- R6::R6Class(
         return(NULL)
       }
 
-      covs <- covs %>% mutate(block = block + 1)
+      covs <- covs |> mutate(block = block + 1)
 
 
-      post_mean <- posts %>%
-        group_by(id) %>%
-        dplyr::summarize(across(-c(point, prob), \(x) wtd.mean(x = x, weights = prob))) %>%
+      post_mean <- posts |>
+        group_by(id) |>
+        dplyr::summarize(across(-c(point, prob), \(x) wtd.mean(x = x, weights = prob))) |>
         mutate(icen = "mean")
 
       post_med <- suppressWarnings(
-        posts %>%
-          group_by(id) %>%
-          dplyr::summarize(across(-c(point, prob), \(x) wtd.quantile(x = x, prob, 0.5))) %>%
+        posts |>
+          group_by(id) |>
+          dplyr::summarize(across(-c(point, prob), \(x) wtd.quantile(x = x, prob, 0.5))) |>
           mutate(icen = "median")
       )
 
@@ -140,7 +139,7 @@ PM_cov <- R6::R6Class(
       res <- bind_rows(
         dplyr::left_join(post_mean, covs, by = "id"),
         dplyr::left_join(post_med, covs, by = "id")
-      ) %>%
+      ) |>
         select(id, time, block, icen, everything())
 
       class(res) <- c("PM_cov_data", "data.frame")
@@ -280,7 +279,7 @@ plot.PM_cov <- function(
   # if (missing(exclude)) exclude <- NA
 
   if (missing(formula)) {
-    choices <- paste(x %>% select(!c(id, icen)) %>% names(), collapse = ", ")
+    choices <- paste(x |> select(!c(id, icen)) |> names(), collapse = ", ")
     cli::cli_abort(c("x" = "Missing formula", "i" = "Use the form {.code y ~ x}.\fValues for {.var (x, y)} include: {.var {choices}}."))
   }
 
@@ -289,19 +288,19 @@ plot.PM_cov <- function(
   timearg <- "time" %in% vars
 
   if (!timearg) { # if time is not part of the formula, collapse to summary
-    x <- summary.PM_cov(x, icen = icen) %>%
+    x <- summary.PM_cov(x, icen = icen) |>
       includeExclude(include, exclude)
   } else { # time is part of formula, so select icen but don't summarize
-    x <- x %>%
-      filter(icen == !!icen) %>%
-      includeExclude(include, exclude) %>%
-      dplyr::arrange(id, time) %>%
+    x <- x |>
+      filter(icen == !!icen) |>
+      includeExclude(include, exclude) |>
+      dplyr::arrange(id, time) |>
       select(-icen)
   }
 
   # final data, calling columns x and y
-  dat <- x %>%
-    select(id, x = vars[2], y = vars[1]) %>%
+  dat <- x |>
+    select(id, x = vars[2], y = vars[1]) |>
     mutate(across(c(x, y), \(i) ifelse(floor(i) == i, i, round(i, 2))))
 
 
@@ -405,8 +404,8 @@ plot.PM_cov <- function(
   # PLOTS -------------------------------------------------------------------
   if (!timearg) { # default plot
 
-    p <- dat %>%
-      plotly::plot_ly(x = ~x) %>%
+    p <- dat |>
+      plotly::plot_ly(x = ~x) |>
       plotly::add_markers(
         y = ~y,
         marker = marker,
@@ -423,7 +422,7 @@ plot.PM_cov <- function(
         lmLine$ci <- NULL # remove to allow only formatting arguments below
       }
 
-      p <- p %>% add_smooth(x = ~x, y = ~y, ci = ci, line = lmLine, stats = stats)
+      p <- p |> add_smooth(x = ~x, y = ~y, ci = ci, line = lmLine, stats = stats)
     }
 
     if (loessLine$plot) { # loess regression
@@ -434,7 +433,7 @@ plot.PM_cov <- function(
         ci <- loessLine$ci
         loessLine$ci <- NULL # remove to allow only formatting arguments below
       }
-      p <- p %>% add_smooth(x = ~x, y = ~y, ci = ci, line = loessLine, method = "loess")
+      p <- p |> add_smooth(x = ~x, y = ~y, ci = ci, line = loessLine, method = "loess")
     }
 
     if (refLine$plot) { # reference line
@@ -453,7 +452,7 @@ plot.PM_cov <- function(
     }
 
     # set layout
-    p <- p %>%
+    p <- p |>
       plotly::layout(
         xaxis = layout$xaxis,
         yaxis = layout$yaxis,
@@ -470,7 +469,7 @@ plot.PM_cov <- function(
 
     n_colors <- length(unique(dat$id))
     if (requireNamespace("RColorBrewer", quietly = TRUE)) {
-      palettes <- RColorBrewer::brewer.pal.info %>% mutate(name = rownames(.))
+      palettes <- RColorBrewer::brewer.pal.info |> mutate(name = rownames(.))
       max_colors <- palettes$maxcolors[match(colors, palettes$name)]
       # expand colors as needed
       if (all(colors %in% palettes$name)) {
@@ -483,26 +482,26 @@ plot.PM_cov <- function(
       colors <- getDefaultColors(n_colors) # in plotly_Utils
     }
 
-    p <- dat %>%
-      group_by(id) %>%
+    p <- dat |>
+      group_by(id) |>
       plotly::plot_ly(
         x = ~x,
         color = ~ as.factor(id),
         colors = colors
-      ) %>%
+      ) |>
       plotly::add_markers(
         y = ~y,
         marker = marker,
         text = ~id,
         hovertemplate = paste0(vars[2], ": %{x:.2f}<br>", vars[1], ": %{y:.2f}<br>ID: %{text}<extra></extra>")
-      ) %>%
+      ) |>
       plotly::add_lines(
         y = ~y,
         line = loessLine
       )
 
     # set layout
-    p <- p %>%
+    p <- p |>
       plotly::layout(
         xaxis = layout$xaxis,
         yaxis = layout$yaxis,
@@ -555,17 +554,17 @@ summary.PM_cov <- function(object, icen = "median", ...) {
   }
 
   if ("icen" %in% names(object)) {
-    data <- object %>%
-      filter(icen == !!icen) %>%
+    data <- object |>
+      filter(icen == !!icen) |>
       select(-icen)
   } else {
     data <- object
   }
 
 
-  sumCov <- data %>%
-    group_by(id) %>%
-    dplyr::summarize(across(c(-time, -block), ~ purrr::exec(icen, x = .x, na.rm = TRUE))) %>%
+  sumCov <- data |>
+    group_by(id) |>
+    dplyr::summarize(across(c(-time, -block), ~ purrr::exec(icen, x = .x, na.rm = TRUE))) |>
     mutate(icen = !!icen)
 
   return(sumCov)

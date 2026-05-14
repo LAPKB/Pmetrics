@@ -19,7 +19,7 @@ Both use \link{summary.PM_cycle}.
 \examples{
 # There is no example we can think of to filter or otherwise process a PM_cycle object,
 # but we provide this function for completeness.
-NPex$cycle$data \%>\% summary()
+NPex$cycle$data |> summary()
 # all the below are the same
 # summary(NPex$cycle$data)
 # summary(NPex$cycle)

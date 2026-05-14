@@ -108,13 +108,13 @@ if (!is.null(res$op$data) & nrow(res$op$data) > 0){
 ```{r prediction-metrics-summary, include = FALSE}
 #summary function
 metrics <- function(icen, pred.type, outeq){
-  pe <- res$op$summary(icen = icen,  pred.type = pred.type, outeq = outeq)$pe %>%
+  pe <- res$op$summary(icen = icen,  pred.type = pred.type, outeq = outeq)$pe |>
     Pmetrics:::get_metric_info()
   if (stringr::str_detect(pe$metric_types[1], "%")){
-    pe$metric_vals <- pe$metric_vals %>% mutate(across(everything(), ~paste0(.x,"%"))) 
+    pe$metric_vals <- pe$metric_vals |> mutate(across(everything(), ~paste0(.x,"%"))) 
   }
   
-  pe$metric_vals %>% 
+  pe$metric_vals |> 
     DT::datatable(
       #colnames = c("Metric", "Value"),
       rownames = FALSE,
@@ -179,7 +179,7 @@ if(!is.null(res$op$data)){
 
 ```{r bias-imp-type, echo = FALSE, results = "asis", error = TRUE, cache = FALSE}
 if (!is.null(res$op$data)){
-  pe <- res$op$summary()$pe %>% Pmetrics:::get_metric_info()
+  pe <- res$op$summary()$pe |> Pmetrics:::get_metric_info()
   types <- pe$metric_types
   cat(glue::glue("Bias is (pred - obs)  {types$bias}. Imprecision is {types$imprecision}. Change these with `setPMoptions()`."))
 }
@@ -260,10 +260,10 @@ if(!is.null(res$final$data)){
     cv = 100*t(res$final$popCV),
     shrink = 100*t(res$final$shrinkage)
     
-  ) %>%
+  ) |>
     dplyr::mutate(across(4:8,\(x) round(x, 3)))
 
-  par_lims %>% 
+  par_lims |> 
     dplyr::rename(`Parameter` = par,
                   `Lower limit` = min,
                   `Upper limit` = max,
@@ -271,7 +271,7 @@ if(!is.null(res$final$data)){
                   `Median` = med,
                   `SD` = sd,
                   `CV%` = cv,
-                  `%shrink` = shrink) %>% 
+                  `%shrink` = shrink) |> 
     DT::datatable(
       options = list(
         searching = FALSE,
@@ -306,16 +306,16 @@ if (!is.null(res$final$data)){
 <!-- Posterior parameter density estimates based on the mean and median icen. -->
 
 <!-- ```{r} -->
-<!-- pmean = res$final$postMean %>% -->
+<!-- pmean = res$final$postMean |> -->
 <!--   mutate(type = "Mean") -->
 
-<!-- pmedian = res$final$postMed %>% -->
+<!-- pmedian = res$final$postMed |> -->
 <!--   mutate(type = "Median") -->
 
-<!-- pmean %>%  -->
-<!--   bind_rows(pmedian) %>% -->
-<!--   pivot_longer(cols = -c(id, type)) %>% -->
-<!--   left_join(par_lims, by = "name") %>% -->
+<!-- pmean |>  -->
+<!--   bind_rows(pmedian) |> -->
+<!--   pivot_longer(cols = -c(id, type)) |> -->
+<!--   left_join(par_lims, by = "name") |> -->
 <!--   ggplot(aes(x = value)) + -->
 <!--   geom_density(aes(col = type, fill = type), alpha = 0.5) + -->
 <!--   geom_vline(aes(xintercept = lower),  -->
@@ -341,12 +341,12 @@ The following table lists the final support points, in order of decreasing proba
 
 ```{r support-points-table}
 if (!is.null(res$final$popPoints) & np){
-  res$final$popPoints %>% 
-    dplyr::arrange(desc(prob)) %>% 
+  res$final$popPoints |> 
+    dplyr::arrange(desc(prob)) |> 
     dplyr::mutate(across(everything(), \(x) round2(x)
-    )) %>% 
-    dplyr::mutate(`Cumulative Probability` = round2(cumsum(prob))) %>% 
-    dplyr::rename(Probability = prob) %>% 
+    )) |> 
+    dplyr::mutate(`Cumulative Probability` = round2(cumsum(prob))) |> 
+    dplyr::rename(Probability = prob) |> 
     DT::datatable(options = list(pageLength = 10, searching = FALSE))
 }
 ```
@@ -360,9 +360,9 @@ if (!is.null(res$final$popPoints) & np){
 
 ```{r correlation, message = F}
 if (!is.null(res$final$data)){
-  res$final$popCor %>% tibble::as_tibble() %>%
-  dplyr::mutate(across(everything(), \(x) round2(x))) %>% 
-  DT::datatable(rownames = names(.), options = list(pageLength = 10, searching = FALSE)) %>%
+  res$final$popCor |> tibble::as_tibble() |>
+  dplyr::mutate(across(everything(), \(x) round2(x))) |> 
+  DT::datatable(rownames = names(.), options = list(pageLength = 10, searching = FALSE)) |>
   DT::formatStyle(0, fontWeight = "bold")
 } else {
   knitr::asis_output("PM_final object not created.")
@@ -373,9 +373,9 @@ if (!is.null(res$final$data)){
 
 ```{r covariance, message = F}
 if (!is.null(res$final$data)){
-  res$final$popCov %>% tibble::as_tibble() %>%
-  dplyr::mutate(across(everything(), \(x) round2(x))) %>% 
-  DT::datatable(rownames = names(.), options = list(pageLength = 10, searching = FALSE)) %>%
+  res$final$popCov |> tibble::as_tibble() |>
+  dplyr::mutate(across(everything(), \(x) round2(x))) |> 
+  DT::datatable(rownames = names(.), options = list(pageLength = 10, searching = FALSE)) |>
   DT::formatStyle(0, fontWeight = "bold")
 } else {
   knitr::asis_output("PM_final object not created.")

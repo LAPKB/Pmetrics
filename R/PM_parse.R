@@ -98,7 +98,10 @@ PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
     numeqt = 1,
     converge = cycle$data$converged,
     config = rlang::try_fetch(jsonlite::fromJSON(suppressWarnings(readLines(file.path(path, "settings.json"), warn = FALSE))),
-      sys = as.list(Sys.info()) %>% keep(names(.) %in% c("sysname", "machine")) %>% paste(collapse = " "),
+      sys = {
+        info <- as.list(Sys.info())
+        info |> keep(names(info) %in% c("sysname", "machine")) |> paste(collapse = " ")
+      },
       error = function(e) {
         cli::cli_warn(c("!" = "Unable to read {.file {file.path(path, 'settings.json')}}"))
         return(NULL)

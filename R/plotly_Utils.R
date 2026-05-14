@@ -261,7 +261,7 @@ amendDots <- function(dots) {
         } else {
           "" # No suggestion for unmatched arg
         }
-      }) %>% purrr::discard(~ .x == "") # Drop empty strings
+      }) |> purrr::discard(~ .x == "") # Drop empty strings
     )
     cli::cli_div(theme = list(
       span.blue = list(color = navy())
@@ -276,10 +276,10 @@ amendDots <- function(dots) {
 
 includeExclude <- function(.data, include = NULL, exclude = NULL) {
   if (!is.null(include)) {
-    .data <- .data %>% filter(id %in% include)
+    .data <- .data |> filter(id %in% include)
   }
   if (!is.null(exclude)) {
-    .data <- .data %>% filter(!id %in% exclude)
+    .data <- .data |> filter(!id %in% exclude)
   }
   if (nrow(.data) == 0) {
     cli::cli_abort("Include/exclude criteria result in zero subjects.")
@@ -326,10 +326,10 @@ notNeeded <- function(x, f) {
 #' @examples
 #' \dontrun{
 #' # add to an existing plot
-#' NPex$op$plot() %>%
+#' NPex$op$plot() |>
 #'   add_shapes(shapes = ab_line(v = 12))
 #' # add to a new plot
-#' plotly::plot_ly(x = 1:10, y = 1:10, type = "scatter", mode = "lines+markers") %>%
+#' plotly::plot_ly(x = 1:10, y = 1:10, type = "scatter", mode = "lines+markers") |>
 #'   plotly::layout(shapes = ab_line(h = 5, line = list(color = "red", dash = "solid")))
 #' }
 ab_line <- function(a = NULL, b = NULL, h = NULL, v = NULL, line = TRUE) {
@@ -406,10 +406,10 @@ ab_line <- function(a = NULL, b = NULL, h = NULL, v = NULL, line = TRUE) {
 #' @examples
 #' #'
 #' \dontrun{
-#' NPex$op$plot() %>%
+#' NPex$op$plot() |>
 #'   add_shapes(shapes = ab_line(v = 12))
 #'
-#' NPex$data$plot() %>%
+#' NPex$data$plot() |>
 #'   add_shapes(shapes = list(type = "circle", x0 = 125, y0 = 10, x1 = 135, y1 = 15))
 #' }
 add_shapes <- function(p = plotly::last_plot(), shapes) {
@@ -475,12 +475,12 @@ add_shapes <- function(p = plotly::last_plot(), shapes) {
 #' plotly::plot_ly(mtcars,
 #'   x = ~hp, y = ~mpg,
 #'   type = "scatter", mode = "markers", showlegend = FALSE
-#' ) %>%
+#' ) |>
 #'   add_smooth()
 #' plotly::plot_ly(iris,
 #'   x = ~Sepal.Length, y = ~Petal.Length,
 #'   type = "scatter", mode = "markers", showlegend = FALSE
-#' ) %>%
+#' ) |>
 #'   add_smooth(method = "loess", ci = 0.9, line = list(color = "red", dash = "dash"))
 #' }
 add_smooth <- function(
@@ -767,7 +767,7 @@ add_smooth <- function(
 #' @seealso [plotly::save_image()]
 #' @examples
 #' \dontrun{
-#' NPex$op$plot(stats = list(x = 0.9)) %>%
+#' NPex$op$plot(stats = list(x = 0.9)) |>
 #'   export_plotly(file = "op.png", width = 12, height = 6, units = "in")
 #' }
 #' @author Michael Neely
@@ -909,7 +909,7 @@ sub_plot <- function(
   plots <- list(...)
   if (length(plots) == 1) {
     if (inherits(plots, "list")) { # a list of plotly objects
-      plots <- plots %>% purrr::list_flatten()
+      plots <- plots |> purrr::list_flatten()
       if (!all(purrr::map_lgl(plots, inherits, "plotly"))) {
         cli::cli_abort(c("x" = "All elements in the list must be plotly objects."))
       }
@@ -919,7 +919,7 @@ sub_plot <- function(
   if (nrows > n_plots) nrows <- n_plots # sanity check
 
   # grab title lists from each plot and convert to annotations
-  plot_annotations <- purrr::map(plots, function(p) p$x$layoutAttrs[[length(p$x$layoutAttrs)]]$title) %>%
+  plot_annotations <- purrr::map(plots, function(p) p$x$layoutAttrs[[length(p$x$layoutAttrs)]]$title) |>
     purrr::map(function(title) {
       list(
         text = title$text,
@@ -985,7 +985,7 @@ sub_plot <- function(
     titleX = shareX,
     titleY = shareY,
     which_layout = which_layout
-  ) %>%
+  ) |>
     plotly::layout(annotations = plot_annotations)
   if (print) print(p)
   return(invisible(p))
@@ -1332,14 +1332,14 @@ plotlygg <- function(p, print = TRUE) {
 
   # Title
   if (!is.null(lay$title) && !is.null(lay$title$text)) {
-    title_text <- lay$title$text %>% stringr::str_replace_all("</*b>", "")
+    title_text <- lay$title$text |> stringr::str_replace_all("</*b>", "")
     title_format <- do.call(element_text, list(
       face = ifelse(lay$title$font$bold, "bold", "plain"),
       size = lay$title$font$size,
       family = lay$title$font$family
     ))
   } else if (is.character(lay$title)) {
-    title_text <- lay$title %>% stringr::str_replace_all("</*b>", "")
+    title_text <- lay$title |> stringr::str_replace_all("</*b>", "")
     title_format <- do.call(element_text, list(face = "bold", size = 16, family = "Arial"))
   }
 
@@ -1378,14 +1378,14 @@ plotlygg <- function(p, print = TRUE) {
     # Common aesthetics
     tname <- as.character(tr$name) %||% paste0("trace", i)
     line_opacity <- tr$line$opacity %||% 1
-    line_color <- tr$line$color %||% tr$marker$color %||% tr$marker$line$color %||% "dodgerblue" %>% rgba_to_rgb()
+    line_color <- tr$line$color %||% tr$marker$color %||% tr$marker$line$color %||% "dodgerblue" |> rgba_to_rgb()
     line_width <- tr$line$width * 0.5 %||% 0.5
     line_dash <- plotly_line_dash_to_gg(tr$line$dash) %||% "solid"
     marker_opacity <- tr$marker$opacity %||% 1
-    marker_fill_color <- tr$marker$color %||% tr$fillcolor %||% "dodgerblue" %>% rgba_to_rgb() # fill color
+    marker_fill_color <- tr$marker$color %||% tr$fillcolor %||% "dodgerblue" |> rgba_to_rgb() # fill color
     marker_size <- tr$marker$size / 3 %||% 3
     marker_shape <- plotly_shapes_to_gg(tr$marker$symbol)
-    marker_line_color <- tr$marker$line$color %||% tr$marker$color %||% "#000000FF" %>% rgba_to_rgb() # stroke color
+    marker_line_color <- tr$marker$line$color %||% tr$marker$color %||% "#000000FF" |> rgba_to_rgb() # stroke color
     marker_line_width <- tr$marker$line$width * 0.5 %||% 0.5 # stroke width
 
 
@@ -1396,7 +1396,7 @@ plotlygg <- function(p, print = TRUE) {
       # plotly scatter may have x or y missing; handle gracefully
       x <- tr$x %||% seq_along(tr$y %||% numeric())
       y <- tr$y %||% seq_along(tr$x %||% numeric())
-      df <- data.frame(x = x, y = y, trace = tname, stringsAsFactors = FALSE) # %>% filter(x >= min_x, x <= max_x, y >= min_y, y <= max_y)
+      df <- data.frame(x = x, y = y, trace = tname, stringsAsFactors = FALSE) # |> filter(x >= min_x, x <= max_x, y >= min_y, y <= max_y)
 
       mode <- tr$mode %||% "markers"
       has_lines <- grepl("lines", mode)
@@ -1508,14 +1508,14 @@ plotlygg <- function(p, print = TRUE) {
   # Axes titles (best effort)
   if (!is.null(lay$xaxis) && !is.null(lay$xaxis$title)) {
     if (is.list(lay$xaxis$title)) {
-      x_text <- lay$xaxis$title$text %>% stringr::str_replace_all("</*b>", "")
+      x_text <- lay$xaxis$title$text |> stringr::str_replace_all("</*b>", "")
       x_format <- do.call(element_text, list(
         face = ifelse(lay$xaxis$title$font$bold, "bold", "plain"),
         size = lay$xaxis$title$font$size,
         family = lay$xaxis$title$font$family
       ))
     } else {
-      x_text <- lay$xaxis$title %>% stringr::str_replace_all("</*b>", "")
+      x_text <- lay$xaxis$title |> stringr::str_replace_all("</*b>", "")
       x_format <- do.call(element_text, list(face = "bold", size = 16, family = "Arial"))
     }
 
@@ -1524,14 +1524,14 @@ plotlygg <- function(p, print = TRUE) {
 
   if (!is.null(lay$yaxis) && !is.null(lay$yaxis$title)) {
     if (is.list(lay$yaxis$title)) {
-      y_text <- lay$yaxis$title$text %>% stringr::str_replace_all("</*b>", "")
+      y_text <- lay$yaxis$title$text |> stringr::str_replace_all("</*b>", "")
       y_format <- do.call(element_text, list(
         face = ifelse(lay$yaxis$title$font$bold, "bold", "plain"),
         size = lay$yaxis$title$font$size,
         family = lay$yaxis$title$font$family
       ))
     } else {
-      y_text <- lay$yaxis$title %>% stringr::str_replace_all("</*b>", "")
+      y_text <- lay$yaxis$title |> stringr::str_replace_all("</*b>", "")
       y_format <- do.call(element_text, list(face = "bold", size = 16, family = "Arial"))
     }
 
@@ -1544,23 +1544,23 @@ plotlygg <- function(p, print = TRUE) {
 
   # Legend (only used for groups in plot.PM_data)
   if (lay$showlegend) {
-    group_df <- traces %>%
+    group_df <- traces |>
       map(~ c(
-        line_color = .x$line$color %||% .x$marker$color %||% .x$marker$line$color %||% "dodgerblue" %>% rgba_to_rgb(),
+        line_color = .x$line$color %||% .x$marker$color %||% .x$marker$line$color %||% "dodgerblue" |> rgba_to_rgb(),
         line_width = .x$line$width * 0.5 %||% 0.5,
         line_dash = plotly_line_dash_to_gg(.x$line$dash),
         line_opacity = .x$line$opacity %||% 1,
-        marker_fill_color = .x$marker$color %||% .x$fillcolor %||% "dodgerblue" %>% rgba_to_rgb(), # fill color
+        marker_fill_color = .x$marker$color %||% .x$fillcolor %||% "dodgerblue" |> rgba_to_rgb(), # fill color
         marker_size = .x$marker$size / 3 %||% 3,
         marker_shape = plotly_shapes_to_gg(.x$marker$symbol),
         marker_opacity = .x$marker$opacity %||% 1,
-        marker_line_color = .x$marker$line$color %||% .x$marker$color %||% "#000000FF" %>% rgba_to_rgb(), # stroke color
+        marker_line_color = .x$marker$line$color %||% .x$marker$color %||% "#000000FF" |> rgba_to_rgb(), # stroke color
         marker_line_width = .x$marker$line$width * 0.5 %||% 0.5, # stroke width
         group = as.character(.x$name)
-      )) %>%
-      bind_rows() %>%
-      mutate(marker_shape = as.integer(marker_shape)) %>%
-      mutate(across(contains(c("width", "size", "opacity")), as.numeric)) %>%
+      )) |>
+      bind_rows() |>
+      mutate(marker_shape = as.integer(marker_shape)) |>
+      mutate(across(contains(c("width", "size", "opacity")), as.numeric)) |>
       distinct()
 
 

@@ -2,8 +2,8 @@
 
 getPMpath <- function() {
   # return Pmetrics installation folder
-  paste(.libPaths(), "Pmetrics", sep = "/") %>%
-    keep(file.exists) %>%
+  paste(.libPaths(), "Pmetrics", sep = "/") |>
+    keep(file.exists) |>
     pluck(1) # ensure only one path returned (should be unnecessary)
 }
 

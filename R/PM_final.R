@@ -22,11 +22,10 @@
 #'
 #' The main results are contained in the `$data` field,
 #' and it is this field which is passed to the `$plot` and `$summary` methods.
-#' You can use this `$data` field for custom manipulations, e.g. `probs <- run1$final$data$popPoints %>% select(prob)`.
+#' You can use this `$data` field for custom manipulations, e.g. `probs <- run1$final$data$popPoints |> select(prob)`.
 #' This will select the probabilities of the support points.
-#' If you are unfamiliar with the `%>%` pipe function, please type `help("%>%", "magrittr")`
-#' into the R console and look online for instructions/tutorials in tidyverse, a
-#' powerful approach to data manipulation upon which Pmetrics is built.
+#' If you are unfamiliar with the base R `|>` pipe function, type `help("|>")`
+#' into the R console for documentation and examples.
 #'
 #' To provide a more traditional experience in R,
 #' the `$data` field is also separated by list items into the other data fields within the R6 object,
@@ -273,12 +272,12 @@ PM_final <- R6::R6Class(
       par_names <- names(theta)[names(theta) != "prob"]
 
       # Pop
-      popMean <- theta %>%
+      popMean <- theta |>
         dplyr::summarize(across(.cols = -prob, .fns = function(x) {
           wtd.mean(x = x, weights = prob)
         }))
 
-      popVar <- theta %>%
+      popVar <- theta |>
         dplyr::summarize(across(.cols = -prob, .fns = function(x) {
           wtd.var(x = x, weights = prob) # in PMutilities
         }))
@@ -286,53 +285,53 @@ PM_final <- R6::R6Class(
       popSD <- sqrt(popVar)
 
 
-      popCov <- stats::cov.wt(theta %>%
+      popCov <- stats::cov.wt(theta |>
         select(-prob), theta$prob, cor = TRUE)$cov
 
 
-      popCor <- stats::cov.wt(theta %>%
+      popCor <- stats::cov.wt(theta |>
         select(-prob), theta$prob, cor = TRUE)$cor
 
-      popMed <- theta %>%
+      popMed <- theta |>
         dplyr::summarize(across(-prob, \(x) wtd.quantile(x, prob, 0.5))) # in PMutilities
 
       # Posterior
 
-      postMean <- post %>%
-        group_by(id) %>%
+      postMean <- post |>
+        group_by(id) |>
         dplyr::summarize(across(.cols = -c(point, prob), .fns = function(x) {
           wtd.mean(x = x, weights = prob) # in PMutilities
         }))
 
-      postVar <- post %>%
-        group_by(id) %>%
+      postVar <- post |>
+        group_by(id) |>
         dplyr::summarize(across(.cols = -c(point, prob), .fns = function(x) {
           wtd.var(x = x, weights = prob) # in PMutilities
         }))
 
-      postSD <- postVar %>%
-        rowwise() %>%
+      postSD <- postVar |>
+        rowwise() |>
         dplyr::summarize(across(.cols = -c(id), .fns = function(x) {
           sqrt(x)
         }))
 
-      cov_cor_post <- post %>%
-        split(post$id) %>%
+      cov_cor_post <- post |>
+        split(post$id) |>
         map(\(x){
           wt <- x$prob
-          mat <- x %>% select(-c(id, point, prob))
+          mat <- x |> select(-c(id, point, prob))
           stats::cov.wt(mat, wt, cor = TRUE)
         })
 
 
-      postCov <- cov_cor_post %>%
+      postCov <- cov_cor_post |>
         map(\(x) as.data.frame(x$cov))
 
-      postCor <- cov_cor_post %>%
+      postCor <- cov_cor_post |>
         map(\(x) as.data.frame(x$cor))
 
-      postMed <- post %>%
-        group_by(id) %>%
+      postMed <- post |>
+        group_by(id) |>
         summarize(
           across(
             -c(point, prob),
@@ -342,12 +341,12 @@ PM_final <- R6::R6Class(
         )
 
       # shrinkage
-      varEBD <- postVar %>% summarize(across(-id, \(x) mean(x, na.rm = TRUE)))
+      varEBD <- postVar |> summarize(across(-id, \(x) mean(x, na.rm = TRUE)))
       sh <- varEBD / popSD**2
 
       # ranges
-      ab <- config$parameters[[1]] %>%
-        tibble::as_tibble() %>%
+      ab <- config$parameters[[1]] |>
+        tibble::as_tibble() |>
         dplyr::rename(par = name, min = lower, max = upper)
 
 
@@ -586,33 +585,33 @@ plot.PM_final <- function(x,
     # NPAG
     if (type == "NPAG") {
       if (is.null(xCol)) { # regular marginal
-        ab_alpha <- ab %>% arrange(par)
-        p <- data$popPoints %>%
-          pivot_longer(cols = !prob, names_to = "par") %>%
-          dplyr::nest_by(par) %>%
-          dplyr::full_join(ab_alpha, by = "par") %>%
+        ab_alpha <- ab |> arrange(par)
+        p <- data$popPoints |>
+          pivot_longer(cols = !prob, names_to = "par") |>
+          dplyr::nest_by(par) |>
+          dplyr::full_join(ab_alpha, by = "par") |>
           dplyr::mutate(panel = list(uniPlot(data, par, min, max,
             type = "NPAG",
             spike = spike,
             xlab = xlab, ylab = ylab, title = title,
             height = 1500, density = density, line = line, layout = layout
-          ))) %>%
-          plotly::subplot(margin = 0.02, nrows = nrow(.), titleX = TRUE, titleY = TRUE)
+          ))) |>
+          (\(x) plotly::subplot(x, margin = 0.02, nrows = nrow(x), titleX = TRUE, titleY = TRUE))()
       } else { # prob plot
-        ab_alpha <- ab %>% filter(par == yCol)
-        p1 <- data$popPoints %>%
-          tidyr::pivot_longer(cols = !prob, names_to = "par") %>%
-          dplyr::filter(par == yCol) %>%
-          dplyr::nest_by(par) %>%
+        ab_alpha <- ab |> filter(par == yCol)
+        p1 <- data$popPoints |>
+          tidyr::pivot_longer(cols = !prob, names_to = "par") |>
+          dplyr::filter(par == yCol) |>
+          dplyr::nest_by(par) |>
           dplyr::full_join(ab_alpha, by = "par")
 
-        p <- data$postPoints %>%
-          select(id, point, value = !!yCol, prob) %>%
-          nest(data = -id) %>%
+        p <- data$postPoints |>
+          select(id, point, value = !!yCol, prob) |>
+          nest(data = -id) |>
           dplyr::mutate(panel = trelliscopejs::map_plot(data, \(x) uniPlot(x, yCol, ab_alpha$min, ab_alpha$max,
             type = "NPAG",
             spike = spike, xlab = xlab, ylab = ylab, title = title, .prior = p1$data[[1]], density = density, line = line, layout = layout
-          ))) %>%
+          ))) |>
           trelliscopejs::trelliscope(name = "Posterior/Prior", self_contained = FALSE)
       }
     } else {
@@ -630,22 +629,22 @@ plot.PM_final <- function(x,
           cli::cli_abort(c("x" = "Requested standardization parameters are not in model."))
         }
       }
-      ab_alpha <- ab %>% arrange(par)
-      p <- data.frame(mean = purrr::as_vector(data$popMean), sd = purrr::as_vector(data$popSD), min = ab[, 1], max = ab[, 2]) %>%
+      ab_alpha <- ab |> arrange(par)
+      p <- data.frame(mean = purrr::as_vector(data$popMean), sd = purrr::as_vector(data$popSD), min = ab[, 1], max = ab[, 2]) |>
         purrr::pmap(.f = function(mean, sd, min, max) {
           dplyr::tibble(
             value = seq(min, max, (max - min) / 1000),
             prob = dnorm(value, mean, sd)
           )
-        }) %>%
-        purrr::set_names(names(data$popMean)) %>%
-        dplyr::bind_rows(.id = "par") %>%
-        dplyr::nest_by(par) %>%
-        dplyr::full_join(ab_alpha, by = "par") %>%
+        }) |>
+        purrr::set_names(names(data$popMean)) |>
+        dplyr::bind_rows(.id = "par") |>
+        dplyr::nest_by(par) |>
+        dplyr::full_join(ab_alpha, by = "par") |>
         dplyr::mutate(panel = list(uniPlot(data, par, min, max,
           type = "IT2B", xlab = xlab, ylab = ylab, title = title
-        ))) %>%
-        plotly::subplot(margin = 0.02, nrows = nrow(.), titleX = TRUE, titleY = TRUE)
+        ))) |>
+        (\(x) plotly::subplot(x, margin = 0.02, nrows = nrow(x), titleX = TRUE, titleY = TRUE))()
     }
   } else { # bivariate
     p <- biPlot(xCol, yCol, ab, data, xlab, ylab, zlab, title, spike, layout, type = "NPAG")
@@ -660,17 +659,17 @@ plot.PM_final <- function(x,
 uniPlot <- function(.data, .par, .min, .max, type, spike, xlab, ylab, title, .prior = NULL, height = NULL, density, line, layout) {
   .data$text_label <- glue::glue("{.par}: {round(.data$value,4)}\nProb: {round(.data$prob,4)}")
 
-  p <- .data %>%
+  p <- .data |>
     plotly::plot_ly(x = ~value, y = ~prob, height = height, opacity = spike$head$opacity)
 
   if (type == "NPAG") {
-    p <- p %>%
+    p <- p |>
       plotly::add_markers(
         marker = spike$head,
         text = ~text_label,
         hoverinfo = "text"
       )
-    p <- p %>%
+    p <- p |>
       plotly::add_segments(
         xend = ~value, yend = 0,
         line = spike$line
@@ -682,7 +681,7 @@ uniPlot <- function(.data, .par, .min, .max, type, spike, xlab, ylab, title, .pr
       spike2 <- spike
       spike2$head$color <- spike2$line$color <- "black"
 
-      p <- p %>%
+      p <- p |>
         plotly::add_markers(
           x = ~value, y = ~prob,
           data = .prior,
@@ -690,7 +689,7 @@ uniPlot <- function(.data, .par, .min, .max, type, spike, xlab, ylab, title, .pr
           text = ~text_label,
           hoverinfo = "text"
         )
-      p <- p %>%
+      p <- p |>
         plotly::add_segments(
           xend = ~value, yend = 0,
           line = spike2$line
@@ -709,7 +708,7 @@ uniPlot <- function(.data, .par, .min, .max, type, spike, xlab, ylab, title, .pr
       if (!is.null(densList)) {
         dens <- data.frame(x = densList$x, y = densList$y)
         normalize <- max(denData$prob)
-        p <- p %>% plotly::add_lines(
+        p <- p |> plotly::add_lines(
           data = dens, x = ~x, y = ~ y / max(y) * I(normalize),
           line = line,
           text = round(dens$y, 4),
@@ -718,7 +717,7 @@ uniPlot <- function(.data, .par, .min, .max, type, spike, xlab, ylab, title, .pr
       }
     }
   } else { # IT2B
-    p <- p %>%
+    p <- p |>
       plotly::add_lines(
         line = line,
         hovertemplate = "Value: %{x:0.2f}<br>Prob: %{y:0.2f}<extra></extra>"
@@ -777,7 +776,7 @@ uniPlot <- function(.data, .par, .min, .max, type, spike, xlab, ylab, title, .pr
   }
 
 
-  p <- p %>%
+  p <- p |>
     plotly::layout(
       showlegend = F,
       xaxis = layout$xaxis,
@@ -877,7 +876,7 @@ biPlot <- function(xCol, yCol, ab, data, xlab, ylab, zlab, title, spike, layout,
         rangeY[1], rangeY[2],
         (rangeY[2] - rangeY[1]) / 100
       )
-    ) %>%
+    ) |>
       tidyr::expand(x, y)
 
     # dmv_norm in PMutilities
@@ -887,10 +886,10 @@ biPlot <- function(xCol, yCol, ab, data, xlab, ylab, zlab, title, spike, layout,
     )
     z <- matrix(z, nrow = 101)
 
-    p <- plot_ly(x = ~ unique(coords$x), y = ~ unique(coords$y), z = ~z) %>%
+    p <- plot_ly(x = ~ unique(coords$x), y = ~ unique(coords$y), z = ~z) |>
       plotly::add_surface(
         hovertemplate = paste0(xlb, ": %{x:0.4f}<br>", ylb, ":%{y:0.4f}<br>", zlb, ":%{z:0.4f}<extra></extra>")
-      ) %>%
+      ) |>
       plotly::layout(
         scene = list(
           xaxis = layout$xaxis,
@@ -898,35 +897,35 @@ biPlot <- function(xCol, yCol, ab, data, xlab, ylab, zlab, title, spike, layout,
           zaxis = layout$zaxis
         ),
         title = layout$title
-      ) %>%
+      ) |>
       plotly::hide_colorbar()
     return(p)
   } else { # NPAG
     data$popPoints$id <- seq_len(nrow(data$popPoints))
     pp <- replicate(3, data$popPoints, simplify = FALSE)
-    data$popPoints <- data$popPoints %>% select(-id) # undo modification
+    data$popPoints <- data$popPoints |> select(-id) # undo modification
 
     # make object for drop lines
     pp[[2]]$prob <- min(pp[[1]]$prob)
-    pp2 <- dplyr::bind_rows(pp, .id = "key") %>% dplyr::arrange(id, key)
+    pp2 <- dplyr::bind_rows(pp, .id = "key") |> dplyr::arrange(id, key)
     pp2[pp2$key == 3, ] <- NA
-    pp2 <- pp2 %>%
+    pp2 <- pp2 |>
       dplyr::select(x = whichX[1] + 1, y = whichY[1] + 1, prob = prob)
-    p <- data$popPoints %>%
-      select(x = whichX[1], y = whichY[1], prob = prob) %>%
+    p <- data$popPoints |>
+      select(x = whichX[1], y = whichY[1], prob = prob) |>
       plotly::plot_ly(
         x = ~x, y = ~y, z = ~prob,
         hovertemplate = paste0(xlb, ": %{x:0.4f}<br>", ylb, ": %{y:0.4f}<br>", zlb, ": %{z:0.4f}<extra></extra>")
-      ) %>%
+      ) |>
       plotly::add_markers(marker = spike$head)
 
     if (spike$line$width > 0) {
-      p <- p %>% plotly::add_paths(
+      p <- p |> plotly::add_paths(
         data = pp2, x = ~x, y = ~y, z = ~prob,
         line = spike$line
       )
     }
-    p <- p %>%
+    p <- p |>
       plotly::layout(
         showlegend = F,
         scene = list(
@@ -951,7 +950,7 @@ biPlot <- function(xCol, yCol, ab, data, xlab, ylab, zlab, title, spike, layout,
 #' @param x A `PM_final_data`` object
 #' @param ... Additional arguments passed to [plot.PM_final]
 #' @examples
-#' NPex$final$data %>% plot()
+#' NPex$final$data |> plot()
 #' @export
 #'
 plot.PM_final_data <- function(x, ...) {
@@ -1044,7 +1043,7 @@ summary.PM_final <- function(object, lower = 0.025, upper = 0.975, file = NULL, 
       mean, se.mean,
       cv.mean,
       var, se.var
-    ) %>%
+    ) |>
       dplyr::mutate(summary = c("Mean", "StdErr Mean", "CV% Mean", "Variance", "StdErr Var"))
     return(sumstat)
   } else { # NPAG object
@@ -1076,10 +1075,10 @@ summary.PM_final <- function(object, lower = 0.025, upper = 0.975, file = NULL, 
       popPoints$prob <- c(0.5, 0.5)
     }
 
-    sumstat <- apply(popPoints[, 1:nvar], 2, function(x) mcsim(x, popPoints$prob)) %>%
-      dplyr::as_tibble() %>%
-      unnest(cols = everything()) %>%
-      mutate(percentile = rep(c(lower, 0.5, upper), 2)) %>%
+    sumstat <- apply(popPoints[, 1:nvar], 2, function(x) mcsim(x, popPoints$prob)) |>
+      dplyr::as_tibble() |>
+      unnest(cols = everything()) |>
+      mutate(percentile = rep(c(lower, 0.5, upper), 2)) |>
       mutate(parameter = rep(c("WtMed", "MAWD"), each = 3))
 
     attr(sumstat, "CI") <- c(lower, upper)
@@ -1101,7 +1100,7 @@ summary.PM_final <- function(object, lower = 0.025, upper = 0.975, file = NULL, 
 #' @param object A `PM_final_data` object
 #' @param ... Additional arguments passed to [summary.PM_final]
 #' @examples
-#' NPex$final$data %>% summary()
+#' NPex$final$data |> summary()
 #' @export
 #'
 summary.PM_final_data <- function(object, ...) {
@@ -1141,14 +1140,14 @@ print.summary.PM_final <- function(x,
   values <- c(attr(x, "CI")[1], 0.5, attr(x, "CI")[2])
   ci <- 100 * (values[3] - values[1])
 
-  df <- x %>%
+  df <- x |>
     mutate(percentile = dplyr::case_when(
       percentile == values[1] ~ "lo",
       percentile == 0.5 ~ "med",
       percentile == values[3] ~ "up"
-    )) %>%
-    tidyr::pivot_longer(cols = c(-percentile, -parameter)) %>%
-    tidyr::pivot_wider(id_cols = c(name), values_from = value, names_from = c(parameter, percentile)) %>%
+    )) |>
+    tidyr::pivot_longer(cols = c(-percentile, -parameter)) |>
+    tidyr::pivot_wider(id_cols = c(name), values_from = value, names_from = c(parameter, percentile)) |>
     dplyr::mutate(across(-name, ~ round(.x, digits = digits)))
 
   ret <- tibble::tibble(
@@ -1158,18 +1157,18 @@ print.summary.PM_final <- function(x,
   )
 
   flextable::set_flextable_defaults(font.family = "Arial")
-  ft <- flextable::flextable(ret) %>%
-    flextable::set_header_labels(values = list(Median = glue::glue("Median ({ci}% CI)"), MAWD = glue::glue("MAWD ({ci}% CI)"))) %>%
-    flextable::set_table_properties(width = .5) %>%
+  ft <- flextable::flextable(ret) |>
+    flextable::set_header_labels(values = list(Median = glue::glue("Median ({ci}% CI)"), MAWD = glue::glue("MAWD ({ci}% CI)"))) |>
+    flextable::set_table_properties(width = .5) |>
     flextable::footnote(
       i = 1, j = 3,
       value = flextable::as_paragraph("MAWD: Mean Absolute Weighted Deviation, a nonparametric measure of dispersion similar to variance"),
       ref_symbols = "1",
       part = "header"
-    ) %>%
-    flextable::theme_zebra() %>%
-    flextable::bold(bold = FALSE, part = "footer") %>%
-    flextable::align_text_col(align = "center", header = TRUE, footer = FALSE) %>%
+    ) |>
+    flextable::theme_zebra() |>
+    flextable::bold(bold = FALSE, part = "footer") |>
+    flextable::align_text_col(align = "center", header = TRUE, footer = FALSE) |>
     flextable::autofit()
 
   print(ft)

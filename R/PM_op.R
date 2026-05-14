@@ -21,10 +21,9 @@
 #'
 #' The main results are contained in the `$data` field,
 #' and it is this field which is passed to the `$plot` and `$summary` methods.
-#' You can use this `$data` field for custom manipulations, e.g. `trough <- run1$op$data %>% filter(time == 24)`.
-#' If you are unfamiliar with the `%>%` pipe function, please type `help("%>%", "magrittr")`
-#' into the R console and look online for instructions/tutorials in tidyverse, a
-#' powerful approach to data manipulation upon which Pmetrics is built.
+#' You can use this `$data` field for custom manipulations, e.g. `trough <- run1$op$data |> filter(time == 24)`.
+#' If you are unfamiliar with the base R `|>` pipe function, type `help("|>")`
+#' into the R console for documentation and examples.
 #'
 #' To provide a more traditional experience in R,
 #' the `$data` field is also separated by columns into the other data fields within the R6 object,
@@ -143,14 +142,14 @@ PM_op <- R6::R6Class(
             post_mean = readr::col_double(),
             post_median = readr::col_double()
           ), show_col_types = FALSE
-        ) %>% filter(!is.na(obs))
+        ) |> filter(!is.na(obs))
 
         if (!"cens" %in% names(op_raw)) {
-          op_raw <- op_raw %>% mutate(cens = "none") # if cens column missing, assume all observed
+          op_raw <- op_raw |> mutate(cens = "none") # if cens column missing, assume all observed
         }
       } else if (inherits(data, "PM_op") & !is.null(data$data)) { # file not there, and already PM_op
         if (!"cens" %in% names(data$data)) {
-          data$data <- data$data %>% mutate(cens = "none") # if cens column missing, assume all observed
+          data$data <- data$data |> mutate(cens = "none") # if cens column missing, assume all observed
         }
         class(data$data) <- c("PM_op_data", "data.frame")
         return(data$data)
@@ -178,9 +177,9 @@ PM_op <- R6::R6Class(
       poly <- decode_error_model_rows(config$errormodels$models, op_raw$outeq)
 
       calc_obs_sd <- function(outeq, obs) {
-        coeff <- poly %>%
-          dplyr::filter(.data$outeq == outeq) %>%
-          dplyr::slice_head(n = 1) %>%
+        coeff <- poly |>
+          dplyr::filter(.data$outeq == outeq) |>
+          dplyr::slice_head(n = 1) |>
           dplyr::select(c0, c1, c2, c3)
 
         if (nrow(coeff) == 0) {
@@ -191,9 +190,9 @@ PM_op <- R6::R6Class(
         sum(coeff * obs^(0:3))
       }
 
-      op <- op_raw %>%
-        # left_join(pred_raw, by = c("id", "time", "outeq")) %>%
-        pivot_longer(cols = c(pop_mean, pop_median, post_mean, post_median)) %>%
+      op <- op_raw |>
+        # left_join(pred_raw, by = c("id", "time", "outeq")) |>
+        pivot_longer(cols = c(pop_mean, pop_median, post_mean, post_median)) |>
         mutate(
           icen = dplyr::case_when(
             name == "pop_mean" ~ "mean",
@@ -201,7 +200,7 @@ PM_op <- R6::R6Class(
             name == "post_mean" ~ "mean",
             name == "post_median" ~ "median",
           )
-        ) %>%
+        ) |>
         mutate(
           pred.type = dplyr::case_when(
             name == "pop_mean" ~ "pop",
@@ -209,18 +208,18 @@ PM_op <- R6::R6Class(
             name == "post_mean" ~ "post",
             name == "post_median" ~ "post",
           )
-        ) %>%
-        select(-name) %>%
-        dplyr::rename(pred = value) %>%
-        dplyr::mutate(outeq = normalize_engine_index(outeq)) %>%
-        dplyr::mutate(block = block + 1) %>%
-        # dplyr::mutate(obs = dplyr::na_if(obs, -99)) %>% # obsolete
-        dplyr::rowwise() %>%
-        mutate(d = pred - obs) %>%
-        mutate(ds = d * d) %>%
-        mutate(obsSD = calc_obs_sd(outeq, obs)) %>%
-        mutate(wd = d / obsSD) %>%
-        mutate(wds = wd * wd) %>%
+        ) |>
+        select(-name) |>
+        dplyr::rename(pred = value) |>
+        dplyr::mutate(outeq = normalize_engine_index(outeq)) |>
+        dplyr::mutate(block = block + 1) |>
+        # dplyr::mutate(obs = dplyr::na_if(obs, -99)) |> # obsolete
+        dplyr::rowwise() |>
+        mutate(d = pred - obs) |>
+        mutate(ds = d * d) |>
+        mutate(obsSD = calc_obs_sd(outeq, obs)) |>
+        mutate(wd = d / obsSD) |>
+        mutate(wds = wd * wd) |>
         dplyr::ungroup()
       class(op) <- c("PM_op_data", "data.frame")
       return(op)
@@ -378,14 +377,14 @@ plot.PM_op <- function(
       "i" = "Choose {max(x$block)} or fewer for {.code block}."
     ))
   }
-  sub1 <- x %>%
+  sub1 <- x |>
     dplyr::filter(
       icen == !!icen, outeq %in% !!outeq, pred.type == !!pred.type,
       block %in% !!block
-    ) %>%
-    includeExclude(include, exclude) %>%
-    dplyr::filter(!is.na(obs)) %>%
-    dplyr::mutate(pred = pred * mult, obs = obs * mult) %>%
+    ) |>
+    includeExclude(include, exclude) |>
+    dplyr::filter(!is.na(obs)) |>
+    dplyr::mutate(pred = pred * mult, obs = obs * mult) |>
     dplyr::arrange(id, time)
 
   if (nrow(sub1) == 0) {
@@ -521,7 +520,7 @@ plot.PM_op <- function(
     }
 
     # Split into traces
-    traces <- sub1 %>%
+    traces <- sub1 |>
       dplyr::group_split(id)
 
     # Build plot
@@ -532,8 +531,8 @@ plot.PM_op <- function(
       group_name <- trace_data$id[1]
 
       # Add group label and CENS coloring/symbol/opacity directly to the data
-      trace_data <- trace_data %>%
-        rowwise() %>%
+      trace_data <- trace_data |>
+        rowwise() |>
         mutate(
           text_label = dplyr::case_when(
             cens == "bloq" | cens == "1" ~ glue::glue("ID: {group_name}\nPred: {round2(pred)}\nBLOQ: {round2(obs)}"),
@@ -549,7 +548,7 @@ plot.PM_op <- function(
             .default = as.character(marker$symbol)
           ),
           opacity = dplyr::if_else(cens != "none" & cens != "0", 1, marker$opacity)
-        ) %>%
+        ) |>
         ungroup()
       p <- add_trace(
         p,
@@ -576,7 +575,7 @@ plot.PM_op <- function(
         lmLine$ci <- NULL # remove to allow only formatting arguments below
       }
 
-      p <- p %>% add_smooth(data = sub1 %>% filter(cens == "none"), x = ~pred, y = ~obs, ci = ci, line = lmLine, stats = stats)
+      p <- p |> add_smooth(data = sub1 |> filter(cens == "none"), x = ~pred, y = ~obs, ci = ci, line = lmLine, stats = stats)
     }
 
     if (loessLine$plot) { # loess regression
@@ -587,7 +586,7 @@ plot.PM_op <- function(
         ci <- loessLine$ci
         loessLine$ci <- NULL # remove to allow only formatting arguments below
       }
-      p <- p %>% add_smooth(data = sub1 %>% filter(cens == "none" | cens == "0"), x = ~pred, y = ~obs, ci = ci, line = loessLine, method = "loess")
+      p <- p |> add_smooth(data = sub1 |> filter(cens == "none" | cens == "0"), x = ~pred, y = ~obs, ci = ci, line = loessLine, method = "loess")
     }
 
     if (refLine$plot) { # reference line
@@ -605,7 +604,7 @@ plot.PM_op <- function(
     }
 
     # set layout
-    p <- p %>%
+    p <- p |>
       plotly::layout(
         xaxis = layout$xaxis,
         yaxis = layout$yaxis,
@@ -630,8 +629,8 @@ plot.PM_op <- function(
     # amend xaxis title later
 
     # Split into traces
-    traces <- sub1 %>%
-      filter(cens == "none" | cens == "0") %>%
+    traces <- sub1 |>
+      filter(cens == "none" | cens == "0") |>
       dplyr::group_split(id)
 
 
@@ -689,8 +688,8 @@ plot.PM_op <- function(
         ci <- lmLine$ci
         lmLine$ci <- NULL # remove to allow only formatting arguments below
       }
-      p1 <- p1 %>% add_smooth(data = sub1, x = ~time, y = ~wd, ci = ci, line = lmLine, stats = stats)
-      p2 <- p2 %>% add_smooth(data = sub1, x = ~pred, y = ~wd, ci = ci, line = lmLine, stats = stats)
+      p1 <- p1 |> add_smooth(data = sub1, x = ~time, y = ~wd, ci = ci, line = lmLine, stats = stats)
+      p2 <- p2 |> add_smooth(data = sub1, x = ~pred, y = ~wd, ci = ci, line = lmLine, stats = stats)
     }
 
     if (loessLine$plot) {
@@ -701,12 +700,12 @@ plot.PM_op <- function(
         ci <- loessLine$ci
         loessLine$ci <- NULL # remove to allow only formatting arguments below
       }
-      p1 <- p1 %>% add_smooth(data = sub1, x = ~time, y = ~wd, ci = ci, line = loessLine, method = "loess")
-      p2 <- p2 %>% add_smooth(data = sub1, x = ~pred, y = ~wd, ci = ci, line = loessLine, method = "loess")
+      p1 <- p1 |> add_smooth(data = sub1, x = ~time, y = ~wd, ci = ci, line = loessLine, method = "loess")
+      p2 <- p2 |> add_smooth(data = sub1, x = ~pred, y = ~wd, ci = ci, line = loessLine, method = "loess")
     }
     # set layout
     layout$xaxis$title <- amendTitle("Time")
-    p1 <- p1 %>%
+    p1 <- p1 |>
       plotly::layout(
         xaxis = layout$xaxis,
         yaxis = layout$yaxis,
@@ -714,7 +713,7 @@ plot.PM_op <- function(
       )
 
     layout$xaxis$title <- amendTitle("Predicted")
-    p2 <- p2 %>%
+    p2 <- p2 |>
       plotly::layout(
         xaxis = layout$xaxis,
         yaxis = layout$yaxis,
@@ -743,9 +742,9 @@ plot.PM_op <- function(
 #' @param ... Additional arguments passed to [plot.PM_op]
 #' @examples
 #' \dontrun{
-#' NPex$op$data %>%
-#'   dplyr::filter(pred > 5) %>%
-#'   dplyr::filter(pred < 10) %>%
+#' NPex$op$data |>
+#'   dplyr::filter(pred > 5) |>
+#'   dplyr::filter(pred < 10) |>
 #'   plot()
 #' }
 #' @export
@@ -818,8 +817,8 @@ summary.PM_op <- function(
     # N
     N <- length(data$obs[!is.na(data$obs)])
 
-    sumstat <- data %>%
-      select(time, obs, pred) %>%
+    sumstat <- data |>
+      select(time, obs, pred) |>
       dplyr::summarize(across(
         .cols = everything(),
         .fns = list(
@@ -831,8 +830,8 @@ summary.PM_op <- function(
           mean = ~ mean(.x, na.rm = TRUE),
           sd = ~ sd(.x, na.rm = TRUE)
         )
-      )) %>%
-      pivot_longer(everything(), names_sep = "_", names_to = c("type", "statistic")) %>%
+      )) |>
+      pivot_longer(everything(), names_sep = "_", names_to = c("type", "statistic")) |>
       pivot_wider(names_from = type, values_from = value)
 
 
@@ -904,7 +903,7 @@ summary.PM_op <- function(
     cli::cli_abort(c("x" = "{.code object} must be a {.cls PM_op} or {.cls PM_op_data} object.", "i" = "See {.fn Pmetrics::summary.PM_op}."))
   }
 
-  object <- object %>% filter(outeq == !!outeq, pred.type == !!pred.type, icen == !!icen)
+  object <- object |> filter(outeq == !!outeq, pred.type == !!pred.type, icen == !!icen)
   if (all(is.na(object$obs))) {
     sumstat <- NA
     pe <- data.frame(
@@ -935,9 +934,9 @@ summary.PM_op <- function(
 #' @param ... Additional arguments passed to [summary.PM_op]
 #' @examples
 #' \dontrun{
-#' NPex$op$data %>%
-#'   dplyr::filter(pred > 5) %>%
-#'   dplyr::filter(pred < 10) %>%
+#' NPex$op$data |>
+#'   dplyr::filter(pred > 5) |>
+#'   dplyr::filter(pred < 10) |>
 #'   summary()
 #' }
 #' @export
@@ -976,35 +975,35 @@ summary.PM_op_data <- function(object, ...) {
 print.summary.PM_op <- function(x, digits = getPMoptions("digits"), embed = FALSE, ...) {
   printSumWrk <- function(data, dataname) {
     # Summary statistics
-    ft1 <- data$sumstat %>%
-      mutate(across(-statistic, ~ round2(.x, digits = digits))) %>%
-      mutate(statistic = c("Minimum", "Q1", "Median", "Q3", "Maximum", "Mean", "SD")) %>%
-      flextable::flextable() %>%
+    ft1 <- data$sumstat |>
+      mutate(across(-statistic, ~ round2(.x, digits = digits))) |>
+      mutate(statistic = c("Minimum", "Q1", "Median", "Q3", "Maximum", "Mean", "SD")) |>
+      flextable::flextable() |>
       flextable::set_header_labels(
         time = "Time", obs = "Observed", pred = "Predicted"
-      ) %>%
-      flextable::set_table_properties(width = 0.8, layout = "autofit") %>%
+      ) |>
+      flextable::set_table_properties(width = 0.8, layout = "autofit") |>
       # "Hide" the variable column from header and treat it as row label
-      flextable::compose(j = "statistic", value = flextable::as_paragraph(statistic)) %>%
+      flextable::compose(j = "statistic", value = flextable::as_paragraph(statistic)) |>
       # Remove header label for row names
-      flextable::set_header_labels(statistic = "") %>%
+      flextable::set_header_labels(statistic = "") |>
       # Optional: align left
-      flextable::align(j = "statistic", align = "right", part = "body") %>%
-      flextable::theme_zebra() %>%
-      flextable::bg(part = "header", bg = blue()) %>%
+      flextable::align(j = "statistic", align = "right", part = "body") |>
+      flextable::theme_zebra() |>
+      flextable::bg(part = "header", bg = blue()) |>
       flextable::autofit()
 
     # Bias and imprecision
 
-    metric_info <- data$pe %>% get_metric_info()
-    with_percent <- getPMoptions("bias_method") %>% stringr::str_detect("percent_")
+    metric_info <- data$pe |> get_metric_info()
+    with_percent <- getPMoptions("bias_method") |> stringr::str_detect("percent_")
 
-    ft2 <- metric_info$metric_vals %>%
-      mutate(across(everything(), ~ if (with_percent) paste0(.x, "%") else .x)) %>%
-      flextable::flextable() %>%
-      flextable::theme_zebra() %>%
-      flextable::align_text_col(header = TRUE) %>%
-      flextable::bg(part = "header", bg = blue()) %>%
+    ft2 <- metric_info$metric_vals |>
+      mutate(across(everything(), ~ if (with_percent) paste0(.x, "%") else .x)) |>
+      flextable::flextable() |>
+      flextable::theme_zebra() |>
+      flextable::align_text_col(header = TRUE) |>
+      flextable::bg(part = "header", bg = blue()) |>
       flextable::autofit()
 
     pred.type <- if (attr(data, "pred.type") == "post") "posterior" else "population"
@@ -1072,12 +1071,12 @@ get_metric_info <- function(pe) {
       imp_key == "rmbawse" ~ "Root mean, bias-adjusted, weighted, squared error (RMBAWSE)",
       TRUE ~ imp_key
     )
-  ) %>% mutate(across(everything(), ~ if (with_percent) paste0("% ", .x) else .x))
+  ) |> mutate(across(everything(), ~ if (with_percent) paste0("% ", .x) else .x))
 
   metric_vals <- tibble(
     Bias = pe[bias_row, bias_imp_col],
     Imprecision = pe[imp_row, bias_imp_col]
-  ) %>%
+  ) |>
     mutate(across(everything(), ~ round2(.x, digits = getPMoptions("digits"))))
 
   return(list(

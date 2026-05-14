@@ -22,10 +22,9 @@ The  results are contained in the \verb{$data} field,
 and it is this field which is passed to the \verb{$plot} and \verb{$summary} methods.
 You can use this \verb{$data} field for custom manipulations, although usually this
 is better done on the \code{summary} object, e.g.,
-\code{run1$cov$summary() \%>\% select(africa, gender) \%>\% table()}.
-If you are unfamiliar with the \verb{\%>\%} pipe function, please type \code{help("\%>\%", "magrittr")}
-into the R console and look online for instructions/tutorials in tidyverse, a
-powerful approach to data manipulation upon which Pmetrics is built.
+\code{run1$cov$summary() |> select(africa, gender) |> table()}.
+If you are unfamiliar with the base R \verb{|>} pipe function, type \code{help("|>")}
+into the R console for documentation and examples.
 
 This output of this function is suitable for exploration of covariate-
 parameter, covariate-time, or parameter-time relationships.

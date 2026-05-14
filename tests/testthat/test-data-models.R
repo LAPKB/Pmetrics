@@ -99,7 +99,7 @@ test_that("Analytical models allow multi-line secondary conditionals", {
   expect_s3_class(mod, "PM_model")
   sec_code <- paste(deparse(mod$arg_list$sec), collapse = "\n")
   expect_true(grepl("if (gender < 1)", sec_code, fixed = TRUE))
-  expect_true(grepl("v = v0 * wt", sec_code, fixed = TRUE))
+  expect_true(grepl("v <- v0 * wt", sec_code, fixed = TRUE))
 })
 
 # test_that("Load model",{

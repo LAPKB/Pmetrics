@@ -458,25 +458,25 @@ update <- function(res, found) {
       # start conversion
       n_cyc <- nrow(dat$mean)
       n_out <- max(res$op$outeq)
-      dat$gamlam <- dat$gamlam %>% select(starts_with("add") | starts_with("prop"))
+      dat$gamlam <- dat$gamlam |> select(starts_with("add") | starts_with("prop"))
       if (ncol(gamlam) == 1 & n_out > 1) {
         gamlam <- cbind(gamlam, replicate((n_out - 1), gamlam[, 1]))
       }
-      gamlam <- gamlam %>%
+      gamlam <- gamlam |>
         pivot_longer(
           cols = everything(),
           values_to = "value", names_to = c("type", "outeq"),
           names_sep = "\\."
-        ) %>%
-        mutate(cycle = rep(1:n_cyc, each = n_out)) %>%
-        select(cycle, value, outeq, type) %>%
+        ) |>
+        mutate(cycle = rep(1:n_cyc, each = n_out)) |>
+        select(cycle, value, outeq, type) |>
         arrange(cycle, outeq)
       if (is.matrix(dat$mean)) { # old fortran format, but not rust format
-        dat$mean <- tibble::tibble(cycle = 1:n_cyc) %>%
+        dat$mean <- tibble::tibble(cycle = 1:n_cyc) |>
           dplyr::bind_cols(tidyr::as_tibble(dat$mean))
-        dat$median <- tibble::tibble(cycle = 1:n_cyc) %>%
+        dat$median <- tibble::tibble(cycle = 1:n_cyc) |>
           dplyr::bind_cols(tidyr::as_tibble(dat$median))
-        dat$sd <- tibble::tibble(cycle = 1:n_cyc) %>%
+        dat$sd <- tibble::tibble(cycle = 1:n_cyc) |>
           dplyr::bind_cols(tidyr::as_tibble(dat$sd))
       }
       msg <- c(msg, "cycle")

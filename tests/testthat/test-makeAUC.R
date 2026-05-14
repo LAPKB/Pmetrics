@@ -129,13 +129,13 @@ test_that("make_AUC addZero and method options behave as expected", {
   auc_no_zero <- make_AUC(
     data = theoph_no_zero,
     formula = conc ~ Time | Subject,
-    addZero = FALSE
+    add_zero = FALSE
   )
 
   auc_add_zero <- make_AUC(
     data = theoph_no_zero,
     formula = conc ~ Time | Subject,
-    addZero = TRUE
+    add_zero = TRUE
   )
 
   expect_true(any(auc_add_zero$tau > auc_no_zero$tau))

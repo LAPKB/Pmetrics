@@ -400,8 +400,8 @@ calcTAD <- function(rawData) {
 #' @keywords internal
 #'
 template <- function(name) {
-  insert <- readLines(paste0("man-roxygen/", name, ".R")) %>%
-    stringr::str_replace("#' ", "") %>%
+  insert <- readLines(paste0("man-roxygen/", name, ".R")) |>
+    stringr::str_replace("#' ", "") |>
     stringr::str_replace("<br>", "  \n")
   insert <- c(insert, "  \n")
   insert <- paste(insert, collapse = " ")
@@ -763,8 +763,8 @@ cli_ask <- function(text, prompt = ">> ", ...) {
 #' @title Convert a function to a character string
 #' @keywords internal
 func_to_char <- function(fun) {
-  deparse(fun, width.cutoff = 500L) %>%
-    stringr::str_trim("left") %>%
+  deparse(fun, width.cutoff = 500L) |>
+    stringr::str_trim("left") |>
     purrr::discard(\(x) stringr::str_detect(x, "function|\\{|\\}"))
 }
 
@@ -803,8 +803,8 @@ round2 <- function(x, digits = getPMoptions("digits")) {
 #' @keywords internal
 cli_df <- function(df) {
   # Convert all columns to character for uniform formatting
-  df_chr <- df %>%
-    mutate(across(where(is.double), ~ round2(.x))) %>%
+  df_chr <- df |>
+    mutate(across(where(is.double), ~ round2(.x))) |>
     mutate(across(everything(), ~ as.character(.x, stringsAsFactors = FALSE)))
 
 
@@ -812,12 +812,12 @@ cli_df <- function(df) {
   df_tab <- knitr::kable(df_chr, format = "simple")
 
   # print header
-  header <- df_tab[1] %>% stringr::str_replace_all(" ", "\u00A0")
+  header <- df_tab[1] |> stringr::str_replace_all(" ", "\u00A0")
   cli::cli_text("{.strong {header}}")
 
   # print each row
   for (i in 2:length(df_tab)) {
-    cli::cli_text(df_tab[i] %>% stringr::str_replace_all(" ", "\u00A0"))
+    cli::cli_text(df_tab[i] |> stringr::str_replace_all(" ", "\u00A0"))
   }
 }
 

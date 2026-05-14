@@ -76,8 +76,8 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
   }
 
 
-  # argsPlot <- arglist %>% `[`(names(.) %in% names(formals(plot.PM_op))) # plot arguments
-  # argsKnn <- arglist %>% `[`(names(.) %in% names(formals(mtsknn.eq))) # knn argument
+  # argsPlot <- arglist |> `[`(names(.) %in% names(formals(plot.PM_op))) # plot arguments
+  # argsKnn <- arglist |> `[`(names(.) %in% names(formals(mtsknn.eq))) # knn argument
 
   # set defaults if missing
   # argsKnn <- modifyList(
@@ -92,7 +92,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
   cycles <- unlist(sapply(allObj, function(x) max(x$cycle$data$objective$cycle)))
   if (any(cycles == 0)) {
     cli::cli_warn(c("!" = "These objects were excluded because they had no cycles: {which(cycles == 0)}."))
-    allObj <- allObj %>% purrr::discard(\(x) max(x$cycle$data$objective$cycle) == 0)
+    allObj <- allObj |> purrr::discard(\(x) max(x$cycle$data$objective$cycle) == 0)
   }
 
   # grab op data
@@ -129,16 +129,16 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
 
 
   sumobjBoth <- bind_rows(
-    sumobjPop %>% get_metric() %>% mutate(pred.type = "pop", run = objNames[1:n()]),
-    sumobjPost %>% get_metric() %>% mutate(pred.type = "post", run = objNames[1:n()])
-  ) %>%
+    sumobjPop |> get_metric() |> mutate(pred.type = "pop", run = objNames[1:n()]),
+    sumobjPost |> get_metric() |> mutate(pred.type = "post", run = objNames[1:n()])
+  ) |>
     pivot_longer(
       c(bias, imp),
       names_to = "metric",
       values_to = "value"
-    ) %>%
-    mutate(metric = paste(pred.type, metric, sep = "_")) %>%
-    mutate(value = as.numeric(value)) %>%
+    ) |>
+    mutate(metric = paste(pred.type, metric, sep = "_")) |>
+    mutate(value = as.numeric(value)) |>
     mutate(color = ifelse(pred.type == "pop", "blue", "red"))
 
   # determine if current method is percent based or not and label y axis accordingly
@@ -182,7 +182,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
     col_vec <- col_map[rank(unique(sumobjBoth$run))]
 
 
-    p1 <- plot_ly() %>%
+    p1 <- plot_ly() |>
       plotly::add_trace(
         data = sumobjBoth,
         x = ~metric,
@@ -195,7 +195,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
         hoverinfo = "none",
         symbol = ~ factor(run),
         showlegend = TRUE
-      ) %>%
+      ) |>
       plotly::add_trace(
         data = sumobjBoth,
         x = ~metric,
@@ -209,7 +209,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
         showlegend = FALSE,
         hoverinfo = "text",
         text = ~ paste(run, "<br>", metric, sprintf(paste0("%.", getPMoptions("digits"), "f%%"), value * 100))
-      ) %>%
+      ) |>
       plotly::layout(
         xaxis = list(
           title = "", # remove default axis title,
@@ -261,8 +261,8 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
     ### OP plots
 
 
-    all_op <- op %>% purrr::imap(\(x, y) {
-      pop <- x %>% plot.PM_op(
+    all_op <- op |> purrr::imap(\(x, y) {
+      pop <- x |> plot.PM_op(
         outeq = outeq,
         icen = icen,
         pred.type = "pop",
@@ -270,7 +270,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
         title = list(text = glue::glue("Pop - {objNames[y]}"), font = list(color = black(alpha = 0.3), size = 16)),
         stats = list(font = list(size = 10))
       )
-      post <- x %>% plot.PM_op(
+      post <- x |> plot.PM_op(
         outeq = outeq,
         icen = icen,
         pred.type = "post",
@@ -281,7 +281,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
       list(pop = pop, post = post)
     })
 
-    all_op_flat <- all_op %>% purrr::list_flatten()
+    all_op_flat <- all_op |> purrr::list_flatten()
     p2 <- sub_plot(all_op_flat, nrows = nobj, titles = c(0, .8), shareX = FALSE, shareY = FALSE, print = FALSE, margin = 0.02)
 
     ### LIKELIHOOD PLOT ###
@@ -301,25 +301,25 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
     names(like)[1] <- "-2*LL"
 
     gamlam <- purrr::imap(allObj, \(x, y) {
-      x$cycle$data$gamlam %>%
-        filter(cycle == max(cycle)) %>%
+      x$cycle$data$gamlam |>
+        filter(cycle == max(cycle)) |>
         mutate(Run = y)
-    }) %>% bind_rows()
+    }) |> bind_rows()
 
-    not_same <- gamlam %>%
-      group_by(outeq) %>%
-      summarize(same_val = dplyr::n_distinct(round(value, getPMoptions("digits"))) == 1, same_type = dplyr::n_distinct(type) == 1) %>%
+    not_same <- gamlam |>
+      group_by(outeq) |>
+      summarize(same_val = dplyr::n_distinct(round(value, getPMoptions("digits"))) == 1, same_type = dplyr::n_distinct(type) == 1) |>
       filter(dplyr::if_any(dplyr::everything(), ~ .x == FALSE))
 
     if (length(not_same$outeq) > 0) {
-      ft1 <- gamlam %>%
-        select(Run, dplyr::everything()) %>%
-        purrr::set_names(c("Run", "Cycle", "Value", "Outeq", "Type")) %>%
-        mutate(Value = round2(Value)) %>%
-        flextable::flextable() %>%
-        flextable::theme_zebra() %>%
-        flextable::align_text_col(header = TRUE) %>%
-        flextable::bg(part = "header", bg = blue()) %>%
+      ft1 <- gamlam |>
+        select(Run, dplyr::everything()) |>
+        purrr::set_names(c("Run", "Cycle", "Value", "Outeq", "Type")) |>
+        mutate(Value = round2(Value)) |>
+        flextable::flextable() |>
+        flextable::theme_zebra() |>
+        flextable::align_text_col(header = TRUE) |>
+        flextable::bg(part = "header", bg = blue()) |>
         flextable::autofit()
     } else {
       ft1 <- NULL
@@ -332,8 +332,8 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
       like$AIC <- NULL
     }
 
-    df <- like %>%
-      mutate(run = objNames[1:n()]) %>%
+    df <- like |>
+      mutate(run = objNames[1:n()]) |>
       pivot_longer(
         1:2,
         names_to = "metric",
@@ -341,7 +341,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
       )
 
 
-    p3 <- plot_ly() %>%
+    p3 <- plot_ly() |>
       plotly::add_trace(
         data = df,
         x = ~metric,
@@ -356,7 +356,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
         showlegend = TRUE
       )
 
-    p3 <- p3 %>%
+    p3 <- p3 |>
       plotly::add_trace(
         data = df,
         x = ~metric,
@@ -373,7 +373,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
       )
 
 
-    p3 <- p3 %>%
+    p3 <- p3 |>
       plotly::layout(
         xaxis = list(
           title = "", # remove default axis title,
@@ -387,25 +387,25 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
 
 
     ### make table of parameter names
-    par <- purrr::map_chr(allObj, \(x) paste(names(x$final$popMean), collapse = ", ")) %>%
+    par <- purrr::map_chr(allObj, \(x) paste(names(x$final$popMean), collapse = ", ")) |>
       strsplit(",\\s*")
 
-    all_par <- par %>%
-      unlist() %>%
-      unique() %>%
+    all_par <- par |>
+      unlist() |>
+      unique() |>
       sort()
 
 
     tbl_par <- map(par, \(x){
       all_par %in% x
-    }) %>%
-      map(~ set_names(., all_par)) %>%
-      bind_rows() %>%
-      mutate(Run = objNames[1:n()]) %>%
+    }) |>
+      map(~ set_names(., all_par)) |>
+      bind_rows() |>
+      mutate(Run = objNames[1:n()]) |>
       select(Run, dplyr::everything())
 
 
-    ft2 <- tbl_par %>%
+    ft2 <- tbl_par |>
       mutate(across(-Run, \(x){
         dplyr::if_else(row_number() == 1,
           # row 1
@@ -413,17 +413,17 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
           # other rows
           ifelse(x, "\u2611\uFE0F", "\u274C")
         )
-      })) %>%
+      })) |>
       mutate(across(-Run, \(x){
         ifelse(x == "\u2611\uFE0F" & x[1] == "\u2705", "\u2705", x)
-      })) %>%
-      mutate(P = round2(t)) %>%
-      mutate(P = ifelse(stringr::str_trim(P) == "NA", "Ref", P)) %>%
-      flextable::flextable() %>%
-      flextable::set_header_labels(P = "P-value") %>%
-      flextable::theme_zebra() %>%
-      flextable::align_text_col(header = TRUE) %>%
-      flextable::bg(part = "header", bg = blue()) %>%
+      })) |>
+      mutate(P = round2(t)) |>
+      mutate(P = ifelse(stringr::str_trim(P) == "NA", "Ref", P)) |>
+      flextable::flextable() |>
+      flextable::set_header_labels(P = "P-value") |>
+      flextable::theme_zebra() |>
+      flextable::align_text_col(header = TRUE) |>
+      flextable::bg(part = "header", bg = blue()) |>
       flextable::autofit()
   } # end if plot
 
@@ -447,10 +447,10 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
     bic = purrr::map_dbl(allObj, \(x) {
       tail(x$cycle$data$objective$bic, 1)
     }),
-    popBias = sumobjBoth %>% filter(metric == "pop_bias") %>% pull(value),
-    postBias = sumobjBoth %>% filter(metric == "post_bias") %>% pull(value),
-    popImp = sumobjBoth %>% filter(metric == "pop_imp") %>% pull(value),
-    postImp = sumobjBoth %>% filter(metric == "post_imp") %>% pull(value)
+    popBias = sumobjBoth |> filter(metric == "pop_bias") |> pull(value),
+    postBias = sumobjBoth |> filter(metric == "post_bias") |> pull(value),
+    popImp = sumobjBoth |> filter(metric == "pop_imp") |> pull(value),
+    postImp = sumobjBoth |> filter(metric == "post_imp") |> pull(value)
   )
   names(results)[4] <- "-2*LL"
   row.names(results) <- 1:nobj
@@ -460,11 +460,11 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
     results$aic <- NULL
   }
 
-  op_tbl <- op %>%
+  op_tbl <- op |>
     map(\(i) {
-      i %>%
-        filter(icen == "median") %>%
-        group_by(pred.type) %>%
+      i |>
+        filter(icen == "median") |>
+        group_by(pred.type) |>
         group_map(~ {
           fit <- lm(obs ~ pred, data = .x)
           tibble(
@@ -472,15 +472,15 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
             sl = coef(fit)[2],
             r2 = summary(fit)$r.squared
           )
-        }) %>%
+        }) |>
         list_rbind()
-    }) %>%
-    set_names(objNames[1:nobj]) %>%
-    map(~ .x %>% mutate(pred.type = c("pop", "post"))) %>%
-    list_rbind(names_to = "run") %>%
+    }) |>
+    set_names(objNames[1:nobj]) |>
+    map(~ .x |> mutate(pred.type = c("pop", "post"))) |>
+    list_rbind(names_to = "run") |>
     pivot_wider(id_cols = c(run), names_from = c(pred.type), names_glue = "{pred.type}{stringr::str_to_title({.value})}", values_from = c(int, sl, r2))
 
-  results <- bind_cols(results, op_tbl %>% dplyr::select(-run))
+  results <- bind_cols(results, op_tbl |> dplyr::select(-run))
   results$pval <- t
 
 
@@ -529,7 +529,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
       p3 = p3, # likelihood comparison
       ft1 = ft1, # gamlam comparison: NULL if equal within PMoptions digits
       ft2 = ft2, # model parameter comparison
-      metric_types = sumobjPop[[1]]$pe %>% get_metric_info() %>% pluck("metric_types")
+      metric_types = sumobjPop[[1]]$pe |> get_metric_info() |> pluck("metric_types")
     )
 
 
@@ -562,8 +562,8 @@ print.PM_compare <- function(x, ...) {
   }
 
   # Convert all columns to character for uniform formatting
-  df_chr <- x %>%
-    mutate(across(where(is.double), ~ round2(.x))) %>%
+  df_chr <- x |>
+    mutate(across(where(is.double), ~ round2(.x))) |>
     mutate(across(everything(), ~ as.character(.x, stringsAsFactors = FALSE)))
 
 
@@ -603,15 +603,15 @@ print.PM_compare <- function(x, ...) {
     )
 
     # print header
-    header <- df2[1, ] %>%
-      stringr::str_replace_all(" ", "\u00A0") %>%
+    header <- df2[1, ] |>
+      stringr::str_replace_all(" ", "\u00A0") |>
       paste(collapse = "")
     cli::cli_text("{.strong {header}}")
     cli::cli_div(theme = list(span.red = list(color = "red", "font-weight" = "bold")))
 
     # replace ≥2 spaces with non-breaking spaces
     for (i in 2:nrow(df2)) {
-      cli::cli_text(paste(df2[i, ], collapse = "") %>% stringr::str_replace_all(" ", "\u00A0") %>% stringr::str_replace_all("strong\u00A0+", "strong ") %>% stringr::str_replace_all("red\u00A0+", "red "))
+      cli::cli_text(paste(df2[i, ], collapse = "") |> stringr::str_replace_all(" ", "\u00A0") |> stringr::str_replace_all("strong\u00A0+", "strong ") |> stringr::str_replace_all("red\u00A0+", "red "))
     }
     cli::cli_end()
   } else { # no highlighting
@@ -620,12 +620,12 @@ print.PM_compare <- function(x, ...) {
     df_tab <- knitr::kable(df_chr, format = "simple")
 
     # print header
-    header <- df_tab[1] %>% stringr::str_replace_all(" ", "\u00A0")
+    header <- df_tab[1] |> stringr::str_replace_all(" ", "\u00A0")
     cli::cli_text("{.strong {header}}")
 
     # print each row
     for (i in 2:length(df_tab)) {
-      cli::cli_text(df_tab[i] %>% stringr::str_replace_all(" ", "\u00A0"))
+      cli::cli_text(df_tab[i] |> stringr::str_replace_all(" ", "\u00A0"))
     }
   }
 }

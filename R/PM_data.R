@@ -275,10 +275,10 @@ PM_data <- R6::R6Class("PM_data",
           self$data[missing_args] <- NA
         }
         if (!"time" %in% arg_names) {
-          to_add <- to_add %>% dplyr::slice(rep(1, each = nrow(self$data)))
+          to_add <- to_add |> dplyr::slice(rep(1, each = nrow(self$data)))
           self$data[arg_names] <- to_add
           if (validate) {
-            self$data <- self$data %>% dplyr::select(where(~ !all(is.na(.x)))) # clean up
+            self$data <- self$data |> dplyr::select(where(~ !all(is.na(.x)))) # clean up
             self$standard_data <- private$validate(self$data, path = getwd(), dt = dt, quiet = quiet)
           } else {
             self$standard_data <- NULL
@@ -296,13 +296,13 @@ PM_data <- R6::R6Class("PM_data",
       if (!"input" %in% names(to_add) && "dose" %in% names(to_add)) {
         to_add$input <- ifelse(!is.na(to_add$dose), 1, NA)
       }
-      new_data <- dplyr::bind_rows(self$data, to_add) %>% dplyr::arrange(id, time)
+      new_data <- dplyr::bind_rows(self$data, to_add) |> dplyr::arrange(id, time)
 
 
       self$data <- new_data
       if (validate) {
-        self$data <- self$data %>%
-          dplyr::select(where(~ !all(is.na(.x)))) %>%
+        self$data <- self$data |>
+          dplyr::select(where(~ !all(is.na(.x)))) |>
           arrange(id, time, out)
         self$standard_data <- private$validate(self$data, path = getwd(), dt = dt, quiet = quiet)
       } else {
@@ -338,7 +338,7 @@ PM_data <- R6::R6Class("PM_data",
       if ("date" %in% dataNames) {
         relTime <- PMmatrixRelTime(dataObj, format = dt)
         dataObj$time <- relTime$relTime
-        dataObj <- dataObj %>% select(-date)
+        dataObj <- dataObj |> select(-date)
         msg <- c(msg, paste0("Dates and clock times converted to relative decimal times using ", attr(relTime, "dt_format"), ".\n"))
       }
 
@@ -399,26 +399,26 @@ PM_data <- R6::R6Class("PM_data",
       # expand any ADDL > 0
       # preserve original order (necessary for EVID=4)
       dataObj$row <- 1:nrow(dataObj)
-      addl_lines <- dataObj %>% filter(!is.na(addl) & addl > 0)
+      addl_lines <- dataObj |> filter(!is.na(addl) & addl > 0)
       if (nrow(addl_lines) > 0) {
-        new_lines <- addl_lines %>%
-          tidyr::uncount(addl, .remove = FALSE) %>%
-          group_by(id, time, input) %>%
-          mutate(time = ii * row_number() + time) %>%
+        new_lines <- addl_lines |>
+          tidyr::uncount(addl, .remove = FALSE) |>
+          group_by(id, time, input) |>
+          mutate(time = ii * row_number() + time) |>
           ungroup()
 
-        dataObj <- bind_rows(dataObj, new_lines) %>%
-          dplyr::arrange(id, time) %>%
+        dataObj <- bind_rows(dataObj, new_lines) |>
+          dplyr::arrange(id, time) |>
           dplyr::mutate(
             addl = ifelse(addl == -1, -1, NA),
             ii = ifelse(addl == -1, ii, NA)
-          ) %>%
+          ) |>
           select(!row)
 
         msg <- c(msg, "ADDL > 0 rows expanded.\n")
       }
-      dataObj <- dataObj %>% select(dplyr::all_of(standardNames), dplyr::all_of(covNames))
-      # dataObj <- dataObj %>% dplyr::arrange(id, time)
+      dataObj <- dataObj |> select(dplyr::all_of(standardNames), dplyr::all_of(covNames))
+      # dataObj <- dataObj |> dplyr::arrange(id, time)
 
       if (length(msg) > 1) {
         msg <- msg[-1]
@@ -430,24 +430,24 @@ PM_data <- R6::R6Class("PM_data",
       }
 
       # Assign a block number for each id, incremented at each evid == 4
-      dataObj <- dataObj %>%
-        group_by(id) %>%
-        mutate(block = cumsum(evid == 4)) %>%
-        group_by(id, block) %>%
-        arrange(time, desc(evid), .by_group = TRUE) %>%
-        ungroup() %>%
+      dataObj <- dataObj |>
+        group_by(id) |>
+        mutate(block = cumsum(evid == 4)) |>
+        group_by(id, block) |>
+        arrange(time, desc(evid), .by_group = TRUE) |>
+        ungroup() |>
         select(-block)
 
       if ("evid" %in% names(dataObj_orig)) {
-        dataObj_orig <- dataObj_orig %>%
-          group_by(id) %>%
-          mutate(block = cumsum(evid == 4)) %>%
-          group_by(id, block) %>%
-          arrange(time, desc(evid), .by_group = TRUE) %>%
-          ungroup() %>%
+        dataObj_orig <- dataObj_orig |>
+          group_by(id) |>
+          mutate(block = cumsum(evid == 4)) |>
+          group_by(id, block) |>
+          arrange(time, desc(evid), .by_group = TRUE) |>
+          ungroup() |>
           select(-block)
       } else {
-        dataObj_orig <- dataObj_orig %>% arrange(id, time, out)
+        dataObj_orig <- dataObj_orig |> arrange(id, time, out)
       }
 
 
@@ -722,8 +722,8 @@ PMmatrixRelTime <- function(
   }
 
   # calculate relative times
-  temp <- makePMmatrixBlock(temp) %>%
-    dplyr::group_by(id, block) %>%
+  temp <- makePMmatrixBlock(temp) |>
+    dplyr::group_by(id, block) |>
     dplyr::mutate(relTime = (dt - dt[1]) / lubridate::dhours(1))
 
   temp$relTime <- round(temp$relTime, 2)
@@ -1118,7 +1118,7 @@ errcheck <- function(data2, quiet, source) {
   allMiss <- names(data2)[which(apply(data2, 2, function(x) all(is.na(x))))]
   nonNumeric <- names(data2)[which(sapply(data2, function(x) !is.numeric(x)))]
   if (length(nonNumeric) > 0) {
-    nonNumeric <- nonNumeric[!nonNumeric %in% allMiss] %>% purrr::discard(~ .x %in% (c("id", "cens")))
+    nonNumeric <- nonNumeric[!nonNumeric %in% allMiss] |> purrr::discard(~ .x %in% (c("id", "cens")))
   }
   if (length(nonNumeric) > 0) { # exclude id, cens columns
     err$nonNum$msg <- "FAIL - The following columns must be all numeric."
@@ -1136,9 +1136,9 @@ errcheck <- function(data2, quiet, source) {
   }
 
   # check for columns with malformed NA values
-  mal_NA <- purrr::map(as.list(data2), ~ stringr::str_count(.x, "(?<!\\d)\\s*\\.+\\s*")) %>%
-    map(~ which(.x == 1)) %>%
-    purrr::map_vec(~ length(.x) > 0) %>%
+  mal_NA <- purrr::map(as.list(data2), ~ stringr::str_count(.x, "(?<!\\d)\\s*\\.+\\s*")) |>
+    map(~ which(.x == 1)) |>
+    purrr::map_vec(~ length(.x) > 0) |>
     which()
   if (length(mal_NA) > 0) {
     err$mal_NA$msg <- "FAIL - The following columns contain malformed NA values."
@@ -1240,10 +1240,10 @@ errfix <- function(data2, err, quiet) {
 
   # Reorder times - assume times are in correct block
   if (length(grep("FAIL", err$timeOrder$msg)) > 0) {
-    data2 <- makePMmatrixBlock(data2) %>%
-      dplyr::group_by(id, block) %>%
-      dplyr::arrange(time, .by_group = T) %>%
-      ungroup() %>%
+    data2 <- makePMmatrixBlock(data2) |>
+      dplyr::group_by(id, block) |>
+      dplyr::arrange(time, .by_group = T) |>
+      ungroup() |>
       select(-block)
 
     if (any(data2$evid == 4)) {
@@ -1275,8 +1275,8 @@ errfix <- function(data2, err, quiet) {
   # Fix malformed NA
   if (length(grep("FAIL", err$mal_NA$msg)) > 0) {
     # convert to "." then NA
-    data2 <- data2 %>%
-      mutate(across(everything(), ~ str_replace_all(.x, "(?<!\\d)\\s*\\.+\\s*", "."))) %>%
+    data2 <- data2 |>
+      mutate(across(everything(), ~ str_replace_all(.x, "(?<!\\d)\\s*\\.+\\s*", "."))) |>
       mutate(across(everything(), ~ dplyr::na_if(.x, ".")))
     report <- c(report, paste("Malformed NAs corrected."))
   }
@@ -1375,7 +1375,7 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
   }
 
   # make second table to summarize errors
-  error_summary <- errors %>% filter(!code %in% c(10, 13, 15)) # we will add these back
+  error_summary <- errors |> filter(!code %in% c(10, 13, 15)) # we will add these back
 
   # Highlight the cells with errors
   for (i in 1:nrow(errors)) {
@@ -1410,9 +1410,9 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
       rowIndex2 <- which(sapply(dplyr::pull(dat, colIndex), is.char.num)) + 1 + legacy_offset
       # find the malformed NAs as a special case and remove them (separate error below)
       # because openxlsx can't overwrite comments
-      mal_NA <- stringr::str_count(dplyr::pull(dat, colIndex), "(?<!\\d)\\s*\\.+\\s*") %>%
-        map(~ which(.x == 1)) %>%
-        purrr::map_vec(~ length(.x) > 0) %>%
+      mal_NA <- stringr::str_count(dplyr::pull(dat, colIndex), "(?<!\\d)\\s*\\.+\\s*") |>
+        map(~ which(.x == 1)) |>
+        purrr::map_vec(~ length(.x) > 0) |>
         which() + 1 + legacy_offset
       # remove any mal_NA from non-numeric
       rowIndex2 <- rowIndex2[!rowIndex2 %in% mal_NA]
@@ -1436,9 +1436,9 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
     } else if (thisErr$code == 14) {
       # malformed NA
       colIndex <- thisErr$row # because of the way the error is detected
-      rowIndex3 <- stringr::str_count(dplyr::pull(dat, colIndex), "(?<!\\d)\\s*\\.+\\s*") %>%
-        map(~ which(.x == 1)) %>%
-        purrr::map_vec(~ length(.x) > 0) %>%
+      rowIndex3 <- stringr::str_count(dplyr::pull(dat, colIndex), "(?<!\\d)\\s*\\.+\\s*") |>
+        map(~ which(.x == 1)) |>
+        purrr::map_vec(~ length(.x) > 0) |>
         which() + 1 + legacy_offset
       # highlight them
       openxlsx::addStyle(wb, sheet, errStyle3, rows = rowIndex3, cols = colIndex)
@@ -1464,8 +1464,8 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
   } # end errors for loop
 
   # Add summaries to each column with errors
-  sum_errors <- dplyr::as_tibble(table(error_summary$column, error_summary$code, dnn = c("column", "code"))) %>%
-    group_by(column) %>%
+  sum_errors <- dplyr::as_tibble(table(error_summary$column, error_summary$code, dnn = c("column", "code"))) |>
+    group_by(column) |>
     summarize(n_err = sum(n))
 
   openxlsx::addStyle(wb, sheet, errStyle4, rows = 1 + legacy_offset, cols = as.numeric(sum_errors$column))
@@ -1831,12 +1831,12 @@ plot.PM_data <- function(
   # time after dose
   if (tad) {
     dat$standard_data$time <- calcTAD(dat$standard_data)
-    dat$standard_data <- dat$standard_data %>% arrange(id, time)
+    dat$standard_data <- dat$standard_data |> arrange(id, time)
   }
 
   # filter
-  presub <- dat$standard_data %>%
-    filter(outeq %in% !!outeq, block %in% !!block, evid == 0) %>%
+  presub <- dat$standard_data |>
+    filter(outeq %in% !!outeq, block %in% !!block, evid == 0) |>
     includeExclude(include, exclude)
 
   show_block_label <- dplyr::n_distinct(presub$block) > 1
@@ -1882,7 +1882,7 @@ plot.PM_data <- function(
   }
 
   # ---- combined display label (legend / hover) ----------------------------
-  presub <- presub %>%
+  presub <- presub |>
     mutate(group = {
       mapply(
         function(cv, oq, blk) {
@@ -1892,7 +1892,7 @@ plot.PM_data <- function(
         }, cov_group, outeq_group,
         if (show_block_label) paste0("Block ", presub$block) else ""
       )
-    }) %>%
+    }) |>
     ungroup()
 
   # add cens column if missing
@@ -1901,9 +1901,9 @@ plot.PM_data <- function(
   }
 
   # select relevant columns
-  sub <- presub %>%
-    select(id, time, out, cens, outeq, group, cov_group, outeq_group) %>%
-    mutate(id = as.character(id)) %>%
+  sub <- presub |>
+    select(id, time, out, cens, outeq, group, cov_group, outeq_group) |>
+    mutate(id = as.character(id)) |>
     ungroup()
   sub$group <- factor(sub$group)
 
@@ -1911,7 +1911,7 @@ plot.PM_data <- function(
   sub$src <- "obs"
 
   # remove missing
-  sub <- sub %>% filter(out != -99)
+  sub <- sub |> filter(out != -99)
 
 
   # now process pred data if there
@@ -1973,10 +1973,10 @@ plot.PM_data <- function(
 
     # filter and group by id
     if (!is.null(pred[[1]])) { # if pred not reset to null b/c of invalid pred[[1]]
-      predsub <- pred[[1]] %>%
-        filter(outeq %in% !!outeq, block %in% !!block, icen == !!icen) %>%
-        mutate(cens = "none") %>% # always none for predictions
-        includeExclude(include, exclude) %>%
+      predsub <- pred[[1]] |>
+        filter(outeq %in% !!outeq, block %in% !!block, icen == !!icen) |>
+        mutate(cens = "none") |> # always none for predictions
+        includeExclude(include, exclude) |>
         group_by(id)
 
       # time after dose
@@ -1985,16 +1985,16 @@ plot.PM_data <- function(
       }
 
       # select relevant columns and filter missing
-      predsub <- predsub %>%
-        select(id, time, out = pred, cens, outeq) %>%
-        mutate(id = as.character(id)) %>%
+      predsub <- predsub |>
+        select(id, time, out = pred, cens, outeq) |>
+        mutate(id = as.character(id)) |>
         filter(out != -99 & (cens == "none" | cens == 0))
 
 
       # add group, cov_group, outeq_group from obs lookup
       lookup <- dplyr::distinct(sub, id, outeq, group, cov_group, outeq_group)
-      predsub <- predsub %>%
-        dplyr::left_join(lookup, by = c("id", "outeq")) %>%
+      predsub <- predsub |>
+        dplyr::left_join(lookup, by = c("id", "outeq")) |>
         mutate(group = factor(stringr::str_replace_all(group, "Obs", "Pred")))
 
       # add identifier
@@ -2011,7 +2011,7 @@ plot.PM_data <- function(
 
   dataPlot <- function(allsub, overlay, includePred) {
     # ---- Color palette: driven by combined display groups --------------------
-    obs_only <- allsub %>% filter(src == "obs")
+    obs_only <- allsub |> filter(src == "obs")
     group_levels <- unique(as.character(obs_only$group))
     if (length(group_levels) == 0) {
       group_levels <- ""
@@ -2048,15 +2048,15 @@ plot.PM_data <- function(
 
     # ---- Assign per-row color and symbol ------------------------------------
     IDstring <- ifelse(overlay, "ID: {id}\n", "")
-    allsub <- allsub %>%
+    allsub <- allsub |>
       mutate(
         base_color = color_palette[match(as.character(group), group_levels)],
         base_symbol = shape_list[match(as.character(group), group_levels)]
-      ) %>%
+      ) |>
       mutate(
         base_color = dplyr::coalesce(base_color, color_palette[[1]]),
         base_symbol = dplyr::coalesce(base_symbol, shape_list[[1]])
-      ) %>%
+      ) |>
       mutate(
         color = dplyr::case_when(
           src == "obs" & (cens == "bloq" | cens == "1") ~ opposite_color(base_color, degrees = 90),
@@ -2074,20 +2074,20 @@ plot.PM_data <- function(
           cens == "aloq" | cens == "-1" ~ glue::glue(IDstring, "Time: {round2(time)}\nAULQ: {round2(out)}\n{group}"),
           .default = glue::glue(IDstring, "Time: {round2(time)}\nPred: {round2(out)}\n{group}")
         )
-      ) %>%
+      ) |>
       ungroup()
 
     # if ID is numeric, arrange by numeric ID
     if (overlay && !any(is.na(suppressWarnings(as.numeric(allsub$id))))) {
-      allsub <- allsub %>%
-        mutate(id = as.numeric(id)) %>%
+      allsub <- allsub |>
+        mutate(id = as.numeric(id)) |>
         arrange(id, time)
     }
 
 
     seen_groups <- NULL
     traces <- if (overlay) {
-      allsub %>% dplyr::group_split(id)
+      allsub |> dplyr::group_split(id)
     } else {
       list(allsub)
     }
@@ -2098,8 +2098,8 @@ plot.PM_data <- function(
       trace_data <- traces[[i]]
       this_id <- ifelse(overlay, trace_data$id[1], 1)
 
-      obs_split <- trace_data %>%
-        filter(src == "obs") %>%
+      obs_split <- trace_data |>
+        filter(src == "obs") |>
         arrange(
           group,
           dplyr::case_when(
@@ -2107,7 +2107,7 @@ plot.PM_data <- function(
             .default = 1L
           ),
           time
-        ) %>%
+        ) |>
         dplyr::group_split(group)
 
       for (j in seq_along(obs_split)) {
@@ -2143,9 +2143,9 @@ plot.PM_data <- function(
 
       # add joining lines if needed
       if (join$width > 0) {
-        trace_split <- trace_data %>%
-          filter(src == "obs") %>%
-          arrange(group, time) %>%
+        trace_split <- trace_data |>
+          filter(src == "obs") |>
+          arrange(group, time) |>
           dplyr::group_split(group)
         for (j in seq_along(trace_split)) {
           this_color <- trace_split[[j]]$base_color[1]
@@ -2168,9 +2168,9 @@ plot.PM_data <- function(
       }
 
       if (includePred) {
-        trace_split <- trace_data %>%
-          filter(src == "pred") %>%
-          arrange(group, time) %>%
+        trace_split <- trace_data |>
+          filter(src == "pred") |>
+          arrange(group, time) |>
           dplyr::group_split(group)
         for (j in seq_along(trace_split)) {
           this_color <- trace_split[[j]]$base_color[1]
@@ -2197,7 +2197,7 @@ plot.PM_data <- function(
       }
     }
 
-    p <- p %>% plotly::layout(
+    p <- p |> plotly::layout(
       xaxis = layout$xaxis,
       yaxis = layout$yaxis,
       title = layout$title,
@@ -2214,7 +2214,7 @@ plot.PM_data <- function(
   # if pred present, need to combine data and pred for proper display
 
   if (!is.null(predsub)) {
-    allsub <- dplyr::bind_rows(sub, predsub) %>% dplyr::arrange(id, time)
+    allsub <- dplyr::bind_rows(sub, predsub) |> dplyr::arrange(id, time)
     includePred <- TRUE
   } else {
     allsub <- sub
@@ -2224,7 +2224,7 @@ plot.PM_data <- function(
 
   # call the plot function and display appropriately
   if (overlay) {
-    allsub <- allsub %>% dplyr::group_by(id)
+    allsub <- allsub |> dplyr::group_by(id)
     p <- dataPlot(allsub, overlay = TRUE, includePred)
 
     if (print) print(click_plot(p, highlight_color = highlight_color))
@@ -2235,11 +2235,11 @@ plot.PM_data <- function(
       cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
     }
 
-    sub_split <- allsub %>%
-      nest(data = -id) %>%
+    sub_split <- allsub |>
+      nest(data = -id) |>
       mutate(panel = trelliscopejs::map_plot(data, \(x) dataPlot(x, overlay = FALSE, includePred = includePred)))
-    p <- sub_split %>%
-      ungroup() %>%
+    p <- sub_split |>
+      ungroup() |>
       trelliscopejs::trelliscope(name = "Data", nrow = nrows, ncol = ncols)
     if (print) print(p)
   }
@@ -2264,8 +2264,8 @@ plot.PM_data <- function(
 #' @examples
 #' \dontrun{
 #' # filter then plot the standard_data data frame from a PM_data object
-#' dataEx$standard_data %>%
-#'   filter(gender == 0) %>%
+#' dataEx$standard_data |>
+#'   filter(gender == 0) |>
 #'   plot()
 #' }
 #'
@@ -2513,7 +2513,7 @@ PMwriteMatrix <- function(
   }
   # remove the block column if added during run
   if ("block" %in% names(data)) {
-    data <- data %>% dplyr::select(-block)
+    data <- data |> dplyr::select(-block)
   }
 
   versionNum <- as.numeric(substr(version, 5, 7)) + switch(substr(version, 1, 3),

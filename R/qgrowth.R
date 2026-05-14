@@ -45,22 +45,22 @@ qgrowth <- function(sex = "B", agemos = (seq(0, 18) * 12), percentile = 50) {
       dplyr::join_by(sex, percentile)
     )
 
-  sub2 <- tidyr::crossing(agemos, sex, percentile) %>% # all combinations
-    dplyr::mutate(agecat = ifelse(agemos <= 36, "0-36 mos", "2-18 years")) %>% # categorize age
-    dplyr::inner_join(sub1, dplyr::join_by(agecat, sex, percentile), relationship = "many-to-many") %>% # lookup combinations in CDC table
-    dplyr::group_by(agemos, sex, percentile, CHART) %>%
-    dplyr::filter(KNOT <= agemos) %>%
-    dplyr::slice_tail(n = 1) %>% # choose the maximum KNOT which is < agemos for each combination
-    dplyr::ungroup() %>%
-    dplyr::group_by(CHART) %>%
-    dplyr::rowwise() %>%
-    dplyr::mutate(corr_age = agemos - KNOT, measure = A + B1 * corr_age + B2 * corr_age**2 + B3 * corr_age**3) %>% # calculate appropriate measure
-    dplyr::ungroup() %>%
-    dplyr::mutate(CHART = stringr::str_replace(CHART, "length", "ht")) %>% # tidy labels
-    dplyr::mutate(CHART = stringr::str_replace(CHART, stringr::regex("\\s+x age"), "")) %>%
-    dplyr::select(agemos, sex, percentile, CHART, measure) %>%
-    tidyr::pivot_wider(id_cols = 1:3, names_from = CHART, values_from = measure) %>% # reform the data frame
-    dplyr::mutate(ageyrs = agemos / 12, bmi = .data$wt / (.data$ht / 100)**2) %>% # add age in years and BMI
+  sub2 <- tidyr::crossing(agemos, sex, percentile) |> # all combinations
+    dplyr::mutate(agecat = ifelse(agemos <= 36, "0-36 mos", "2-18 years")) |> # categorize age
+    dplyr::inner_join(sub1, dplyr::join_by(agecat, sex, percentile), relationship = "many-to-many") |> # lookup combinations in CDC table
+    dplyr::group_by(agemos, sex, percentile, CHART) |>
+    dplyr::filter(KNOT <= agemos) |>
+    dplyr::slice_tail(n = 1) |> # choose the maximum KNOT which is < agemos for each combination
+    dplyr::ungroup() |>
+    dplyr::group_by(CHART) |>
+    dplyr::rowwise() |>
+    dplyr::mutate(corr_age = agemos - KNOT, measure = A + B1 * corr_age + B2 * corr_age**2 + B3 * corr_age**3) |> # calculate appropriate measure
+    dplyr::ungroup() |>
+    dplyr::mutate(CHART = stringr::str_replace(CHART, "length", "ht")) |> # tidy labels
+    dplyr::mutate(CHART = stringr::str_replace(CHART, stringr::regex("\\s+x age"), "")) |>
+    dplyr::select(agemos, sex, percentile, CHART, measure) |>
+    tidyr::pivot_wider(id_cols = 1:3, names_from = CHART, values_from = measure) |> # reform the data frame
+    dplyr::mutate(ageyrs = agemos / 12, bmi = .data$wt / (.data$ht / 100)**2) |> # add age in years and BMI
     dplyr::select(dplyr::all_of(c("agemos", "ageyrs", "wt", "ht", "bmi", "sex", "percentile"))) # final form
 
   return(sub2)
@@ -132,7 +132,7 @@ zBMI <- function(agemos, sex, bmi, wt, ht, data = "CDC") {
     bmi <- wt / (ht / 100)**2
   }
 
-  this_bmi <- all_bmi %>% dplyr::filter(Agemos == agemos & Sex == sex_var)
+  this_bmi <- all_bmi |> dplyr::filter(Agemos == agemos & Sex == sex_var)
   z_bmi <- ((bmi / this_bmi$M)^this_bmi$L - 1) / (this_bmi$L * this_bmi$S) # z score
 
   # find values for modified z score to correct for extremes

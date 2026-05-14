@@ -29,7 +29,7 @@
 #' @param block `r template("block")`
 #' @param method Default is "linear" for AUC trapezoidal calculation.  Any other value will result in
 #' linear up, log down.
-#' @param addZero Boolean to add a zero concentration at time 0. Default is \code{FALSE}.
+#' @param add_zero Boolean to add a zero concentration at time 0. Default is \code{FALSE}.
 #' @return A dataframe of class *PMauc*, which has 2 columns:
 #' * `group` - Subject identification, usually "id"
 #' * tau - AUC from `start` to `end`
@@ -56,7 +56,7 @@ make_AUC <- function(
   icen = "median",
   outeq = 1, block = 1,
   method = "linear",
-  addZero = F
+  add_zero = FALSE
 ) {
   # handle objects
   if (is.null(data)) {
@@ -77,17 +77,17 @@ make_AUC <- function(
     data2 <- switch(data_class,
       data$obs, # PM_sim_data
       data$obs, # PM_sim
-      data %>% mutate(out = obs), # PM_op_data
-      data$data %>% mutate(out = obs), # PM_op
-      data %>% mutate(out = pred), # PM_pop_data
-      data$data %>% mutate(out = pred), # PM_pop
-      data %>% mutate(out = pred), # PM_post_data
-      data$data %>% mutate(out = pred), # PM_post
-      data %>%
-        makePMmatrixBlock() %>%
+      data |> mutate(out = obs), # PM_op_data
+      data$data |> mutate(out = obs), # PM_op
+      data |> mutate(out = pred), # PM_pop_data
+      data$data |> mutate(out = pred), # PM_pop
+      data |> mutate(out = pred), # PM_post_data
+      data$data |> mutate(out = pred), # PM_post
+      data |>
+        makePMmatrixBlock() |>
         filter(!is.na(out)), # PM_data_data
-      data$standard_data %>%
-        makePMmatrixBlock() %>%
+      data$standard_data |>
+        makePMmatrixBlock() |>
         filter(!is.na(out)) # PM_data
     )
     group <- "id"
@@ -96,20 +96,17 @@ make_AUC <- function(
       cli::cli_abort(c("x" = "Please supply a formula of form {.code out~time} for objects other than class {.cls PM_sim}, {.cls PM_op}, {.cls PM_pop}, {.cls PM_post}, or {.cls PM_data}."))
     }
 
-    x.name <- all.vars(formula[[3]])[1]
-    y.name <- all.vars(formula[[2]])
+    x_name <- all.vars(formula[[3]])[1]
+    y_name <- all.vars(formula[[2]])
     group <- all.vars(formula[[3]])[2]
     if (is.na(group)) group <- "id" # default group is id
-
-    # y.name <- as.character(attr(terms(formula), "variables")[2])
-    # x.name <- as.character(attr(terms(formula), "variables")[3])
-    if (length(grep(y.name, names(data))) == 0) {
-      cli::cli_abort("{.var y.name} is not a variable in the data.")
+    if (length(grep(y_name, names(data))) == 0) {
+      cli::cli_abort("{.var y_name} is not a variable in the data.")
     }
-    if (length(grep(x.name, names(data))) == 0) {
-      cli::cli_abort("{.var x.name} is not a variable in the data.")
+    if (length(grep(x_name, names(data))) == 0) {
+      cli::cli_abort("{.var x_name} is not a variable in the data.")
     }
-    data2 <- data %>% dplyr::mutate(time = get(x.name), out = get(y.name))
+    data2 <- data |> dplyr::mutate(time = get(x_name), out = get(y_name))
   }
 
 
@@ -125,7 +122,7 @@ make_AUC <- function(
   if (!"nsim" %in% group && "nsim" %in% names(data2)) group_vars <- c(group_vars, "nsim")
   group_syms <- rlang::syms(group_vars)
   # filter to create object to pass to auc calculation
-  data3 <- data2 %>%
+  data3 <- data2 |>
     dplyr::filter(
       outeq == !!outeq,
       block == !!block,
@@ -134,8 +131,8 @@ make_AUC <- function(
       time >= start & time <= end,
       icen == !!icen,
       !is.na(out)
-    ) %>%
-    dplyr::select(dplyr::all_of(c(group_vars, "time", "out"))) %>%
+    ) |>
+    dplyr::select(dplyr::all_of(c(group_vars, "time", "out"))) |>
     dplyr::group_by(!!!group_syms)
 
   if (nrow(data3) < 2) {
@@ -144,32 +141,34 @@ make_AUC <- function(
 
 
   # auc function
-  get_auc <- function(df, addZero, method) {
-    if (addZero & !any(df$time == 0)) df <- rbind(data.frame(time = 0, out = 0), df)
-    N <- nrow(df)
-    if (N <= 1) {
+  get_auc <- function(df, add_zero, method) {
+    if (add_zero && !any(df$time == 0)) df <- rbind(data.frame(time = 0, out = 0), df)
+    n_row <- nrow(df)
+    if (n_row <= 1) {
       return(data.frame(NA, NA))
     }
     # (t_i - t_i-1)
-    diffTimes <- diff(df$time)
+    diff_times <- diff(df$time)
     # (C_i + C_i-1)
-    sumConc <- df$out[-1] + df$out[-N]
+    sum_conc <- df$out[-1] + df$out[-n_row]
     # (C_i - C_i-1)
-    diffConc <- diff(df$out)
+    diff_conc <- diff(df$out)
     # log(C_i/C_i-1)
-    logConc <- log(df$out[-1] / df$out[-N])
+    log_conc <- log(df$out[-1] / df$out[-n_row])
     # tmax
     tmax <- which(df$out == max(df$out))
 
     # auc
     if (method == "linear") {
-      auc <- 0.5 * sum(diffTimes * sumConc)
+      auc <- 0.5 * sum(diff_times * sum_conc)
     } else {
       auc <- sum(
         # linear up
-        0.5 * sum(diffTimes[1:tmax] * sumConc[1:tmax]),
+        0.5 * sum(diff_times[1:tmax] * sum_conc[1:tmax]),
         # log down
-        sum(diffTimes[(tmax + 1):(N - 1)] * diffConc[(tmax + 1):(N - 1)] / logConc[(tmax + 1):(N - 1)])
+        sum(diff_times[(tmax + 1):(n_row - 1)] *
+              diff_conc[(tmax + 1):(n_row - 1)] /
+              log_conc[(tmax + 1):(n_row - 1)])
       )
     }
 
@@ -177,22 +176,22 @@ make_AUC <- function(
   }
 
   # calculate AUC
-  AUCdf <- tidyr::nest(data3, pk = -dplyr::all_of(group_vars)) %>%
-    dplyr::mutate(tau = sapply(pk, get_auc, addZero, method)) %>%
+  auc_df <- tidyr::nest(data3, pk = -dplyr::all_of(group_vars)) |>
+    dplyr::mutate(tau = sapply(pk, get_auc, add_zero, method)) |>
     dplyr::select(dplyr::all_of(group_vars), tau)
 
-  # Reorder AUCdf to match the order of id (or group) in the input data
+  # Reorder auc_df to match the order of id (or group) in the input data
   # Only applies if group is present in both
-  if (group %in% names(AUCdf) && group %in% names(data2)) {
+  if (group %in% names(auc_df) && group %in% names(data2)) {
     id_order <- unique(data2[[group]])
-    group_factor <- factor(AUCdf[[group]], levels = id_order)
-    if ("nsim" %in% names(AUCdf)) {
-      AUCdf <- AUCdf[order(group_factor, AUCdf$nsim), , drop = FALSE]
+    group_factor <- factor(auc_df[[group]], levels = id_order)
+    if ("nsim" %in% names(auc_df)) {
+      auc_df <- auc_df[order(group_factor, auc_df$nsim), , drop = FALSE]
     } else {
-      AUCdf <- AUCdf[order(group_factor), , drop = FALSE]
+      auc_df <- auc_df[order(group_factor), , drop = FALSE]
     }
   }
 
-  class(AUCdf) <- c("PMauc", class(AUCdf))
-  return(AUCdf)
+  class(auc_df) <- c("PMauc", class(auc_df))
+  return(auc_df)
 }
