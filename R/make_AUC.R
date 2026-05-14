@@ -100,10 +100,10 @@ make_AUC <- function(
     y_name <- all.vars(formula[[2]])
     group <- all.vars(formula[[3]])[2]
     if (is.na(group)) group <- "id" # default group is id
-    if (length(grep(y_name, names(data))) == 0) {
+    if (!y_name %in% names(data)) {
       cli::cli_abort("{.var y_name} is not a variable in the data.")
     }
-    if (length(grep(x_name, names(data))) == 0) {
+    if (!x_name %in% names(data)) {
       cli::cli_abort("{.var x_name} is not a variable in the data.")
     }
     data2 <- data |> dplyr::mutate(time = get(x_name), out = get(y_name))
@@ -142,10 +142,11 @@ make_AUC <- function(
 
   # auc function
   get_auc <- function(df, addZero, method) {
+    df <- df[order(df$time), ]
     if (addZero && !any(df$time == 0)) df <- rbind(data.frame(time = 0, out = 0), df)
     n_row <- nrow(df)
     if (n_row <= 1) {
-      return(data.frame(NA, NA))
+      return(NA_real_)
     }
     # (t_i - t_i-1)
     diff_times <- diff(df$time)
@@ -155,20 +156,24 @@ make_AUC <- function(
     diff_conc <- diff(df$out)
     # log(C_i/C_i-1)
     log_conc <- log(df$out[-1] / df$out[-n_row])
-    # tmax
-    tmax <- which(df$out == max(df$out))
+    # tmax (first occurrence if tied)
+    tmax <- which.max(df$out)
 
     # auc
     if (method == "linear") {
       auc <- 0.5 * sum(diff_times * sum_conc)
     } else {
+      up_idx <- seq_len(min(tmax, n_row - 1))
+      down_idx <- if (tmax < n_row - 1) seq.int(tmax + 1L, n_row - 1L) else integer(0)
       auc <- sum(
         # linear up
-        0.5 * sum(diff_times[1:tmax] * sum_conc[1:tmax]),
-        # log down
-        sum(diff_times[(tmax + 1):(n_row - 1)] *
-              diff_conc[(tmax + 1):(n_row - 1)] /
-              log_conc[(tmax + 1):(n_row - 1)])
+        0.5 * sum(diff_times[up_idx] * sum_conc[up_idx]),
+        # log down (empty when tmax is at or past last interval)
+        if (length(down_idx) > 0L) {
+          sum(diff_times[down_idx] * diff_conc[down_idx] / log_conc[down_idx])
+        } else {
+          0
+        }
       )
     }
 
