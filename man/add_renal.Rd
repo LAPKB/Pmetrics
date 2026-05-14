@@ -29,7 +29,7 @@ add_renal(
 \item "mdrd"
 \item "ckd-epi" or "ckd"
 \item "schwartz"
-For the fuller versions, Only the first 4 letters are required
+For the fuller versions, Only the first 3 letters are required
 }}
 
 \item{id}{A character vector with the name
@@ -52,7 +52,7 @@ The default is "age". Values must be in \strong{years}.}
 Male should be 1 and female should be 0. The default is "male".}
 
 \item{scr}{A character vector with the name of the serum creatinine column in \code{x}.
-Default units are \strong{mg/dL}, unless \code{SI = TRUE} below. The the default name is "scr".}
+Default units are \strong{mg/dL}, unless \code{SI = TRUE} below. The default name is "scr".}
 
 \item{bun}{A character vector with the name of the blood urea nitrogen column in \code{x}.
 Default units are \strong{mg/dL}, unless \code{SI = TRUE} below. Default name is "bun". Optional for the Schwartz method.}
@@ -124,7 +124,7 @@ no longer required in the 2021 version used here.
 \item The \strong{Schwartz} equation estimates GFR in children. The equation used depends on which covariates
 are included in the data.
 \itemize{
-\item height and serum creatinine: \eqn{eGFR = 41.3 * height/scr} (updated Scwartz equation)
+\item height and serum creatinine: \eqn{eGFR = 41.3 * height/scr} (updated Schwartz equation)
 \item height, serum creatinine, and cystatin C: \eqn{eGFR = 41.6 * (height/scr)^{0.599} * (1.8/cysC)^{0.317}} (Equation 1a)
 \item height, serum creatinine, and BUN: \eqn{eGFR = 40.7 * (height/scr)^{0.640} * (30/BUN)^{0.202}} (Equation 1b)
 \item height, serum creatinine, cystatin C, and BUN: \eqn{eGFR = 41.1 * (height/scr)^{0.510} * (1.8/cysC)^{0.272} * (30/BUN)^{0.171}} (Equation II)

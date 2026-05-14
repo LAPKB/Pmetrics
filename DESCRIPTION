@@ -46,7 +46,6 @@ Imports:
     knitr,
     lifecycle,
     lubridate,
-    magrittr,
     MASS,
     mclust,
     npde,
