@@ -59,6 +59,7 @@ jobs:
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          extra-repositories: https://lapkb.r-universe.dev
           extra-packages: any::rcmdcheck, any::roxygen2
           needs: check
         continue-on-error: true
@@ -68,6 +69,7 @@ jobs:
         if: steps.install-deps.outcome == 'failure'
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          extra-repositories: https://lapkb.r-universe.dev
           extra-packages: any::rcmdcheck, any::roxygen2
           needs: check
 
