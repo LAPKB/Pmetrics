@@ -45,7 +45,7 @@
 #'   - Multiply by 1.1018 if female.
 #' * The **Schwartz** equation estimates GFR in children. The equation used depends on which covariates
 #' are included in the data.
-#'   - height and serum creatinine: \eqn{eGFR = 41.3 * height/scr} (updated Scwartz equation)
+#'   - height and serum creatinine: \eqn{eGFR = 41.3 * height/scr} (updated Schwartz equation)
 #'   - height, serum creatinine, and cystatin C: \eqn{eGFR = 41.6 * (height/scr)^{0.599} * (1.8/cysC)^{0.317}} (Equation 1a)
 #'   - height, serum creatinine, and BUN: \eqn{eGFR = 40.7 * (height/scr)^{0.640} * (30/BUN)^{0.202}} (Equation 1b)
 #'   - height, serum creatinine, cystatin C, and BUN: \eqn{eGFR = 41.1 * (height/scr)^{0.510} * (1.8/cysC)^{0.272} * (30/BUN)^{0.171}} (Equation II)
@@ -60,7 +60,7 @@
 #' * "mdrd"
 #' * "ckd-epi" or "ckd"
 #' * "schwartz"
-#' For the fuller versions, Only the first 4 letters are required
+#' For the fuller versions, Only the first 3 letters are required
 #' @param id A character vector with the name
 #'  of the id column in `x`. The default is "id".
 #' @param wt A character vector with the name of the weight
@@ -75,7 +75,7 @@
 #' @param black A character vector with the name of a column defining black race in `x`.
 #' Male should be 1 and female should be 0. The default is "male".
 #' @param scr A character vector with the name of the serum creatinine column in `x`.
-#' Default units are **mg/dL**, unless `SI = TRUE` below. The the default name is "scr".
+#' Default units are **mg/dL**, unless `SI = TRUE` below. The default name is "scr".
 #' @param bun A character vector with the name of the blood urea nitrogen column in `x`.
 #' Default units are **mg/dL**, unless `SI = TRUE` below. Default name is "bun". Optional for the Schwartz method.
 #' @param cysC A character vector with the name of the cystatin C column in `x`.
@@ -109,7 +109,7 @@ add_renal <- function(x, method, id = "id", wt = "wt", ht = "ht", male = "male",
   if (method_key == "unknown") {
     cli::cli_abort(c(
       "x" = "Please provide a valid method.",
-      " " = "Valid methods are at least the first three letters of: jelliffe, cockcroft-gault (or just cg), mdrd, ckd-epi, or schwartz."
+      " " = "Valid methods are at least the first three letters of: jelliffe (jel), cockcroft-gault (coc or just cg), mdrd (mdr), ckd-epi (ckd), or schwartz (sch)."
     ))
   }
 
@@ -118,7 +118,7 @@ add_renal <- function(x, method, id = "id", wt = "wt", ht = "ht", male = "male",
   req_cols <- switch(method_key,
     jel = c("id", "wt", "male", "age", "scr"),
     cg = c("id", "wt", "male", "age", "scr"),
-    mdrd = c("id", "male", "age", "scr", "black"),
+    mdr = c("id", "male", "age", "scr", "black"),
     ckd = c("id", "male", "age", "scr"),
     sch = c("id", "ht", "scr"),
   )

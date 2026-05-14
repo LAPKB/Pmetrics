@@ -51,7 +51,6 @@ test_that("make_AUC works for NPex PM_result object components", {
   
   expect_equal(auc_op_obj, auc_op_data)
   
-  expect_equal(auc_op_obj, auc_op_data)
   expect_equal(auc_pop_obj, auc_pop_data)
   expect_equal(auc_post_obj, auc_post_data)
   

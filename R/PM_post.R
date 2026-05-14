@@ -449,7 +449,7 @@ plot.PM_post <- function(
     if (!requireNamespace("trelliscopejs", quietly = TRUE)) {
       cli::cli_abort(c("x" = "Package {.pkg trelliscopejs} required to plot when {.code overlay = FALSE}."))
     }
-    sub_split <- x |>
+    sub_split <- sub |>
       nest(data = -id) |>
       mutate(panel = trelliscopejs::map_plot(data, \(x) dataPlot(x, overlay = FALSE)))
     p <- sub_split |>

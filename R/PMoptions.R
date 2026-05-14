@@ -257,7 +257,7 @@ setPMoptions <- function(launch.app = TRUE) {
                   ),
                   choices = c(
                     "Interactive (plotly)" = "plotly",
-                    "Static (ggplot2)" = "ggplot2"
+                    "Static (ggplot2)" = "ggplot"
                   ),
                   selected = "plotly"
                 )
