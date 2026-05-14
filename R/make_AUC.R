@@ -29,7 +29,7 @@
 #' @param block `r template("block")`
 #' @param method Default is "linear" for AUC trapezoidal calculation.  Any other value will result in
 #' linear up, log down.
-#' @param add_zero Boolean to add a zero concentration at time 0. Default is \code{FALSE}.
+#' @param addZero Boolean to add a zero concentration at time 0. Default is \code{FALSE}.
 #' @return A dataframe of class *PMauc*, which has 2 columns:
 #' * `group` - Subject identification, usually "id"
 #' * tau - AUC from `start` to `end`
@@ -56,7 +56,7 @@ make_AUC <- function(
   icen = "median",
   outeq = 1, block = 1,
   method = "linear",
-  add_zero = FALSE
+  addZero = FALSE
 ) {
   # handle objects
   if (is.null(data)) {
@@ -142,7 +142,7 @@ make_AUC <- function(
 
   # auc function
   get_auc <- function(df, add_zero, method) {
-    if (add_zero && !any(df$time == 0)) df <- rbind(data.frame(time = 0, out = 0), df)
+    if (addZero && !any(df$time == 0)) df <- rbind(data.frame(time = 0, out = 0), df)
     n_row <- nrow(df)
     if (n_row <= 1) {
       return(data.frame(NA, NA))

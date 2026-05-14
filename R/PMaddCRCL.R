@@ -87,7 +87,7 @@
 #' @author Michael Neely
 #' @export
 
-add_renal <- function(x, method, id = "id", wt = "wt", ht = "ht", male = "male", age = "age", black = "black", scr = "scr", bun = "bun", cysC = "cysC", SI = F) {
+add_renal <- function(x, method, id = "id", wt = "wt", ht = "ht", male = "male", age = "age", black = "black", scr = "scr", bun = "bun", cysC = "cysC", SI = FALSE) {
   if (!inherits(x, "PM_data")) {
     cli::cli_abort(c("x" = "Please supply a PM_data object."))
   }
@@ -113,6 +113,8 @@ add_renal <- function(x, method, id = "id", wt = "wt", ht = "ht", male = "male",
     ))
   }
 
+  id_sym <- rlang::sym(id)
+
   req_cols <- switch(method_key,
     jel = c("id", "wt", "male", "age", "scr"),
     cg = c("id", "wt", "male", "age", "scr"),
@@ -121,7 +123,7 @@ add_renal <- function(x, method, id = "id", wt = "wt", ht = "ht", male = "male",
     sch = c("id", "ht", "scr"),
   )
 
-  matched_names <- purrr::map_chr(req_cols, \(x){
+  matched_names <- purrr::map_chr(req_cols, \(x) {
     get(x)
   })
 
@@ -132,10 +134,11 @@ add_renal <- function(x, method, id = "id", wt = "wt", ht = "ht", male = "male",
 
 
   # Interpolate missing values for required columns
+  interpolate_cols <- setdiff(matched_names, id)
   mdata <- mdata |>
-    group_by(!!id) |>
+    group_by(!!id_sym) |>
     mutate(across(
-      all_of(matched_names),
+      all_of(interpolate_cols),
       ~ {
         idx <- which(!is.na(.x))
         if (length(idx) == 0) {
@@ -150,34 +153,36 @@ add_renal <- function(x, method, id = "id", wt = "wt", ht = "ht", male = "male",
         )$y
       }
     )) |>
-    ungroup() |>
-    select(-last_col())
+    ungroup()
 
   # Define necessary symbols
 
-  # all need these two
-  id_sym <- sym(id)
-  scr_sym <- sym(scr)
+  # all need this symbol
+  scr_sym <- rlang::sym(scr)
 
   if (method_key %in% c("jel", "cg", "mdr", "ckd")) {
-    male_sym <- sym(male)
-    age_sym <- sym(age)
+    male_sym <- rlang::sym(male)
+    age_sym <- rlang::sym(age)
   }
   if (method_key %in% c("jel", "cg")) {
-    wt_sym <- sym(wt)
+    wt_sym <- rlang::sym(wt)
   }
   if (method_key == "mdr") {
-    black_sym <- sym(black)
+    black_sym <- rlang::sym(black)
   }
   if (method_key == "sch") {
-    ht_sym <- sym(ht)
+    ht_sym <- rlang::sym(ht)
   }
 
   if (SI) {
-    mdata <- mdata |> mutate(
-      !!scr_sym := !!scr_sym / 88.4,
-      !!bun_sym := !!bun_sym * 2.8
-    ) # convert
+    mdata <- mdata |>
+      mutate(!!scr_sym := !!scr_sym / 88.4)
+
+    if (bun %in% names(mdata)) {
+      bun_sym <- rlang::sym(bun)
+      mdata <- mdata |>
+        mutate(!!bun_sym := !!bun_sym * 2.8)
+    }
   }
 
 
@@ -198,7 +203,11 @@ add_renal <- function(x, method, id = "id", wt = "wt", ht = "ht", male = "male",
         ESS_cor = ESS * (1.035 - 0.0337 * scrAve),
         time1 = lag(time, default = first(time)),
         time2 = time,
-        E = ESS_cor - 4 * !!wt_sym * (Scr2 - Scr1) / (time2 - time1),
+        E = ifelse(
+          time2 == time1,
+          NA_real_,
+          ESS_cor - 4 * !!wt_sym * (Scr2 - Scr1) / (time2 - time1)
+        ),
         crcl_jelliffe = E / (14.4 * scrAve)
       ) |>
       select(-Scr1, -Scr2, -scrAve, -ESS, -ESS_cor, -time1, -time2, -E) |>
@@ -217,7 +226,7 @@ add_renal <- function(x, method, id = "id", wt = "wt", ht = "ht", male = "male",
   if (method_key == "mdr") {
     mdata <- mdata |>
       mutate(gfr_mdrd = 175 * (!!scr_sym)^-1.154 * (!!age_sym)^-0.203) |>
-      mutate(gfr_mdrd = ifelse(!!black_sym), gfr_mdrd * 1.212, crcl)
+      mutate(gfr_mdrd = ifelse(!!black_sym == 1, gfr_mdrd * 1.212, gfr_mdrd))
   }
 
   # CKD-EPI method
@@ -225,52 +234,50 @@ add_renal <- function(x, method, id = "id", wt = "wt", ht = "ht", male = "male",
     mdata <- mdata |>
       mutate(gfr_ckd = ifelse(
         !!male_sym,
-        141 * min(!!scr_sym / 0.9, 1)^-0.411 * max(!!scr_sym / 0.9, 1)^-1.209 * 0.993^!!age_sym, # males
-        144 * min(!!scr_sym / 0.7, 1)^-0.329 * max(!!scr_sym / 0.7, 1)^-1.209 * 0.993^!!age_sym # females
+        141 * pmin(!!scr_sym / 0.9, 1)^-0.411 * pmax(!!scr_sym / 0.9, 1)^-1.209 * 0.993^!!age_sym, # males
+        144 * pmin(!!scr_sym / 0.7, 1)^-0.329 * pmax(!!scr_sym / 0.7, 1)^-1.209 * 0.993^!!age_sym # females
       ))
   }
 
   # Schwartz method
   if (method_key == "sch") {
     # optional parameters, based on Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 20: 629-637, 2009
-    optional_names <- purrr::map_chr(c("male", "bun", "cysC"), \(x){
+    optional_names <- purrr::map_chr(c("male", "bun", "cysC"), \(x) {
       get(x)
     })
 
     if (optional_names[1] %in% dataCols) {
-      male_sym <- sym(male)
+      male_sym <- rlang::sym(male)
     } else {
       male_sym <- NULL
     }
     if (optional_names[2] %in% dataCols) {
-      bun_sym <- sym(bun)
+      bun_sym <- rlang::sym(bun)
     } else {
       bun_sym <- NULL
     }
     if (optional_names[3] %in% dataCols) {
-      cysC_sym <- sym(cysC)
+      cys_c_sym <- rlang::sym(cysC)
     } else {
-      cysC_sym <- NULL
+      cys_c_sym <- NULL
     }
 
-    # browser()
-
     # choose the Schwartz equation based on the available data (scr and ht are always required)
-    if (all(purrr::map_lgl(list(male_sym, bun_sym, cysC_sym), \(x) !is.null(x)))) { # male, bun, cysC all present, so equation III
+    if (all(purrr::map_lgl(list(male_sym, bun_sym, cys_c_sym), \(x) !is.null(x)))) { # male, bun, cysC all present, so equation III
       mdata <- mdata |>
-        mutate(gfr_schwartz = 39.1 * (!!ht_sym / !!scr_sym)^0.516 * (1.8 / !!cysC_sym)^0.294 * (30 / !!bun_sym)^0.169 * 1.099^!!male_sym * (!!ht_sym / 1.4)^1.88) # Schwartz with cysC and bun
+        mutate(gfr_schwartz = 39.1 * (!!ht_sym / !!scr_sym)^0.516 * (1.8 / !!cys_c_sym)^0.294 * (30 / !!bun_sym)^0.169 * 1.099^!!male_sym * (!!ht_sym / 1.4)^1.88) # Schwartz with cysC and bun
       cli::cli_inform("Using Equation III with {.arg {c(matched_names, optional_names)}} from Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 2009; 20: 629-637.")
-    } else if (!is.null(cysC_sym) & !is.null(bun_sym) & is.null(male_sym)) { # bun, cysC present but male absent, so equation II
+    } else if (!is.null(cys_c_sym) && !is.null(bun_sym) && is.null(male_sym)) { # bun, cysC present but male absent, so equation II
       mdata <- mdata |>
-        mutate(gfr_schwartz = 41.1 * (!!ht_sym / !!scr_sym)^0.510 * (1.8 / !!cysC_sym)^0.272 * (30 / !!bun_sym)^0.171) # bun, cysC present but male absent, so equation II
+        mutate(gfr_schwartz = 41.1 * (!!ht_sym / !!scr_sym)^0.510 * (1.8 / !!cys_c_sym)^0.272 * (30 / !!bun_sym)^0.171) # bun, cysC present but male absent, so equation II
       cli::cli_inform("Using Equation II with {.arg {c(matched_names, optional_names)}} from Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 2009; 20: 629-637.")
-    } else if (is.null(cysC_sym) & !is.null(bun_sym)) { # only bun present, so equation Ib
+    } else if (is.null(cys_c_sym) && !is.null(bun_sym)) { # only bun present, so equation Ib
       mdata <- mdata |>
         mutate(gfr_schwartz = 40.7 * (!!ht_sym / !!scr_sym)^0.640 * (30 / !!bun_sym)^0.202)
       cli::cli_inform("Using Equation Ib with {.arg {c(matched_names, optional_names[2])}} from Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 2009; 20: 629-637.")
-    } else if (is.null(bun_sym) & !is.null(cysC_sym)) { # only cysC present, so equation Ia
+    } else if (is.null(bun_sym) && !is.null(cys_c_sym)) { # only cysC present, so equation Ia
       mdata <- mdata |>
-        mutate(gfr_schwartz = 41.6 * (!!ht_sym / !!scr_sym)^0.599 * (1.8 / !!cysC_sym)^0.317)
+        mutate(gfr_schwartz = 41.6 * (!!ht_sym / !!scr_sym)^0.599 * (1.8 / !!cys_c_sym)^0.317)
       cli::cli_inform("Using Equation Ia with {.arg {c(matched_names, optional_names[3])}} from Schwartz et al. New Equations to Estimate GFR in Children with CKD. J Am Soc Nephrol 2009; 20: 629-637.")
     } else {
       mdata <- mdata |>

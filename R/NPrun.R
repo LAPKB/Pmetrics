@@ -24,7 +24,7 @@ NPrun <- function(data, model, ...) {
   if (!inherits(model, "PM_model")) {
     mod <- tryCatch({
       PM_model$new(model)
-      error <- function(e) {
+      error = function(e) {
         cli::cli_abort("The model must be an instance of PM_model or a valid model object.")
       }
     })

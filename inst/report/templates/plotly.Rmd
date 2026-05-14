@@ -362,7 +362,7 @@ if (!is.null(res$final$popPoints) & np){
 if (!is.null(res$final$data)){
   res$final$popCor |> tibble::as_tibble() |>
   dplyr::mutate(across(everything(), \(x) round2(x))) |> 
-  DT::datatable(rownames = names(.), options = list(pageLength = 10, searching = FALSE)) |>
+  (\(x) DT::datatable(x, rownames = colnames(x), options = list(pageLength = 10, searching = FALSE)))() |>
   DT::formatStyle(0, fontWeight = "bold")
 } else {
   knitr::asis_output("PM_final object not created.")
@@ -375,7 +375,7 @@ if (!is.null(res$final$data)){
 if (!is.null(res$final$data)){
   res$final$popCov |> tibble::as_tibble() |>
   dplyr::mutate(across(everything(), \(x) round2(x))) |> 
-  DT::datatable(rownames = names(.), options = list(pageLength = 10, searching = FALSE)) |>
+  (\(x) DT::datatable(x, rownames = colnames(x), options = list(pageLength = 10, searching = FALSE)))() |>
   DT::formatStyle(0, fontWeight = "bold")
 } else {
   knitr::asis_output("PM_final object not created.")

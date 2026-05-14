@@ -469,7 +469,7 @@ plot.PM_cov <- function(
 
     n_colors <- length(unique(dat$id))
     if (requireNamespace("RColorBrewer", quietly = TRUE)) {
-      palettes <- RColorBrewer::brewer.pal.info |> mutate(name = rownames(.))
+      palettes <- RColorBrewer::brewer.pal.info |> (\(x) mutate(x, name = rownames(x)))()
       max_colors <- palettes$maxcolors[match(colors, palettes$name)]
       # expand colors as needed
       if (all(colors %in% palettes$name)) {
