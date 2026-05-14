@@ -16,7 +16,7 @@ add_renal(
   scr = "scr",
   bun = "bun",
   cysC = "cysC",
-  SI = F
+  SI = FALSE
 )
 }
 \arguments{

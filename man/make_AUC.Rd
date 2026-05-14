@@ -15,7 +15,7 @@ make_AUC(
   outeq = 1,
   block = 1,
   method = "linear",
-  add_zero = FALSE
+  addZero = FALSE
 )
 }
 \arguments{
@@ -50,7 +50,7 @@ Only relevant for PMpost or PMpop objects.}
 \item{method}{Default is "linear" for AUC trapezoidal calculation.  Any other value will result in
 linear up, log down.}
 
-\item{add_zero}{Boolean to add a zero concentration at time 0. Default is \code{FALSE}.}
+\item{addZero}{Boolean to add a zero concentration at time 0. Default is \code{FALSE}.}
 }
 \value{
 A dataframe of class \emph{PMauc}, which has 2 columns:
