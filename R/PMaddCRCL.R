@@ -205,7 +205,7 @@ add_renal <- function(x, method, id = "id", wt = "wt", ht = "ht", male = "male",
         time2 = time,
         E = ifelse(
           time2 == time1,
-          NA_real_,
+          ESS_cor,
           ESS_cor - 4 * !!wt_sym * (Scr2 - Scr1) / (time2 - time1)
         ),
         crcl_jelliffe = E / (14.4 * scrAve)
