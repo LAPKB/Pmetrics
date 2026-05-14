@@ -48,12 +48,9 @@ test_that("make_AUC works for NPex PM_result object components", {
   expect_equal(names(auc_pop_obj), c("id", "outeq", "block", "tau"))
   expect_equal(names(auc_post_obj), c("id", "outeq", "block", "tau"))
   expect_equal(names(auc_pm_data), c("id", "outeq", "block", "tau"))
-  
   expect_equal(auc_op_obj, auc_op_data)
-  
   expect_equal(auc_pop_obj, auc_pop_data)
   expect_equal(auc_post_obj, auc_post_data)
-  
   expect_equal(make_AUC(NPex$op), NPex$auc("op"))
   expect_equal(make_AUC(NPex$pop), NPex$auc("pop"))
 })
