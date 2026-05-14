@@ -50,9 +50,9 @@ jobs:
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-repositories: https://lapkb.r-universe.dev
           extra-packages: any::pkgdown, local::.
           needs: website
+          dependencies: '"hard"'
 
       - name: Build site
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE, quiet = FALSE)

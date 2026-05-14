@@ -59,23 +59,16 @@ jobs:
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-repositories: https://lapkb.r-universe.dev
-          extra-packages: any::rcmdcheck, any::roxygen2
-          needs: check
-        continue-on-error: true
-        id: install-deps
-
+            extra-packages: any::rcmdcheck, any::roxygen2
+            needs: check
+            dependencies: '"hard"'
       - name: Retry Install dependencies
         if: steps.install-deps.outcome == 'failure'
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-repositories: https://lapkb.r-universe.dev
-          extra-packages: any::rcmdcheck, any::roxygen2
-          needs: check
-
-      - name: Verify roxygen outputs are current
-        if: runner.os == 'Linux'
-        run: |
+            extra-packages: any::rcmdcheck, any::roxygen2
+            needs: check
+            dependencies: '"hard"'
           Rscript -e 'roxygen2::roxygenise()'
           if ! git diff --quiet man NAMESPACE inst/NEWS.Rd 2>/dev/null; then
             echo "::error::Run devtools::document() and commit regenerated Rd/NAMESPACE files."
