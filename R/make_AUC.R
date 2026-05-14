@@ -141,7 +141,7 @@ make_AUC <- function(
 
 
   # auc function
-  get_auc <- function(df, add_zero, method) {
+  get_auc <- function(df, addZero, method) {
     if (addZero && !any(df$time == 0)) df <- rbind(data.frame(time = 0, out = 0), df)
     n_row <- nrow(df)
     if (n_row <= 1) {
@@ -177,7 +177,7 @@ make_AUC <- function(
 
   # calculate AUC
   auc_df <- tidyr::nest(data3, pk = -dplyr::all_of(group_vars)) |>
-    dplyr::mutate(tau = sapply(pk, get_auc, add_zero, method)) |>
+    dplyr::mutate(tau = sapply(pk, get_auc, addZero, method)) |>
     dplyr::select(dplyr::all_of(group_vars), tau)
 
   # Reorder auc_df to match the order of id (or group) in the input data

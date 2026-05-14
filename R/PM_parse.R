@@ -83,6 +83,13 @@ PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
     }
   )
 
+  config <- rlang::try_fetch(jsonlite::fromJSON(suppressWarnings(readLines(file.path(path, "settings.json"), warn = FALSE))),
+      error = function(e) {
+        cli::cli_warn(c("!" = "Unable to read {.file {file.path(path, 'settings.json')}}"))
+        return(NULL)
+      }
+    )
+
   core <- list(
     data = fit_object$data,
     model = fit_object$model,
@@ -93,20 +100,12 @@ PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
     pop = pop,
     cycle = cycle,
     final = final,
-    backend = "rust",
-    algorithm = "NPAG",
-    numeqt = 1,
     converge = cycle$data$converged,
-    config = rlang::try_fetch(jsonlite::fromJSON(suppressWarnings(readLines(file.path(path, "settings.json"), warn = FALSE))),
-      sys = {
-        info <- as.list(Sys.info())
-        info |> keep(names(info) %in% c("sysname", "machine")) |> paste(collapse = " ")
-      },
-      error = function(e) {
-        cli::cli_warn(c("!" = "Unable to read {.file {file.path(path, 'settings.json')}}"))
-        return(NULL)
-      }
-    )
+    config = config,
+    sys = {
+      info <- as.list(Sys.info())
+      info |> keep(names(info) %in% c("sysname", "machine")) |> paste(collapse = " ")
+    }
   )
 
   class(core) <- "PM_result"
