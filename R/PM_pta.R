@@ -810,7 +810,7 @@ PM_pta <- R6::R6Class(
   #' * dash Maps to the [plot_ly] `linetypes` argument to override default styles
   #' applied to the lines for each regimen. If numeric, will map to `lty` [par] values.
   #' It can also be a character vector of dash names as listed in [plot_ly].
-  #' Example: `line = list(color = "Blues", width = 1, dash = 2)`, whicb will result
+  #' Example: `line = list(color = "Blues", width = 1, dash = 2)`, which will result
   #' in dotted lines (dash  = 2) all with width 1 but in different shades of blue.
   #' @param marker Controls the plotting symbol.
   #' This argument maps to the plotly marker object.

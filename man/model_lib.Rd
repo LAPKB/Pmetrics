@@ -10,7 +10,8 @@ model_lib(show = TRUE, launch.browser = TRUE)
 \item{show}{Logical. If \code{TRUE} (default), launches the Shiny browser app.
 If \code{FALSE}, returns the model tibble invisibly without launching the app.}
 
-\item{launch.browser}{Logical. Passed to \code{\link[shiny:runApp]{shiny::runApp()}} when \code{show = TRUE}.}
+\item{launch.browser}{Logical. Passed to the standalone app package's
+\code{run_app()} function when \code{show = TRUE}.}
 }
 \value{
 Invisibly, a tibble of all model templates.

@@ -1,7 +1,7 @@
 Type: Package
 Package: Pmetrics
 Title: Pmetrics for Population Modeling and Simulation
-Version: 3.1.3
+Version: 3.1.4
 Authors@R: c(
     person("Michael", "Neely", , "mneely@usc.edu", role = c("aut", "cre")),
     person("Julián", "Otálvaro", , "juliandavid347@gmail.com", role = "aut"),
@@ -17,13 +17,10 @@ Description: Pmetrics is short for pharmacometrics, the discipline of
     modeling drug kinetics and effects on biologic systems, including
     disease progression. Models can be used to simulate novel therapeutic
     dosing regimens and/or populations, informing trial design and dosing
-    strategies. The package supports primarily non-parametric but also
+    strategies. The package supports primarily non-parametric but aims to support
     parametric pharmacometric modeling and simulation with functions to
     run and analyze the output from all three components of the Pmetrics
-    software suite for population pharmacometric data analysis: 1) IT2B
-    (Iterative Two-Stage Bayesian) for parametric models; 2) NPAG
-    (Non-parametric Adaptive Grid) for non-paramametric models; 3)
-    Simulator for semi-parametric Monte-Carlo simulations.
+    software suite for population pharmacometric data analysis.
 License: GPL (>= 3)
 URL: https://lapkb.github.io/Pmetrics/
 BugReports: https://github.com/LAPKB/Pmetrics/issues
@@ -76,10 +73,18 @@ Imports:
     TruncatedNormal,
     utils,
     withr
+Additional_repositories: https://lapkb.r-universe.dev
 Suggests:
-    covr,
-    datasets,
-    pkgdown,
+    data.table,
+    devtools,
+    ggpubr,
+    gt,
+    pandoc,
+    PmetricsLitSim,
+    PmetricsPlot,
+    PmetricsModelLib,
+    quarto,
+    RcppTOML,
     testthat
 VignetteBuilder: 
     knitr
@@ -92,3 +97,4 @@ LazyData: true
 LazyDataCompression: xz
 Roxygen: list(markdown = TRUE)
 SystemRequirements: Cargo (>= 1.82) (Rust's package manager), rustc
+RoxygenNote: 7.3.3

@@ -281,3 +281,31 @@ PMgetCRCL <- function(...) {
 makeNCA <- function(...) {
   lifecycle::deprecate_warn("3.0.0", "makeNCA()", details = "Use make_NCA() instead.")
 }
+
+
+#' @title Make AUC
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#'
+#' Use make_AUC instead.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
+#' @export
+makeAUC <- function(...) {
+  lifecycle::deprecate_warn("3.0.0", "makeAUC()", details = "Use make_AUC() instead.")
+}
+
+
+#' @title Test Pmetrics
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#'
+#' Was related to old Fortran code, which is no longer used.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
+#' @export
+PMtest <- function(...) {
+  lifecycle::deprecate_warn("3.0.0", "PMtest()", details = "Was related to old Fortran code, which is no longer used.")
+}

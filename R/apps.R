@@ -1,14 +1,18 @@
-#' Launch packaged Shiny apps
+#' Launch standalone Pmetrics apps
 #'
-#' `lit_sim()`, `model_lib()`, and `pm_plot()` launch specific packaged
-#' apps from `inst/apps`.
+#' `lit_sim()`, `model_lib()`, and `pm_plot()` launch standalone golem app
+#' packages.
 #'
 #' `apps()` shows an interactive numbered menu (via `cli`) and launches the
 #' selected app using `readline()` input.
 #'
 #' @param launch.browser Logical. Should the app launch in a browser?
-#' @return Invisibly returns the value from [shiny::runApp()] for launcher
-#'   functions. `apps()` returns invisibly `NULL` on cancel/invalid input.
+#' @param data_env Environment passed to `pm_plot()` containing the data
+#'   objects the app should discover and use. Defaults to `.GlobalEnv`.
+#'   Ignored by launchers that do not accept this argument.
+#' @return Invisibly returns the value from the standalone app package's
+#'   `run_app()` function for launcher functions. `apps()` returns invisibly
+#'   `NULL` on cancel/invalid input.
 #' @name apps
 NULL
 
@@ -37,29 +41,33 @@ NULL
   )
 }
 
-.launch_packaged_app <- function(app_id, launch.browser = TRUE) {
-  app_dir <- system.file("apps", app_id, package = "Pmetrics")
-
-  if (identical(app_dir, "") || !dir.exists(app_dir)) {
-    stop(
-      sprintf("Could not find packaged app directory for '%s'.", app_id),
-      call. = FALSE
-    )
+.launch_golem_app <- function(pkg, fun, launch.browser = TRUE,...) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    cli::cli_abort(c(
+      "x" = "The {.pkg {pkg}} package is required to launch this app.",
+      "i" = "See the {.url https://lapkb.r-universe.dev} repository for installation instructions."
+    ))
   }
 
-  shiny::runApp(appDir = app_dir, launch.browser = launch.browser)
+  app_fun <- getExportedValue(pkg, fun)
+  app_fun(launch.browser = launch.browser, ...)
 }
 
 #' @rdname apps
 #' @export
 lit_sim <- function(launch.browser = TRUE) {
-  .launch_packaged_app("lit_sim", launch.browser = launch.browser)
+  .launch_golem_app("PmetricsLitSim", "run_app", launch.browser = launch.browser)
 }
 
 #' @rdname apps
 #' @export
-pm_plot <- function(launch.browser = TRUE) {
-  .launch_packaged_app("pm_plot", launch.browser = launch.browser)
+pm_plot <- function(launch.browser = TRUE, data_env = .GlobalEnv) {
+  .launch_golem_app(
+    "PmetricsPlot",
+    "run_app",
+    launch.browser = launch.browser,
+    data_env = data_env
+  )
 }
 
 # #' @rdname apps

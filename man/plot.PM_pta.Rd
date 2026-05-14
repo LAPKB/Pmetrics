@@ -78,7 +78,7 @@ The default value is 2.
 \item dash Maps to the \link[plotly:plot_ly]{plot_ly} \code{linetypes} argument to override default styles
 applied to the lines for each regimen. If numeric, will map to \code{lty} \link{par} values.
 It can also be a character vector of dash names as listed in \link[plotly:plot_ly]{plot_ly}.
-Example: \code{line = list(color = "Blues", width = 1, dash = 2)}, whicb will result
+Example: \code{line = list(color = "Blues", width = 1, dash = 2)}, which will result
 in dotted lines (dash  = 2) all with width 1 but in different shades of blue.
 }}
 
