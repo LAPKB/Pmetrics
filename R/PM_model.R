@@ -1160,7 +1160,7 @@ PM_model <- R6::R6Class(
 
       make_prior_file <- function() {
         prior_dir <<- tempfile(pattern = "prior-")
-        fs::dir_create(prior_dir)
+        dir.create(prior_dir, recursive = TRUE)
         file.path(prior_dir, "prior.csv")
       }
 
@@ -1370,10 +1370,10 @@ PM_model <- R6::R6Class(
         }
       }
 
-      fs::dir_create(path_run)
+      dir.create(path_run, recursive = TRUE)
 
       #### Save input objects ####
-      fs::dir_create(normalizePath(file.path(path_run, "inputs"), mustWork = FALSE))
+      dir.create(normalizePath(file.path(path_run, "inputs"), mustWork = FALSE), recursive = TRUE)
       PM_data$new(data_filtered, quiet = TRUE)$save(normalizePath(file.path(path_run, "inputs", "gendata.csv"), mustWork = FALSE), header = FALSE)
       suppressWarnings(
         saveRDS(list(data = data, model = self), file = normalizePath(file.path(path_run, "inputs", "fit.rds"), mustWork = FALSE))

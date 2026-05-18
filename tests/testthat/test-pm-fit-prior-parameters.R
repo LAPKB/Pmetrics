@@ -30,7 +30,7 @@ run_fit_with_mocked_engine <- function(prior_input) {
     fit = function(model_path, data, params, output_path, kind) {
       captured_prior <<- params$prior
       captured_wd <<- getwd()
-      fs::dir_create(output_path)
+      dir.create(output_path, recursive = TRUE)
       invisible(NULL)
     },
     PM_parse = function(path) invisible(NULL),
@@ -122,7 +122,7 @@ test_that("PM_model$fit supports numeric prior run and normalizes theta.csv colu
   run_root <- withr::local_tempdir(pattern = "prior-run-root-")
   run_num <- 7
   theta_dir <- file.path(run_root, as.character(run_num), "outputs")
-  fs::dir_create(theta_dir)
+  dir.create(theta_dir, recursive = TRUE)
 
   theta_df <- make_prior_df(rev(params))
   utils::write.csv(theta_df, file.path(theta_dir, "theta.csv"), row.names = FALSE)
@@ -138,7 +138,7 @@ test_that("PM_model$fit supports numeric prior run and normalizes theta.csv colu
     fit = function(model_path, data, params, output_path, kind) {
       captured_prior <<- params$prior
       captured_wd <<- getwd()
-      fs::dir_create(output_path)
+      dir.create(output_path, recursive = TRUE)
       invisible(NULL)
     },
     PM_parse = function(path) invisible(NULL),

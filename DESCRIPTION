@@ -34,7 +34,6 @@ Imports:
     dplyr,
     DT,
     flextable,
-    fs,
     ggplot2,
     glue,
     graphics,
@@ -74,16 +73,11 @@ Imports:
     withr
 Additional_repositories: https://lapkb.r-universe.dev
 Suggests:
-    data.table,
     devtools,
     ggpubr,
-    gt,
-    pandoc,
     PmetricsLitSim,
     PmetricsPlot,
     PmetricsModelLib,
-    quarto,
-    RcppTOML,
     testthat
 VignetteBuilder: 
     knitr

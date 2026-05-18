@@ -86,12 +86,15 @@ setPMoptions <- function(launch.app = TRUE) {
   }
 
   opt_dir <- dplyr::case_when(
-    getOS() %in% c(1, 3) ~ fs::path_expand("~/.PMopts"),
+    getOS() %in% c(1, 3) ~ path.expand("~/.PMopts"),
     getOS() == 2 ~ file.path(Sys.getenv("APPDATA"), "PMopts"),
     TRUE ~ tempdir() # fallback
   )
 
-  fs::dir_create(opt_dir) # ensure directory exists
+  if (!dir.exists(opt_dir)) {
+    dir.create(opt_dir) # ensure directory exists
+  }
+  
   PMoptionsUserFile <- file.path(opt_dir, "PMoptions.json")
 
   PMoptionsDefaultsFile <- file.path(system.file("options", package = "Pmetrics"), "PMoptions.json")
@@ -102,7 +105,7 @@ setPMoptions <- function(launch.app = TRUE) {
       error = function(e) list()
     )
 
-    user_opts <- if (fs::file_exists(PMoptionsUserFile)) {
+    user_opts <- if (file.exists(PMoptionsUserFile)) {
       tryCatch(jsonlite::fromJSON(PMoptionsUserFile, simplifyVector = TRUE), error = function(e) list())
     } else {
       list()

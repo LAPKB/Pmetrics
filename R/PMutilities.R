@@ -958,7 +958,7 @@ modifyList2 <- function(x, val, keep.null = FALSE) {
 #' @export
 #' @keywords internal
 clear_build <- function() {
-  fs::dir_delete(system.file("template", package = "Pmetrics"))
+  unlink(system.file("template", package = "Pmetrics"), recursive = TRUE)
 }
 
 #' @title Get latest platform-specific R release metadata
