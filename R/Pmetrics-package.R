@@ -33,7 +33,6 @@
 #' @importFrom npde autonpde
 #' @importFrom parallel makeCluster stopCluster clusterExport parLapply
 #' @importFrom progress progress_bar
-#' @importFrom TruncatedNormal rtmvnorm
 #' @importFrom withr with_dir
 #'
 NULL

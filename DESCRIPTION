@@ -46,8 +46,6 @@ Imports:
     lifecycle,
     lubridate,
     MASS,
-    mclust,
-    npde,
     openxlsx,
     pander,
     parallel,
@@ -60,7 +58,6 @@ Imports:
     reticulate,
     rlang,
     rmarkdown,
-    rstudioapi,
     shiny,
     stats,
     stringr,
@@ -75,9 +72,11 @@ Additional_repositories: https://lapkb.r-universe.dev
 Suggests:
     devtools,
     ggpubr,
+    mclust,
     PmetricsLitSim,
     PmetricsPlot,
     PmetricsModelLib,
+    npde,
     testthat
 VignetteBuilder: 
     knitr

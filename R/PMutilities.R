@@ -1185,3 +1185,48 @@ downloadR <- function(r_info = latestR(), destdir = path.expand("~/Downloads")) 
   utils::download.file(download_url, destfile = destfile, mode = "wb")
   destfile
 }
+
+
+
+# Internal lower-bounded MVN sampler (lb only), using rejection sampling
+
+PM_rtmvnorm <- function(n, mean, sigma, lb, max_draws = 5e6L) {
+  mean <- as.numeric(mean)
+  sigma <- as.matrix(sigma)
+  lb <- as.numeric(lb)
+
+  d <- length(mean)
+  if (length(lb) != d) stop("lb length must equal length(mean)")
+  if (!all(dim(sigma) == c(d, d))) stop("sigma must be d x d")
+
+  out <- matrix(NA_real_, nrow = n, ncol = d)
+  filled <- 0L
+  draws <- 0L
+  batch <- max(2000L, 4L * n)
+
+  while (filled < n) {
+    x <- MASS::mvrnorm(n = batch, mu = mean, Sigma = sigma)
+    if (d == 1L) x <- matrix(x, ncol = 1)
+
+    keep <- rowSums(sweep(x, 2, lb, `>=`)) == d
+    n_keep <- sum(keep)
+
+    if (n_keep > 0L) {
+      take <- min(n_keep, n - filled)
+      out[(filled + 1L):(filled + take), ] <- x[which(keep)[seq_len(take)], , drop = FALSE]
+      filled <- filled + take
+    }
+
+    draws <- draws + batch
+    if (draws > max_draws) {
+      stop("Exceeded max_draws before filling sample; truncation region may be too restrictive")
+    }
+
+    if (filled > 0L) {
+      acc <- filled / draws
+      batch <- as.integer(max(2000L, min(2e5L, ceiling((n - filled) / max(acc, 1e-5) * 1.2))))
+    }
+  }
+
+  out
+}
