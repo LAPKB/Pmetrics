@@ -2,71 +2,104 @@
 #' @description
 #' `r lifecycle::badge("stable")`
 #'
-#' Generates a report from a specified Rmd template
+#' Launches the Pmetrics reporting app for a completed run
 #'
 #' @param x A [PM_result] object obtained from [PM_load].
-#' @param template If missing, the default Pmetrics report template as specified in [getPMoptions]
-#' is used. It can be changed with [setPMoptions]. Otherwise, the value for `template`
-#' can be "plotly", "ggplot", or "none".
-#' @param path The path for the generated report, defaults to a temporary folder.
-#' @param show Controls if the report should be automatically opened on generation, defaults to `TRUE`
-#' @param quiet If `TRUE` (default), suppresses knitr output about report generation. Progress messages will still be displayed.
-#' @return Generates an HTML-report in the folder specified by `path`.
+#' @param template Deprecated for app mode. Used only for HTML fallback report
+#'   generation when app launch fails.
+#' @param path Deprecated for app mode. Used only for HTML fallback report
+#'   generation when app launch fails.
+#' @param show Controls whether the Shiny app should be opened automatically, defaults to `TRUE`.
+#' @param quiet Retained for compatibility.
+#' @return Launches the Pmetrics reporting app.
 #' @author Markus Hovd, Julian Otalvaro, and Michael Neely
 #' @seealso [PM_load]
 #' @export
 
 PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
+  template_missing <- missing(template)
+  path_missing <- missing(path)
+
   if (!is(x, "PM_result")) {
     cli::cli_abort(c("x" = "This function expects a valid PM_result object from PM_load."))
   }
 
-  if (missing(template)) {
-    template <- getPMoptions("report_template")
-  }
-
-  if (template == "none") {
-    return()
-  }
-
-  templateFile <- switch(template,
-    plotly = system.file("report/templates/plotly.Rmd", package = "Pmetrics"),
-    ggplot = system.file("report/templates/ggplot.Rmd", package = "Pmetrics"),
-    ggplot_rust = system.file("report/templates/ggplot_rust.Rmd", package = "Pmetrics")
-  )
-  # templateFile = system.file("report/templates/ggplot.Rmd", package = "Pmetrics")
-
-  if (is.null(templateFile)) {
-    if (!file.exists(templateFile)) cli::cli_warn(c("!" = "ERROR: {templateFile} does not exist."))
-    return(invisible(-1))
-  }
-
-
-  if (missing(path)) {
-    out_path <- tempdir()
-  } else {
-    out_path <- normalizePath(path, winslash = "/") # knitr needs full path
+  if (!template_missing && identical(template, "none")) {
+    return(invisible(0))
   }
 
   if (is.null(x$final$data) & is.null(x$op$data) & is.null(x$cycle$data)) {
     return(invisible(-1)) # no data found
-  } else {
+  }
+
+  render_html_fallback <- function() {
+    fallback_template <- if (template_missing) getPMoptions("report_template") else template
+    if (identical(fallback_template, "none")) {
+      return(invisible(0))
+    }
+    if (identical(fallback_template, "app") || is.null(fallback_template)) {
+      fallback_template <- "ggplot"
+    }
+
+    template_file <- switch(fallback_template,
+      plotly = system.file("report/templates/plotly.Rmd", package = "Pmetrics"),
+      ggplot = system.file("report/templates/ggplot.Rmd", package = "Pmetrics"),
+      ggplot_rust = system.file("report/templates/ggplot_rust.Rmd", package = "Pmetrics")
+    )
+
+    if (is.null(template_file) || !file.exists(template_file)) {
+      cli::cli_warn(c(
+        "!" = "HTML fallback failed: unknown or missing report template {.val {fallback_template}}."
+      ))
+      return(invisible(-1))
+    }
+
+    out_path <- if (path_missing) {
+      tempdir()
+    } else {
+      normalizePath(path, winslash = "/")
+    }
+
     rmarkdown::render(
-      input = templateFile,
+      input = template_file,
       output_file = file.path(out_path, "report.html"),
       params = list(res = x),
       clean = TRUE,
-      quiet = quiet,
+      quiet = quiet
     )
-  }
 
-
-  if (file.exists(file.path(out_path, "report.html"))) {
-    if (show) {
-      pander::openFileInOS(file.path(out_path, "report.html"))
+    if (file.exists(file.path(out_path, "report.html"))) {
+      if (show) {
+        pander::openFileInOS(file.path(out_path, "report.html"))
+      }
+      return(invisible(1))
     }
-    return(invisible(1))
-  } else {
-    return(invisible(-1)) # something went wrong and report doesn't exist
+
+    invisible(-1)
   }
+
+  if (!requireNamespace("PmetricsReports", quietly = TRUE)) {
+    cli::cli_warn(c(
+      "!" = "The {.pkg PmetricsReports} package is not available.",
+      "i" = "Falling back to legacy HTML report generation.",
+      "i" = "{.code install.packages('PmetricsReports', repos = 'https://lapkb.r-universe.dev')} for a better experience."
+    ))
+    return(render_html_fallback())
+  }
+
+  tryCatch(
+    {
+      run_app <- getExportedValue("PmetricsReports", "run_app")
+      run_app(res = x, launch.browser = show)
+      invisible(1)
+    },
+    error = function(e) {
+      cli::cli_warn(c(
+        "!" = "Reporting app launch failed.",
+        "i" = "Falling back to legacy HTML report generation.",
+        "i" = "App error: {.field {conditionMessage(e)}}"
+      ))
+      render_html_fallback()
+    }
+  )
 }

@@ -1442,11 +1442,11 @@ PM_model <- R6::R6Class(
             }
           )
           if (valid_report == 1) {
-            msg <- c(msg, "Report generated with {report} template.")
+            msg <- c(msg, "Reporting app launched.")
             # if(tolower(algorithm) == "postprob") {this_alg <- "map"} else {this_alg <- "fit"}
             msg <- c(msg, "If assigned to a variable, e.g. {.code run{run} <-}, results are available in {.code run{run}}.")
           } else {
-            msg <- c(msg, "Report could not be generated.")
+            msg <- c(msg, "Reporting app could not be launched.")
           }
         }
 

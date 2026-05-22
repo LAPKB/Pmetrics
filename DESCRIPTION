@@ -47,7 +47,6 @@ Imports:
     lubridate,
     MASS,
     openxlsx,
-    pander,
     parallel,
     plotly,
     progress,
@@ -65,7 +64,6 @@ Imports:
     tidyr,
     tools,
     trelliscopejs,
-    TruncatedNormal,
     utils,
     withr
 Additional_repositories: https://lapkb.r-universe.dev
@@ -73,6 +71,7 @@ Suggests:
     devtools,
     ggpubr,
     mclust,
+    PmetricsReports,
     PmetricsLitSim,
     PmetricsPlot,
     PmetricsModelLib,

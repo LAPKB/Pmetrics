@@ -167,7 +167,7 @@ dmv_norm <- function(
   }
 }
 
-openHTML <- function(x) pander::openFileInOS(x)
+openHTML <- function(x) utils::browseURL(normalizePath(x))
 
 # parse NP_RF file only for final cycle information; used for bootstrapping
 # indpts,ab,corden,nvar,nactve,iaddl,icyctot,par
