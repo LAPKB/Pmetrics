@@ -888,7 +888,6 @@ if (any(posdef$values < 0)) {
       if (all(posdef$values >= 0)) { # success, break out of loop
         break
       }
-      if (j == 10) browser()
     }
     posdef <- eigen(signif(mat, 15)) # last check
     if (any(posdef$values < 0)) {

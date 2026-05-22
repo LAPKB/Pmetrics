@@ -54,7 +54,7 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
       return(invisible(-1))
     }
 
-    if (template_file != "plotly" && !requireNamespace("DT", quietly = TRUE)) {
+    if (!requireNamespace("DT", quietly = TRUE)) {
       cli::cli_warn(c(
         "!" = "HTML fallback failed: {.pkg DT} package is required for this template.",
         "i" = "Please install it with {.code install.packages('DT')}."
