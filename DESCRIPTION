@@ -42,6 +42,7 @@ Imports:
     htmlwidgets,
     jsonlite,
     knitr,
+    lifecycle,
     lubridate,
     MASS,
     openxlsx,
@@ -68,7 +69,6 @@ Additional_repositories: https://lapkb.r-universe.dev
 Suggests:
     devtools,
     DT,
-    lifecycle,
     mclust,
     PmetricsReports,
     PmetricsLitSim,

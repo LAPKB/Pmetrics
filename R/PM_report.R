@@ -54,12 +54,25 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
       return(invisible(-1))
     }
 
+    if (template_file != "plotly" && !requireNamespace("DT", quietly = TRUE)) {
+      cli::cli_warn(c(
+        "!" = "HTML fallback failed: {.pkg DT} package is required for this template.",
+        "i" = "Please install it with {.code install.packages('DT')}."
+      ))
+      return(invisible(-1))
+    }
+
     out_path <- if (path_missing) {
       tempdir()
     } else {
-      normalizePath(path, winslash = "/")
+      normalizePath(path, winslash = "/", mustWork = FALSE)
     }
 
+    if (!dir.exists(out_path)) {
+      dir.create(out_path, recursive = TRUE, showWarnings = FALSE)
+    }
+
+    
     rmarkdown::render(
       input = template_file,
       output_file = file.path(out_path, "report.html"),

@@ -61,7 +61,7 @@ jobs:
         with:
           extra-packages: any::rcmdcheck, any::roxygen2
           needs: check
-          dependencies: '"hard"'
+          dependencies: '"all"'
         continue-on-error: true
         id: install-deps
 
@@ -71,7 +71,7 @@ jobs:
         with:
           extra-packages: any::rcmdcheck, any::roxygen2
           needs: check
-          dependencies: '"hard"'
+          dependencies: '"all"'
 
       - name: Verify roxygen outputs are current
         if: runner.os == 'Linux'

@@ -424,7 +424,7 @@ PM_load <- function(run, path = ".", file = "PMout.Rdata") {
           target_binary_path <- normalizePath(target_binary_path, mustWork = FALSE)
           copied <- tryCatch(
             {
-              dir.create(dirname(target_binary_path), recursive = TRUE)
+              dir.create(dirname(target_binary_path), recursive = TRUE, showWarnings = FALSE)
               isTRUE(file.copy(source_binary, target_binary_path, overwrite = TRUE))
             },
             error = function(e) FALSE
