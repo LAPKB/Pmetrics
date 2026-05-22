@@ -59,7 +59,7 @@ metrics <- function(icen, outeq) {
       }
     )) |>
     t() |>
-    datatable(
+    DT::datatable(
       colnames = c("Metric", "Value"),
       options = list(
         searching = FALSE,
@@ -106,8 +106,7 @@ op_plot <- function(icen, pred.type, outeq) {
     geom_point(pch = 21, col = "black", fill = "red") +
     theme_classic() +
     labs(x = "Predicted", y = "Observed", subtitle = subtitle) +
-    theme(aspect.ratio = 1) +
-    ggpubr::grids() +
+    theme(aspect.ratio = 1, panel.grid.major = element_line(color = "gray90")) +
     scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) +
     scale_y_continuous(breaks = scales::breaks_pretty(n = 8))
   return(p)
@@ -215,7 +214,7 @@ par_lims |>
     `Lower limit` = lower,
     `Upper limit` = upper
   ) |>
-  datatable(
+  DT::datatable(
     options = list(
       searching = FALSE,
       pageLength = 10,
@@ -288,7 +287,7 @@ res$final$popPoints |>
   })) |>
   mutate(`Probability (cumulative sum)` = cumsum(prob)) |>
   rename(Probability = prob) |>
-  datatable(options = list(pageLength = 10, searching = FALSE))
+  DT::datatable(options = list(pageLength = 10, searching = FALSE))
 ```
 
 ## Cycle information
@@ -312,7 +311,7 @@ plot_ll <- cycle_info |>
     x = "Cycle number", y = NULL
   ) +
   theme_classic() +
-  ggpubr::grids() +
+  theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
 plot_aic_bic <- cycle_info |>
@@ -324,7 +323,7 @@ plot_aic_bic <- cycle_info |>
     x = "Cycle number", y = NULL, col = NULL
   ) +
   theme_classic() +
-  ggpubr::grids() +
+  theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
 plot_gamlam <- cycle_info |>
@@ -335,7 +334,7 @@ plot_gamlam <- cycle_info |>
     x = "Cycle number", y = NULL
   ) +
   theme_classic() +
-  ggpubr::grids() +
+  theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
 plot_mean <- res$cycle$mean |>
@@ -349,7 +348,7 @@ plot_mean <- res$cycle$mean |>
     x = "Cycle number", y = NULL, col = NULL
   ) +
   theme_classic() +
-  ggpubr::grids() +
+  theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
 plot_sd <- res$cycle$sd |>
@@ -363,7 +362,7 @@ plot_sd <- res$cycle$sd |>
     x = "Cycle number", y = NULL, col = NULL
   ) +
   theme_classic() +
-  ggpubr::grids() +
+  theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
 plot_median <- res$cycle$median |>
@@ -377,7 +376,7 @@ plot_median <- res$cycle$median |>
     x = "Cycle number", y = NULL, col = NULL
   ) +
   theme_classic() +
-  ggpubr::grids() +
+  theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
 plot_design <- "

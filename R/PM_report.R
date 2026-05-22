@@ -70,7 +70,7 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
 
     if (file.exists(file.path(out_path, "report.html"))) {
       if (show) {
-        pander::openFileInOS(file.path(out_path, "report.html"))
+        utils::browseURL(file.path(out_path, "report.html"))
       }
       return(invisible(1))
     }

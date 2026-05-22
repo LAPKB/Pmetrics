@@ -32,7 +32,6 @@ Imports:
     clipr,
     crayon,
     dplyr,
-    DT,
     flextable,
     ggplot2,
     glue,
@@ -43,7 +42,6 @@ Imports:
     htmlwidgets,
     jsonlite,
     knitr,
-    lifecycle,
     lubridate,
     MASS,
     openxlsx,
@@ -69,7 +67,8 @@ Imports:
 Additional_repositories: https://lapkb.r-universe.dev
 Suggests:
     devtools,
-    ggpubr,
+    DT,
+    lifecycle,
     mclust,
     PmetricsReports,
     PmetricsLitSim,
