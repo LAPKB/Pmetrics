@@ -88,4 +88,4 @@ LazyData: true
 LazyDataCompression: xz
 Roxygen: list(markdown = TRUE)
 SystemRequirements: Cargo (>= 1.82) (Rust's package manager), rustc
-RoxygenNote: 7.3.3
+
