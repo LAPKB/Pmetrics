@@ -59,9 +59,9 @@ jobs:
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, any::roxygen2
+          extra-packages: any::rcmdcheck, any::roxygen2, any::testthat
           needs: check
-          dependencies: '"all"'
+          dependencies: '"hard"'
         continue-on-error: true
         id: install-deps
 
@@ -69,9 +69,9 @@ jobs:
         if: steps.install-deps.outcome == 'failure'
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, any::roxygen2
+          extra-packages: any::rcmdcheck, any::roxygen2, any::testthat
           needs: check
-          dependencies: '"all"'
+          dependencies: '"hard"'
 
       - name: Verify roxygen outputs are current
         if: runner.os == 'Linux'
