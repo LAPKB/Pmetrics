@@ -59,7 +59,7 @@ jobs:
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, any::roxygen2
+          extra-packages: any::rcmdcheck, any::roxygen2, any::testthat, any::mclust, any::npde
           needs: check
           dependencies: '"hard"'
         continue-on-error: true
@@ -69,7 +69,7 @@ jobs:
         if: steps.install-deps.outcome == 'failure'
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, any::roxygen2
+          extra-packages: any::rcmdcheck, any::roxygen2, any::testthat, any::mclust, any::npde
           needs: check
           dependencies: '"hard"'
 

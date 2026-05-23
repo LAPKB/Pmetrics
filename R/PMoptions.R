@@ -86,12 +86,15 @@ setPMoptions <- function(launch.app = TRUE) {
   }
 
   opt_dir <- dplyr::case_when(
-    getOS() %in% c(1, 3) ~ fs::path_expand("~/.PMopts"),
+    getOS() %in% c(1, 3) ~ path.expand("~/.PMopts"),
     getOS() == 2 ~ file.path(Sys.getenv("APPDATA"), "PMopts"),
     TRUE ~ tempdir() # fallback
   )
 
-  fs::dir_create(opt_dir) # ensure directory exists
+  if (!dir.exists(opt_dir)) {
+    dir.create(opt_dir) # ensure directory exists
+  }
+  
   PMoptionsUserFile <- file.path(opt_dir, "PMoptions.json")
 
   PMoptionsDefaultsFile <- file.path(system.file("options", package = "Pmetrics"), "PMoptions.json")
@@ -102,7 +105,7 @@ setPMoptions <- function(launch.app = TRUE) {
       error = function(e) list()
     )
 
-    user_opts <- if (fs::file_exists(PMoptionsUserFile)) {
+    user_opts <- if (file.exists(PMoptionsUserFile)) {
       tryCatch(jsonlite::fromJSON(PMoptionsUserFile, simplifyVector = TRUE), error = function(e) list())
     } else {
       list()
@@ -246,20 +249,19 @@ setPMoptions <- function(launch.app = TRUE) {
               bslib::card_header(
                 class = "bg-primary text-white",
                 shiny::icon("file-lines", class = "me-2"),
-                "Fit Report Template"
+                "Reporting App"
               ),
               bslib::card_body(
                 shiny::selectInput(
                   "report_template",
                   bslib::tooltip(
-                    shiny::tags$span("Plot library", shiny::icon("circle-question", class = "ms-1 text-muted")),
-                    "HTML summary of model fit to open in browser"
+                    shiny::tags$span("Report mode", shiny::icon("circle-question", class = "ms-1 text-muted")),
+                    "Launch the Shiny report app after a run finishes"
                   ),
                   choices = c(
-                    "Interactive (plotly)" = "plotly",
-                    "Static (ggplot2)" = "ggplot"
+                    "Interactive report app" = "app"
                   ),
-                  selected = "plotly"
+                  selected = "app"
                 )
               )
             ),
@@ -467,7 +469,10 @@ setPMoptions <- function(launch.app = TRUE) {
         if (!is.null(settings$sep)) shiny::updateSelectInput(session, "sep", selected = settings$sep)
         if (!is.null(settings$dec)) shiny::updateSelectInput(session, "dec", selected = settings$dec)
         if (!is.null(settings$digits)) shiny::updateNumericInput(session, "digits", value = settings$digits)
-        if (!is.null(settings$report_template)) shiny::updateSelectInput(session, "report_template", selected = settings$report_template)
+        if (!is.null(settings$report_template)) {
+          report_value <- if (settings$report_template %in% "app") settings$report_template else "app"
+          shiny::updateSelectInput(session, "report_template", selected = report_value)
+        }
         if (!is.null(settings$ic_method)) shiny::updateSelectInput(session, "ic_method", selected = settings$ic_method)
         if (!is.null(settings$date_format)) shiny::updateSelectInput(session, "date_format", selected = settings$date_format)
         if (!is.null(settings$update_check)) shiny::updateSelectInput(session, "update_check", selected = settings$update_check)

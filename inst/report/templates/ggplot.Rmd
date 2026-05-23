@@ -56,7 +56,7 @@ metrics <- function(icen, outeq){
                     round(x, digits = 3)
                   })) |> 
     t() |> 
-    datatable(
+    DT::datatable(
       colnames = c("Metric", "Value"),
       options = list(
         searching = FALSE,
@@ -106,8 +106,7 @@ op_plot <- function(icen, pred.type, outeq){
     geom_point(pch = 21, col = "black", fill = "red") +
     theme_classic() + 
     labs(x = "Predicted", y = "Observed", subtitle = subtitle) +
-    theme(aspect.ratio = 1) +
-    ggpubr::grids() +
+    theme(aspect.ratio = 1, panel.grid.major = element_line(color = "gray90")) +
     scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) +
     scale_y_continuous(breaks = scales::breaks_pretty(n = 8))
   return(p)
@@ -227,7 +226,7 @@ par_lims |>
   rename(`Parameter` = name,
          `Lower limit` = lower,
          `Upper limit` = upper) |> 
-  datatable(
+  DT::datatable(
     options = list(
       searching = FALSE,
       pageLength = 10,
@@ -327,7 +326,7 @@ plot_ll = cycle_info |>
   labs(subtitle = "-2 x log likelihood",
        x = "Cycle number", y = NULL) +
   theme_classic() +
-  ggpubr::grids() +
+  theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
 plot_aic_bic = cycle_info |> 
@@ -337,7 +336,7 @@ plot_aic_bic = cycle_info |>
   labs(subtitle = "AIC/BIC",
        x = "Cycle number", y = NULL, col = NULL) +
   theme_classic() +
-  ggpubr::grids() +
+  theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
 plot_gamlam = cycle_info |> 
@@ -346,7 +345,7 @@ plot_gamlam = cycle_info |>
   labs(subtitle = "Gamma / Lambda",
        x = "Cycle number", y = NULL) +
   theme_classic() +
-  ggpubr::grids() +
+  theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
 plot_mean = res$cycle$data$mean |> 
@@ -359,7 +358,7 @@ plot_mean = res$cycle$data$mean |>
   labs(subtitle = "Normalized mean",
        x = "Cycle number", y = NULL, col = NULL) +
   theme_classic() +
-  ggpubr::grids() +
+  theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
 plot_sd = res$cycle$data$sd |> 
@@ -372,7 +371,7 @@ plot_sd = res$cycle$data$sd |>
   labs(subtitle = "Normalized standard deviation",
        x = "Cycle number", y = NULL, col = NULL) +
   theme_classic() +
-  ggpubr::grids() +
+  theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
 plot_median = res$cycle$data$median |> 
@@ -385,7 +384,7 @@ plot_median = res$cycle$data$median |>
   labs(subtitle = "Normalized median",
        x = "Cycle number", y = NULL, col = NULL) +
   theme_classic() +
-  ggpubr::grids() +
+  theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
 plot_design = "

@@ -469,7 +469,7 @@ PM_valid <- R6::R6Class(
         wss <- sapply(
           2:k.max,
           function(k) {
-            val <- kmeans(x, k, nstart = 50, iter.max = 15)
+            val <- stats::kmeans(x, k, nstart = 50, iter.max = 15)
             val$tot.withinss
           }
         )

@@ -32,9 +32,7 @@ Imports:
     clipr,
     crayon,
     dplyr,
-    DT,
     flextable,
-    fs,
     ggplot2,
     glue,
     graphics,
@@ -47,10 +45,7 @@ Imports:
     lifecycle,
     lubridate,
     MASS,
-    mclust,
-    npde,
     openxlsx,
-    pander,
     parallel,
     plotly,
     progress,
@@ -61,7 +56,6 @@ Imports:
     reticulate,
     rlang,
     rmarkdown,
-    rstudioapi,
     shiny,
     stats,
     stringr,
@@ -69,21 +63,18 @@ Imports:
     tidyr,
     tools,
     trelliscopejs,
-    TruncatedNormal,
     utils,
     withr
 Additional_repositories: https://lapkb.r-universe.dev
 Suggests:
-    data.table,
     devtools,
-    ggpubr,
-    gt,
-    pandoc,
+    DT,
+    mclust,
+    PmetricsReports,
     PmetricsLitSim,
     PmetricsPlot,
     PmetricsModelLib,
-    quarto,
-    RcppTOML,
+    npde,
     testthat
 VignetteBuilder: 
     knitr
@@ -96,4 +87,4 @@ LazyData: true
 LazyDataCompression: xz
 Roxygen: list(markdown = TRUE)
 SystemRequirements: Cargo (>= 1.82) (Rust's package manager), rustc
-RoxygenNote: 7.3.3
+

@@ -9,23 +9,23 @@ PM_report(x, template, path, show = TRUE, quiet = TRUE)
 \arguments{
 \item{x}{A \link{PM_result} object obtained from \link{PM_load}.}
 
-\item{template}{If missing, the default Pmetrics report template as specified in \link{getPMoptions}
-is used. It can be changed with \link{setPMoptions}. Otherwise, the value for \code{template}
-can be "plotly", "ggplot", or "none".}
+\item{template}{Deprecated for app mode. Used only for HTML fallback report
+generation when app launch fails.}
 
-\item{path}{The path for the generated report, defaults to a temporary folder.}
+\item{path}{Deprecated for app mode. Used only for HTML fallback report
+generation when app launch fails.}
 
-\item{show}{Controls if the report should be automatically opened on generation, defaults to \code{TRUE}}
+\item{show}{Controls whether the Shiny app should be opened automatically, defaults to \code{TRUE}.}
 
-\item{quiet}{If \code{TRUE} (default), suppresses knitr output about report generation. Progress messages will still be displayed.}
+\item{quiet}{Retained for compatibility.}
 }
 \value{
-Generates an HTML-report in the folder specified by \code{path}.
+Launches the Pmetrics reporting app.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
-Generates a report from a specified Rmd template
+Launches the Pmetrics reporting app for a completed run
 }
 \seealso{
 \link{PM_load}
