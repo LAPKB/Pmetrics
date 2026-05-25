@@ -58,3 +58,21 @@ testthat::test_that("fit accepts cache = FALSE on the runtime path", {
     testthat::expect_s3_class(res, "PM_result")
     testthat::expect_true(file.exists(file.path(run_path, "1", "outputs", "PMout.Rdata")))
 })
+
+testthat::test_that("fit accepts integer cycles on the runtime path", {
+    mod <- build_cache_fit_model()
+    dat <- make_cache_fit_data()
+    run_path <- withr::local_tempdir(pattern = "fit-cycles-integer-")
+
+    res <- mod$fit(
+        data = dat,
+        path = run_path,
+        cycles = 1L,
+        points = 20,
+        report = "none",
+        quiet = TRUE
+    )
+
+    testthat::expect_s3_class(res, "PM_result")
+    testthat::expect_true(file.exists(file.path(run_path, "1", "outputs", "PMout.Rdata")))
+})

@@ -9,7 +9,7 @@ name = 'pm_rs'
 
 [dependencies]
 extendr-api = "=0.9.0"
-pmcore = { version = "=0.25.2", path = "../../../PMcore-structure", features = ["dsl-jit"] }
+pmcore = { version = "=0.25.2", git = "https://github.com/LAPKB/PMcore", rev = "668dd305436c75d4fdef29138261540c114c0c34", features = ["dsl-jit"] }
 
 rayon = "1.10.0"
 anyhow = "1.0.97"

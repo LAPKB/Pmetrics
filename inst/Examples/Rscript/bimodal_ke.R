@@ -38,7 +38,6 @@ fit <- model$fit(
     points = 2028,
     seed = 22,
     idelta = 0.01,
-    report = "none",
     overwrite = TRUE
 )
 

@@ -24,9 +24,15 @@ fn get_str(map: &HashMap<&str, Robj>, key: &str) -> AnyResult<String> {
 
 fn get_real_or(map: &HashMap<&str, Robj>, key: &str, default: f64) -> AnyResult<f64> {
     match map.get(key) {
-        Some(value) => value
-            .as_real()
-            .ok_or_else(|| anyhow!("Setting '{}' is not numeric", key)),
+        Some(value) => {
+            if let Some(real) = value.as_real() {
+                Ok(real)
+            } else if let Some(integer) = value.as_integer() {
+                Ok(integer as f64)
+            } else {
+                Err(anyhow!("Setting '{}' is not numeric", key))
+            }
+        }
         None => Ok(default),
     }
 }
@@ -428,6 +434,50 @@ mod tests {
                 };
             assert!(!runtime_cache);
             assert!(!prediction_cache_enabled);
+        }
+    }
+
+    #[test]
+    fn settings_accepts_integer_max_cycles() {
+        test! {
+            let error_model = List::from_pairs(vec![
+                ("initial", r!(2.0)),
+                ("type", r!(["additive"])),
+                ("fixed", r!(false)),
+                ("coeff", r!([0.0, 0.10, 0.0, 0.0])),
+            ]);
+
+            let settings_list = List::from_pairs(vec![
+                (
+                    "ranges",
+                    list!(ke = r!([0.05, 1.0]), v = r!([5.0, 50.0])).into(),
+                ),
+                ("algorithm", r!("NPAG")),
+                ("error_models", List::from_values(vec![error_model]).into()),
+                ("max_cycles", r!(2_i32)),
+                ("prior", r!("sobol")),
+                ("points", r!(8.0)),
+                ("seed", r!(7.0)),
+            ]);
+
+            let builder = settings(
+                settings_list,
+                equation(),
+                data(),
+                std::env::temp_dir()
+                    .join("pm-rs-settings-integer-cycles")
+                    .to_string_lossy()
+                    .as_ref(),
+            )
+            .expect("integer max_cycles should be accepted");
+
+            match builder {
+                FitBuilder::Npag(builder) => {
+                    let compiled = builder.build().expect("builder should build").compile().expect("problem should compile");
+                    assert_eq!(compiled.runtime_options().cycles, 2);
+                }
+                FitBuilder::Npod(_) | FitBuilder::PostProb(_) => panic!("expected NPAG builder"),
+            }
         }
     }
 
