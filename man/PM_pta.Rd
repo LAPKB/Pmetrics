@@ -24,7 +24,7 @@ appropriate regimens.
 \examples{
 
 ## ------------------------------------------------
-## Method `PM_pta$new()`
+## Method `PM_pta$new`
 ## ------------------------------------------------
 
 \dontrun{
@@ -73,31 +73,30 @@ Michael Neely and Jan Strojil
 }
 \keyword{internal}
 \section{Public fields}{
-  \if{html}{\out{<div class="r6-fields">}}
-  \describe{
-    \item{\code{data}}{Contains the raw results.}
-  }
-  \if{html}{\out{</div>}}
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{data}}{Contains the raw results.}
+}
+\if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-  \itemize{
-    \item \href{#method-PM_pta-initialize}{\code{PM_pta$new()}}
-    \item \href{#method-PM_pta-save}{\code{PM_pta$save()}}
-    \item \href{#method-PM_pta-summary}{\code{PM_pta$summary()}}
-    \item \href{#method-PM_pta-plot}{\code{PM_pta$plot()}}
-    \item \href{#method-PM_pta-load}{\code{PM_pta$load()}}
-    \item \href{#method-PM_pta-clone}{\code{PM_pta$clone()}}
-  }
+\itemize{
+\item \href{#method-PM_pta-new}{\code{PM_pta$new()}}
+\item \href{#method-PM_pta-save}{\code{PM_pta$save()}}
+\item \href{#method-PM_pta-summary}{\code{PM_pta$summary()}}
+\item \href{#method-PM_pta-plot}{\code{PM_pta$plot()}}
+\item \href{#method-PM_pta-load}{\code{PM_pta$load()}}
+\item \href{#method-PM_pta-clone}{\code{PM_pta$clone()}}
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_pta-initialize"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_pta-initialize}{}}}
-\subsection{\code{PM_pta$new()}}{
-  Create a new \code{PM_pta} object.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_pta$new(
+\if{html}{\out{<a id="method-PM_pta-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_pta-new}{}}}
+\subsection{Method \code{new()}}{
+Create a new \code{PM_pta} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_pta$new(
   simdata,
   simlabels,
   target,
@@ -110,13 +109,13 @@ Michael Neely and Jan Strojil
   icen = "median",
   block = 1,
   ...
-)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{simdata}}{Can be one of multiple inputs as shown in the examples below using.
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{simdata}}{Can be one of multiple inputs as shown in the examples below using.
 \itemize{
 \item \code{simEx} \emph{PM_sim}
 \item \code{simEx$data} \emph{PM_simlist}
@@ -127,8 +126,10 @@ Michael Neely and Jan Strojil
 \item \code{NPex$data$standard_data} \emph{PM_data_data}
 \item \code{"simout.txt"} matches files with wildcard ability, see \link{PM_sim}
 }}
-      \item{\code{simlabels}}{Optional character vector of labels for each simulation.  Default is \code{c('Regimen 1', 'Regimen 2',...)}.}
-      \item{\code{target}}{One of several options.
+
+\item{\code{simlabels}}{Optional character vector of labels for each simulation.  Default is \code{c('Regimen 1', 'Regimen 2',...)}.}
+
+\item{\code{target}}{One of several options.
 \itemize{
 \item A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. \code{c(0.25, 0.5, 1, 2, 4, 8, 16, 32)}.
 \item A single numerical value such as a concentration, e.g. 10.
@@ -140,7 +141,8 @@ corresponding to a \code{target_type} of "max" as in this example:
 \code{target = list(c(0.25, 0.5, 1, 2, 4, 8, 16, 32), 10, 50)}. The first value can also be a sampled
 distribution made with \link{makePTAtarget}.
 }}
-      \item{\code{target_type}}{A vector of the type for each \code{target}.  For any, place a minus sign
+
+\item{\code{target_type}}{A vector of the type for each \code{target}.  For any, place a minus sign
 in front to make the success less than the target ratio, e.g. \code{target_type = c("min", "-min")}.
 Available types:
 \itemize{
@@ -158,33 +160,42 @@ Use "-min" to make the success less than the target ratio.
 This enables testing of a specific timed concentration (e.g. one hour after a dose or C1).  Be sure that the time in the simulated data is used,
 e.g., 122 after a dose given at 120. As for the other target types, make the number negative
 to make the success less than the target ratio, eg -122.}
-      \item{\code{success}}{A vector specifying the success statistics, e.g. 0.4 for proportion time (end-start) above target, and/or 100 for max:target.
+
+\item{\code{success}}{A vector specifying the success statistics, e.g. 0.4 for proportion time (end-start) above target, and/or 100 for max:target.
 For example \code{success = 0.4} or \code{success = c(0.4, 100)}. The length must be the same as for \code{target} and \code{target_type}.}
-      \item{\code{outeq}}{An integer specifying the number of the simulated output equation to use. Default is 1.}
-      \item{\code{free_fraction}}{Proportion of free, active drug, expressed as a numeric value >=0 and <=1.  Default is 1, i.e.,
+
+\item{\code{outeq}}{An integer specifying the number of the simulated output equation to use. Default is 1.}
+
+\item{\code{free_fraction}}{Proportion of free, active drug, expressed as a numeric value >=0 and <=1.  Default is 1, i.e.,
 100\% free drug or 0\% protein binding.}
-      \item{\code{start}}{Specify the time to begin PTA calculations. Default is a vector with the first observation time for subjects
+
+\item{\code{start}}{Specify the time to begin PTA calculations. Default is a vector with the first observation time for subjects
 in each element of \code{simdata}, e.g. dose regimen. If specified as a vector, values will be recycled as necessary.}
-      \item{\code{end}}{Specify the time to end PTA calculations so that PTA is calculated
+
+\item{\code{end}}{Specify the time to end PTA calculations so that PTA is calculated
 from \code{start} to \code{end}.  Default for end is the maximum observation
 time for subjects in each element of \code{simdata}, e.g. dose regimen.  If specified as a vector, values will be recycled
 as necessary. Subjects with insufficient data (fewer than 5 simulated observations) for a specified interval will trigger a warning.
 Ideally then, the simulated datset should contain sufficient observations within the interval specified by \code{start} and \code{end}.}
-      \item{\code{icen}}{Can be either "median" for the predictions based on medians of \code{pred.type} parameter value
+
+\item{\code{icen}}{Can be either "median" for the predictions based on medians of \code{pred.type} parameter value
 distributions, or "mean".  Default is "median".}
-      \item{\code{block}}{Which block to plot, where a new block is defined by dose resets (evid = 4); default is 1.}
-      \item{\code{...}}{Not currently used}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    This function will calculate the probability of target attainment (PTA)
+
+\item{\code{block}}{Which block to plot, where a new block is defined by dose resets (evid = 4); default is 1.}
+
+\item{\code{...}}{Not currently used}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+This function will calculate the probability of target attainment (PTA)
 for any number of simulations, targets and definitions of success.
 Simulations typically differ by dose, but may differ by other features
 such as children vs. adults.
-  }
-  \subsection{Returns}{
-    A list of class \emph{PM_pta_data}, included in the \code{data} field of the \link{PM_pta} object.
+}
+
+\subsection{Returns}{
+A list of class \emph{PM_pta_data}, included in the \code{data} field of the \link{PM_pta} object.
 The list contains each \code{target_type} as an element, followed by a final \code{intersection}
 element showing the results for profiles which meet ALL the conditions (intersection)
 or \code{NA} if only one \code{target_type} was specified.
@@ -209,10 +220,11 @@ Simulated (rather than discrete) targets made with \link{makePTAtarget} will be
 abbreviated as "(sim)", e.g. (sim)(5) for a combination of simulated targets and
 a single concentration target of 5.
 }
-  }
-  \subsection{Examples}{
-    \if{html}{\out{<div class="r example copy">}}
-    \preformatted{pta1 <- PM_pta$new(simEx,
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{\dontrun{
+pta1 <- PM_pta$new(simEx,
                  simlabels = c("600 mg daily", "1200 mg daily", "300 mg bid", "600 mg bid"),
                  target = list(2^(-2:6), 1, 50),
                  target_type = c("time", 144, "-max"),
@@ -246,106 +258,98 @@ pta5 <- PM_pta$new(simdata = simEx,
                  success = c(200,1),
                  start = 120, end = 144)
 }
-    \if{html}{\out{</div>}}
-  }
+}
+\if{html}{\out{</div>}}
+
 }
 
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_pta-save"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_pta-save}{}}}
-\subsection{\code{PM_pta$save()}}{
-  Save the current PM_pta object into a .rds file.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_pta$save(file_name = "PMpta.rds")}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{file_name}}{Name of the file to be created, the default is PMpta.rds}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Method \code{save()}}{
+Save the current PM_pta object into a .rds file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_pta$save(file_name = "PMpta.rds")}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file_name}}{Name of the file to be created, the default is PMpta.rds}
+}
+\if{html}{\out{</div>}}
+}
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_pta-summary"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_pta-summary}{}}}
-\subsection{\code{PM_pta$summary()}}{
-  Summarize the \code{PM_pta} object. See \link{summary.PM_pta}.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_pta$summary(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Arguments passed to \link{summary.PM_pta}}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Method \code{summary()}}{
+Summarize the \code{PM_pta} object. See \link{summary.PM_pta}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_pta$summary(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{summary.PM_pta}}
+}
+\if{html}{\out{</div>}}
+}
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_pta-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_pta-plot}{}}}
-\subsection{\code{PM_pta$plot()}}{
-  Plot the \code{PM_pta} object. See \link{plot.PM_pta}.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_pta$plot(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Arguments passed to \link{plot.PM_pta}}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Method \code{plot()}}{
+Plot the \code{PM_pta} object. See \link{plot.PM_pta}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_pta$plot(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{plot.PM_pta}}
+}
+\if{html}{\out{</div>}}
+}
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_pta-load"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_pta-load}{}}}
-\subsection{\code{PM_pta$load()}}{
-  \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+\subsection{Method \code{load()}}{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 
 Deprecated method to load a prior PTA Replaced by \code{PM_pta$new()} to be
 consistent with R6.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_pta$load(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Not used.}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_pta$load(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Not used.}
+}
+\if{html}{\out{</div>}}
+}
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_pta-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_pta-clone}{}}}
-\subsection{\code{PM_pta$clone()}}{
-  The objects of this class are cloneable with this method.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_pta$clone(deep = FALSE)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{deep}}{Whether to make a deep clone.}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_pta$clone(deep = FALSE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
 }

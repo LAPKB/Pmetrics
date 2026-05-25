@@ -126,7 +126,7 @@ testthat::test_that("PM_model$new flags reserved names and dynamic ODE indices",
   )
 
   expect_s3_class(reserved, "PM_model")
-  expect_true(is.null(reserved$binary_path))
+  expect_match(reserved$dsl(), "kind = ode")
 
   dynamic_index <- PM_model$new(
     pri = list(
@@ -145,7 +145,7 @@ testthat::test_that("PM_model$new flags reserved names and dynamic ODE indices",
   )
 
   expect_s3_class(dynamic_index, "PM_model")
-  expect_true(is.null(dynamic_index$binary_path))
+  expect_error(dynamic_index$dsl(), "Dynamic indices are not supported")
 })
 
 testthat::test_that("PM_model$map enforces required arguments", {

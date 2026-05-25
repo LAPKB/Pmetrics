@@ -258,7 +258,7 @@ PM_final <- R6::R6Class(
 
       if (file.exists(file.path(path, "settings.json"))) {
         config <- jsonlite::fromJSON(file.path(path, "settings.json"))
-      } else if (inherits(data, "PM_final")) { # file not there, and already PM_final
+      } else if (inherits(data, "PM_final") & !is.null(data$data)) { # file not there, and already PM_final
         class(data$data) <- c("PM_final_data", "data.frame")
         return(data$data)
       } else {
@@ -345,12 +345,20 @@ PM_final <- R6::R6Class(
       sh <- varEBD / popSD**2
 
       # ranges
-      ab <- config$parameters[[1]] |>
-        tibble::as_tibble() |>
-        dplyr::rename(par = name, min = lower, max = upper)
+      ab <- if (!is.null(config$parameters) && length(config$parameters) > 0) {
+        config$parameters[[1]] |>
+          tibble::as_tibble() |>
+          dplyr::rename(par = name, min = lower, max = upper)
+      } else {
+        tibble::tibble(par = par_names, min = NA_real_, max = NA_real_)
+      }
 
 
-      gridpts <- config$prior$Sobol[1]
+      gridpts <- if (!is.null(config$prior) && !is.null(config$prior$Sobol)) {
+        config$prior$Sobol[1]
+      } else {
+        nrow(theta)
+      }
 
       final <- list(
         popPoints = theta,

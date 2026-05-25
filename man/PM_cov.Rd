@@ -36,9 +36,9 @@ parameter, covariate-time, or parameter-time relationships.
 Michael Neely, Julian Otalvaro
 }
 \section{Public fields}{
-  \if{html}{\out{<div class="r6-fields">}}
-  \describe{
-    \item{\code{data}}{A data frame with the following columns
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{data}}{A data frame with the following columns
 \itemize{
 \item id Subject identification
 \item time Times of covariate observations
@@ -48,153 +48,148 @@ for each subject, replicated as necessary for covariate observation times and du
 parameter means and medians
 \item icen The type of summarized Bayesian posterior individual parameter values: mean or median
 }}
-  }
-  \if{html}{\out{</div>}}
+}
+\if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-  \itemize{
-    \item \href{#method-PM_cov-initialize}{\code{PM_cov$new()}}
-    \item \href{#method-PM_cov-step}{\code{PM_cov$step()}}
-    \item \href{#method-PM_cov-summary}{\code{PM_cov$summary()}}
-    \item \href{#method-PM_cov-plot}{\code{PM_cov$plot()}}
-    \item \href{#method-PM_cov-print}{\code{PM_cov$print()}}
-    \item \href{#method-PM_cov-clone}{\code{PM_cov$clone()}}
-  }
+\itemize{
+\item \href{#method-PM_cov-new}{\code{PM_cov$new()}}
+\item \href{#method-PM_cov-step}{\code{PM_cov$step()}}
+\item \href{#method-PM_cov-summary}{\code{PM_cov$summary()}}
+\item \href{#method-PM_cov-plot}{\code{PM_cov$plot()}}
+\item \href{#method-PM_cov-print}{\code{PM_cov$print()}}
+\item \href{#method-PM_cov-clone}{\code{PM_cov$clone()}}
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_cov-initialize"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_cov-initialize}{}}}
-\subsection{\code{PM_cov$new()}}{
-  Create new object populated with covariate-parameter information
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_cov$new(PMdata = NULL, path = ".", ...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
-.}
-      \item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
-.}
-      \item{\code{...}}{Not currently used.}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    Creation of new \code{PM_cov} object is automatic and not generally necessary
-for the user to do.
-  }
+\if{html}{\out{<a id="method-PM_cov-new"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_cov-new}{}}}
+\subsection{Method \code{new()}}{
+Create new object populated with covariate-parameter information
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_cov$new(PMdata = NULL, path = ".", ...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
+.}
+
+\item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
+.}
+
+\item{\code{...}}{Not currently used.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+Creation of new \code{PM_cov} object is automatic and not generally necessary
+for the user to do.
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_cov-step"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_cov-step}{}}}
-\subsection{\code{PM_cov$step()}}{
-  Stepwise linear regression of covariates and Bayesian posterior
+\subsection{Method \code{step()}}{
+Stepwise linear regression of covariates and Bayesian posterior
 parameter values
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_cov$step(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Arguments passed to \link{PM_step}}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    See \link{PM_step}.
-  }
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_cov$step(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{PM_step}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+See \link{PM_step}.
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_cov-summary"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_cov-summary}{}}}
-\subsection{\code{PM_cov$summary()}}{
-  Summary method
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_cov$summary(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Arguments passed to \link{summary.PM_cov}}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    See \link{summary.PM_cov}.
-  }
+\subsection{Method \code{summary()}}{
+Summary method
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_cov$summary(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{summary.PM_cov}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+See \link{summary.PM_cov}.
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_cov-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_cov-plot}{}}}
-\subsection{\code{PM_cov$plot()}}{
-  Plot method
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_cov$plot(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Arguments passed to \link{plot.PM_cov}}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    See \link{plot.PM_cov}.
-  }
+\subsection{Method \code{plot()}}{
+Plot method
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_cov$plot(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{plot.PM_cov}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+See \link{plot.PM_cov}.
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_cov-print"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_cov-print}{}}}
-\subsection{\code{PM_cov$print()}}{
-  Print method
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_cov$print(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Arguments passed to \link{print}}
-    }
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Details}{
-    Print method for \link{PM_cov}
-  }
+\subsection{Method \code{print()}}{
+Print method
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_cov$print(...)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{Arguments passed to \link{print}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Details}{
+Print method for \link{PM_cov}
+}
+
+}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_cov-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_cov-clone}{}}}
-\subsection{\code{PM_cov$clone()}}{
-  The objects of this class are cloneable with this method.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_cov$clone(deep = FALSE)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{deep}}{Whether to make a deep clone.}
-    }
-    \if{html}{\out{</div>}}
-  }
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PM_cov$clone(deep = FALSE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
 }

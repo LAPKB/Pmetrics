@@ -1,33 +1,45 @@
 use crate::settings::settings;
 use extendr_api::List;
 
-use pmcore::prelude::{pharmsol::exa::load::load, simulator::SubjectPredictions, Predictions, *};
-
-use std::path::PathBuf;
+use pmcore::prelude::{simulator::SubjectPredictions, Predictions, *};
 
 use crate::simulation::SimulationRow;
 
-pub(crate) fn model_parameters<E: Equation>(model_path: PathBuf) -> Vec<String> {
-    let (_lib, (_ode, meta)) = unsafe { load::<E>(model_path) };
-    meta.get_params().clone()
+pub(crate) fn model_parameters<E: EquationMetadataSource>(equation: &E) -> Result<Vec<String>> {
+    let metadata = equation
+        .equation_metadata()
+        .ok_or_else(|| anyhow::anyhow!("runtime model metadata is required"))?;
+
+    Ok(metadata
+        .parameters()
+        .iter()
+        .map(|parameter| parameter.name().to_string())
+        .collect())
 }
 
-pub(crate) fn simulate<E: Equation + Send>(
-    model_path: PathBuf,
+pub(crate) fn simulate<E>(
+    equation: &E,
     subject: &Subject,
-    support_point: &Vec<f64>,
+    parameters: &Parameters,
     spp_index: usize,
-) -> Result<Vec<SimulationRow>> {
-    let (_lib, (model, meta)) = unsafe { load::<E>(model_path) };
-    if meta.get_params().len() != support_point.len() {
+) -> Result<Vec<SimulationRow>>
+where
+    E: Equation + EquationMetadataSource,
+{
+    let metadata = equation
+        .equation_metadata()
+        .ok_or_else(|| anyhow::anyhow!("runtime model metadata is required"))?;
+
+    if metadata.parameters().len() != parameters.as_slice().len() {
         return Err(anyhow::anyhow!(
             "Support point has {} values but model expects {} parameters",
-            support_point.len(),
-            meta.get_params().len()
+            parameters.as_slice().len(),
+            metadata.parameters().len()
         ));
     }
-    let predictions: SubjectPredictions = model
-        .estimate_predictions(subject, support_point)?
+
+    let predictions: SubjectPredictions = equation
+        .estimate_predictions(subject, parameters)?
         .get_predictions()
         .into();
     Ok(SimulationRow::from_subject_predictions(
@@ -37,19 +49,15 @@ pub(crate) fn simulate<E: Equation + Send>(
     ))
 }
 
-pub(crate) fn fit<E: Equation + Send>(
-    model_path: PathBuf,
+pub(crate) fn fit<E>(
+    equation: E,
     data: Data,
     params: List,
-    output_path: PathBuf,
-) -> std::result::Result<(), anyhow::Error> {
-    let (_lib, (eq, meta)) = unsafe { load::<E>(model_path) };
-    let output_path_str = output_path
-        .to_str()
-        .ok_or_else(|| anyhow::anyhow!("Output path contains invalid UTF-8: {:?}", output_path))?;
-    let settings = settings(params, meta.get_params(), output_path_str)?;
-    let mut algorithm = dispatch_algorithm(settings, eq, data)?;
-    let mut result = algorithm.fit()?;
-    result.write_outputs()?;
+    output_path: &str,
+) -> std::result::Result<(), anyhow::Error>
+where
+    E: Equation + Clone + Send + 'static + EquationMetadataSource,
+{
+    let _result = settings(params, equation, data, output_path)?.fit()?;
     Ok(())
 }

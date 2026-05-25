@@ -119,11 +119,11 @@ PM_cycle <- R6::R6Class(
   ), # end active
   private = list(
     make = function(data, path) {
-      if (file.exists(file.path(path, "cycles.csv"))) {
-        raw <- readr::read_csv(file = file.path(path, "cycles.csv"), show_col_types = FALSE)
+      if (file.exists(file.path(path, "iterations.csv"))) {
+        raw <- readr::read_csv(file = file.path(path, "iterations.csv"), show_col_types = FALSE)
         if (nrow(raw) == 0) { # posterior
           raw <- data.frame(cycle = 0, status = "Posterior")
-          write.csv(raw, file.path(path, "cycles.csv"), row.names = FALSE)
+          write.csv(raw, file.path(path, "iterations.csv"), row.names = FALSE)
         }
       } else if (inherits(data, "PM_cycle") & !is.null(data$data)) { # file not there, and already PM_cycle
         class(data$data) <- c("PM_cycle_data", "list")
@@ -131,15 +131,15 @@ PM_cycle <- R6::R6Class(
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate cycle information.",
-          "i" = "{.file {file.path(path, 'cycles.csv')}} does not exist, and result does not have valid {.code PM_cycle} object."
+          "i" = "{.file {file.path(path, 'iterations.csv')}} does not exist, and result does not have valid {.code PM_cycle} object."
         ))
         return(NULL)
       }
 
 
-      if (file.exists(file.path(path, "pred.csv"))) {
+      if (file.exists(file.path(path, "predictions.csv"))) {
         op_raw <- readr::read_csv(
-          file = file.path(path, "pred.csv"),
+          file = file.path(path, "predictions.csv"),
           col_types = list(
             time = readr::col_double(),
             outeq = readr::col_integer(),
@@ -158,7 +158,7 @@ PM_cycle <- R6::R6Class(
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate cycle information.",
-          "i" = "{.file {file.path(path, 'pred.csv')}} does not exist, and result does not have valid {.code PM_cycle} object."
+          "i" = "{.file {file.path(path, 'predictions.csv')}} does not exist, and result does not have valid {.code PM_cycle} object."
         ))
         return(NULL)
       }
@@ -177,10 +177,17 @@ PM_cycle <- R6::R6Class(
         return(NULL)
       }
 
+      parameter_names <- if (!is.null(config$parameters) && length(config$parameters) > 0) {
+        config$parameters[[1]][["name"]]
+      } else {
+        unique(sub("\\.(mean|median|sd)$", "", names(raw)[grepl("\\.(mean|median|sd)$", names(raw))]))
+      }
+      num_params <- length(parameter_names)
+
       # Run was a posterior
       if (raw$status[1] == "Posterior") {
         res <- list(
-          names = config$parameters$parameters$name,
+          names = parameter_names,
           objective = tibble(cycle = 0, neg2ll = NA, aic = NA, bic = NA),
           gamlam = NA,
           mean = NA,
@@ -196,8 +203,6 @@ PM_cycle <- R6::R6Class(
       cycle_data <- raw |>
         pivot_longer(cols = ends_with(c("mean", "median", "sd"))) |>
         separate_wider_delim(name, delim = ".", names = c("parameter", "statistic"))
-
-      num_params <- nrow((config$parameters$parameters))
 
       aic <- 2 * num_params + raw$neg2ll
       names(aic) <- raw$cycle
@@ -269,7 +274,7 @@ PM_cycle <- R6::R6Class(
       status <- tail(cycle_data$status, 1)
 
       res <- list(
-        names = config$parameters$parameters$name,
+        names = parameter_names,
         objective = raw |> select(cycle, neg2ll) |> mutate(aic = aic, bic = bic),
         gamlam = gamlam,
         mean = mean,
@@ -366,17 +371,16 @@ PM_cycle <- R6::R6Class(
 #' @family PMplots
 
 plot.PM_cycle <- function(
-  x,
-  line = TRUE,
-  marker = TRUE,
-  colors,
-  linetypes,
-  omit,
-  grid = TRUE,
-  xlab, ylab,
-  print = TRUE,
-  ...
-) {
+    x,
+    line = TRUE,
+    marker = TRUE,
+    colors,
+    linetypes,
+    omit,
+    grid = TRUE,
+    xlab, ylab,
+    print = TRUE,
+    ...) {
   if (inherits(x, "PM_cycle")) {
     data <- x$data
   } else {

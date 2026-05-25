@@ -2,12 +2,12 @@
 % Please edit documentation in R/extendr-wrappers.R
 \name{model_parameters}
 \alias{model_parameters}
-\title{Retrieves the model parameters from the compiled model at the given path.}
+\title{Retrieves the model parameters from compiled DSL metadata.}
 \usage{
-model_parameters(model_path, kind)
+model_parameters(model_source, kind)
 }
 \arguments{
-\item{model_path}{Path to the compiled model file.}
+\item{model_source}{DSL source code for the model.}
 
 \item{kind}{Kind of model, which can either be "ODE" or "Analytical".}
 }
@@ -15,6 +15,6 @@ model_parameters(model_path, kind)
 List of model parameters.
 }
 \description{
-Retrieves the model parameters from the compiled model at the given path.
+Retrieves the model parameters from compiled DSL metadata.
 }
 \keyword{internal}

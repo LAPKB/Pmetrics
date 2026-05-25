@@ -2,12 +2,12 @@
 % Please edit documentation in R/extendr-wrappers.R
 \name{fit}
 \alias{fit}
-\title{Fits the model at the given path to the data at the given path using the provided parameters.}
+\title{Fits the model DSL source to the data using the provided parameters.}
 \usage{
-fit(model_path, data, params, output_path, kind)
+fit(model_source, data, params, output_path, kind, solver = NULL)
 }
 \arguments{
-\item{model_path}{Path to the compiled model file.}
+\item{model_source}{DSL source code for the model.}
 
 \item{data}{Path to the data file.}
 
@@ -16,11 +16,13 @@ fit(model_path, data, params, output_path, kind)
 \item{output_path}{Path to save the fitting results.}
 
 \item{kind}{Kind of model, which can either be "ODE" or "Analytical".}
+
+\item{solver}{Optional ODE solver name.}
 }
 \value{
 Result of the fitting process.
 }
 \description{
-Fits the model at the given path to the data at the given path using the provided parameters.
+Fits the model DSL source to the data using the provided parameters.
 }
 \keyword{internal}

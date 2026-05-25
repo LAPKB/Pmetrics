@@ -36,7 +36,7 @@ PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
     cli::cli_abort(c("x" = "The directory {.path {path}} does not exist."))
   }
 
-  # assumes pred.csv and settings.json are in wd
+  # assumes predictions.csv and settings.json are in wd
   op <- rlang::try_fetch(PM_op$new(path = path),
     error = function(e) {
       cli::cli_warn("Unable to create {.cls PM_op} object", parent = e)
@@ -52,7 +52,7 @@ PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
     }
   )
 
-  # assumes cycles.csv, and settings.json are in wd
+  # assumes iterations.csv and settings.json are in wd
   cycle <- rlang::try_fetch(PM_cycle$new(path = path),
     error = function(e) {
       cli::cli_warn("Unable to create {.cls PM_cycle} object", parent = e)
@@ -60,7 +60,7 @@ PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
     }
   )
 
-  # assumes pred.csv is in wd
+  # assumes predictions.csv is in wd
   pop <- rlang::try_fetch(PM_pop$new(path = path),
     error = function(e) {
       cli::cli_warn("Unable to create {.cls PM_pop} object", parent = e)
@@ -68,7 +68,7 @@ PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
     }
   )
 
-  # assumes pred.csv is in wd
+  # assumes predictions.csv is in wd
   post <- rlang::try_fetch(PM_post$new(path = path),
     error = function(e) {
       cli::cli_warn("Unable to create {.cls PM_post} object", parent = e)
@@ -84,16 +84,15 @@ PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
   )
 
   config <- rlang::try_fetch(jsonlite::fromJSON(suppressWarnings(readLines(file.path(path, "settings.json"), warn = FALSE))),
-      error = function(e) {
-        cli::cli_warn(c("!" = "Unable to read {.file {file.path(path, 'settings.json')}}"))
-        return(NULL)
-      }
-    )
+    error = function(e) {
+      cli::cli_warn(c("!" = "Unable to read {.file {file.path(path, 'settings.json')}}"))
+      return(NULL)
+    }
+  )
 
   core <- list(
     data = fit_object$data,
     model = fit_object$model,
-    model_binary_path = if (!is.null(fit_object) && inherits(fit_object$model, "PM_model")) fit_object$model$binary_path else NULL,
     op = op,
     cov = cov,
     post = post,
@@ -104,7 +103,9 @@ PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
     config = config,
     sys = {
       info <- as.list(Sys.info())
-      info |> keep(names(info) %in% c("sysname", "machine")) |> paste(collapse = " ")
+      info |>
+        keep(names(info) %in% c("sysname", "machine")) |>
+        paste(collapse = " ")
     }
   )
 

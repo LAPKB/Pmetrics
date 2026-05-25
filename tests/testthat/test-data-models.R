@@ -23,7 +23,7 @@ test_that("Model object creation", {
   expect_equal(mod1$model_list$n_eqn, 2)
   expect_equal(mod1$model_list$n_out, 1)
   expect_equal(mod1$model_list$type, "ODE")
-  expect_true(is.null(mod1$binary_path))
+  expect_match(mod1$dsl(), "kind = ode")
 })
 
 test_that("Model can be reconstructed from an existing PM_model", {
@@ -33,7 +33,7 @@ test_that("Model can be reconstructed from an existing PM_model", {
   expect_s3_class(mod2, "PM_model")
   expect_equal(names(mod2$model_list$pri), c("ka", "ke", "v"))
   expect_equal(mod2$model_list$type, "ODE")
-  expect_true(is.null(mod2$binary_path))
+  expect_match(mod2$dsl(), "kind = ode")
 })
 
 
@@ -43,12 +43,11 @@ test_that("Current workflow: PM_model + PM_data + PM_model$fit", {
     is_cargo_installed(),
     message = "Cargo is required to compile and run PM_model$fit tests."
   )
-  local_exa_tmp_cleanup()
 
   mod1 <- build_example_ode_model(compile = TRUE)
   ex_data <- PM_data$new(data = "ex.csv", quiet = TRUE)
 
-  expect_true(file.exists(mod1$binary_path))
+  expect_no_error(mod1$compile(quiet = TRUE))
 
   run_path <- withr::local_tempdir()
   ex_res <- mod1$fit(
@@ -62,6 +61,7 @@ test_that("Current workflow: PM_model + PM_data + PM_model$fit", {
 
   expect_s3_class(ex_res, "PM_result")
   expect_true(file.exists(file.path(run_path, "1", "outputs", "PMout.Rdata")))
+  expect_true(file.exists(file.path(run_path, "1", "inputs", "model.dsl")))
 })
 
 test_that("Analytical models allow multi-line secondary conditionals", {

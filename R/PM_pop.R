@@ -91,9 +91,9 @@ PM_pop <- R6::R6Class(
   ), # end public
   private = list(
     make = function(data, path) {
-      if (file.exists(file.path(path, "pred.csv"))) {
+      if (file.exists(file.path(path, "predictions.csv"))) {
         op_raw <- readr::read_csv(
-          file = file.path(path, "pred.csv"),
+          file = file.path(path, "predictions.csv"),
           col_types = list(
             time = readr::col_double(),
             outeq = readr::col_integer(),
@@ -112,7 +112,7 @@ PM_pop <- R6::R6Class(
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate pop pred information.",
-          "i" = "{.file {file.path(path, 'pred.csv')}} does not exist, and result does not have valid {.code PM_pop} object."
+          "i" = "{.file {file.path(path, 'predictions.csv')}} does not exist, and result does not have valid {.code PM_pop} object."
         ))
         return(NULL)
       }
@@ -223,26 +223,25 @@ PM_pop <- R6::R6Class(
 #' @family PMplots
 
 plot.PM_pop <- function(
-  x,
-  include = NULL,
-  exclude = NULL,
-  line = list(join = TRUE),
-  marker = FALSE,
-  out_names = NULL,
-  mult = 1,
-  icen = "median",
-  outeq = 1,
-  block = 1,
-  overlay = TRUE,
-  legend = FALSE,
-  log = FALSE,
-  grid = FALSE,
-  xlab = "Time",
-  ylab = "Output",
-  title = "",
-  xlim, ylim,
-  print = TRUE, ...
-) {
+    x,
+    include = NULL,
+    exclude = NULL,
+    line = list(join = TRUE),
+    marker = FALSE,
+    out_names = NULL,
+    mult = 1,
+    icen = "median",
+    outeq = 1,
+    block = 1,
+    overlay = TRUE,
+    legend = FALSE,
+    log = FALSE,
+    grid = FALSE,
+    xlab = "Time",
+    ylab = "Output",
+    title = "",
+    xlim, ylim,
+    print = TRUE, ...) {
   # Plot parameters ---------------------------------------------------------
 
   x <- if (inherits(x, "PM_pop")) {
@@ -491,10 +490,9 @@ plot.PM_pop <- function(
 #' @export
 
 summary.PM_pop <- function(
-  object, digits = max(3, getOption("digits") - 3),
-  icen = "median",
-  outeq = 1, ...
-) {
+    object, digits = max(3, getOption("digits") - 3),
+    icen = "median",
+    outeq = 1, ...) {
   sumWrk <- function(data) {
     sumstat <- matrix(NA, nrow = 7, ncol = 2, dimnames = list(c("Min", "25%", "Median", "75%", "Max", "Mean", "SD"), c("Time", "Pred")))
     # min

@@ -61,7 +61,7 @@ the \code{line} argument should be a list of the options for group based plottin
 where each group corresponds to a simulated regimen. The possible elements of the
 \code{line} list should be exactly named:
 \itemize{
-\item color Maps to the \link[plotly:plot_ly]{plot_ly} \code{colors} argument to override default colors
+\item color Maps to the \link[plotly:plot_ly]{plotly::plot_ly} \code{colors} argument to override default colors
 applied to the lines for each regimen. This can be a named palette, which
 can be obtained with \code{RColorBrewer::display.brewer.all()} or a vector of hexadecimal
 color names. One way to ensure reliable color palettes is to use the
@@ -72,12 +72,12 @@ of JavaScript on the ColorBrewer website. The default is "Set1". Palettes
 with fewer colors than regimens will be recycled. A color can also be a character
 vector of color names, recycled as needed. For example, a print-friendly choice
 is \code{line = list(color = "black")}.
-\item width Maps to the \link[plotly:plot_ly]{plot_ly} \code{width} argument to override default widths
+\item width Maps to the \link[plotly:plot_ly]{plotly::plot_ly} \code{width} argument to override default widths
 applied to the lines for each regimen. All lines will have the same width.
 The default value is 2.
-\item dash Maps to the \link[plotly:plot_ly]{plot_ly} \code{linetypes} argument to override default styles
+\item dash Maps to the \link[plotly:plot_ly]{plotly::plot_ly} \code{linetypes} argument to override default styles
 applied to the lines for each regimen. If numeric, will map to \code{lty} \link{par} values.
-It can also be a character vector of dash names as listed in \link[plotly:plot_ly]{plot_ly}.
+It can also be a character vector of dash names as listed in \link[plotly:plot_ly]{plotly::plot_ly}.
 Example: \code{line = list(color = "Blues", width = 1, dash = 2)}, which will result
 in dotted lines (dash  = 2) all with width 1 but in different shades of blue.
 }}
@@ -97,12 +97,12 @@ where each group corresponds to a simulated regimen. The possible elements of th
 marker color does not need to also be specified. Even if line plotting is suppressed
 with \code{line = F}, the default color value of "Set1" will be applied to markers,
 unless specified, e.g. \code{marker = list(color = "Blues")}.
-\item symbol Maps to the \link[plotly:plot_ly]{plot_ly} \code{symbols} argument to override default symbols
+\item symbol Maps to the \link[plotly:plot_ly]{plotly::plot_ly} \code{symbols} argument to override default symbols
 applied to the markers for each regimen. If only one value is supplied for this,
 it will be recycled for each regimen, i.e. all will have the same symbol.
 See \code{plotly::schema()}, traces > scatter > attributes > marker > symbol > values
 for options.
-\item size Maps to the \link[plotly:plot_ly]{plot_ly} \code{size} argument to override default size
+\item size Maps to the \link[plotly:plot_ly]{plotly::plot_ly} \code{size} argument to override default size
 applied to the markers for each regimen. All markers will have the same size.
 The default value is 12.
 }}
@@ -182,18 +182,18 @@ pta1$plot()
 }
 }
 \seealso{
-Other PMplots:
-\code{\link[=plot.PM_cov]{plot.PM_cov()}},
-\code{\link[=plot.PM_cycle]{plot.PM_cycle()}},
-\code{\link[=plot.PM_data]{plot.PM_data()}},
-\code{\link[=plot.PM_final]{plot.PM_final()}},
-\code{\link[=plot.PM_model]{plot.PM_model()}},
-\code{\link[=plot.PM_op]{plot.PM_op()}},
-\code{\link[=plot.PM_opt]{plot.PM_opt()}},
-\code{\link[=plot.PM_pop]{plot.PM_pop()}},
-\code{\link[=plot.PM_post]{plot.PM_post()}},
-\code{\link[=plot.PM_sim]{plot.PM_sim()}},
-\code{\link[=plot.PM_valid]{plot.PM_valid()}}
+Other PMplots: 
+\code{\link{plot.PM_cov}()},
+\code{\link{plot.PM_cycle}()},
+\code{\link{plot.PM_data}()},
+\code{\link{plot.PM_final}()},
+\code{\link{plot.PM_model}()},
+\code{\link{plot.PM_op}()},
+\code{\link{plot.PM_opt}()},
+\code{\link{plot.PM_pop}()},
+\code{\link{plot.PM_post}()},
+\code{\link{plot.PM_sim}()},
+\code{\link{plot.PM_valid}()}
 }
 \author{
 Michael Neely

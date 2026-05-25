@@ -128,9 +128,9 @@ PM_op <- R6::R6Class(
   ), # end public
   private = list(
     make = function(data, path) {
-      if (file.exists(file.path(path, "pred.csv"))) {
+      if (file.exists(file.path(path, "predictions.csv"))) {
         op_raw <- readr::read_csv(
-          file = file.path(path, "pred.csv"),
+          file = file.path(path, "predictions.csv"),
           col_types = list(
             time = readr::col_double(),
             outeq = readr::col_integer(),
@@ -156,7 +156,7 @@ PM_op <- R6::R6Class(
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate obs-pred information.",
-          "i" = "{.file {file.path(path, 'pred.csv')}} does not exist, and result does not have valid {.code PM_op} object ."
+          "i" = "{.file {file.path(path, 'predictions.csv')}} does not exist, and result does not have valid {.code PM_op} object ."
         ))
         return(NULL)
       }
@@ -338,22 +338,21 @@ PM_op <- R6::R6Class(
 #' }
 #' @family PMplots
 plot.PM_op <- function(
-  x,
-  line = list(lm = NULL, loess = NULL, ref = NULL),
-  marker = TRUE,
-  resid = FALSE,
-  icen = "median", pred.type = "post", outeq = 1, block,
-  include, exclude,
-  mult = 1,
-  legend,
-  log = FALSE,
-  grid = TRUE,
-  xlab, ylab,
-  title,
-  stats = TRUE,
-  print = TRUE,
-  xlim, ylim, ...
-) {
+    x,
+    line = list(lm = NULL, loess = NULL, ref = NULL),
+    marker = TRUE,
+    resid = FALSE,
+    icen = "median", pred.type = "post", outeq = 1, block,
+    include, exclude,
+    mult = 1,
+    legend,
+    log = FALSE,
+    grid = TRUE,
+    xlab, ylab,
+    title,
+    stats = TRUE,
+    print = TRUE,
+    xlim, ylim, ...) {
   if (inherits(x, "PM_op")) {
     x <- x$data
   }
@@ -803,10 +802,9 @@ plot.PM_op_data <- function(x, ...) {
 #' @export
 
 summary.PM_op <- function(
-  object, digits = max(3, getOption("digits") - 3),
-  pred.type = "post", icen = "median",
-  outeq = 1, ...
-) {
+    object, digits = max(3, getOption("digits") - 3),
+    pred.type = "post", icen = "median",
+    outeq = 1, ...) {
   argList <- list(...)
   if ("type" %in% names(argList)) {
     cli::cli_inform(c("i" = "{.code type} has been updated to {.code pred.type}.\fPlease update your script."))

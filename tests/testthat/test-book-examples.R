@@ -22,12 +22,11 @@ testthat::test_that("Book model snippets adapted: PM_model construction and mapp
   testthat::expect_s3_class(model_from_obj, "PM_model")
   testthat::expect_s3_class(model_rebuilt, "PM_model")
   testthat::expect_true(length(model_from_obj$model_list$parameters) > 0)
-  testthat::expect_true("eqn" %in% names(model_from_obj$model_list))
+  testthat::expect_true(!is.null(model_from_obj$arg_list$eqn))
 })
 
 testthat::test_that("Book workflow snippets adapted: fit then PM_load roundtrip", {
   testthat::skip_if_not(is_cargo_installed(), "Rust toolchain is required for model compilation.")
-  local_exa_tmp_cleanup()
 
   run_root <- withr::local_tempdir(pattern = "book-workflow-")
 

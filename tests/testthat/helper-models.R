@@ -4,30 +4,6 @@ test_that <- function(desc, code) {
   testthat::test_that(desc, code)
 }
 
-cleanup_exa_tmp <- function() {
-  exa_tmp <- tryCatch(temporary_path(), error = function(...) NA_character_)
-
-  if (
-    is.character(exa_tmp) &&
-      length(exa_tmp) == 1 &&
-      !is.na(exa_tmp) &&
-      nzchar(exa_tmp) &&
-      dir.exists(exa_tmp)
-  ) {
-    unlink(exa_tmp, recursive = TRUE, force = TRUE)
-  }
-
-  invisible(NULL)
-}
-
-local_exa_tmp_cleanup <- function(env = parent.frame()) {
-  keep_temp_template <- tolower(Sys.getenv("PMETRICS_TEST_KEEP_EXA_TMP", unset = "true")) %in% c("true", "1", "yes")
-  if (!keep_temp_template) {
-    withr::defer(cleanup_exa_tmp(), envir = env)
-  }
-  invisible(NULL)
-}
-
 build_library_model <- function(model_name, mode = c("analytical", "ode")) {
   mode <- match.arg(mode)
 
