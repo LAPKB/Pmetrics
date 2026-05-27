@@ -92,31 +92,13 @@ PM_post <- R6::R6Class(
   ), # end public
   private = list(
     make = function(data, path) {
-      if (file.exists(file.path(path, "predictions.csv"))) {
-        op_raw <- readr::read_csv(
-          file = file.path(path, "predictions.csv"),
-          col_types = list(
-            time = readr::col_double(),
-            outeq = readr::col_integer(),
-            block = readr::col_integer(),
-            obs = readr::col_double(),
-            cens = readr::col_character(),
-            pop_mean = readr::col_double(),
-            pop_median = readr::col_double(),
-            post_mean = readr::col_double(),
-            post_median = readr::col_double()
-          ), show_col_types = FALSE
-        )
-      } else if (inherits(data, "PM_post") & !is.null(data$data)) { # file not there, and already PM_post
+      if (inherits(data, "PM_post") & !is.null(data$data)) { # file not there, and already PM_post
         class(data$data) <- c("PM_post_data", "data.frame")
         return(data$data)
-      } else {
-        cli::cli_warn(c(
-          "!" = "Unable to generate post pred information.",
-          "i" = "{.file {file.path(path, 'predictions.csv')}} does not exist, and result does not have valid {.code PM_post} object."
-        ))
-        return(NULL)
       }
+
+      fit_payload <- fit_payload_from_source(data, path)
+      op_raw <- tibble::as_tibble(fit_payload$predictions)
 
       if (is.null(op_raw)) {
         return(NA)

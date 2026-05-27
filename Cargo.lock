@@ -1666,10 +1666,14 @@ name = "pm_rs"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "csv",
  "extendr-api",
  "extendr-engine",
  "pmcore",
  "rayon",
+ "serde",
+ "serde_json",
+ "sha2",
  "tracing",
  "tracing-subscriber",
 ]
@@ -1677,7 +1681,6 @@ dependencies = [
 [[package]]
 name = "pmcore"
 version = "0.25.2"
-source = "git+https://github.com/LAPKB/PMcore?rev=668dd305436c75d4fdef29138261540c114c0c34#668dd305436c75d4fdef29138261540c114c0c34"
 dependencies = [
  "anyhow",
  "argmin",

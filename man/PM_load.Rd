@@ -14,7 +14,9 @@ PM_load(run, path = ".", file = "PMout.Rdata")
 
 \item{file}{Default is "PMout.Rdata", which is created after a Pmetrics run,
 but it could also be the name of an .Rdata file created by running the
-\verb{$save} method for a \link{PM_result} object.}
+\verb{$save} method for a \link{PM_result} object. If the default snapshot is
+missing, \code{PM_load()} will rebuild the result from the standard run outputs and
+the saved \code{fit.rds} input snapshot when they are available.}
 }
 \value{
 An R6 \link{PM_result}.
@@ -31,6 +33,8 @@ A combination of \code{run}, \code{path}, and \code{file} are used to locate the
 \item If \code{run} is missing, the results are assumed to be in the \code{path} folder.
 \item The \code{file} name is the name of the Rdata file containing the results.
 Default is "PMout.Rdata", which is created by Pmetrics after a run.
+If that default snapshot is missing, \code{PM_load()} rebuilds the result from the
+standard run outputs and the saved \code{fit.rds} input snapshot when possible.
 \item If both \code{run} and \code{path} are missing, the current working directory is used
 for \code{path}.
 \item If both \code{run} and \code{file} are missing, the current working directory is used

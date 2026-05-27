@@ -1,6 +1,10 @@
 use anyhow::{anyhow, bail, Result as AnyResult};
+use crate::fit_payload::{
+    FitPayloadConfig, FitPayloadErrorModel, FitPayloadErrorModels, FitPayloadParameter,
+    FitPayloadPoly,
+};
 use extendr_api::{Conversions, List, Robj};
-use pmcore::api::NonparametricEstimationProblemBuilder;
+use pmcore::api::{FitControlSource, FitProgress, NonparametricEstimationProblemBuilder};
 use pmcore::prelude::*;
 use std::collections::HashMap;
 
@@ -132,12 +136,158 @@ impl<E> FitBuilder<E>
 where
     E: Equation + Clone + Send + 'static + EquationMetadataSource,
 {
-    pub(crate) fn fit(self) -> AnyResult<FitResult<E>> {
+    pub(crate) fn fit_in_memory(self) -> AnyResult<FitResult<E>> {
         match self {
-            Self::Npag(builder) => builder.fit(),
-            Self::Npod(builder) => builder.fit(),
-            Self::PostProb(builder) => builder.fit(),
+            Self::Npag(builder) => builder.fit_in_memory(),
+            Self::Npod(builder) => builder.fit_in_memory(),
+            Self::PostProb(builder) => builder.fit_in_memory(),
         }
+    }
+
+    pub(crate) fn fit_with_progress_and_control_in_memory<F, C>(
+        self,
+        on_progress: F,
+        next_control: C,
+    ) -> AnyResult<FitResult<E>>
+    where
+        F: FnMut(FitProgress),
+        C: FitControlSource,
+    {
+        match self {
+            Self::Npag(builder) => {
+                builder.fit_with_progress_and_control_in_memory(on_progress, next_control)
+            }
+            Self::Npod(builder) => {
+                builder.fit_with_progress_and_control_in_memory(on_progress, next_control)
+            }
+            Self::PostProb(builder) => {
+                builder.fit_with_progress_and_control_in_memory(on_progress, next_control)
+            }
+        }
+    }
+}
+
+pub(crate) fn live_session_id(settings: &List) -> AnyResult<Option<String>> {
+    let settings: HashMap<&str, Robj> = HashMap::try_from(settings)
+        .map_err(|e| anyhow!("Failed to convert settings list to map: {}", e))?;
+
+    Ok(settings
+        .get("live_session_id")
+        .and_then(|value| value.as_str())
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(ToString::to_string))
+}
+
+pub(crate) fn runtime_interval(settings: &List) -> AnyResult<(f64, f64)> {
+    let settings: HashMap<&str, Robj> = HashMap::try_from(settings)
+        .map_err(|e| anyhow!("Failed to convert settings list to map: {}", e))?;
+
+    Ok((
+        get_real_or(&settings, "idelta", 0.12)?,
+        get_real_or(&settings, "tad", 0.0)?,
+    ))
+}
+
+pub(crate) fn fit_payload_config(
+    settings: &List,
+    parameter_names: &[String],
+) -> AnyResult<FitPayloadConfig> {
+    let settings: HashMap<&str, Robj> = HashMap::try_from(settings)
+        .map_err(|e| anyhow!("Failed to convert settings list to map: {}", e))?;
+
+    let ranges = get_list(&settings, "ranges")?;
+    let ranges = robj_to_hashmap(ranges)?;
+    let parameters = parameter_names
+        .iter()
+        .map(|parameter_name| {
+            let (lower, upper) = ranges.get(parameter_name).copied().ok_or_else(|| {
+                anyhow!(
+                    "Parameter {} not found in ranges {:?}",
+                    parameter_name,
+                    &ranges
+                )
+            })?;
+
+            Ok(FitPayloadParameter {
+                name: parameter_name.clone(),
+                lower,
+                upper,
+            })
+        })
+        .collect::<AnyResult<Vec<_>>>()?;
+
+    let error_models_raw = get_list(&settings, "error_models")?;
+    let error_models = error_models_raw
+        .iter()
+        .enumerate()
+        .map(|(i, (_, em))| {
+            let outeq = i + 1;
+            let em_list = em
+                .as_list()
+                .ok_or_else(|| anyhow!("error_models[{}] is not a list", outeq))?;
+            let em: HashMap<&str, Robj> = HashMap::try_from(&em_list)
+                .map_err(|e| anyhow!("Failed to parse error_models[{}]: {}", outeq, e))?;
+
+            let type_vec = get_field(&em, "type")?
+                .as_string_vector()
+                .ok_or_else(|| anyhow!("error_models[{}].type is not a character vector", outeq))?;
+            let err_type = type_vec
+                .first()
+                .ok_or_else(|| anyhow!("error_models[{}].type is empty", outeq))?;
+            let coeff = get_field(&em, "coeff")?
+                .as_real_vector()
+                .ok_or_else(|| anyhow!("error_models[{}].coeff is not a numeric vector", outeq))?;
+            if coeff.len() < 4 {
+                bail!(
+                    "error_models[{}].coeff must have at least 4 values, got {}",
+                    outeq,
+                    coeff.len()
+                );
+            }
+
+            let mut model = HashMap::new();
+            model.insert(
+                error_model_name(err_type.as_str())?,
+                FitPayloadErrorModel {
+                    poly: FitPayloadPoly {
+                        c0: coeff[0],
+                        c1: coeff[1],
+                        c2: coeff[2],
+                        c3: coeff[3],
+                    },
+                },
+            );
+
+            Ok(model)
+        })
+        .collect::<AnyResult<Vec<_>>>()?;
+
+    let ind_points = get_real_or(&settings, "points", 2028.0)?;
+    let prior = match get_str(&settings, "prior")?.to_ascii_lowercase().as_str() {
+        "sobol" => {
+            let mut prior = HashMap::new();
+            prior.insert("Sobol".to_string(), vec![ind_points]);
+            Some(prior)
+        }
+        "prior.csv" => None,
+        other => return Err(anyhow!("Prior {} not supported", other)),
+    };
+
+    Ok(FitPayloadConfig {
+        parameters: vec![parameters],
+        errormodels: FitPayloadErrorModels {
+            models: error_models,
+        },
+        prior,
+    })
+}
+
+fn error_model_name(value: &str) -> AnyResult<String> {
+    match value.trim().to_ascii_lowercase().as_str() {
+        "additive" => Ok("Additive".to_string()),
+        "proportional" => Ok("Proportional".to_string()),
+        other => Err(anyhow!("Invalid Error type: {}", other)),
     }
 }
 

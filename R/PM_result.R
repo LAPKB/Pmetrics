@@ -310,6 +310,74 @@ PM_result$load <- function(...) {
   lifecycle::deprecate_warn("2.1.0", "PM_result$load()", details = "Please use PM_load() instead. ?PM_load for details.")
 }
 
+# nolint start
+load_pm_result_snapshot <- function(found) {
+  output2List <- function(Out) {
+    result <- list()
+    for (i in seq_along(Out)) {
+      aux_list <- list(Out[[i]])
+      names(aux_list) <- names(Out)[i]
+      result <- append(result, aux_list)
+    }
+
+    result
+  }
+
+  result <- output2List(Out = get(load(found)))
+  PM_result$new(result, path = dirname(found), quiet = TRUE)
+}
+
+rebuild_pm_result_from_outputs <- function(output_path) {
+  fit_object <- load_pm_parse_fit_object(output_path, fit = "fit.rds")
+  fit_payload <- load_fit_payload_snapshot(output_path)
+
+  if (!is.null(fit_payload)) {
+    if (is.null(fit_object$data) || is.null(fit_object$model)) {
+      cli::cli_abort(c(
+        "x" = "No Pmetrics output file found in {.path {output_path}}.",
+        "i" = "The standard run inputs needed to rebuild this result are missing."
+      ))
+    }
+
+    return(build_pm_result_from_normalized_payload(
+      fit_payload,
+      data = fit_object$data,
+      model = fit_object$model,
+      path = output_path
+    ))
+  }
+
+  fit_manifest <- load_fit_manifest_snapshot(output_path)
+
+  if (!is.null(fit_manifest)) {
+    if (is.null(fit_object$data) || is.null(fit_object$model)) {
+      cli::cli_abort(c(
+        "x" = "No Pmetrics output file found in {.path {output_path}}.",
+        "i" = "The standard run inputs needed to rebuild this result are missing."
+      ))
+    }
+
+    return(build_pm_result_from_normalized_payload(
+      fit_manifest,
+      data = fit_object$data,
+      model = fit_object$model,
+      path = output_path
+    ))
+  }
+
+  parsed <- PM_parse(path = output_path, write = FALSE)
+
+  if (is.null(parsed$data) || is.null(parsed$model)) {
+    cli::cli_abort(c(
+      "x" = "No Pmetrics output file found in {.path {output_path}}.",
+      "i" = "The standard run inputs needed to rebuild this result are missing."
+    ))
+  }
+
+  PM_result$new(parsed, path = output_path, quiet = TRUE)
+}
+# nolint end
+
 
 # LOAD --------------------------------------------------------------------
 #' @title Load Pmetrics NPAG or IT2B output
@@ -364,20 +432,6 @@ PM_result$load <- function(...) {
 
 
 PM_load <- function(run, path = ".", file = "PMout.Rdata") {
-  # internal function
-  output2List <- function(Out) {
-    result <- list()
-    for (i in seq_along(Out)) {
-      aux_list <- list(Out[[i]])
-      names(aux_list) <- names(Out)[i]
-      result <- append(result, aux_list)
-    }
-
-    return(result)
-  }
-
-  found <- "" # initialize
-
   if (!missing(run)) {
     filepath <- file.path(path, run, "outputs", file)
   } else {
@@ -385,17 +439,32 @@ PM_load <- function(run, path = ".", file = "PMout.Rdata") {
   }
 
   if (file.exists(filepath)) {
-    found <- filepath
+    return(load_pm_result_snapshot(filepath))
   }
 
-  if (found != "") {
-    result <- output2List(Out = get(load(found)))
-    rebuild <- PM_result$new(result, path = dirname(found), quiet = TRUE)
+  rebuild_error <- NULL
+  if (identical(basename(filepath), "PMout.Rdata") && dir.exists(dirname(filepath))) {
+    rebuilt <- tryCatch(
+      rebuild_pm_result_from_outputs(dirname(filepath)),
+      error = function(e) {
+        rebuild_error <<- e
+        NULL
+      }
+    )
 
-    return(rebuild)
-  } else {
-    cli::cli_abort(c("x" = "No Pmetrics output file found in {.path {path}}."))
+    if (!is.null(rebuilt)) {
+      return(rebuilt)
+    }
   }
+
+  if (!is.null(rebuild_error)) {
+    cli::cli_abort(c(
+      "x" = "No Pmetrics output file found in {.path {path}}.",
+      "i" = "Rebuilding from standard run outputs failed: {conditionMessage(rebuild_error)}"
+    ))
+  }
+
+  cli::cli_abort(c("x" = "No Pmetrics output file found in {.path {path}}."))
 }
 
 
@@ -468,3 +537,45 @@ update <- function(res, found) {
 
   return(res)
 }
+
+# Export the result to standard output files without relying on legacy fit-time writes.
+PM_result$set("public", "export", function(path = ".") {
+  path <- normalizePath(path, mustWork = FALSE)
+  dir.create(path, recursive = TRUE, showWarnings = FALSE)
+
+  if (!is.null(self$cycle$data)) {
+    write.csv(self$cycle$data, file.path(path, "iterations.csv"), row.names = FALSE)
+  }
+
+  if (!is.null(self$final$data)) {
+    write.csv(self$final$data$theta, file.path(path, "theta.csv"), row.names = FALSE)
+  }
+
+  if (!is.null(self$post$data)) {
+    write.csv(self$post$data$posterior, file.path(path, "posterior.csv"), row.names = FALSE)
+  }
+
+  if (!is.null(self$pop$data)) {
+    write.csv(self$pop$data$pop, file.path(path, "predictions.csv"), row.names = FALSE)
+  }
+
+  if (!is.null(self$cov$data)) {
+    write.csv(self$cov$data$covariates, file.path(path, "covariates.csv"), row.names = FALSE)
+  }
+
+  if (!is.null(self$model) && !is.null(self$data)) {
+    settings <- list(
+      algorithm = if (!is.null(self$model$model_list$algorithm)) self$model$model_list$algorithm else "NPAG",
+      errormodels = if (!is.null(self$model$model_list$err)) {
+        lapply(self$model$model_list$err, function(e) list(type = e$type, coeff = e$coeff))
+      },
+      parameters = if (!is.null(self$model$model_list$pri)) {
+        lapply(self$model$model_list$pri, function(p) list(min = p$min, max = p$max))
+      }
+    )
+    writeLines(jsonlite::toJSON(settings, auto_unbox = TRUE), file.path(path, "settings.json"))
+  }
+
+  invisible(TRUE)
+})
+

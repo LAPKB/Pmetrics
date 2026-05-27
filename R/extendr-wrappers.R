@@ -72,5 +72,43 @@ model_parameters <- function(model_source, kind) .Call(wrap__model_parameters, m
 #' @export
 setup_logs <- function() .Call(wrap__setup_logs)
 
+#' Start a local live reporting session.
+#' @return Live session connection info.
+#' @keywords internal
+#' @export
+start_live_session <- function() .Call(wrap__start_live_session)
+
+#' Wait for a live reporting client to connect.
+#' @param session_id Live session identifier.
+#' @param timeout_ms Maximum wait in milliseconds.
+#' @return TRUE when a client connects before the timeout.
+#' @keywords internal
+#' @export
+wait_live_session_connected <- function(session_id, timeout_ms) .Call(wrap__wait_live_session_connected, session_id, timeout_ms)
+
+#' Close a local live reporting session.
+#' @param session_id Live session identifier.
+#' @return NULL, invisibly.
+#' @keywords internal
+#' @export
+close_live_session <- function(session_id) .Call(wrap__close_live_session, session_id)
+
+#' Publish a finished report payload to a live reporting session.
+#' @param session_id Live session identifier.
+#' @param result_payload Serialized report payload.
+#' @param report_generated_at Report timestamp.
+#' @return NULL, invisibly.
+#' @keywords internal
+#' @export
+publish_live_report_result <- function(session_id, result_payload, report_generated_at) .Call(wrap__publish_live_report_result, session_id, result_payload, report_generated_at)
+
+#' Publish a finished report handoff failure to a live reporting session.
+#' @param session_id Live session identifier.
+#' @param message Failure message.
+#' @return NULL, invisibly.
+#' @keywords internal
+#' @export
+publish_live_report_failed <- function(session_id, message) .Call(wrap__publish_live_report_failed, session_id, message)
+
 
 # nolint end

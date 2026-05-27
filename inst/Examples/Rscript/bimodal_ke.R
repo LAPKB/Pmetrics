@@ -38,7 +38,8 @@ fit <- model$fit(
     points = 2028,
     seed = 22,
     idelta = 0.01,
-    overwrite = TRUE
+    overwrite = TRUE,
+    report = "app"
 )
 
 cat("Status:", fit$cycle$data$status, "\n")

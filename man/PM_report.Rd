@@ -9,23 +9,24 @@ PM_report(x, template, path, show = TRUE, quiet = TRUE)
 \arguments{
 \item{x}{A \link{PM_result} object obtained from \link{PM_load}.}
 
-\item{template}{Deprecated for app mode. Used only for HTML fallback report
-generation when app launch fails.}
+\item{template}{If missing, the current report mode from \link{getPMoptions} is used.
+Use \code{"app"} to launch the PmetricsReports app or \code{"plotly"}, \code{"ggplot"},
+or \code{"ggplot_rust"} to generate the legacy HTML report.}
 
-\item{path}{Deprecated for app mode. Used only for HTML fallback report
-generation when app launch fails.}
+\item{path}{Output folder for the generated HTML report. Ignored for app mode
+unless the app launch fails and HTML fallback is used.}
 
 \item{show}{Controls whether the Shiny app should be opened automatically, defaults to \code{TRUE}.}
 
 \item{quiet}{Retained for compatibility.}
 }
 \value{
-Launches the Pmetrics reporting app.
+Launches the selected report mode.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 
-Launches the Pmetrics reporting app for a completed run
+Launches the Pmetrics reporting app or generates an HTML report for a completed run
 }
 \seealso{
 \link{PM_load}

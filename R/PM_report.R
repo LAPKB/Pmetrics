@@ -2,16 +2,17 @@
 #' @description
 #' `r lifecycle::badge("stable")`
 #'
-#' Launches the Pmetrics reporting app for a completed run
+#' Launches the Pmetrics reporting app or generates an HTML report for a completed run
 #'
 #' @param x A [PM_result] object obtained from [PM_load].
-#' @param template Deprecated for app mode. Used only for HTML fallback report
-#'   generation when app launch fails.
-#' @param path Deprecated for app mode. Used only for HTML fallback report
-#'   generation when app launch fails.
+#' @param template If missing, the current report mode from [getPMoptions] is used.
+#'   Use `"app"` to launch the PmetricsReports app or `"plotly"`, `"ggplot"`,
+#'   or `"ggplot_rust"` to generate the legacy HTML report.
+#' @param path Output folder for the generated HTML report. Ignored for app mode
+#'   unless the app launch fails and HTML fallback is used.
 #' @param show Controls whether the Shiny app should be opened automatically, defaults to `TRUE`.
 #' @param quiet Retained for compatibility.
-#' @return Launches the Pmetrics reporting app.
+#' @return Launches the selected report mode.
 #' @author Markus Hovd, Julian Otalvaro, and Michael Neely
 #' @seealso [PM_load]
 #' @export
@@ -20,20 +21,73 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
   template_missing <- missing(template)
   path_missing <- missing(path)
 
+  resolve_run_app <- function() {
+    pmetrics_path <- tryCatch(
+      getNamespaceInfo(asNamespace("Pmetrics"), "path"),
+      error = function(e) ""
+    )
+    sibling_reports_path <- normalizePath(
+      file.path(dirname(pmetrics_path), "Pmetricsreports"),
+      mustWork = FALSE
+    )
+
+    if (nzchar(sibling_reports_path) &&
+      file.exists(file.path(sibling_reports_path, "DESCRIPTION")) &&
+      requireNamespace("pkgload", quietly = TRUE)) {
+      loaded <- tryCatch(
+        {
+          pkgload::load_all(sibling_reports_path, quiet = TRUE, export_all = FALSE)
+          TRUE
+        },
+        error = function(e) FALSE
+      )
+
+      if (isTRUE(loaded)) {
+        return(getExportedValue("PmetricsReports", "run_app"))
+      }
+    }
+
+    if (!requireNamespace("PmetricsReports", quietly = TRUE)) {
+      return(NULL)
+    }
+
+    getExportedValue("PmetricsReports", "run_app")
+  }
+
+  resolve_report_mode <- function() {
+    mode <- if (template_missing) {
+      getPMoptions("report_template", warn = FALSE, quiet = TRUE)
+    } else {
+      template
+    }
+
+    if (is.null(mode) || identical(mode, -1)) {
+      return("app")
+    }
+
+    mode <- as.character(mode[[1]])
+    if (is.na(mode) || !nzchar(mode)) {
+      return("app")
+    }
+
+    mode
+  }
+
+  report_mode <- resolve_report_mode()
+
   if (!is(x, "PM_result")) {
     cli::cli_abort(c("x" = "This function expects a valid PM_result object from PM_load."))
   }
 
-  if (!template_missing && identical(template, "none")) {
+  if (identical(report_mode, "none")) {
     return(invisible(0))
   }
 
-  if (is.null(x$final$data) & is.null(x$op$data) & is.null(x$cycle$data)) {
+  if (is.null(x$final$data) && is.null(x$op$data) && is.null(x$cycle$data)) {
     return(invisible(-1)) # no data found
   }
 
-  render_html_fallback <- function() {
-    fallback_template <- if (template_missing) getPMoptions("report_template") else template
+  render_html_fallback <- function(fallback_template = report_mode) {
     if (identical(fallback_template, "none")) {
       return(invisible(0))
     }
@@ -72,7 +126,7 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
       dir.create(out_path, recursive = TRUE, showWarnings = FALSE)
     }
 
-    
+
     rmarkdown::render(
       input = template_file,
       output_file = file.path(out_path, "report.html"),
@@ -91,7 +145,12 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
     invisible(-1)
   }
 
-  if (!requireNamespace("PmetricsReports", quietly = TRUE)) {
+  if (!identical(report_mode, "app")) {
+    return(render_html_fallback(report_mode))
+  }
+
+  run_app <- resolve_run_app()
+  if (is.null(run_app)) {
     cli::cli_warn(c(
       "!" = "The {.pkg PmetricsReports} package is not available.",
       "i" = "Falling back to legacy HTML report generation.",
@@ -102,8 +161,11 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
 
   tryCatch(
     {
-      run_app <- getExportedValue("PmetricsReports", "run_app")
-      run_app(res = x, launch.browser = show)
+      app_process <- run_app(res = x, launch.browser = show)
+      app_url <- attr(app_process, "app_url", exact = TRUE)
+      if (!is.null(app_url) && nzchar(app_url)) {
+        cli::cli_inform(c("i" = "Reporting app URL: {app_url}"))
+      }
       invisible(1)
     },
     error = function(e) {

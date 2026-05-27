@@ -566,7 +566,7 @@ PM_model <- R6::R6Class(
 
         eqn_list <- map_lgl(required_parameters, \(x){
           any(
-            stringr::str_detect(
+            res <- tryCatch(
               stringr::str_remove_all(tolower(func_to_char(self$arg_list$eqn)), "\\s+"), # string
               paste0(x, "(?=(<-|=))")
             ) # pattern
@@ -587,7 +587,7 @@ PM_model <- R6::R6Class(
         }
 
         if (!is.null(self$arg_fa)) {
-          lag_list <- map_lgl(required_parameters, \(x){
+          fa_list <- map_lgl(required_parameters, \(x){
             any(
               stringr::str_detect(
                 stringr::str_remove_all(tolower(func_to_char(self$arg_list$fa)), "\\s+"), # string
@@ -1316,7 +1316,7 @@ PM_model <- R6::R6Class(
           cli::cli_inform(
             c("i" = "The previous run from '{path_run}' was read.", " " = "Set {.arg overwrite} to {.val TRUE} to overwrite prior run in '{path_run}'.")
           )
-          return(invisible(PM_load(file = normalizePath(file.path(path_run, "PMout.Rdata"), mustWork = FALSE))))
+          return(invisible(PM_load(path = path, run = run)))
         }
       }
 
@@ -1355,47 +1355,125 @@ PM_model <- R6::R6Class(
       if (intern) {
         ### CALL RUST
         out_path <- normalizePath(file.path(path_run, "outputs"), mustWork = FALSE)
+        dir.create(out_path, recursive = TRUE, showWarnings = FALSE)
         msg <- c(msg, "Run results were saved in folder '{.path {out_path}}'")
+        live_report_session <- NULL
+        live_report_started <- FALSE
+        live_report_requested <- identical(report, "app")
+
+        if (live_report_requested) {
+          live_report_session <- tryCatch(
+            start_live_report_session(show = TRUE),
+            error = function(e) {
+              msg <<- c(msg, "Live reporting app could not be launched before the fit started.")
+              NULL
+            }
+          )
+
+          if (!is.null(live_report_session)) {
+            live_report_started <- TRUE
+            if (!isTRUE(live_report_session$connected)) {
+              msg <- c(msg, "Live reporting app did not connect before the first fit cycle.")
+            }
+            on.exit(close_live_report_session(live_report_session), add = TRUE)
+          }
+        }
+
+        fit_params <- list(
+          ranges = ranges, # not important but needed for POSTPROB
+          algorithm = algorithm,
+          error_models = lapply(self$model_list$err, function(x) x$flatten()),
+          cache = cache,
+          progress = progress,
+          write_logs = write_logs,
+          stdout_logs = stdout_logs,
+          log_level = log_level,
+          idelta = idelta,
+          tad = tad,
+          max_cycles = cycles, # will be hardcoded in Rust to 0 for POSTPROB
+          prior = prior, # needs warning if missing and algorithm = POSTPROB
+          points = points, # only relevant for sobol prior
+          seed = seed
+        )
+
+        if (!is.null(live_report_session)) {
+          fit_params$live_session_id <- live_report_session$session$session_id
+        }
+
         fit_call <- function() {
           fit(
             model_source = model_source,
             data = normalizePath(file.path(path_run, "inputs", "gendata.csv")),
-            params = list(
-              ranges = ranges, # not important but needed for POSTPROB
-              algorithm = algorithm,
-              error_models = lapply(self$model_list$err, function(x) x$flatten()),
-              cache = cache,
-              progress = progress,
-              write_logs = write_logs,
-              stdout_logs = stdout_logs,
-              log_level = log_level,
-              idelta = idelta,
-              tad = tad,
-              max_cycles = cycles, # will be hardcoded in Rust to 0 for POSTPROB
-              prior = prior, # needs warning if missing and algorithm = POSTPROB
-              points = points, # only relevant for sobol prior
-              seed = seed
-            ),
+            params = fit_params,
             output_path = out_path,
             kind = tolower(self$model_list$type),
             solver = self$model_list$solver
           )
         }
-        rlang::try_fetch(
+        payload_json <- call_pm_bridge(
           if (!is.null(prior_dir) && identical(prior, "prior.csv")) {
             withr::with_dir(prior_dir, fit_call())
           } else {
             fit_call()
           },
+          default_stage = "runtime",
+          default_code = "fit_execution_failed"
+        )
+
+        res <- tryCatch(
+          build_pm_result_from_fit_payload(
+            payload_json = payload_json,
+            data = data,
+            model = self,
+            path = normalizePath(out_path)
+          ),
           error = function(e) {
-            cli::cli_warn("Unable to create {.cls PM_result} object", parent = e)
-            return(NULL)
+            handoff_message <- paste(
+              "Failed to build PM_result from fit payload:",
+              conditionMessage(e)
+            )
+            if (!is.null(live_report_session)) {
+              try(
+                send_live_report_failure(
+                  live_report_session,
+                  handoff_message
+                ),
+                silent = TRUE
+              )
+            }
+
+            abort_pm_bridge_message(
+              message = handoff_message,
+              stage = "handoff",
+              code = "fit_result_build_failed",
+              details = list(path = normalizePath(out_path)),
+              parent = e
+            )
           }
         )
 
-        PM_parse(path = out_path)
-        res <- PM_load(path = normalizePath(out_path), file = "PMout.Rdata")
-        if (report != "none") {
+        if (live_report_started) {
+          tryCatch(
+            send_live_report_result(live_report_session, res),
+            error = function(e) {
+              msg <<- c(msg, "Live reporting app could not switch to the finished report.")
+              try(
+                send_live_report_failure(
+                  live_report_session,
+                  paste("Finished report handoff failed:", conditionMessage(e))
+                ),
+                silent = TRUE
+              )
+              invisible(NULL)
+            }
+          )
+
+          msg <- c(msg, "Live reporting app launched.")
+          if (!is.null(live_report_session$url) && nzchar(live_report_session$url)) {
+            msg <- c(msg, "Live reporting app URL: {live_report_session$url}")
+          }
+          msg <- c(msg, "If assigned to a variable, e.g. {.code run{run} <-}, results are available in {.code run{run}}.")
+        } else if (report != "none") {
           valid_report <- tryCatch(
             PM_report(res, path = normalizePath(out_path), template = report, quiet = TRUE),
             error = function(e) {
@@ -1403,7 +1481,11 @@ PM_model <- R6::R6Class(
             }
           )
           if (valid_report == 1) {
-            msg <- c(msg, "Reporting app launched.")
+            if (identical(report, "app")) {
+              msg <- c(msg, "Reporting app launched.")
+            } else {
+              msg <- c(msg, "Report opened.")
+            }
             # if(tolower(algorithm) == "postprob") {this_alg <- "map"} else {this_alg <- "fit"}
             msg <- c(msg, "If assigned to a variable, e.g. {.code run{run} <-}, results are available in {.code run{run}}.")
           } else {
@@ -1519,12 +1601,16 @@ PM_model <- R6::R6Class(
       rewrite_runtime_route_labels(temp_csv, self)
 
       self$compile(quiet = quiet)
-      sim <- simulate_all(
-        temp_csv,
-        self$dsl(),
-        theta,
-        kind = tolower(self$model_list$type),
-        solver = self$model_list$solver
+      sim <- call_pm_bridge(
+        simulate_all(
+          temp_csv,
+          self$dsl(),
+          theta,
+          kind = tolower(self$model_list$type),
+          solver = self$model_list$solver
+        ),
+        default_stage = "runtime",
+        default_code = "simulation_failed"
       )
 
       return(sim)
@@ -1581,6 +1667,7 @@ PM_model <- R6::R6Class(
         writeLines(numbered_lines)
       }
 
+      validation_stage <- "validated"
       ok <- tryCatch(
         {
           validate_model_source(
@@ -1591,7 +1678,9 @@ PM_model <- R6::R6Class(
           TRUE
         },
         error = function(e) {
-          diagnostic <<- conditionMessage(e)
+          bridge_error <- parse_pm_bridge_error(conditionMessage(e))
+          diagnostic <<- bridge_error$message
+          validation_stage <<- if (is.null(bridge_error$stage)) "runtime" else bridge_error$stage
           FALSE
         }
       )
@@ -1607,7 +1696,7 @@ PM_model <- R6::R6Class(
 
       invisible(list(
         ok = ok,
-        stage = if (ok) "validated" else "runtime",
+        stage = if (ok) "validated" else validation_stage,
         dsl = model_source,
         numbered_dsl = numbered_dsl,
         diagnostic = if (ok) NULL else diagnostic
@@ -1621,19 +1710,14 @@ PM_model <- R6::R6Class(
     #' @param quiet Logical, if TRUE, suppresses messages during compilation.
     compile = function(quiet = FALSE) {
       if (!quiet) cli::cli_inform(c("i" = "Compiling model..."))
-      tryCatch(
-        {
-          validate_model_source(
-            model_source = self$dsl(),
-            kind = tolower(self$model_list$type),
-            solver = self$model_list$solver
-          )
-        },
-        error = function(e) {
-          cli::cli_abort(
-            c("x" = "Model compilation failed: {e$message}", "i" = "Please check the model file and try again.")
-          )
-        }
+      call_pm_bridge(
+        validate_model_source(
+          model_source = self$dsl(),
+          kind = tolower(self$model_list$type),
+          solver = self$model_list$solver
+        ),
+        default_stage = "compile",
+        default_code = "model_compile_failed"
       )
 
       return(invisible(self))

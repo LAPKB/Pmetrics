@@ -592,15 +592,14 @@ Default is \code{TRUE}.}
 \item{\code{progress}}{Logical. Whether to print runtime likelihood-matrix progress during
 fitting. Default is \code{TRUE}.}
 
-\item{\code{write_logs}}{Logical. Whether to write fit tracing logs to
-\code{outputs/log.txt}. Default is \code{FALSE}.}
+\item{\code{write_logs}}{Logical. Whether to write fit tracing logs to \code{outputs/log.txt}.
+Default is \code{FALSE}.}
 
 \item{\code{stdout_logs}}{Logical. Whether to print fit tracing logs in the R console.
 Default is \code{TRUE}.}
 
-\item{\code{log_level}}{Character scalar. Fit tracing level. One of \code{"ERROR"},
-\code{"WARN"}, \code{"INFO"}, \code{"DEBUG"}, or \code{"TRACE"}. Default is
-\code{"INFO"}.}
+\item{\code{log_level}}{Character scalar. Fit tracing level. One of \code{"ERROR"}, \code{"WARN"},
+\code{"INFO"}, \code{"DEBUG"}, or \code{"TRACE"}. Default is \code{"INFO"}.}
 
 \item{\code{idelta}}{How often to generate posterior predictions in units of time.
 Default is 0.1, which means a prediction is generated every 0.1 hours (6 minutes)

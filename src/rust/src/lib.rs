@@ -1,9 +1,13 @@
+mod bridge_errors;
 mod executor;
+mod fit_payload;
+mod live;
 mod logs;
 mod settings;
 mod simulation;
 
 use anyhow::{anyhow, Result as AnyResult};
+use bridge_errors::{BridgeError, BridgeResult, BridgeStage};
 use extendr_api::prelude::*;
 use pmcore::api::LoggingLevel;
 use pmcore::prelude::{
@@ -18,32 +22,42 @@ use tracing_subscriber::layer::SubscriberExt;
 
 use crate::logs::{configure_logs, LogControls, RFormatLayer};
 
-fn to_r_result<T>(result: AnyResult<T>) -> extendr_api::Result<T> {
-    result.map_err(|error| extendr_api::Error::Other(error.to_string()))
+fn to_r_result<T>(result: BridgeResult<T>) -> extendr_api::Result<T> {
+    result.map_err(Into::into)
 }
 
-fn validate_data_path(data_path: &str) -> AnyResult<()> {
+fn validate_data_path(data_path: &str) -> BridgeResult<()> {
     if !Path::new(data_path).exists() {
-        return Err(anyhow!("Data path does not exist: {}", data_path));
+        return Err(
+            BridgeError::new(
+                BridgeStage::Data,
+                "data_path_missing",
+                format!("Data path does not exist: {}", data_path),
+            )
+            .with_detail("data_path", data_path),
+        );
     }
     Ok(())
 }
 
-fn read_pmetrics_data(data_path: &str) -> AnyResult<Data> {
-    read_pmetrics(data_path).map_err(|err| anyhow!("Failed to parse data: {}", err))
+fn read_pmetrics_data(data_path: &str) -> BridgeResult<Data> {
+    read_pmetrics(data_path).map_err(|error| {
+        BridgeError::new(
+            BridgeStage::Data,
+            "data_parse_failed",
+            format!("Failed to parse data: {}", error),
+        )
+        .with_detail("data_path", data_path)
+    })
 }
 
-fn format_runtime_compile_error(error: &dsl::RuntimeError, model_source: &str) -> String {
-    match error
+fn compile_diagnostic(error: &dsl::RuntimeError, model_source: &str) -> Option<String> {
+    error
         .render_diagnostic(model_source)
         .filter(|message| !message.trim().is_empty())
-    {
-        Some(diagnostic) => format!("{}\n{}", error, diagnostic),
-        None => error.to_string(),
-    }
 }
 
-fn parse_ode_solver(solver: Option<String>) -> AnyResult<Option<OdeSolver>> {
+fn parse_ode_solver(solver: Option<String>) -> BridgeResult<Option<OdeSolver>> {
     match solver {
         None => Ok(None),
         Some(solver) if solver.trim().is_empty() => Ok(None),
@@ -52,7 +66,14 @@ fn parse_ode_solver(solver: Option<String>) -> AnyResult<Option<OdeSolver>> {
             "TRBDF2" => Ok(Some(OdeSolver::Sdirk(SdirkTableau::TrBdf2))),
             "ESDIRK34" => Ok(Some(OdeSolver::Sdirk(SdirkTableau::Esdirk34))),
             "TSIT45" => Ok(Some(OdeSolver::ExplicitRk(ExplicitRkTableau::Tsit45))),
-            other => Err(anyhow!("Unsupported ODE solver: {}", other)),
+            other => Err(
+                BridgeError::new(
+                    BridgeStage::Settings,
+                    "unsupported_ode_solver",
+                    format!("Unsupported ODE solver: {}", other),
+                )
+                .with_detail("solver", other),
+            ),
         },
     }
 }
@@ -81,15 +102,28 @@ fn compile_runtime_model(
     model_source: &str,
     kind: &str,
     solver: Option<String>,
-) -> AnyResult<CompiledRuntimeModel> {
+) -> BridgeResult<CompiledRuntimeModel> {
     let model_source = model_source.trim();
     if model_source.is_empty() {
-        return Err(anyhow!("Model source is empty"));
+        return Err(BridgeError::new(
+            BridgeStage::Compile,
+            "model_source_empty",
+            "Model source is empty",
+        ));
     }
 
     match kind {
         "ode" | "analytical" => {}
-        other => return Err(anyhow!("{} is not a supported model type", other)),
+        other => {
+            return Err(
+                BridgeError::new(
+                    BridgeStage::Compile,
+                    "unsupported_model_type",
+                    format!("{} is not a supported model type", other),
+                )
+                .with_detail("model_kind", other),
+            )
+        }
     }
 
     let compiled = dsl::compile_module_source_to_runtime(
@@ -98,33 +132,60 @@ fn compile_runtime_model(
         RuntimeCompilationTarget::Jit,
         |_stage, _message| {},
     )
-    .map_err(|error| anyhow!(format_runtime_compile_error(&error, model_source)))?;
+    .map_err(|error| {
+        let message = error.to_string();
+        let diagnostic = compile_diagnostic(&error, model_source);
+        let mut bridge_error = BridgeError::new(BridgeStage::Compile, "runtime_compile_failed", message)
+            .with_detail("model_kind", kind);
+        if let Some(diagnostic) = diagnostic {
+            bridge_error = bridge_error.with_diagnostic(diagnostic);
+        }
+        bridge_error
+    })?;
 
     let actual_kind = compiled_model_kind(&compiled);
     if actual_kind != kind {
-        return Err(anyhow!(
-            "Model source kind mismatch: expected {}, got {}",
-            kind,
-            actual_kind
-        ));
+        return Err(
+            BridgeError::new(
+                BridgeStage::Compile,
+                "model_kind_mismatch",
+                format!(
+                    "Model source kind mismatch: expected {}, got {}",
+                    kind, actual_kind
+                ),
+            )
+            .with_detail("expected_kind", kind)
+            .with_detail("actual_kind", actual_kind),
+        );
     }
 
     let solver = parse_ode_solver(solver)?;
     if solver.is_some() && actual_kind != "ode" {
-        return Err(anyhow!(
-            "ODE solver selection is only supported for ODE models"
-        ));
+        return Err(
+            BridgeError::new(
+                BridgeStage::Settings,
+                "ode_solver_requires_ode_model",
+                "ODE solver selection is only supported for ODE models",
+            )
+            .with_detail("actual_kind", actual_kind),
+        );
     }
 
     Ok(apply_ode_solver(compiled, solver))
 }
 
-fn parse_theta(matrix: RMatrix<f64>) -> AnyResult<Vec<Vec<f64>>> {
+fn parse_theta(matrix: RMatrix<f64>) -> BridgeResult<Vec<Vec<f64>>> {
     let nspp = matrix.nrows();
     let ndim = matrix.ncols();
     let real_vector = matrix
         .as_real_vector()
-        .ok_or_else(|| anyhow!("theta matrix must contain real values"))?;
+        .ok_or_else(|| {
+            BridgeError::new(
+                BridgeStage::Data,
+                "theta_matrix_not_real",
+                "theta matrix must contain real values",
+            )
+        })?;
     let mut theta = vec![vec![0.0; ndim]; nspp];
     for i in 0..nspp {
         for j in 0..ndim {
@@ -158,20 +219,32 @@ fn simulate_one(
     solver: Nullable<String>,
 ) -> Dataframe<SimulationRow> {
     extendr_api::error::unwrap_or_throw_error(to_r_result(
-        (|| -> AnyResult<Dataframe<SimulationRow>> {
+        (|| -> BridgeResult<Dataframe<SimulationRow>> {
             validate_data_path(data_path)?;
             let data = read_pmetrics_data(data_path)?;
             let compiled_model = compile_runtime_model(model_source, kind, solver.into_option())?;
             let subjects = data.subjects();
             let first_subject = subjects
                 .first()
-                .ok_or_else(|| anyhow!("Data set contains no subjects"))?;
+                .ok_or_else(|| {
+                    BridgeError::new(
+                        BridgeStage::Data,
+                        "data_subjects_missing",
+                        "Data set contains no subjects",
+                    )
+                })?;
 
             let rows = match compiled_model {
                 CompiledRuntimeModel::Ode(equation) => {
                     let metadata = equation
                         .equation_metadata()
-                        .ok_or_else(|| anyhow!("runtime model metadata is required"))?;
+                        .ok_or_else(|| {
+                            BridgeError::new(
+                                BridgeStage::Runtime,
+                                "runtime_metadata_missing",
+                                "runtime model metadata is required",
+                            )
+                        })?;
                     let parameters = Parameters::with_model(
                         &equation,
                         metadata
@@ -179,13 +252,26 @@ fn simulate_one(
                             .iter()
                             .zip(spp.iter())
                             .map(|(parameter, value)| (parameter.name(), *value)),
-                    )?;
+                    )
+                    .map_err(|error| {
+                        BridgeError::from_anyhow(
+                            BridgeStage::Runtime,
+                            "parameter_binding_failed",
+                            error,
+                        )
+                    })?;
                     executor::simulate(&equation, first_subject, &parameters, 0)?
                 }
                 CompiledRuntimeModel::Analytical(equation) => {
                     let metadata = equation
                         .equation_metadata()
-                        .ok_or_else(|| anyhow!("runtime model metadata is required"))?;
+                        .ok_or_else(|| {
+                            BridgeError::new(
+                                BridgeStage::Runtime,
+                                "runtime_metadata_missing",
+                                "runtime model metadata is required",
+                            )
+                        })?;
                     let parameters = Parameters::with_model(
                         &equation,
                         metadata
@@ -193,18 +279,33 @@ fn simulate_one(
                             .iter()
                             .zip(spp.iter())
                             .map(|(parameter, value)| (parameter.name(), *value)),
-                    )?;
+                    )
+                    .map_err(|error| {
+                        BridgeError::from_anyhow(
+                            BridgeStage::Runtime,
+                            "parameter_binding_failed",
+                            error,
+                        )
+                    })?;
                     executor::simulate(&equation, first_subject, &parameters, 0)?
                 }
                 CompiledRuntimeModel::Sde(_) => {
-                    return Err(anyhow!(
-                        "SDE models are not supported for simulation in this Pmetrics runtime"
+                    return Err(BridgeError::new(
+                        BridgeStage::Runtime,
+                        "simulation_model_kind_unsupported",
+                        "SDE models are not supported for simulation in this Pmetrics runtime",
                     ));
                 }
             };
 
             rows.into_dataframe()
-                .map_err(|error| anyhow!("Failed to build data frame: {}", error))
+                .map_err(|error| {
+                    BridgeError::from_anyhow(
+                        BridgeStage::Handoff,
+                        "simulation_dataframe_build_failed",
+                        anyhow!("Failed to build data frame: {}", error),
+                    )
+                })
         })(),
     ))
 }
@@ -228,7 +329,7 @@ fn simulate_all(
     use rayon::prelude::*;
 
     extendr_api::error::unwrap_or_throw_error(to_r_result(
-        (|| -> AnyResult<Dataframe<SimulationRow>> {
+        (|| -> BridgeResult<Dataframe<SimulationRow>> {
             validate_data_path(data_path)?;
             let theta = parse_theta(theta)?;
             let data = read_pmetrics_data(data_path)?;
@@ -243,7 +344,13 @@ fn simulate_all(
                         let equation = equation.clone();
                         let metadata = equation
                             .equation_metadata()
-                            .ok_or_else(|| anyhow!("runtime model metadata is required"))?;
+                            .ok_or_else(|| {
+                                BridgeError::new(
+                                    BridgeStage::Runtime,
+                                    "runtime_metadata_missing",
+                                    "runtime model metadata is required",
+                                )
+                            })?;
                         let parameters = Parameters::with_model(
                             &equation,
                             metadata
@@ -251,14 +358,21 @@ fn simulate_all(
                                 .iter()
                                 .zip(spp.iter())
                                 .map(|(parameter, value)| (parameter.name(), *value)),
-                        )?;
+                        )
+                        .map_err(|error| {
+                            BridgeError::from_anyhow(
+                                BridgeStage::Runtime,
+                                "parameter_binding_failed",
+                                error,
+                            )
+                        })?;
                         subjects
                             .iter()
                             .map(|subject| executor::simulate(&equation, subject, &parameters, i))
-                            .collect::<AnyResult<Vec<_>>>()
+                            .collect::<BridgeResult<Vec<_>>>()
                             .map(|rows| rows.into_iter().flatten().collect::<Vec<_>>())
                     })
-                    .collect::<AnyResult<Vec<_>>>()?
+                    .collect::<BridgeResult<Vec<_>>>()?
                     .into_iter()
                     .flatten()
                     .collect(),
@@ -269,7 +383,13 @@ fn simulate_all(
                         let equation = equation.clone();
                         let metadata = equation
                             .equation_metadata()
-                            .ok_or_else(|| anyhow!("runtime model metadata is required"))?;
+                            .ok_or_else(|| {
+                                BridgeError::new(
+                                    BridgeStage::Runtime,
+                                    "runtime_metadata_missing",
+                                    "runtime model metadata is required",
+                                )
+                            })?;
                         let parameters = Parameters::with_model(
                             &equation,
                             metadata
@@ -277,26 +397,41 @@ fn simulate_all(
                                 .iter()
                                 .zip(spp.iter())
                                 .map(|(parameter, value)| (parameter.name(), *value)),
-                        )?;
+                        )
+                        .map_err(|error| {
+                            BridgeError::from_anyhow(
+                                BridgeStage::Runtime,
+                                "parameter_binding_failed",
+                                error,
+                            )
+                        })?;
                         subjects
                             .iter()
                             .map(|subject| executor::simulate(&equation, subject, &parameters, i))
-                            .collect::<AnyResult<Vec<_>>>()
+                            .collect::<BridgeResult<Vec<_>>>()
                             .map(|rows| rows.into_iter().flatten().collect::<Vec<_>>())
                     })
-                    .collect::<AnyResult<Vec<_>>>()?
+                    .collect::<BridgeResult<Vec<_>>>()?
                     .into_iter()
                     .flatten()
                     .collect(),
                 CompiledRuntimeModel::Sde(_) => {
-                    return Err(anyhow!(
-                        "SDE models are not supported for simulation in this Pmetrics runtime"
+                    return Err(BridgeError::new(
+                        BridgeStage::Runtime,
+                        "simulation_model_kind_unsupported",
+                        "SDE models are not supported for simulation in this Pmetrics runtime",
                     ));
                 }
             };
 
             rows.into_dataframe()
-                .map_err(|error| anyhow!("Failed to build data frame: {}", error))
+                .map_err(|error| {
+                    BridgeError::from_anyhow(
+                        BridgeStage::Handoff,
+                        "simulation_dataframe_build_failed",
+                        anyhow!("Failed to build data frame: {}", error),
+                    )
+                })
         })(),
     ))
 }
@@ -318,18 +453,22 @@ pub fn fit(
     output_path: &str,
     kind: &str,
     solver: Nullable<String>,
-) {
-    extendr_api::error::unwrap_or_throw_error(to_r_result((|| -> AnyResult<()> {
-        let log_controls = parse_log_controls(&params, output_path)?;
+) -> String {
+    extendr_api::error::unwrap_or_throw_error(to_r_result((|| -> BridgeResult<String> {
+        let log_controls = parse_log_controls(&params, output_path).map_err(|error| {
+            BridgeError::from_anyhow(BridgeStage::Settings, "log_controls_invalid", error)
+        })?;
         RFormatLayer::reset_global_timer();
-        setup_logs_inner(&log_controls)?;
+        setup_logs_inner(&log_controls).map_err(|error| {
+            BridgeError::from_anyhow(BridgeStage::Settings, "log_setup_failed", error)
+        })?;
         println!("Initializing model fit...");
 
         validate_data_path(data)?;
         let data = read_pmetrics_data(data)?;
         let compiled_model = compile_runtime_model(model_source, kind, solver.into_option())?;
 
-        match compiled_model {
+        let payload = match compiled_model {
             CompiledRuntimeModel::Ode(equation) => {
                 executor::fit(equation, data, params, output_path)?
             }
@@ -337,13 +476,21 @@ pub fn fit(
                 executor::fit(equation, data, params, output_path)?
             }
             CompiledRuntimeModel::Sde(_) => {
-                return Err(anyhow!(
-                    "SDE models are not supported for fitting in this Pmetrics runtime"
+                return Err(BridgeError::new(
+                    BridgeStage::Runtime,
+                    "fit_model_kind_unsupported",
+                    "SDE models are not supported for fitting in this Pmetrics runtime",
                 ));
             }
-        }
+        };
 
-        Ok(())
+        serde_json::to_string(&payload).map_err(|error| {
+            BridgeError::from_anyhow(
+                BridgeStage::Handoff,
+                "fit_payload_serialize_failed",
+                anyhow!("Failed to serialize fit payload: {}", error),
+            )
+        })
     })()))
 }
 
@@ -362,12 +509,14 @@ fn is_cargo_installed() -> bool {
 /// @export
 #[extendr]
 fn model_parameters(model_source: &str, kind: &str) -> Vec<String> {
-    extendr_api::error::unwrap_or_throw_error(to_r_result((|| -> AnyResult<Vec<String>> {
+    extendr_api::error::unwrap_or_throw_error(to_r_result((|| -> BridgeResult<Vec<String>> {
         match compile_runtime_model(model_source, kind, None)? {
             CompiledRuntimeModel::Ode(equation) => executor::model_parameters(&equation),
             CompiledRuntimeModel::Analytical(equation) => executor::model_parameters(&equation),
-            CompiledRuntimeModel::Sde(_) => Err(anyhow!(
-                "SDE models are not supported for parameter inspection in this Pmetrics runtime"
+            CompiledRuntimeModel::Sde(_) => Err(BridgeError::new(
+                BridgeStage::Runtime,
+                "parameter_inspection_model_kind_unsupported",
+                "SDE models are not supported for parameter inspection in this Pmetrics runtime",
             )),
         }
     })()))
@@ -445,7 +594,106 @@ fn parse_log_controls(params: &List, output_path: &str) -> AnyResult<LogControls
 #[extendr]
 fn setup_logs() {
     let controls = LogControls::default();
-    extendr_api::error::unwrap_or_throw_error(to_r_result(setup_logs_inner(&controls)))
+    extendr_api::error::unwrap_or_throw_error(to_r_result(
+        setup_logs_inner(&controls)
+            .map_err(|error| BridgeError::from_anyhow(BridgeStage::Settings, "log_setup_failed", error)),
+    ))
+}
+
+#[extendr]
+fn start_live_session() -> List {
+    extendr_api::error::unwrap_or_throw_error(to_r_result(
+        live::start_live_session().map_err(|error| {
+            BridgeError::from_anyhow(BridgeStage::Handoff, "live_session_start_failed", error)
+        }),
+    ))
+}
+
+#[extendr]
+fn wait_live_session_connected(session_id: &str, timeout_ms: i32) -> bool {
+    extendr_api::error::unwrap_or_throw_error(to_r_result(live::wait_live_session_connected(
+        session_id, timeout_ms,
+    )
+    .map_err(|error| {
+        BridgeError::from_anyhow(
+            BridgeStage::Handoff,
+            "live_session_wait_failed",
+            error,
+        )
+    })))
+}
+
+#[extendr]
+fn close_live_session(session_id: &str) {
+    extendr_api::error::unwrap_or_throw_error(to_r_result(
+        live::close_live_session(session_id).map_err(|error| {
+            BridgeError::from_anyhow(BridgeStage::Handoff, "live_session_close_failed", error)
+        }),
+    ))
+}
+
+#[extendr]
+fn publish_live_report_result(session_id: &str, result_payload: &str, report_generated_at: &str) {
+    extendr_api::error::unwrap_or_throw_error(to_r_result(live::publish_live_report_result(
+        session_id,
+        result_payload,
+        report_generated_at,
+    )
+    .map_err(|error| {
+        BridgeError::from_anyhow(
+            BridgeStage::Handoff,
+            "live_report_publish_failed",
+            error,
+        )
+    })))
+}
+
+#[extendr]
+fn publish_live_report_failed(session_id: &str, message: &str) {
+    extendr_api::error::unwrap_or_throw_error(to_r_result(live::publish_live_report_failed(
+        session_id, message,
+    )
+    .map_err(|error| {
+        BridgeError::from_anyhow(
+            BridgeStage::Handoff,
+            "live_report_failure_publish_failed",
+            error,
+        )
+    })))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn bridge_error_compile_stage_tags_empty_source() {
+        let error = compile_runtime_model("", "ode", None).expect_err("empty source should fail");
+
+        assert_eq!(error.stage(), BridgeStage::Compile);
+        assert_eq!(error.code(), "model_source_empty");
+        assert_eq!(error.message(), "Model source is empty");
+    }
+
+    #[test]
+    fn bridge_error_data_stage_tags_missing_data_path() {
+        let error = validate_data_path("/definitely/missing/path.csv")
+            .expect_err("missing path should fail");
+
+        assert_eq!(error.stage(), BridgeStage::Data);
+        assert_eq!(error.code(), "data_path_missing");
+    }
+
+    #[test]
+    fn bridge_error_settings_stage_tags_invalid_log_level() {
+        let error = parse_log_level("nope").map_err(|error| {
+            BridgeError::from_anyhow(BridgeStage::Settings, "log_controls_invalid", error)
+        });
+        let error = error.expect_err("invalid log level should fail");
+
+        assert_eq!(error.stage(), BridgeStage::Settings);
+        assert_eq!(error.code(), "log_controls_invalid");
+    }
 }
 
 extendr_module! {
@@ -457,5 +705,10 @@ extendr_module! {
     fn fit;
     fn model_parameters;
     fn setup_logs;
+    fn start_live_session;
+    fn wait_live_session_connected;
+    fn close_live_session;
+    fn publish_live_report_result;
+    fn publish_live_report_failed;
 
 }

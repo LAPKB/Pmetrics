@@ -119,63 +119,16 @@ PM_cycle <- R6::R6Class(
   ), # end active
   private = list(
     make = function(data, path) {
-      if (file.exists(file.path(path, "iterations.csv"))) {
-        raw <- readr::read_csv(file = file.path(path, "iterations.csv"), show_col_types = FALSE)
-        if (nrow(raw) == 0) { # posterior
-          raw <- data.frame(cycle = 0, status = "Posterior")
-          write.csv(raw, file.path(path, "iterations.csv"), row.names = FALSE)
-        }
-      } else if (inherits(data, "PM_cycle") & !is.null(data$data)) { # file not there, and already PM_cycle
+      config <- NULL
+      if (inherits(data, "PM_cycle") & !is.null(data$data)) { # file not there, and already PM_cycle
         class(data$data) <- c("PM_cycle_data", "list")
         return(data$data)
-      } else {
-        cli::cli_warn(c(
-          "!" = "Unable to generate cycle information.",
-          "i" = "{.file {file.path(path, 'iterations.csv')}} does not exist, and result does not have valid {.code PM_cycle} object."
-        ))
-        return(NULL)
       }
 
-
-      if (file.exists(file.path(path, "predictions.csv"))) {
-        op_raw <- readr::read_csv(
-          file = file.path(path, "predictions.csv"),
-          col_types = list(
-            time = readr::col_double(),
-            outeq = readr::col_integer(),
-            block = readr::col_integer(),
-            obs = readr::col_double(),
-            cens = readr::col_character(),
-            pop_mean = readr::col_double(),
-            pop_median = readr::col_double(),
-            post_mean = readr::col_double(),
-            post_median = readr::col_double()
-          ), show_col_types = FALSE
-        ) |> filter(!is.na(obs))
-      } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_op
-        class(data$data) <- c("PM_cycle_data", "list")
-        return(data$data)
-      } else {
-        cli::cli_warn(c(
-          "!" = "Unable to generate cycle information.",
-          "i" = "{.file {file.path(path, 'predictions.csv')}} does not exist, and result does not have valid {.code PM_cycle} object."
-        ))
-        return(NULL)
-      }
-
-
-      if (file.exists(file.path(path, "settings.json"))) {
-        config <- jsonlite::fromJSON(file.path(path, "settings.json"))
-      } else if (inherits(data, "PM_cycle") & !is.null(data$data)) { # file not there, and already PM_op
-        class(data$data) <- c("PM_cycle_data", "list")
-        return(data$data)
-      } else {
-        cli::cli_warn(c(
-          "!" = "Unable to generate cycle information.",
-          "i" = "{.file {file.path(path, 'settings.json')}} does not exist, and result does not have valid {.code PM_cycle} object."
-        ))
-        return(NULL)
-      }
+      fit_payload <- fit_payload_from_source(data, path)
+      raw <- tibble::as_tibble(fit_payload$iterations)
+      op_raw <- tibble::as_tibble(fit_payload$predictions) |> filter(!is.na(obs))
+      config <- fit_payload$config
 
       parameter_names <- if (!is.null(config$parameters) && length(config$parameters) > 0) {
         config$parameters[[1]][["name"]]
