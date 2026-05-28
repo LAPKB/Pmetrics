@@ -15,5 +15,5 @@ exclude = [
 [profile.release]
 panic = "unwind"
 
-[patch."https://github.com/LAPKB/PMcore"]
-pmcore = { path = "../PMcore-structure" }
+# [patch."https://github.com/LAPKB/PMcore"]
+# pmcore = { path = "../PMcore-structure" }
