@@ -74,37 +74,37 @@ mod <- PM_model$new(mod_list)
 Michael Neely
 }
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{model_list}}{A list containing normalized model metadata derived from
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{model_list}}{A list containing normalized model metadata derived from
 the original R model blocks}
 
-\item{\code{arg_list}}{A list containing the original arguments passed to the model}
-}
-\if{html}{\out{</div>}}
+    \item{\code{arg_list}}{A list containing the original arguments passed to the model}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-PM_model-new}{\code{PM_model$new()}}
-\item \href{#method-PM_model-print}{\code{PM_model$print()}}
-\item \href{#method-PM_model-plot}{\code{PM_model$plot()}}
-\item \href{#method-PM_model-fit}{\code{PM_model$fit()}}
-\item \href{#method-PM_model-map}{\code{PM_model$map()}}
-\item \href{#method-PM_model-sim}{\code{PM_model$sim()}}
-\item \href{#method-PM_model-dsl}{\code{PM_model$dsl()}}
-\item \href{#method-PM_model-debug_dsl}{\code{PM_model$debug_dsl()}}
-\item \href{#method-PM_model-compile}{\code{PM_model$compile()}}
-\item \href{#method-PM_model-save}{\code{PM_model$save()}}
-\item \href{#method-PM_model-copy}{\code{PM_model$copy()}}
-\item \href{#method-PM_model-clone}{\code{PM_model$clone()}}
-}
+  \itemize{
+    \item \href{#method-PM_model-initialize}{\code{PM_model$new()}}
+    \item \href{#method-PM_model-print}{\code{PM_model$print()}}
+    \item \href{#method-PM_model-plot}{\code{PM_model$plot()}}
+    \item \href{#method-PM_model-fit}{\code{PM_model$fit()}}
+    \item \href{#method-PM_model-map}{\code{PM_model$map()}}
+    \item \href{#method-PM_model-sim}{\code{PM_model$sim()}}
+    \item \href{#method-PM_model-dsl}{\code{PM_model$dsl()}}
+    \item \href{#method-PM_model-debug_dsl}{\code{PM_model$debug_dsl()}}
+    \item \href{#method-PM_model-compile}{\code{PM_model$compile()}}
+    \item \href{#method-PM_model-save}{\code{PM_model$save()}}
+    \item \href{#method-PM_model-copy}{\code{PM_model$copy()}}
+    \item \href{#method-PM_model-clone}{\code{PM_model$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_model-new"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_model-new}{}}}
-\subsection{Method \code{new()}}{
-This is the method to create a new \code{PM_model} object.
+\if{html}{\out{<a id="method-PM_model-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model-initialize}{}}}
+\subsection{\code{PM_model$new()}}{
+  This is the method to create a new \code{PM_model} object.
 
 The first argument allows creation of a model from a variety of pre-existing
 sources, and if used, all the subsequent arguments will be ignored. If a model
@@ -143,8 +143,9 @@ Again, all R code will be converted to lowercase prior to translation into Rust.
 }
 
 \strong{Important:} All models must have \code{pri}, \code{eqn}, \code{out}, and \code{err} blocks.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$new(
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_model$new(
   x = NULL,
   pri = NULL,
   cov = NULL,
@@ -157,13 +158,13 @@ Again, all R code will be converted to lowercase prior to translation into Rust.
   err = NULL,
   solver = NULL,
   ...
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{x}}{An optional argument, but if specified, all the subsequent
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{x}}{An optional argument, but if specified, all the subsequent
 arguments will be ignored. \code{x} creates a \code{PM_model} from
 existing appropriate input, which can be one of the following:
 \itemize{
@@ -186,8 +187,7 @@ prior example: \code{PM_model$new(mod)}
 }
 
 See the user manual \code{\link[=PM_manual]{PM_manual()}} for more help on directly defining models in R.}
-
-\item{\code{pri}}{The first of the arguments used if \code{x} is not specified. This is
+      \item{\code{pri}}{The first of the arguments used if \code{x} is not specified. This is
 a named list of primary parameters, which are the model parameters that
 are estimated in the population analysis. They are specified
 by one of two creator functions: \code{\link[=ab]{ab()}} or \code{\link[=msd]{msd()}}. For example,
@@ -201,8 +201,7 @@ by one of two creator functions: \code{\link[=ab]{ab()}} or \code{\link[=msd]{ms
 The \code{\link[=ab]{ab()}} creator specifies the
 initial range \verb{[a, b]} of the parameter, while the \code{\link[=msd]{msd()}} creator specifies
 the initial mean and standard deviation of the parameter.}
-
-\item{\code{cov}}{A list whose names are some or all of the covariates in the data file.
+      \item{\code{cov}}{A list whose names are some or all of the covariates in the data file.
 Unlike prior versions of Pmetrics, as of 3.0.0, they do not have to be listed in the same order
 as in the data file, and they do not need to be all present.
 \strong{Only those covariates you wish to use in model equations or analyze for relationships to model parameters need to be declared here.}
@@ -222,8 +221,7 @@ For example:
 }\if{html}{\out{</div>}}
 
 Note that \code{wt = interp()} is equivalent to \code{wt = interp("lm")}, since "lm" is the default.}
-
-\item{\code{sec}}{A function defining the secondary (global) equations in the model. Values
+      \item{\code{sec}}{A function defining the secondary (global) equations in the model. Values
 are not estimated for these equations but they are available to every other block in the model.
 For example:
 
@@ -236,8 +234,7 @@ Note that the function
 must be defined with no arguments between the parentheses,
 and the body \strong{must be in R syntax}. Any number of lines and R code, e.g.
 \code{if} - \verb{else} statements, etc. are permissible.}
-
-\item{\code{eqn}}{A function defining the model equations. The function must have no arguments.
+      \item{\code{eqn}}{A function defining the model equations. The function must have no arguments.
 The body of the function may contain three kinds of equations, written in R syntax.
 \itemize{
 \item \strong{Implicit equations} referenced by calling the name of a Pmetrics model library object
@@ -294,8 +291,7 @@ For example,
 the \code{sec} block, but will only be available within the \code{eqn} block as opposed
 to global availability when defined in \code{sec}. They can be added to either
 }}
-
-\item{\code{lag}}{A function defining the lag time (delayed absorption) for the bolus input.
+      \item{\code{lag}}{A function defining the lag time (delayed absorption) for the bolus input.
 The function must have no arguments,
 and the equations must be defined
 in R syntax The equations must be defined in the form of
@@ -313,8 +309,7 @@ this code could be used to model delayed absorption if an antacid is present.
 
 As for \code{eqn}, additional equations in R code can be defined in this block,
 but will only be available within the \code{lag} block.}
-
-\item{\code{fa}}{A function defining the bioavailability (fraction absorbed) equations,
+      \item{\code{fa}}{A function defining the bioavailability (fraction absorbed) equations,
 similar to \code{lag}.
 
 Example:
@@ -326,8 +321,7 @@ Example:
 
 As for \code{eqn}, additional equations in R code can be defined in this block,
 but will only be available within the \code{fa} block.}
-
-\item{\code{ini}}{A function defining the initial conditions for a compartment
+      \item{\code{ini}}{A function defining the initial conditions for a compartment
 in the model. Structure is similar to \code{lag} and \code{fa}.
 
 Example:
@@ -344,8 +338,7 @@ of a covariate \code{init2} multiplied by the volume of the compartment,
 
 As for \code{eqn}, additional equations in R code can be defined in this block,
 but will only be available within the \code{ini} block.}
-
-\item{\code{out}}{A function defining the output equations, which are the predictions
+      \item{\code{out}}{A function defining the output equations, which are the predictions
 from the model. The function must have no arguments,
 and the equations for predictions must be defined
 in R syntax.
@@ -405,8 +398,7 @@ equation since there is only one source of observations: plasma concentration.
 AUC (\code{y[2]}) is not fitted to any observations; it is a calculation based on
 the model state, given the optimized parameter values. It's not required, but
 shown here for illustrative purposes.}
-
-\item{\code{err}}{An unammed vector of error models for each of the output equations
+      \item{\code{err}}{An unammed vector of error models for each of the output equations
 with observations, i.e. those that have an \code{outeq} number associated with them in
 the data.
 Each error model is defined by the \code{\link[=proportional]{proportional()}} creator or
@@ -435,66 +427,68 @@ for 3 outputs with the same error model:
   replicate(3, proportional(2, c(0.1, 0.15, 0, 0)))
 )
 }\if{html}{\out{</div>}}}
-
-\item{\code{solver}}{Optional ODE solver for user-defined ODE models.
+      \item{\code{solver}}{Optional ODE solver for user-defined ODE models.
 Supported values are "BDF", "TRBDF2", "ESDIRK34", and "TSIT45".
 This is ignored for analytical library models.}
+      \item{\code{...}}{Not currently used.}
+    }
+    \if{html}{\out{</div>}}
+  }
+}
 
-\item{\code{...}}{Not currently used.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model-print"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-print}{}}}
-\subsection{Method \code{print()}}{
-Print the model summary.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$print(...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_model$print()}}{
+  Print the model summary.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_model$print(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Not used.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    This method prints a summary of the model.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Not used.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-This method prints a summary of the model.
-}
-
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-plot}{}}}
-\subsection{Method \code{plot()}}{
-Plot the model.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$plot(...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Additional arguments passed to the plot function.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-This method plots the model using the
+\subsection{\code{PM_model$plot()}}{
+  Plot the model.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_model$plot(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Additional arguments passed to the plot function.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    This method plots the model using the
 \code{\link[=plot.PM_model]{plot.PM_model()}} function.
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model-fit"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-fit}{}}}
-\subsection{Method \code{fit()}}{
-This is the main method to run a population analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$fit(
+\subsection{\code{PM_model$fit()}}{
+  This is the main method to run a population analysis.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_model$fit(
   data = NULL,
   path = ".",
   run = NULL,
@@ -515,13 +509,13 @@ This is the main method to run a population analysis.
   algorithm = "NPAG",
   report = getPMoptions("report_template"),
   quiet = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{data}}{Either the name of a  \link{PM_data}
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{data}}{Either the name of a  \link{PM_data}
 object in memory or the quoted filename (with or without a path) of a Pmetrics
 data file. If the path is not specified, the file is assumed to be in the current working directory,
 unless the \code{path} argument below is also specified as a global option for the fit.
@@ -529,22 +523,16 @@ The file will be used to create a \link{PM_data}
 object on the fly. However, if created on the fly, this object
 will not be available to other
 methods or other instances of \verb{$fit()}.}
-
-\item{\code{path}}{Optional full path or relative path from current working directory
+      \item{\code{path}}{Optional full path or relative path from current working directory
 to the folder where \code{data} and \code{model} are located if specified as filenames without
 their own paths,
 and where the output will be saved. Default is the current working directory.}
-
-\item{\code{run}}{Specify the run number of the output folder.  Default if missing is the next available number.}
-
-\item{\code{include}}{Vector of subject id values in the data file to include in the analysis.
+      \item{\code{run}}{Specify the run number of the output folder.  Default if missing is the next available number.}
+      \item{\code{include}}{Vector of subject id values in the data file to include in the analysis.
 The default (missing) is all.}
-
-\item{\code{exclude}}{A vector of subject IDs to exclude in the analysis, e.g. \code{c(4,6:14,16:20)}}
-
-\item{\code{cycles}}{Number of cycles to run. Default is 100.}
-
-\item{\code{prior}}{The distribution for the initial support points, which can be
+      \item{\code{exclude}}{A vector of subject IDs to exclude in the analysis, e.g. \code{c(4,6:14,16:20)}}
+      \item{\code{cycles}}{Number of cycles to run. Default is 100.}
+      \item{\code{prior}}{The distribution for the initial support points, which can be
 one of several options.
 \itemize{
 \item The default is "sobol", which is a semi-random distribution. This is the distribution
@@ -573,8 +561,7 @@ as for the filename option above. Example: \code{fit1$run(prior = 2)}.
 is in the required format described in the filename option above. Example:
 \verb{mytheta <- read_csv("mytheta.csv"); fit1$run(prior = mytheta)}.
 }}
-
-\item{\code{points}}{The number of initial support points if one of
+      \item{\code{points}}{The number of initial support points if one of
 the semi-random, uniform distributions are selected in the \code{prior} argument
 above. Default is 100. The initial points are
 spread through the hyperspace defined by the random parameter ranges
@@ -585,51 +572,38 @@ Pmetrics will suggest the minimum number of points that should be tried.
 The greater the initial number of points, the less chance of
 missing the globally maximally likely parameter value distribution,
 but the slower the run.}
-
-\item{\code{cache}}{Logical. Whether to enable runtime prediction caching during fitting.
+      \item{\code{cache}}{Logical. Whether to enable runtime prediction caching during fitting.
 Default is \code{TRUE}.}
-
-\item{\code{progress}}{Logical. Whether to print runtime likelihood-matrix progress during
+      \item{\code{progress}}{Logical. Whether to print runtime likelihood-matrix progress during
 fitting. Default is \code{TRUE}.}
-
-\item{\code{write_logs}}{Logical. Whether to write fit tracing logs to \code{outputs/log.txt}.
+      \item{\code{write_logs}}{Logical. Whether to write fit tracing logs to \code{outputs/log.txt}.
 Default is \code{FALSE}.}
-
-\item{\code{stdout_logs}}{Logical. Whether to print fit tracing logs in the R console.
+      \item{\code{stdout_logs}}{Logical. Whether to print fit tracing logs in the R console.
 Default is \code{TRUE}.}
-
-\item{\code{log_level}}{Character scalar. Fit tracing level. One of \code{"ERROR"}, \code{"WARN"},
+      \item{\code{log_level}}{Character scalar. Fit tracing level. One of \code{"ERROR"}, \code{"WARN"},
 \code{"INFO"}, \code{"DEBUG"}, or \code{"TRACE"}. Default is \code{"INFO"}.}
-
-\item{\code{idelta}}{How often to generate posterior predictions in units of time.
+      \item{\code{idelta}}{How often to generate posterior predictions in units of time.
 Default is 0.1, which means a prediction is generated every 0.1 hours (6 minutes)
 if the unit of time is hours. Predictions are made at this interval until the time
 of the last event (dose or observation) or until \code{tad} if that value is greater
 than the time of the last dose or observation in the data.}
-
-\item{\code{tad}}{Length of time after the last dose event to add additional predictions
+      \item{\code{tad}}{Length of time after the last dose event to add additional predictions
 at frequency \code{idelta}.  Default is 0, which means no additional predictions
 beyond the last dose, assuming the dose is the last event. . If the
 last observation in the data is after \code{tad}, then a prediction will be generated at
 time = \code{tad} after the last dose}
-
-\item{\code{seed}}{Seed used if \code{prior = "sobol"}. Ignored otherwise.}
-
-\item{\code{overwrite}}{Boolean operator to overwrite existing run result folders.  Default is \code{FALSE}.}
-
-\item{\code{algorithm}}{The algorithm to use for the run.  Default is "NPAG" for the \strong{N}on-\strong{P}arametric \strong{A}daptive \strong{G}rid. Alternatives: "NPOD".}
-
-\item{\code{report}}{If missing, the default Pmetrics report template as specified in \link{getPMoptions}
+      \item{\code{seed}}{Seed used if \code{prior = "sobol"}. Ignored otherwise.}
+      \item{\code{overwrite}}{Boolean operator to overwrite existing run result folders.  Default is \code{FALSE}.}
+      \item{\code{algorithm}}{The algorithm to use for the run.  Default is "NPAG" for the \strong{N}on-\strong{P}arametric \strong{A}daptive \strong{G}rid. Alternatives: "NPOD".}
+      \item{\code{report}}{If missing, the default Pmetrics report template as specified in \link{getPMoptions}
 is used. Otherwise can be "plotly", "ggplot", or "none".}
-
-\item{\code{quiet}}{Boolean operator to suppress messages during the run.  Default is \code{FALSE}.}
-
-\item{\code{intern}}{Run NPAG in the R console without a batch script.  Default is TRUE.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-As of Pmetrics 3.0.0, models contain compiled code to fit
+      \item{\code{quiet}}{Boolean operator to suppress messages during the run.  Default is \code{FALSE}.}
+      \item{\code{intern}}{Run NPAG in the R console without a batch script.  Default is TRUE.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    As of Pmetrics 3.0.0, models contain compiled code to fit
 the model equations to the data, optimizing the parameter
 value probability distributions in the population to
 maximize their likelihood, or more precisely, minimize
@@ -646,18 +620,18 @@ and the algorithm to use, among others.
 The \verb{$fit()} method is the descendant of the legacy
 \link{NPrun} function, which is maintained as a wrapper to \verb{$fit()}
 for backwards compatibility.
+  }
+  \subsection{Returns}{
+    A successful run will result in creation of a new folder in the working
+directory with the results inside the folder.
+  }
 }
 
-\subsection{Returns}{
-A successful run will result in creation of a new folder in the working
-directory with the results inside the folder.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model-map"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-map}{}}}
-\subsection{Method \code{map()}}{
-Calculate posteriors from a fitted model.
+\subsection{\code{PM_model$map()}}{
+  Calculate posteriors from a fitted model.
 #' @details
 This method calculates posteriors from a compiled model. It is not necessary to have
 run the model first, but it is necessary to have an informative prior distribution.
@@ -670,156 +644,164 @@ To calculate the posteriors, \code{map()} calls the \code{fit()} method with the
 and the \code{algorithm} argument set to "POSTPROB". If \code{data} are not provided as an argument to
 \code{map()}, the model's \code{data} field is used instead. If \code{data} is provided, it must be a
 \link{PM_data} object or the pathname of a file which can be loaded as a \link{PM_data} object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$map(...)}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_model$map(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Arguments passed to the \code{fit} method. Note that the \code{cycles} argument is set to 0,
+and the \code{algorithm} argument is set to "POSTPROB" automatically.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments passed to the \code{fit} method. Note that the \code{cycles} argument is set to 0,
-and the \code{algorithm} argument is set to "POSTPROB" automatically.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model-sim"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-sim}{}}}
-\subsection{Method \code{sim()}}{
-Simulate data from the model using a set of parameter values.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$sim(data, theta, quiet = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{data}}{A \link{PM_data} object containing the dosing and observation information.}
-
-\item{\code{theta}}{A matrix of parameter values to use for the simulation.
+\subsection{\code{PM_model$sim()}}{
+  Simulate data from the model using a set of parameter values.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_model$sim(data, theta, quiet = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{data}}{A \link{PM_data} object containing the dosing and observation information.}
+      \item{\code{theta}}{A matrix of parameter values to use for the simulation.
 The \code{theta} matrix should have the same number of columns as the number of primary parameters in the model.
 Each row of \code{theta} represents a different set of parameter values.}
-
-\item{\code{quiet}}{Logical, if TRUE, suppresses messages during simulation.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-This method simulates output from the model using a set of parameter values
+      \item{\code{quiet}}{Logical, if TRUE, suppresses messages during simulation.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    This method simulates output from the model using a set of parameter values
 provided in the \code{theta} matrix and the template for dosing/observations in
 the \code{data} object.
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model-dsl"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-dsl}{}}}
-\subsection{Method \code{dsl()}}{
-Return the lowered model DSL.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$dsl()}\if{html}{\out{</div>}}
+\subsection{\code{PM_model$dsl()}}{
+  Return the lowered model DSL.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_model$dsl()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    This method returns the pharmsol DSL source generated from the current model.
+  }
 }
 
-\subsection{Details}{
-This method returns the pharmsol DSL source generated from the current model.
-}
-
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model-debug_dsl"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-debug_dsl}{}}}
-\subsection{Method \code{debug_dsl()}}{
-Inspect the lowered model DSL and runtime validation result.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$debug_dsl(quiet = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{quiet}}{Logical, if TRUE, suppresses messages and DSL printing.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-This method is useful when you want to debug the exact DSL source that
+\subsection{\code{PM_model$debug_dsl()}}{
+  Inspect the lowered model DSL and runtime validation result.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_model$debug_dsl(quiet = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{quiet}}{Logical, if TRUE, suppresses messages and DSL printing.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    This method is useful when you want to debug the exact DSL source that
 Pmetrics sends to the runtime. It returns the lowered DSL, a line-numbered
 copy, and either the rendered validation diagnostic or a success status.
+  }
+  \subsection{Returns}{
+    A list with \code{ok}, \code{stage}, \code{dsl}, \code{numbered_dsl}, and \code{diagnostic}.
+  }
 }
 
-\subsection{Returns}{
-A list with \code{ok}, \code{stage}, \code{dsl}, \code{numbered_dsl}, and \code{diagnostic}.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model-compile"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-compile}{}}}
-\subsection{Method \code{compile()}}{
-Validate the model DSL.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$compile(quiet = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{quiet}}{Logical, if TRUE, suppresses messages during compilation.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-This method lowers the model to pharmsol DSL and validates that source
+\subsection{\code{PM_model$compile()}}{
+  Validate the model DSL.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_model$compile(quiet = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{quiet}}{Logical, if TRUE, suppresses messages during compilation.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    This method lowers the model to pharmsol DSL and validates that source
 with the runtime compiler used for fitting and simulation.
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model-save"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-save}{}}}
-\subsection{Method \code{save()}}{
-Save model to file (deprecated).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$save()}\if{html}{\out{</div>}}
-}
-
-\subsection{Details}{
-This method is deprecated. Existing or manually created model files may be read with \code{PM_model$new(filename)},
+\subsection{\code{PM_model$save()}}{
+  Save model to file (deprecated).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_model$save()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    This method is deprecated. Existing or manually created model files may be read with \code{PM_model$new(filename)},
 but including model code in scripts is preferred, as this makes models used in runs transparent and more easily edited.
 Use the \code{PM_model$copy()} method instead to copy the model code to the clipboard and paste into scripts.
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model-copy"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-copy}{}}}
-\subsection{Method \code{copy()}}{
-Copy model code to clipboard.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$copy()}\if{html}{\out{</div>}}
-}
-
-\subsection{Details}{
-This method copies the R code to create the model to the clipboard.
+\subsection{\code{PM_model$copy()}}{
+  Copy model code to clipboard.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_model$copy()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    This method copies the R code to create the model to the clipboard.
 This is useful for saving the model code in a script.
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_model$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{PM_model$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_model$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

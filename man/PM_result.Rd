@@ -19,260 +19,269 @@ Michael Neely, Julian Otalvaro
 }
 \keyword{internal}
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{pop}}{A \link{PM_pop} object}
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{pop}}{A \link{PM_pop} object}
 
-\item{\code{post}}{A \link{PM_post} object}
+    \item{\code{post}}{A \link{PM_post} object}
 
-\item{\code{final}}{A \link{PM_final} object}
+    \item{\code{final}}{A \link{PM_final} object}
 
-\item{\code{cycle}}{A \link{PM_cycle} object}
+    \item{\code{cycle}}{A \link{PM_cycle} object}
 
-\item{\code{op}}{A \link{PM_op} object}
+    \item{\code{op}}{A \link{PM_op} object}
 
-\item{\code{cov}}{A \link{PM_cov} object}
+    \item{\code{cov}}{A \link{PM_cov} object}
 
-\item{\code{data}}{\link{PM_data} object representing the original .csv data file used in the run. The predictions contained in the \verb{$data} fields from \verb{$pop} and \verb{$post} will be added to this \link{PM_data} object to permit easy addition of such predictions to raw data plots. See \link{plot.PM_data} for more details.}
+    \item{\code{data}}{\link{PM_data} object representing the original .csv data file used in the run. The predictions contained in the \verb{$data} fields from \verb{$pop} and \verb{$post} will be added to this \link{PM_data} object to permit easy addition of such predictions to raw data plots. See \link{plot.PM_data} for more details.}
 
-\item{\code{model}}{text string representing the original model file used in the run}
+    \item{\code{model}}{text string representing the original model file used in the run}
 
-\item{\code{errfile}}{Name of error file if it exists}
+    \item{\code{errfile}}{Name of error file if it exists}
 
-\item{\code{success}}{Boolean if successful run}
+    \item{\code{success}}{Boolean if successful run}
 
-\item{\code{valid}}{If the \verb{$validate} method has been executed after a run,
+    \item{\code{valid}}{If the \verb{$validate} method has been executed after a run,
 this field will contain the information required to plot
 visual predictive checks and normalized prediction
 error discrepancies via the npde code developed by Comets et al. Use the
 \verb{$save} method on the augmented \code{PM_result} object to save it with the
 new validation results.}
 
-\item{\code{opt_samp}}{If the \verb{$opt} method has been executed after a run, this
+    \item{\code{opt_samp}}{If the \verb{$opt} method has been executed after a run, this
 field will contain a \link{PM_opt} object which has optimal sampling times
 and methods to plot them.
 Use the \verb{$save} method on the augmented \code{PM_result} object to save it with the
 new optimal sampling results.}
-}
-\if{html}{\out{</div>}}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-PM_result-new}{\code{PM_result$new()}}
-\item \href{#method-PM_result-fit}{\code{PM_result$fit()}}
-\item \href{#method-PM_result-plot}{\code{PM_result$plot()}}
-\item \href{#method-PM_result-summary}{\code{PM_result$summary()}}
-\item \href{#method-PM_result-auc}{\code{PM_result$auc()}}
-\item \href{#method-PM_result-nca}{\code{PM_result$nca()}}
-\item \href{#method-PM_result-report}{\code{PM_result$report()}}
-\item \href{#method-PM_result-sim}{\code{PM_result$sim()}}
-\item \href{#method-PM_result-save}{\code{PM_result$save()}}
-\item \href{#method-PM_result-validate}{\code{PM_result$validate()}}
-\item \href{#method-PM_result-step}{\code{PM_result$step()}}
-\item \href{#method-PM_result-opt}{\code{PM_result$opt()}}
-\item \href{#method-PM_result-load}{\code{PM_result$load()}}
-\item \href{#method-PM_result-continue}{\code{PM_result$continue()}}
-\item \href{#method-PM_result-clone}{\code{PM_result$clone()}}
-}
+  \itemize{
+    \item \href{#method-PM_result-initialize}{\code{PM_result$new()}}
+    \item \href{#method-PM_result-fit}{\code{PM_result$fit()}}
+    \item \href{#method-PM_result-plot}{\code{PM_result$plot()}}
+    \item \href{#method-PM_result-summary}{\code{PM_result$summary()}}
+    \item \href{#method-PM_result-auc}{\code{PM_result$auc()}}
+    \item \href{#method-PM_result-nca}{\code{PM_result$nca()}}
+    \item \href{#method-PM_result-report}{\code{PM_result$report()}}
+    \item \href{#method-PM_result-sim}{\code{PM_result$sim()}}
+    \item \href{#method-PM_result-save}{\code{PM_result$save()}}
+    \item \href{#method-PM_result-validate}{\code{PM_result$validate()}}
+    \item \href{#method-PM_result-step}{\code{PM_result$step()}}
+    \item \href{#method-PM_result-opt}{\code{PM_result$opt()}}
+    \item \href{#method-PM_result-load}{\code{PM_result$load()}}
+    \item \href{#method-PM_result-continue}{\code{PM_result$continue()}}
+    \item \href{#method-PM_result-export}{\code{PM_result$export()}}
+    \item \href{#method-PM_result-clone}{\code{PM_result$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_result-new"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_result-new}{}}}
-\subsection{Method \code{new()}}{
-Create new object populated with data from previous run
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$new(out, path = ".", quiet = TRUE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{out}}{The parsed output from \link{PM_load}, which is
+\if{html}{\out{<a id="method-PM_result-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-initialize}{}}}
+\subsection{\code{PM_result$new()}}{
+  Create new object populated with data from previous run
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$new(out, path = ".", quiet = TRUE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{out}}{The parsed output from \link{PM_load}, which is
 automatically generated. This is not a user-modifiable.}
-
-\item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
+      \item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
 .}
+      \item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    Creation of new \code{PM_result} objects is via \link{PM_load}.
+  }
+}
 
-\item{\code{quiet}}{Quietly validate. Default is \code{FALSE}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-Creation of new \code{PM_result} objects is via \link{PM_load}.
-}
-
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-fit"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-fit}{}}}
-\subsection{Method \code{fit()}}{
-Fit the model to the data
+\subsection{\code{PM_result$fit()}}{
+  Fit the model to the data
 #' @details
 This method is used to fit the model in the \link{PM_result} object to data.
 It calls the \verb{$fit} method of the model stored in the \code{model} field.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$fit(data, ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{data}}{Optional data to fit. If not provided, the data stored in the
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$fit(data, ...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{data}}{Optional data to fit. If not provided, the data stored in the
 \code{data} field of the \link{PM_result} object will be used. This can be useful to
 continue a prior run that did not converge before the maximum number of cycles,
 e.g. \code{run2 <- run1$fit(cycles = 10000, prior = 1)}}
+      \item{\code{...}}{Additional arguments passed to the model's \verb{$fit} method.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    Returns an invisible \link{PM_result}.
+  }
+}
 
-\item{\code{...}}{Additional arguments passed to the model's \verb{$fit} method.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Returns an invisible \link{PM_result}.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-plot}{}}}
-\subsection{Method \code{plot()}}{
-Plot generic function based on type
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$plot(type, ...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_result$plot()}}{
+  Plot generic function based on type
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$plot(type, ...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{type}}{Type of plot based on class of object}
+      \item{\code{...}}{Plot-specific arguments}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{type}}{Type of plot based on class of object}
-
-\item{\code{...}}{Plot-specific arguments}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-summary"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-summary}{}}}
-\subsection{Method \code{summary()}}{
-Summary generic function based on type
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$summary(type, ...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_result$summary()}}{
+  Summary generic function based on type
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$summary(type, ...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{type}}{Type of summary based on class of object}
+      \item{\code{...}}{Summary-specific arguments}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{type}}{Type of summary based on class of object}
-
-\item{\code{...}}{Summary-specific arguments}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-auc"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-auc}{}}}
-\subsection{Method \code{auc()}}{
-AUC generic function based on type
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$auc(src, ...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_result$auc()}}{
+  AUC generic function based on type
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$auc(src, ...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{src}}{Source of AUC, one of "op", "pop", "post", or "sim"}
+      \item{\code{...}}{Summary-specific arguments}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{src}}{Source of AUC, one of "op", "pop", "post", or "sim"}
-
-\item{\code{...}}{Summary-specific arguments}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-nca"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-nca}{}}}
-\subsection{Method \code{nca()}}{
-Perform non-compartmental analysis
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$nca(...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_result$nca()}}{
+  Perform non-compartmental analysis
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$nca(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Arguments passed to \link{make_NCA}.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    See \link{make_NCA}.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments passed to \link{make_NCA}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-See \link{make_NCA}.
-}
-
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-report"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-report}{}}}
-\subsection{Method \code{report()}}{
-Re-generate the report
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$report(...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_result$report()}}{
+  Re-generate the report
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$report(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Parameters passed to \link{PM_report}. In particular, pay attention to \code{path}.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Parameters passed to \link{PM_report}. In particular, pay attention to \code{path}.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-sim"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-sim}{}}}
-\subsection{Method \code{sim()}}{
-Calls \link{PM_sim}. Default is to use the \verb{$final}, \verb{$model}, and \verb{$data} objects
+\subsection{\code{PM_result$sim()}}{
+  Calls \link{PM_sim}. Default is to use the \verb{$final}, \verb{$model}, and \verb{$data} objects
 within the \link{PM_result}. It is common to supply a different \code{data} template.
 Occasionally it is necessary to use a different \code{model} with the \verb{$final} field,
 or vice versa. If all three are different, use \code{PM_sim$new()} instead.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$sim(...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Parameters passed to \link{PM_sim}. If using the \verb{$final}, \verb{$model}, and
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$sim(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Parameters passed to \link{PM_sim}. If using the \verb{$final}, \verb{$model}, and
 \verb{$data} fields, it is not necessary to specify these. Alternates for any of these
 should be specified. Other parameters for \link{PM_sim} should be passed as named
 arguments, e.g. \verb{$sim(include = 1:2, predInt = 1, limits = NA)}.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-save"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-save}{}}}
-\subsection{Method \code{save()}}{
-Save the current PM_result object to an .Rdata file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$save(run, file = "PMout.Rdata")}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{run}}{The run output folder number to save the revised result. If missing,
+\subsection{\code{PM_result$save()}}{
+  Save the current PM_result object to an .Rdata file.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$save(run, file = "PMout.Rdata")}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{run}}{The run output folder number to save the revised result. If missing,
 will save in the current working directory. For example, if folder "1" is in
 your current working directory, specify \code{run = 1} to save the result to the "outputs"
 subfolder of the "1" folder.}
-
-\item{\code{file}}{Custom file name. Default is "PMout.Rdata". If \code{run} is not specified, \code{file}
+      \item{\code{file}}{Custom file name. Default is "PMout.Rdata". If \code{run} is not specified, \code{file}
 should be the full path and filename.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-This is useful if you have updated the result in some way, for example you
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    This is useful if you have updated the result in some way, for example you
 have run the \verb{$validate()} method on the \code{PM_result} object, which returns
 an internal simulation based validation as a new \code{valid} field. To save this
 validation, use this \verb{$save} method. Note that unless a \code{file} name is provided,
@@ -284,126 +293,147 @@ results with someone.
 The saved object is an .Rdata file. When loaded, it should be assigned to an R
 object, e.g. \code{run2 <- PM_result$new("filename")}. An equivalent statement would
 be \code{run2 <- PM_load(file = "filename")}.
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-validate"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-validate}{}}}
-\subsection{Method \code{validate()}}{
-Validate the result by internal simulation methods.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$validate(...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_result$validate()}}{
+  Validate the result by internal simulation methods.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$validate(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Arguments passed to \link{PM_valid}.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments passed to \link{PM_valid}.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-step"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-step}{}}}
-\subsection{Method \code{step()}}{
-Conduct stepwise linear regression of Bayesian posterior parameter values
+\subsection{\code{PM_result$step()}}{
+  Conduct stepwise linear regression of Bayesian posterior parameter values
 and covariates.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$step(...)}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$step(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Arguments passed to \link{PM_step}.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments passed to \link{PM_step}.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-opt"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-opt}{}}}
-\subsection{Method \code{opt()}}{
-Calculate optimal sampling times.
+\subsection{\code{PM_result$opt()}}{
+  Calculate optimal sampling times.
 
 Method to compute optimal sampling times.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$opt(...)}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$opt(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Parameters to pass to \link{PM_opt}.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    See \link{PM_opt} for details.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Parameters to pass to \link{PM_opt}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-See \link{PM_opt} for details.
-}
-
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-load"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-load}{}}}
-\subsection{Method \code{load()}}{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+\subsection{\code{PM_result$load()}}{
+  \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 
 Deprecated method to load prior results saved with the \verb{$save} method.
 Replaced by \link{PM_load}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$load(...)}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$load(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Not used.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Not used.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-continue"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-continue}{}}}
-\subsection{Method \code{continue()}}{
-Continue fitting the model to the data using the final population points
+\subsection{\code{PM_result$continue()}}{
+  Continue fitting the model to the data using the final population points
 from the prior run as the prior for the new run.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$continue(...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Additional arguments passed to the underlying \code{fit} method of the model. See the documentation for \code{fit} for details on supported parameters.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-This method is useful if a prior run did not converge before the maximum
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$continue(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Additional arguments passed to the underlying \code{fit} method of the model. See the documentation for \code{fit} for details on supported parameters.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    This method is useful if a prior run did not converge before the maximum
 number of cycles. It uses the final population points from the prior run
 as the prior for a new run. The data and model are the same as in the prior run.
+  }
 }
 
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_result-export"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-export}{}}}
+\subsection{\code{PM_result$export()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$export(path = ".")}
+    \if{html}{\out{</div>}}
+  }
 }
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_result-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_result-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_result$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{PM_result$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

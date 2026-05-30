@@ -30,6 +30,15 @@ pmetrics_live_app_dir <- function() {
     found[[1]]
 }
 
+pmetrics_is_dev_package_path <- function(path) {
+    if (is.null(path) || !nzchar(path)) {
+        return(FALSE)
+    }
+
+    file.exists(file.path(path, "DESCRIPTION")) &&
+        file.exists(file.path(path, "R"))
+}
+
 launch_live_report_app <- function(live_session, launch.browser = TRUE, timeout_seconds = 30) {
     app_dir <- pmetrics_live_app_dir()
     if (!nzchar(app_dir)) {
@@ -38,6 +47,7 @@ launch_live_report_app <- function(live_session, launch.browser = TRUE, timeout_
             "i" = "Expected app files under {.path inst/apps/live-status}."
         ))
     }
+    app_dir <- normalizePath(app_dir, mustWork = TRUE)
 
     launch_dir <- tempfile("Pmetrics-live-status-")
     dir.create(launch_dir, recursive = TRUE, showWarnings = FALSE)
@@ -50,10 +60,26 @@ launch_live_report_app <- function(live_session, launch.browser = TRUE, timeout_
 
     process <- callr::r_bg(
         function(pkg_path, app_dir, port_file, live_session) {
-            if (nzchar(pkg_path) && file.exists(file.path(pkg_path, "DESCRIPTION")) && requireNamespace("pkgload", quietly = TRUE)) {
-                pkgload::load_all(pkg_path, quiet = TRUE, export_all = TRUE)
-            } else {
-                library(Pmetrics)
+            # In development checkouts, load local code. In installed environments,
+            # load the installed package to avoid pkgload-only assumptions.
+            loaded <- FALSE
+            if (
+                nzchar(pkg_path) &&
+                file.exists(file.path(pkg_path, "DESCRIPTION")) &&
+                file.exists(file.path(pkg_path, "R")) &&
+                requireNamespace("pkgload", quietly = TRUE)
+            ) {
+                loaded <- tryCatch(
+                    {
+                        pkgload::load_all(pkg_path, quiet = TRUE, export_all = TRUE)
+                        TRUE
+                    },
+                    error = function(e) FALSE
+                )
+            }
+
+            if (!isTRUE(loaded)) {
+                loadNamespace("Pmetrics")
             }
 
             options(Pmetrics.live_session = unclass(live_session))

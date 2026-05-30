@@ -34,9 +34,9 @@ allows you to access them in an S3 way, e.g. \code{run1$final$popMean} if \code{
 Michael Neely, Julian Otalvaro
 }
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{data}}{A list with the following elements, which can also be extracted by name.
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{data}}{A list with the following elements, which can also be extracted by name.
 \itemize{
 \item \strong{popPoints} (NPAG only) Data frame of the final cycle joint population density of grid points
 with column names equal to the name of each random parameter plus \emph{prob} for the
@@ -70,55 +70,55 @@ the medians of the posterior distributions for each parameter.
 \item \strong{nsub} Number of subjects
 \item \strong{ab} Tibble/data frame of boundaries for random parameter values with columns: name, lower, upper.
 }}
-}
-\if{html}{\out{</div>}}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{popPoints}}{(NPAG only) Data frame of the final cycle joint population density of grid points
+  \if{html}{\out{<div class="r6-active-bindings">}}
+  \describe{
+    \item{\code{popPoints}}{(NPAG only) Data frame of the final cycle joint population density of grid points
 with column names equal to the name of each random parameter plus \emph{prob} for the
 associated probability of that point}
 
-\item{\code{popMean}}{The final cycle mean for each random parameter distribution}
+    \item{\code{popMean}}{The final cycle mean for each random parameter distribution}
 
-\item{\code{popSD}}{The final cycle standard deviation for each random parameter distribution}
+    \item{\code{popSD}}{The final cycle standard deviation for each random parameter distribution}
 
-\item{\code{popCV}}{The final cycle coefficient of variation (SD/Mean) for each random parameter distribution}
+    \item{\code{popCV}}{The final cycle coefficient of variation (SD/Mean) for each random parameter distribution}
 
-\item{\code{popVar}}{The final cycle variance for each random parameter distribution}
+    \item{\code{popVar}}{The final cycle variance for each random parameter distribution}
 
-\item{\code{popCov}}{The final cycle random parameter covariance matrix}
+    \item{\code{popCov}}{The final cycle random parameter covariance matrix}
 
-\item{\code{popCor}}{The final cycle random parameter correlation matrix}
+    \item{\code{popCor}}{The final cycle random parameter correlation matrix}
 
-\item{\code{popMed}}{The final cycle median values for each random parameter,
+    \item{\code{popMed}}{The final cycle median values for each random parameter,
 i.e. those that have unknown mean and unknown variance, both of which are
 fitted during the run}
 
-\item{\code{postPoints}}{(NPAG only) Data frame of posterior population points for each of the first 100 subject,
+    \item{\code{postPoints}}{(NPAG only) Data frame of posterior population points for each of the first 100 subject,
 with columns id, point, parameters and probability.  The first column is the subject, the second column has the population
 point number, followed by the values for the parameters in that point and the probability.}
 
-\item{\code{postMean}}{A \emph{nsub} x \emph{npar} data frame containing
+    \item{\code{postMean}}{A \emph{nsub} x \emph{npar} data frame containing
 the means of the posterior distributions for each parameter.}
 
-\item{\code{postSD}}{A \emph{nsub} x \emph{npar} data frame containing
+    \item{\code{postSD}}{A \emph{nsub} x \emph{npar} data frame containing
 the SDs of the posterior distributions for each parameter.}
 
-\item{\code{postVar}}{A \emph{nsub} x \emph{npar} data frame containing
+    \item{\code{postVar}}{A \emph{nsub} x \emph{npar} data frame containing
 the variances of the posterior distributions for each parameter.}
 
-\item{\code{postCov}}{NPAG only: An list of length \emph{nsub}, each element with an \emph{npar} x \emph{npar} data frame
+    \item{\code{postCov}}{NPAG only: An list of length \emph{nsub}, each element with an \emph{npar} x \emph{npar} data frame
 that contains the posterior parameter value covariances for that subject.}
 
-\item{\code{postCor}}{NPAG only: An list of length \emph{nsub}, each element with an \emph{npar} x \emph{npar} data frame
+    \item{\code{postCor}}{NPAG only: An list of length \emph{nsub}, each element with an \emph{npar} x \emph{npar} data frame
 that contains the posterior parameter value correlations for that subject.}
 
-\item{\code{postMed}}{A \emph{nsub} x \emph{npar} data frame containing
+    \item{\code{postMed}}{A \emph{nsub} x \emph{npar} data frame containing
 the medians of the posterior distributions for each parameter.*}
 
-\item{\code{shrinkage}}{A data frame with the shrinkage for each parameter.
+    \item{\code{shrinkage}}{A data frame with the shrinkage for each parameter.
 The total population variance for a parameter
 is comprised of variance(EBE) plus average variance(EBD),
 where each subject's EBE is the Empirical Bayes Estimate or mean posterior value
@@ -156,108 +156,111 @@ In contrast, badly undersampled subjects can result in only one support point.
 There is no formal criterion for this statistic, but it can be used in combination
 with shrinkage to assess the information content of the data.}
 
-\item{\code{gridpts}}{(NPAG only) Initial number of support points}
+    \item{\code{gridpts}}{(NPAG only) Initial number of support points}
 
-\item{\code{nsub}}{Number of subjects}
+    \item{\code{nsub}}{Number of subjects}
 
-\item{\code{ab}}{Matrix of boundaries for random parameter values}
-}
-\if{html}{\out{</div>}}
+    \item{\code{ab}}{Matrix of boundaries for random parameter values}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-PM_final-new}{\code{PM_final$new()}}
-\item \href{#method-PM_final-plot}{\code{PM_final$plot()}}
-\item \href{#method-PM_final-summary}{\code{PM_final$summary()}}
-\item \href{#method-PM_final-clone}{\code{PM_final$clone()}}
-}
+  \itemize{
+    \item \href{#method-PM_final-initialize}{\code{PM_final$new()}}
+    \item \href{#method-PM_final-plot}{\code{PM_final$plot()}}
+    \item \href{#method-PM_final-summary}{\code{PM_final$summary()}}
+    \item \href{#method-PM_final-clone}{\code{PM_final$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_final-new"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_final-new}{}}}
-\subsection{Method \code{new()}}{
-Create new object populated with final cycle information
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_final$new(PMdata = NULL, path = ".", ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
+\if{html}{\out{<a id="method-PM_final-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_final-initialize}{}}}
+\subsection{\code{PM_final$new()}}{
+  Create new object populated with final cycle information
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_final$new(PMdata = NULL, path = ".", ...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{PMdata}}{include Saved, parsed output of prior run, used when source files are not available.
 .}
-
-\item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
+      \item{\code{path}}{include Path to the folder containing the raw results of the run. Default is the current working directory.
 .}
-
-\item{\code{...}}{Not currently used.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-Creation of new \code{PM_final} object is automatic and not generally necessary
+      \item{\code{...}}{Not currently used.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    Creation of new \code{PM_final} object is automatic and not generally necessary
 for the user to do.
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_final-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_final-plot}{}}}
-\subsection{Method \code{plot()}}{
-Plot method
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_final$plot(...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_final$plot()}}{
+  Plot method
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_final$plot(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Arguments passed to \link{plot.PM_final}}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    See \link{plot.PM_final}.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments passed to \link{plot.PM_final}}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-See \link{plot.PM_final}.
-}
-
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_final-summary"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_final-summary}{}}}
-\subsection{Method \code{summary()}}{
-Summary method
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_final$summary(...)}\if{html}{\out{</div>}}
+\subsection{\code{PM_final$summary()}}{
+  Summary method
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_final$summary(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Arguments passed to \link{summary.PM_final}}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    See \link{summary.PM_final}.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Arguments passed to \link{summary.PM_final}}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-See \link{summary.PM_final}.
-}
-
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_final-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_final-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PM_final$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{PM_final$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_final$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }
