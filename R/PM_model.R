@@ -1365,7 +1365,7 @@ PM_model <- R6::R6Class(
           live_report_session <- tryCatch(
             start_live_report_session(show = TRUE),
             error = function(e) {
-              msg <<- c(msg, "Live reporting app could not be launched before the fit started.")
+              msg <<- c(msg, "Live status app could not be launched before the fit started.")
               NULL
             }
           )
@@ -1373,7 +1373,7 @@ PM_model <- R6::R6Class(
           if (!is.null(live_report_session)) {
             live_report_started <- TRUE
             if (!isTRUE(live_report_session$connected)) {
-              msg <- c(msg, "Live reporting app did not connect before the first fit cycle.")
+              msg <- c(msg, "Live status app did not connect before the first fit cycle.")
             }
             on.exit(close_live_report_session(live_report_session), add = TRUE)
           }
@@ -1453,25 +1453,24 @@ PM_model <- R6::R6Class(
         )
 
         if (live_report_started) {
-          tryCatch(
-            send_live_report_result(live_report_session, res),
+          msg <- c(msg, "Live status app launched.")
+          if (!is.null(live_report_session$url) && nzchar(live_report_session$url)) {
+            msg <- c(msg, "Live status app URL: {live_report_session$url}")
+          }
+
+          valid_report <- tryCatch(
+            PM_report(res, path = normalizePath(out_path), template = report, quiet = TRUE),
             error = function(e) {
-              msg <<- c(msg, "Live reporting app could not switch to the finished report.")
-              try(
-                send_live_report_failure(
-                  live_report_session,
-                  paste("Finished report handoff failed:", conditionMessage(e))
-                ),
-                silent = TRUE
-              )
-              invisible(NULL)
+              -1
             }
           )
 
-          msg <- c(msg, "Live reporting app launched.")
-          if (!is.null(live_report_session$url) && nzchar(live_report_session$url)) {
-            msg <- c(msg, "Live reporting app URL: {live_report_session$url}")
+          if (valid_report == 1) {
+            msg <- c(msg, "Finished reporting app launched.")
+          } else {
+            msg <- c(msg, "Finished reporting app could not be launched.")
           }
+
           msg <- c(msg, "If assigned to a variable, e.g. {.code run{run} <-}, results are available in {.code run{run}}.")
         } else if (report != "none") {
           valid_report <- tryCatch(
@@ -2528,6 +2527,37 @@ plot.PM_model <- function(x,
     build_sum(terms)
   }
 
+  # Extract x[i] pattern from expression
+  extract_x_pattern <- function(expr) {
+    if (is.call(expr) && as.character(expr[[1]]) == "[" &&
+      length(expr) == 3 && as.character(expr[[2]]) == "x") {
+      return(as.numeric(as.character(expr[[3]])))
+    }
+    return(NULL)
+  }
+
+  # Find x[i] pattern in any expression
+  find_x_in_expression <- function(expr) {
+    if (is.call(expr)) {
+      # Check current expression
+      x_idx <- extract_x_pattern(expr)
+      if (!is.null(x_idx)) {
+        return(x_idx)
+      }
+
+      # Recursively check sub-expressions
+      for (i in 1:length(expr)) {
+        if (i > 1) { # Skip the function name
+          x_idx <- find_x_in_expression(expr[[i]])
+          if (!is.null(x_idx)) {
+            return(x_idx)
+          }
+        }
+      }
+    }
+    return(NULL)
+  }
+
   # Parse output equations
   parse_output_equations <- function(equations) {
     # if (is.null(func)) return(list())
@@ -2563,28 +2593,6 @@ plot.PM_model <- function(x,
     }
 
     return(outputs)
-  }
-
-  # Find x[i] pattern in any expression
-  find_x_in_expression <- function(expr) {
-    if (is.call(expr)) {
-      # Check current expression
-      x_idx <- extract_x_pattern(expr)
-      if (!is.null(x_idx)) {
-        return(x_idx)
-      }
-
-      # Recursively check sub-expressions
-      for (i in 1:length(expr)) {
-        if (i > 1) { # Skip the function name
-          x_idx <- find_x_in_expression(expr[[i]])
-          if (!is.null(x_idx)) {
-            return(x_idx)
-          }
-        }
-      }
-    }
-    return(NULL)
   }
 
   # Parse terms from right-hand side recursively
@@ -2634,15 +2642,6 @@ plot.PM_model <- function(x,
     extract_terms(rhs_expr)
 
     return(terms)
-  }
-
-  # Extract x[i] pattern from expression
-  extract_x_pattern <- function(expr) {
-    if (is.call(expr) && as.character(expr[[1]]) == "[" &&
-      length(expr) == 3 && as.character(expr[[2]]) == "x") {
-      return(as.numeric(as.character(expr[[3]])))
-    }
-    return(NULL)
   }
 
   # Extract compartment connections

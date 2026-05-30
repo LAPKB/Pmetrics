@@ -26,17 +26,25 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
       getNamespaceInfo(asNamespace("Pmetrics"), "path"),
       error = function(e) ""
     )
-    sibling_reports_path <- normalizePath(
+    reports_candidates <- unique(c(
+      Sys.getenv("PMETRICS_REPORTS_PATH", unset = ""),
+      file.path(dirname(pmetrics_path), "PmetricsReports"),
       file.path(dirname(pmetrics_path), "Pmetricsreports"),
-      mustWork = FALSE
-    )
+      file.path(pmetrics_path, "..", "Apps", "PmetricsReports"),
+      file.path(pmetrics_path, "..", "Apps", "Pmetricsreports")
+    ))
 
-    if (nzchar(sibling_reports_path) &&
-      file.exists(file.path(sibling_reports_path, "DESCRIPTION")) &&
+    reports_candidates <- reports_candidates[nzchar(reports_candidates)]
+    reports_candidates <- normalizePath(reports_candidates, mustWork = FALSE)
+    dev_reports_path <- reports_candidates[
+      file.exists(file.path(reports_candidates, "DESCRIPTION"))
+    ][[1]]
+
+    if (!is.null(dev_reports_path) && nzchar(dev_reports_path) &&
       requireNamespace("pkgload", quietly = TRUE)) {
       loaded <- tryCatch(
         {
-          pkgload::load_all(sibling_reports_path, quiet = TRUE, export_all = FALSE)
+          pkgload::load_all(dev_reports_path, quiet = TRUE, export_all = FALSE)
           TRUE
         },
         error = function(e) FALSE

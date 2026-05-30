@@ -28,6 +28,7 @@ Depends:
     R (>= 4.2)
 Imports:
     bslib,
+    callr,
     cli,
     clipr,
     crayon,
@@ -40,6 +41,7 @@ Imports:
     grid,
     htmltools,
     htmlwidgets,
+    httpuv,
     jsonlite,
     knitr,
     lifecycle,

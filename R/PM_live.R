@@ -1,44 +1,124 @@
 # nolint start
 
-resolve_pmetrics_reports_run_app <- function() {
-    pmetrics_path <- tryCatch(
+pmetrics_live_app_dir <- function() {
+    installed <- system.file("apps", "live-status", package = "Pmetrics")
+    if (nzchar(installed) && file.exists(file.path(installed, "app.R"))) {
+        return(installed)
+    }
+
+    pkg_path <- tryCatch(
         getNamespaceInfo(asNamespace("Pmetrics"), "path"),
         error = function(e) ""
     )
-    sibling_reports_path <- normalizePath(
-        file.path(dirname(pmetrics_path), "Pmetricsreports"),
-        mustWork = FALSE
+
+    if (!nzchar(pkg_path)) {
+        return("")
+    }
+
+    candidates <- unique(c(
+        file.path(pkg_path, "inst", "apps", "live-status"),
+        file.path(pkg_path, "inst", "apps", "live-report"),
+        file.path(pkg_path, "inst", "apps", "live_report")
+    ))
+
+    candidates <- normalizePath(candidates, mustWork = FALSE)
+    found <- candidates[file.exists(file.path(candidates, "app.R"))]
+    if (!length(found)) {
+        return("")
+    }
+
+    found[[1]]
+}
+
+launch_live_report_app <- function(live_session, launch.browser = TRUE, timeout_seconds = 30) {
+    app_dir <- pmetrics_live_app_dir()
+    if (!nzchar(app_dir)) {
+        cli::cli_abort(c(
+            "x" = "The internal live reporting app could not be found.",
+            "i" = "Expected app files under {.path inst/apps/live-status}."
+        ))
+    }
+
+    launch_dir <- tempfile("Pmetrics-live-status-")
+    dir.create(launch_dir, recursive = TRUE, showWarnings = FALSE)
+
+    port_file <- file.path(launch_dir, "port.txt")
+    pkg_path <- tryCatch(
+        getNamespaceInfo(asNamespace("Pmetrics"), "path"),
+        error = function(e) ""
     )
 
-    if (nzchar(sibling_reports_path) &&
-        file.exists(file.path(sibling_reports_path, "DESCRIPTION")) &&
-        requireNamespace("pkgload", quietly = TRUE)) {
-        loaded <- tryCatch(
-            {
-                pkgload::load_all(sibling_reports_path, quiet = TRUE, export_all = FALSE)
-                TRUE
-            },
-            error = function(e) FALSE
+    process <- callr::r_bg(
+        function(pkg_path, app_dir, port_file, live_session) {
+            if (nzchar(pkg_path) && file.exists(file.path(pkg_path, "DESCRIPTION")) && requireNamespace("pkgload", quietly = TRUE)) {
+                pkgload::load_all(pkg_path, quiet = TRUE, export_all = TRUE)
+            } else {
+                library(Pmetrics)
+            }
+
+            options(Pmetrics.live_session = unclass(live_session))
+
+            port <- httpuv::randomPort()
+            writeLines(as.character(port), port_file)
+
+            shiny::runApp(
+                appDir = app_dir,
+                launch.browser = FALSE,
+                port = port,
+                host = "127.0.0.1"
+            )
+        },
+        args = list(
+            pkg_path = pkg_path,
+            app_dir = app_dir,
+            port_file = port_file,
+            live_session = live_session
+        ),
+        supervise = TRUE,
+        stdout = "|",
+        stderr = "|"
+    )
+
+    deadline <- Sys.time() + as.numeric(timeout_seconds)
+    while (!file.exists(port_file) && process$is_alive() && Sys.time() < deadline) {
+        Sys.sleep(0.05)
+    }
+
+    if (!process$is_alive()) {
+        startup_output <- c(
+            tryCatch(process$read_all_error_lines(), error = function(e) character()),
+            tryCatch(process$read_all_output_lines(), error = function(e) character())
         )
-
-        if (isTRUE(loaded)) {
-            return(getExportedValue("PmetricsReports", "run_app"))
-        }
+        startup_output <- startup_output[nzchar(startup_output)]
+        cli::cli_abort(c(
+            "x" = "Pmetrics live reporting app exited before startup completed.",
+            if (length(startup_output)) paste(startup_output, collapse = "\n")
+        ))
     }
 
-    if (!requireNamespace("PmetricsReports", quietly = TRUE)) {
-        return(NULL)
+    port <- if (file.exists(port_file)) {
+        suppressWarnings(as.integer(readLines(port_file, warn = FALSE)[1]))
+    } else {
+        NA_integer_
     }
 
-    getExportedValue("PmetricsReports", "run_app")
+    if (!is.finite(port) || is.na(port)) {
+        cli::cli_abort(c(
+            "x" = "Pmetrics live reporting app did not report a local URL before startup timed out."
+        ))
+    }
+
+    app_url <- sprintf("http://127.0.0.1:%s", port)
+    if (isTRUE(launch.browser)) {
+        utils::browseURL(app_url)
+    }
+
+    attr(process, "app_url") <- app_url
+    attr(process, "launch_dir") <- launch_dir
+    invisible(process)
 }
 
 start_live_report_session <- function(show = TRUE, timeout_ms = 10000L) {
-    run_app <- resolve_pmetrics_reports_run_app()
-    if (is.null(run_app)) {
-        return(NULL)
-    }
-
     live_session <- call_pm_bridge(
         start_live_session(),
         default_stage = "handoff",
@@ -47,11 +127,9 @@ start_live_report_session <- function(show = TRUE, timeout_ms = 10000L) {
 
     process <- tryCatch(
         {
-            run_app(
-                res = NULL,
-                launch.browser = show,
-                background = TRUE,
-                live_session = live_session
+            launch_live_report_app(
+                live_session = live_session,
+                launch.browser = show
             )
         },
         error = function(e) {
