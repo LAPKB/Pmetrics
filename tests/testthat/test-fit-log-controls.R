@@ -45,8 +45,8 @@ run_log_control_fit <- function(
     writeLines(
         c(
             'Sys.setenv(NOT_CRAN = "true")',
-            sprintf("devtools::load_all(%s, quiet = TRUE)", dQuote(pkg_root)),
-            sprintf("run_path <- %s", dQuote(run_path)),
+                        sprintf("devtools::load_all(%s, quiet = TRUE)", shQuote(pkg_root)),
+                        sprintf("run_path <- %s", shQuote(run_path)),
             "dir.create(run_path, recursive = TRUE, showWarnings = FALSE)",
             "mod <- PM_model$new(",
             "  pri = list(ke = ab(0.1, 1.0), v = ab(5, 20)),",

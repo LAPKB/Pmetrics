@@ -1,6 +1,8 @@
 library(Pmetrics)
 
 test_that("decode_error_model_rows aligns observed outeq when models include leading placeholder", {
+  decode_error_model_rows <- getFromNamespace("decode_error_model_rows", "Pmetrics")
+
   models <- list(
     "None",
     list(Proportional = list(poly = list(c0 = 0, c1 = 0.1, c2 = 0, c3 = 0)))
@@ -15,6 +17,8 @@ test_that("decode_error_model_rows aligns observed outeq when models include lea
 })
 
 test_that("decode_error_model_rows keeps direct alignment when no placeholder exists", {
+  decode_error_model_rows <- getFromNamespace("decode_error_model_rows", "Pmetrics")
+
   models <- list(
     list(Additive = list(poly = list(c0 = 0.5, c1 = 0, c2 = 0, c3 = 0))),
     list(Proportional = list(poly = list(c0 = 0, c1 = 0.2, c2 = 0, c3 = 0)))

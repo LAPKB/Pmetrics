@@ -33,11 +33,11 @@ testthat::test_that("PM_report respects the configured HTML report mode", {
             }
             NULL
         },
-        getExportedValue = function(...) {
+        pmetrics_get_exported_value = function(...) {
             app_called <<- TRUE
             function(...) invisible(NULL)
         },
-        requireNamespace = function(package, quietly = TRUE) TRUE,
+        pmetrics_require_namespace = function(package, quietly = TRUE) TRUE,
         {
             suppressMessages(PM_report(res, path = out_dir, show = FALSE, quiet = TRUE))
         }
@@ -69,8 +69,8 @@ testthat::test_that("PM_report launches the app when report mode is app", {
                 }
                 NULL
             },
-            requireNamespace = function(package, quietly = TRUE) TRUE,
-            getExportedValue = function(pkg, name) {
+            pmetrics_require_namespace = function(package, quietly = TRUE) TRUE,
+            pmetrics_get_exported_value = function(pkg, name) {
                 testthat::expect_equal(pkg, "PmetricsReports")
                 testthat::expect_equal(name, "run_app")
                 function(res, launch.browser) {

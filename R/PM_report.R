@@ -41,7 +41,7 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
     ][[1]]
 
     if (!is.null(dev_reports_path) && nzchar(dev_reports_path) &&
-      requireNamespace("pkgload", quietly = TRUE)) {
+        pmetrics_require_namespace("pkgload", quietly = TRUE)) {
       loaded <- tryCatch(
         {
           pkgload::load_all(dev_reports_path, quiet = TRUE, export_all = FALSE)
@@ -51,7 +51,7 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
       )
 
       if (isTRUE(loaded)) {
-        return(getExportedValue("PmetricsReports", "run_app"))
+        return(pmetrics_get_exported_value("PmetricsReports", "run_app"))
       }
     }
 
@@ -59,7 +59,7 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
       return(NULL)
     }
 
-    getExportedValue("PmetricsReports", "run_app")
+    pmetrics_get_exported_value("PmetricsReports", "run_app")
   }
 
   resolve_report_mode <- function() {
@@ -186,3 +186,11 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
     }
   )
 }
+
+  pmetrics_require_namespace <- function(package, quietly = FALSE) {
+    requireNamespace(package, quietly = quietly)
+  }
+
+  pmetrics_get_exported_value <- function(pkg, name) {
+    getExportedValue(pkg, name)
+  }

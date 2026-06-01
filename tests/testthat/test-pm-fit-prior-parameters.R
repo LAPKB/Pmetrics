@@ -30,7 +30,7 @@ run_fit_with_mocked_engine <- function(prior_input) {
       captured_model_source <<- model_source
       captured_prior <<- params$prior
       captured_wd <<- getwd()
-      dir.create(output_path, recursive = TRUE)
+      dir.create(output_path, recursive = TRUE, showWarnings = FALSE)
       invisible(NULL)
     },
     PM_parse = function(path) invisible(NULL),

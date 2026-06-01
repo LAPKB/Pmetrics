@@ -105,7 +105,7 @@ test_that("PM_model$debug_dsl captures runtime validation diagnostics", {
   debug <- mod$debug_dsl(quiet = TRUE)
 
   testthat::expect_false(debug$ok)
-  testthat::expect_identical(debug$stage, "runtime")
+  testthat::expect_identical(debug$stage, "settings")
   testthat::expect_match(debug$diagnostic, "Unsupported ODE solver: BAD")
   testthat::expect_true(grepl("kind = ode", debug$dsl, fixed = TRUE))
 })

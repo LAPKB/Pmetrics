@@ -5,12 +5,7 @@ testthat::skip_if_not(
     message = "Cargo is required to run live report bridge tests."
 )
 
-testthat::skip_if_not_installed("pkgload")
-
 testthat::test_that("live report session launches app and connects before fit", {
-    reports_path <- testthat::test_path("..", "..", "..", "Pmetricsreports")
-    pkgload::load_all(reports_path, quiet = TRUE, export_all = FALSE)
-
     start_live <- getFromNamespace("start_live_report_session", "Pmetrics")
     close_live <- getFromNamespace("close_live_report_session", "Pmetrics")
 
@@ -30,15 +25,12 @@ testthat::test_that("live report session launches app and connects before fit", 
 })
 
 testthat::test_that("live report close leaves time for finished report handoff", {
-    reports_path <- testthat::test_path("..", "..", "..", "Pmetricsreports")
-    pkgload::load_all(reports_path, quiet = TRUE, export_all = FALSE)
-
     start_raw_live <- getFromNamespace("start_live_session", "Pmetrics")
     close_live <- getFromNamespace("close_live_report_session", "Pmetrics")
     send_result <- getFromNamespace("send_live_report_result", "Pmetrics")
-    open_connection <- getFromNamespace("open_live_session_connection", "PmetricsReports")
-    close_connection <- getFromNamespace("close_live_session_connection", "PmetricsReports")
-    read_messages <- getFromNamespace("read_live_session_messages", "PmetricsReports")
+    open_connection <- getFromNamespace("pmetrics_open_live_session_connection", "Pmetrics")
+    close_connection <- getFromNamespace("pmetrics_close_live_session_connection", "Pmetrics")
+    read_messages <- getFromNamespace("pmetrics_read_live_session_messages", "Pmetrics")
 
     live_session <- list(
         session = start_raw_live(),

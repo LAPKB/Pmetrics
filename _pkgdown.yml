@@ -44,7 +44,6 @@ reference:
   - PM_op
   - PM_pop
   - PM_opt
-  - PM_parse
   - PM_post
   - PM_pta
   - PM_sim

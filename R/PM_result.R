@@ -538,6 +538,17 @@ update <- function(res, found) {
   return(res)
 }
 
+#' @description
+#' Export run results to standard output files.
+#'
+#' @details
+#' Writes key run outputs (iterations, theta, posterior, predictions,
+#' covariates, and settings) to the target folder.
+#'
+#' @param path Path to the output folder. Defaults to current working directory.
+#'   The folder is created if needed.
+#' @return Invisibly returns `TRUE` when export completes.
+#' @rdname PM_result
 # Export the result to standard output files without relying on legacy fit-time writes.
 PM_result$set("public", "export", function(path = ".") {
   path <- normalizePath(path, mustWork = FALSE)

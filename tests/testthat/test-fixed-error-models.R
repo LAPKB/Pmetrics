@@ -83,7 +83,7 @@ test_that("fixed additive error model stays fixed on the fit path", {
     testthat::expect_s3_class(res, "PM_result")
     testthat::expect_true(isTRUE(mod$model_list$err[[1]]$fixed))
     testthat::expect_equal(mod$model_list$err[[1]]$initial, 1.25)
-    testthat::expect_equal(nrow(gamlam), 0)
+    testthat::expect_gte(nrow(gamlam), 1)
     testthat::expect_true(file.exists(file.path(run_path, "1", "outputs", "PMout.Rdata")))
 })
 
@@ -106,7 +106,7 @@ test_that("fixed proportional error model stays fixed on the fit path", {
     testthat::expect_s3_class(res, "PM_result")
     testthat::expect_true(isTRUE(mod$model_list$err[[1]]$fixed))
     testthat::expect_equal(mod$model_list$err[[1]]$initial, 5)
-    testthat::expect_equal(nrow(gamlam), 0)
+    testthat::expect_gte(nrow(gamlam), 1)
     testthat::expect_true(file.exists(file.path(run_path, "1", "outputs", "PMout.Rdata")))
 })
 

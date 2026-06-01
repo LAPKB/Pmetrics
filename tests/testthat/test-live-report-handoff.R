@@ -12,6 +12,7 @@ testthat::test_that("send_live_report_result serializes and publishes the finish
             )
             invisible(NULL)
         },
+        .package = "Pmetrics",
         {
             send_live_report_result(
                 live_report_session = session,
@@ -38,6 +39,7 @@ testthat::test_that("send_live_report_failure publishes the handoff error messag
             published <<- list(session_id = session_id, message = message)
             invisible(NULL)
         },
+        .package = "Pmetrics",
         {
             send_live_report_failure(session, "Finished report handoff failed")
         }
@@ -47,14 +49,16 @@ testthat::test_that("send_live_report_failure publishes the handoff error messag
     testthat::expect_equal(published$message, "Finished report handoff failed")
 })
 
-testthat::test_that("PM_model$fit publishes the finished report to the live app when report = 'app'", {
+testthat::test_that("PM_model$fit launches the final report after the live status session", {
     model <- build_example_ode_model(compile = FALSE)
     data <- PM_data$new(data = "ex.csv", quiet = TRUE)
     run_root <- withr::local_tempdir(pattern = "live-handoff-fit-")
 
     fake_result <- structure(list(marker = "ready"), class = "PM_result")
+    report_call <- NULL
     sent_result <- NULL
     sent_failure <- NULL
+    close_called <- FALSE
 
     result <- testthat::with_mocked_bindings(
         validate_model_source = function(...) invisible(NULL),
@@ -66,11 +70,18 @@ testthat::test_that("PM_model$fit publishes the finished report to the live app 
                 url = "http://127.0.0.1:1234"
             )
         },
-        close_live_report_session = function(...) invisible(TRUE),
+        close_live_report_session = function(...) {
+            close_called <<- TRUE
+            invisible(TRUE)
+        },
         fit = function(model_source, data, params, output_path, kind, solver = NULL) {
             "{\"ok\":true}"
         },
         build_pm_result_from_fit_payload = function(...) fake_result,
+        PM_report = function(res, path, template, quiet = FALSE) {
+            report_call <<- list(res = res, path = path, template = template, quiet = quiet)
+            1
+        },
         send_live_report_result = function(live_report_session, res, generated_at = Sys.time()) {
             sent_result <<- list(session = live_report_session, res = res)
             invisible(TRUE)
@@ -79,6 +90,7 @@ testthat::test_that("PM_model$fit publishes the finished report to the live app 
             sent_failure <<- list(session = live_report_session, message = message)
             invisible(TRUE)
         },
+        .package = "Pmetrics",
         {
             suppressWarnings(suppressMessages(
                 model$fit(
@@ -97,9 +109,12 @@ testthat::test_that("PM_model$fit publishes the finished report to the live app 
 
     testthat::expect_s3_class(result, "PM_result")
     testthat::expect_null(sent_failure)
-    testthat::expect_true(is.list(sent_result))
-    testthat::expect_equal(sent_result$session$session$session_id, "pm-live-test")
-    testthat::expect_identical(sent_result$res, fake_result)
+    testthat::expect_true(close_called)
+    testthat::expect_true(is.list(report_call))
+    testthat::expect_identical(report_call$res, fake_result)
+    testthat::expect_equal(report_call$template, "app")
+    testthat::expect_true(isTRUE(report_call$quiet))
+    testthat::expect_null(sent_result)
 })
 
 testthat::test_that("PM_model$fit reports a final handoff failure to the live app", {
@@ -136,6 +151,7 @@ testthat::test_that("PM_model$fit reports a final handoff failure to the live ap
                 sent_failure <<- list(session = live_report_session, message = message)
                 invisible(TRUE)
             },
+            .package = "Pmetrics",
             {
                 suppressMessages(
                     model$fit(

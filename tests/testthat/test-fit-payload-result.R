@@ -467,7 +467,8 @@ testthat::test_that("PM_model$compile rethrows structured bridge errors with com
             },
             {
                 model$compile(quiet = TRUE)
-            }
+            },
+            .package = "Pmetrics"
         ),
         classes = "error"
     )
@@ -512,7 +513,8 @@ testthat::test_that("PM_model$fit rethrows runtime bridge failures instead of re
                         quiet = TRUE
                     )
                 )
-            }
+            },
+            .package = "Pmetrics"
         ),
         classes = "error"
     )
@@ -548,7 +550,8 @@ testthat::test_that("PM_model$fit keeps compatibility with unstructured bridge f
                         quiet = TRUE
                     )
                 )
-            }
+            },
+            .package = "Pmetrics"
         ),
         classes = "error"
     )
