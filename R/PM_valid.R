@@ -209,7 +209,7 @@ PM_valid <- R6::R6Class(
           tidyr::unnest_longer(col = 1, indices_to = "quantile", values_to = "value") |>
           dplyr::mutate(
             time     = rep(times, each = length(q_probs)),
-            quantile = readr::parse_number(quantile) / 100
+            quantile = rep(q_probs, times = length(times))
           ) |>
           dplyr::select(time, quantile, value)
       }

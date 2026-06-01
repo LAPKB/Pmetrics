@@ -128,52 +128,19 @@ PM_op <- R6::R6Class(
   ), # end public
   private = list(
     make = function(data, path) {
-      if (file.exists(file.path(path, "pred.csv"))) {
-        op_raw <- readr::read_csv(
-          file = file.path(path, "pred.csv"),
-          col_types = list(
-            time = readr::col_double(),
-            outeq = readr::col_integer(),
-            block = readr::col_integer(),
-            obs = readr::col_double(),
-            cens = readr::col_character(),
-            pop_mean = readr::col_double(),
-            pop_median = readr::col_double(),
-            post_mean = readr::col_double(),
-            post_median = readr::col_double()
-          ), show_col_types = FALSE
-        ) |> filter(!is.na(obs))
-
-        if (!"cens" %in% names(op_raw)) {
-          op_raw <- op_raw |> mutate(cens = "none") # if cens column missing, assume all observed
-        }
-      } else if (inherits(data, "PM_op") & !is.null(data$data)) { # file not there, and already PM_op
+      config <- NULL
+      if (inherits(data, "PM_op") & !is.null(data$data)) {
         if (!"cens" %in% names(data$data)) {
           data$data <- data$data |> mutate(cens = "none") # if cens column missing, assume all observed
         }
         class(data$data) <- c("PM_op_data", "data.frame")
         return(data$data)
-      } else {
-        cli::cli_warn(c(
-          "!" = "Unable to generate obs-pred information.",
-          "i" = "{.file {file.path(path, 'pred.csv')}} does not exist, and result does not have valid {.code PM_op} object ."
-        ))
-        return(NULL)
       }
 
+      fit_payload <- fit_payload_from_source(data, path)
+      op_raw <- tibble::as_tibble(fit_payload$predictions) |> filter(!is.na(obs))
+      config <- fit_payload$config
 
-      if (file.exists(file.path(path, "settings.json"))) {
-        config <- jsonlite::fromJSON(file.path(path, "settings.json"))
-      } else if (inherits(data, "PM_op")) { # file not there, and already PM_op
-        class(data$data) <- c("PM_op_data", "data.frame")
-        return(data$data)
-      } else {
-        cli::cli_warn(c(
-          "!" = "Unable to generate obs-pred information.",
-          "i" = "{.file {file.path(path, 'settings.json')}} does not exist, and result does not have valid {.code PM_op} object."
-        ))
-        return(NULL)
-      }
       poly <- decode_error_model_rows(config$errormodels$models, op_raw$outeq)
 
       calc_obs_sd <- function(outeq, obs) {
@@ -338,22 +305,21 @@ PM_op <- R6::R6Class(
 #' }
 #' @family PMplots
 plot.PM_op <- function(
-  x,
-  line = list(lm = NULL, loess = NULL, ref = NULL),
-  marker = TRUE,
-  resid = FALSE,
-  icen = "median", pred.type = "post", outeq = 1, block,
-  include, exclude,
-  mult = 1,
-  legend,
-  log = FALSE,
-  grid = TRUE,
-  xlab, ylab,
-  title,
-  stats = TRUE,
-  print = TRUE,
-  xlim, ylim, ...
-) {
+    x,
+    line = list(lm = NULL, loess = NULL, ref = NULL),
+    marker = TRUE,
+    resid = FALSE,
+    icen = "median", pred.type = "post", outeq = 1, block,
+    include, exclude,
+    mult = 1,
+    legend,
+    log = FALSE,
+    grid = TRUE,
+    xlab, ylab,
+    title,
+    stats = TRUE,
+    print = TRUE,
+    xlim, ylim, ...) {
   if (inherits(x, "PM_op")) {
     x <- x$data
   }
@@ -803,10 +769,9 @@ plot.PM_op_data <- function(x, ...) {
 #' @export
 
 summary.PM_op <- function(
-  object, digits = max(3, getOption("digits") - 3),
-  pred.type = "post", icen = "median",
-  outeq = 1, ...
-) {
+    object, digits = max(3, getOption("digits") - 3),
+    pred.type = "post", icen = "median",
+    outeq = 1, ...) {
   argList <- list(...)
   if ("type" %in% names(argList)) {
     cli::cli_inform(c("i" = "{.code type} has been updated to {.code pred.type}.\fPlease update your script."))

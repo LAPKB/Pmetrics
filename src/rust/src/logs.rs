@@ -1,9 +1,14 @@
 use std::fmt;
+use std::fs::{self, File};
+use std::io::Write;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex, OnceLock};
 use std::time::Instant;
 
+use anyhow::{anyhow, Result};
 use extendr_api::prelude::*;
 use extendr_api::rprintln;
+use pmcore::api::LoggingLevel;
 use tracing::Level;
 use tracing_subscriber::fmt::time::FormatTime;
 use tracing_subscriber::registry::LookupSpan;
@@ -11,6 +16,69 @@ use tracing_subscriber::Layer;
 
 // Global timer that can be reset
 static GLOBAL_TIMER: OnceLock<Arc<Mutex<Instant>>> = OnceLock::new();
+static GLOBAL_LOG_CONFIG: OnceLock<Arc<Mutex<LogConfig>>> = OnceLock::new();
+
+#[derive(Debug)]
+struct LogConfig {
+    level: LoggingLevel,
+    stdout: bool,
+    file: Option<File>,
+}
+
+impl Default for LogConfig {
+    fn default() -> Self {
+        Self {
+            level: LoggingLevel::Info,
+            stdout: true,
+            file: None,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct LogControls {
+    pub level: LoggingLevel,
+    pub stdout: bool,
+    pub write: bool,
+    pub output_path: Option<PathBuf>,
+}
+
+impl Default for LogControls {
+    fn default() -> Self {
+        Self {
+            level: LoggingLevel::Info,
+            stdout: true,
+            write: false,
+            output_path: None,
+        }
+    }
+}
+
+fn global_log_config() -> Arc<Mutex<LogConfig>> {
+    GLOBAL_LOG_CONFIG
+        .get_or_init(|| Arc::new(Mutex::new(LogConfig::default())))
+        .clone()
+}
+
+pub(crate) fn configure_logs(controls: &LogControls) -> Result<()> {
+    let file = if controls.write {
+        let output_path = controls
+            .output_path
+            .as_ref()
+            .ok_or_else(|| anyhow!("log output path is required when write_logs = TRUE"))?;
+        fs::create_dir_all(output_path)?;
+        Some(File::create(output_path.join("log.txt"))?)
+    } else {
+        None
+    };
+
+    let config_handle = global_log_config();
+    let mut config = config_handle.lock().unwrap();
+    config.level = controls.level;
+    config.stdout = controls.stdout;
+    config.file = file;
+    Ok(())
+}
 
 pub struct RFormatLayer {
     pub timer: CompactTimestamp,
@@ -84,6 +152,19 @@ where
         let metadata = event.metadata();
         let level = metadata.level();
 
+        let (stdout_enabled, file_enabled) = {
+            let config_handle = global_log_config();
+            let config = config_handle.lock().unwrap();
+            if !level_enabled(config.level, *level) {
+                return;
+            }
+            (config.stdout, config.file.is_some())
+        };
+
+        if !stdout_enabled && !file_enabled {
+            return;
+        }
+
         // Create a visitor to extract field values
         let mut visitor = FieldVisitor::default();
         event.record(&mut visitor);
@@ -107,6 +188,7 @@ where
         // Walk the span scope from root -> current and collect formatted spans.
         // Each non-empty span is rendered as its own bracketed group, e.g. [Cycle 6].
         let mut span_str = String::new();
+        let mut plain_span_str = String::new();
         if let Some(scope) = ctx.event_scope(event) {
             for span in scope.from_root() {
                 let label = span
@@ -119,6 +201,7 @@ where
                 }
                 // Cyan color so the span context stands out from the message
                 span_str.push_str(&format!(" \x1b[36m[{}]\x1b[0m", label));
+                plain_span_str.push_str(&format!(" [{}]", label));
             }
         }
 
@@ -131,8 +214,52 @@ where
             )
         };
 
+        let plain_level = match *level {
+            Level::ERROR => "ERROR",
+            Level::WARN => "WARN",
+            Level::INFO => "INFO",
+            Level::DEBUG => "DEBUG",
+            Level::TRACE => "TRACE",
+        };
+
+        let plain_message = if visitor.fields.is_empty() {
+            format!(
+                "[{}] [{}]{} (no fields)",
+                time_buffer, plain_level, plain_span_str
+            )
+        } else {
+            format!(
+                "[{}] [{}]{} {}",
+                time_buffer, plain_level, plain_span_str, visitor.fields
+            )
+        };
+
+        if file_enabled {
+            let config_handle = global_log_config();
+            let mut config = config_handle.lock().unwrap();
+            if let Some(file) = config.file.as_mut() {
+                let _ = writeln!(file, "{}", plain_message);
+                let _ = file.flush();
+            }
+        }
+
         // Use rprintln to print to R console
-        rprintln!("{}", message);
+        if stdout_enabled {
+            rprintln!("{}", message);
+        }
+    }
+}
+
+fn level_enabled(configured: LoggingLevel, event: Level) -> bool {
+    match configured {
+        LoggingLevel::Error => matches!(event, Level::ERROR),
+        LoggingLevel::Warn => matches!(event, Level::ERROR | Level::WARN),
+        LoggingLevel::Info => matches!(event, Level::ERROR | Level::WARN | Level::INFO),
+        LoggingLevel::Debug => matches!(
+            event,
+            Level::ERROR | Level::WARN | Level::INFO | Level::DEBUG
+        ),
+        LoggingLevel::Trace => true,
     }
 }
 

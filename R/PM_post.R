@@ -92,31 +92,13 @@ PM_post <- R6::R6Class(
   ), # end public
   private = list(
     make = function(data, path) {
-      if (file.exists(file.path(path, "pred.csv"))) {
-        op_raw <- readr::read_csv(
-          file = file.path(path, "pred.csv"),
-          col_types = list(
-            time = readr::col_double(),
-            outeq = readr::col_integer(),
-            block = readr::col_integer(),
-            obs = readr::col_double(),
-            cens = readr::col_character(),
-            pop_mean = readr::col_double(),
-            pop_median = readr::col_double(),
-            post_mean = readr::col_double(),
-            post_median = readr::col_double()
-          ), show_col_types = FALSE
-        )
-      } else if (inherits(data, "PM_post") & !is.null(data$data)) { # file not there, and already PM_post
+      if (inherits(data, "PM_post") & !is.null(data$data)) { # file not there, and already PM_post
         class(data$data) <- c("PM_post_data", "data.frame")
         return(data$data)
-      } else {
-        cli::cli_warn(c(
-          "!" = "Unable to generate post pred information.",
-          "i" = "{.file {file.path(path, 'pred.csv')}} does not exist, and result does not have valid {.code PM_post} object."
-        ))
-        return(NULL)
       }
+
+      fit_payload <- fit_payload_from_source(data, path)
+      op_raw <- tibble::as_tibble(fit_payload$predictions)
 
       if (is.null(op_raw)) {
         return(NA)
@@ -226,26 +208,25 @@ PM_post <- R6::R6Class(
 #' @family PMplots
 
 plot.PM_post <- function(
-  x,
-  include = NULL,
-  exclude = NULL,
-  line = list(join = TRUE),
-  marker = FALSE,
-  out_names = NULL,
-  mult = 1,
-  icen = "median",
-  outeq = 1,
-  block = 1,
-  overlay = TRUE,
-  legend = FALSE,
-  log = FALSE,
-  grid = FALSE,
-  xlab = "Time",
-  ylab = "Output",
-  title = "",
-  print = TRUE,
-  xlim, ylim, ...
-) {
+    x,
+    include = NULL,
+    exclude = NULL,
+    line = list(join = TRUE),
+    marker = FALSE,
+    out_names = NULL,
+    mult = 1,
+    icen = "median",
+    outeq = 1,
+    block = 1,
+    overlay = TRUE,
+    legend = FALSE,
+    log = FALSE,
+    grid = FALSE,
+    xlab = "Time",
+    ylab = "Output",
+    title = "",
+    print = TRUE,
+    xlim, ylim, ...) {
   # Plot parameters ---------------------------------------------------------
 
   x <- if (inherits(x, "PM_post")) {
@@ -496,10 +477,9 @@ plot.PM_post <- function(
 #' @export
 
 summary.PM_post <- function(
-  object, digits = max(3, getOption("digits") - 3),
-  icen = "median",
-  outeq = 1, ...
-) {
+    object, digits = max(3, getOption("digits") - 3),
+    icen = "median",
+    outeq = 1, ...) {
   sumWrk <- function(data) {
     sumstat <- matrix(NA, nrow = 7, ncol = 2, dimnames = list(c("Min", "25%", "Median", "75%", "Max", "Mean", "SD"), c("Time", "Pred")))
     # min

@@ -310,6 +310,74 @@ PM_result$load <- function(...) {
   lifecycle::deprecate_warn("2.1.0", "PM_result$load()", details = "Please use PM_load() instead. ?PM_load for details.")
 }
 
+# nolint start
+load_pm_result_snapshot <- function(found) {
+  output2List <- function(Out) {
+    result <- list()
+    for (i in seq_along(Out)) {
+      aux_list <- list(Out[[i]])
+      names(aux_list) <- names(Out)[i]
+      result <- append(result, aux_list)
+    }
+
+    result
+  }
+
+  result <- output2List(Out = get(load(found)))
+  PM_result$new(result, path = dirname(found), quiet = TRUE)
+}
+
+rebuild_pm_result_from_outputs <- function(output_path) {
+  fit_object <- load_pm_parse_fit_object(output_path, fit = "fit.rds")
+  fit_payload <- load_fit_payload_snapshot(output_path)
+
+  if (!is.null(fit_payload)) {
+    if (is.null(fit_object$data) || is.null(fit_object$model)) {
+      cli::cli_abort(c(
+        "x" = "No Pmetrics output file found in {.path {output_path}}.",
+        "i" = "The standard run inputs needed to rebuild this result are missing."
+      ))
+    }
+
+    return(build_pm_result_from_normalized_payload(
+      fit_payload,
+      data = fit_object$data,
+      model = fit_object$model,
+      path = output_path
+    ))
+  }
+
+  fit_manifest <- load_fit_manifest_snapshot(output_path)
+
+  if (!is.null(fit_manifest)) {
+    if (is.null(fit_object$data) || is.null(fit_object$model)) {
+      cli::cli_abort(c(
+        "x" = "No Pmetrics output file found in {.path {output_path}}.",
+        "i" = "The standard run inputs needed to rebuild this result are missing."
+      ))
+    }
+
+    return(build_pm_result_from_normalized_payload(
+      fit_manifest,
+      data = fit_object$data,
+      model = fit_object$model,
+      path = output_path
+    ))
+  }
+
+  parsed <- PM_parse(path = output_path, write = FALSE)
+
+  if (is.null(parsed$data) || is.null(parsed$model)) {
+    cli::cli_abort(c(
+      "x" = "No Pmetrics output file found in {.path {output_path}}.",
+      "i" = "The standard run inputs needed to rebuild this result are missing."
+    ))
+  }
+
+  PM_result$new(parsed, path = output_path, quiet = TRUE)
+}
+# nolint end
+
 
 # LOAD --------------------------------------------------------------------
 #' @title Load Pmetrics NPAG or IT2B output
@@ -364,20 +432,6 @@ PM_result$load <- function(...) {
 
 
 PM_load <- function(run, path = ".", file = "PMout.Rdata") {
-  # internal function
-  output2List <- function(Out) {
-    result <- list()
-    for (i in 1:length(Out)) {
-      aux_list <- list(Out[[i]])
-      names(aux_list) <- names(Out)[i]
-      result <- append(result, aux_list)
-    }
-
-    return(result)
-  }
-
-  found <- "" # initialize
-
   if (!missing(run)) {
     filepath <- file.path(path, run, "outputs", file)
   } else {
@@ -385,63 +439,32 @@ PM_load <- function(run, path = ".", file = "PMout.Rdata") {
   }
 
   if (file.exists(filepath)) {
-    found <- filepath
+    return(load_pm_result_snapshot(filepath))
   }
 
-  if (found != "") {
-    result <- output2List(Out = get(load(found)))
-    rebuild <- PM_result$new(result, path = dirname(found), quiet = TRUE)
+  rebuild_error <- NULL
+  if (identical(basename(filepath), "PMout.Rdata") && dir.exists(dirname(filepath))) {
+    rebuilt <- tryCatch(
+      rebuild_pm_result_from_outputs(dirname(filepath)),
+      error = function(e) {
+        rebuild_error <<- e
+        NULL
+      }
+    )
 
-    inputs_dir <- normalizePath(file.path(dirname(found), "..", "inputs"), mustWork = FALSE)
-    inputs_binaries <- if (dir.exists(inputs_dir)) {
-      list.files(inputs_dir, pattern = "\\.pmx$", full.names = TRUE)
-    } else {
-      character(0)
+    if (!is.null(rebuilt)) {
+      return(rebuilt)
     }
-
-    if (inherits(rebuild$model, "PM_model")) {
-      is_valid_path <- function(x) {
-        is.character(x) && length(x) == 1 && !is.na(x) && nzchar(x)
-      }
-
-      # Prefer the binary path stored in the saved result (model_binary_path);
-      # fall back to the model's current binary_path field if not available.
-      target_binary_path <- result$model_binary_path
-      if (!is_valid_path(target_binary_path)) {
-        target_binary_path <- rebuild$model$binary_path
-      }
-
-      if (length(inputs_binaries) > 0) {
-        source_binary <- inputs_binaries[1]
-        if (is_valid_path(target_binary_path)) {
-          preferred_source <- normalizePath(file.path(inputs_dir, basename(target_binary_path)), mustWork = FALSE)
-          if (file.exists(preferred_source)) {
-            source_binary <- preferred_source
-          }
-        }
-
-        if (is_valid_path(target_binary_path)) {
-          target_binary_path <- normalizePath(target_binary_path, mustWork = FALSE)
-          copied <- tryCatch(
-            {
-              dir.create(dirname(target_binary_path), recursive = TRUE, showWarnings = FALSE)
-              isTRUE(file.copy(source_binary, target_binary_path, overwrite = TRUE))
-            },
-            error = function(e) FALSE
-          )
-          rebuild$model$binary_path <- if (copied) target_binary_path else source_binary
-        } else {
-          rebuild$model$binary_path <- source_binary
-        }
-      } else {
-        rebuild$model$binary_path <- NULL
-      }
-    }
-
-    return(rebuild)
-  } else {
-    cli::cli_abort(c("x" = "No Pmetrics output file found in {.path {path}}."))
   }
+
+  if (!is.null(rebuild_error)) {
+    cli::cli_abort(c(
+      "x" = "No Pmetrics output file found in {.path {path}}.",
+      "i" = "Rebuilding from standard run outputs failed: {conditionMessage(rebuild_error)}"
+    ))
+  }
+
+  cli::cli_abort(c("x" = "No Pmetrics output file found in {.path {path}}."))
 }
 
 
@@ -459,7 +482,7 @@ update <- function(res, found) {
       n_cyc <- nrow(dat$mean)
       n_out <- max(res$op$outeq)
       dat$gamlam <- dat$gamlam |> select(starts_with("add") | starts_with("prop"))
-      if (ncol(gamlam) == 1 & n_out > 1) {
+      if (ncol(gamlam) == 1 && n_out > 1) {
         gamlam <- cbind(gamlam, replicate((n_out - 1), gamlam[, 1]))
       }
       gamlam <- gamlam |>
@@ -514,3 +537,56 @@ update <- function(res, found) {
 
   return(res)
 }
+
+#' @description
+#' Export run results to standard output files.
+#'
+#' @details
+#' Writes key run outputs (iterations, theta, posterior, predictions,
+#' covariates, and settings) to the target folder.
+#'
+#' @param path Path to the output folder. Defaults to current working directory.
+#'   The folder is created if needed.
+#' @return Invisibly returns `TRUE` when export completes.
+#' @rdname PM_result
+# Export the result to standard output files without relying on legacy fit-time writes.
+PM_result$set("public", "export", function(path = ".") {
+  path <- normalizePath(path, mustWork = FALSE)
+  dir.create(path, recursive = TRUE, showWarnings = FALSE)
+
+  if (!is.null(self$cycle$data)) {
+    write.csv(self$cycle$data, file.path(path, "iterations.csv"), row.names = FALSE)
+  }
+
+  if (!is.null(self$final$data)) {
+    write.csv(self$final$data$theta, file.path(path, "theta.csv"), row.names = FALSE)
+  }
+
+  if (!is.null(self$post$data)) {
+    write.csv(self$post$data$posterior, file.path(path, "posterior.csv"), row.names = FALSE)
+  }
+
+  if (!is.null(self$pop$data)) {
+    write.csv(self$pop$data$pop, file.path(path, "predictions.csv"), row.names = FALSE)
+  }
+
+  if (!is.null(self$cov$data)) {
+    write.csv(self$cov$data$covariates, file.path(path, "covariates.csv"), row.names = FALSE)
+  }
+
+  if (!is.null(self$model) && !is.null(self$data)) {
+    settings <- list(
+      algorithm = if (!is.null(self$model$model_list$algorithm)) self$model$model_list$algorithm else "NPAG",
+      errormodels = if (!is.null(self$model$model_list$err)) {
+        lapply(self$model$model_list$err, function(e) list(type = e$type, coeff = e$coeff))
+      },
+      parameters = if (!is.null(self$model$model_list$pri)) {
+        lapply(self$model$model_list$pri, function(p) list(min = p$min, max = p$max))
+      }
+    )
+    writeLines(jsonlite::toJSON(settings, auto_unbox = TRUE), file.path(path, "settings.json"))
+  }
+
+  invisible(TRUE)
+})
+

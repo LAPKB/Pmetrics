@@ -28,6 +28,7 @@ Depends:
     R (>= 4.2)
 Imports:
     bslib,
+    callr,
     cli,
     clipr,
     crayon,
@@ -40,6 +41,7 @@ Imports:
     grid,
     htmltools,
     htmlwidgets,
+    httpuv,
     jsonlite,
     knitr,
     lifecycle,
@@ -79,7 +81,7 @@ Suggests:
 VignetteBuilder: 
     knitr
 Config/Needs/website: r-lib/pkgdown, quarto
-Config/rextendr/version: 0.4.2
+Config/rextendr/version: 0.5.0
 Config/roxygen2/version: 8.0.0
 Config/testthat/edition: 3
 Encoding: UTF-8

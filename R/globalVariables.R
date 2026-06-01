@@ -28,7 +28,9 @@ utils::globalVariables(
      str_split sym symbol theme_void time1 time2 title updateCheckboxInput
      val xend xlim yend ylim
 wt x y base_color base_symbol cov_group outeq_group req .
-  .target_first agecat" |>
+  .target_first agecat build_fit_payload_config build_pm_result_from_normalized_payload
+  load_fit_manifest_snapshot load_fit_payload_snapshot load_pm_parse_fit_object
+  read_fit_payload_from_outputs" |>
     stringr::str_replace_all("\n\\s+", " ") |>
     stringr::str_split(" ") |>
     unlist()

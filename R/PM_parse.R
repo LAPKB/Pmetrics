@@ -1,5 +1,7 @@
 # PM_parse ----------------------------------------------------------------
 
+# nolint start
+
 
 #' @title Parse Pmetrics output
 #' @description
@@ -22,78 +24,39 @@
 #' @export
 #' @keywords internal
 
-PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
-  if (is.character(fit) && file.exists(file.path(path, "../inputs", fit))) {
-    # fit is a character string pointing to a file, load it
-    fit_object <- readRDS(file.path(path, "../inputs", fit))
-  } else {
-    # fit does not meet any of the above conditions, set to NULL
-    fit_object <- NULL
+load_pm_parse_fit_object <- function(path, fit = "fit.rds") {
+  if (!is.character(fit) || length(fit) != 1) {
+    return(NULL)
   }
+
+  fit_path <- normalizePath(file.path(path, "..", "inputs", fit), mustWork = FALSE)
+  if (!file.exists(fit_path)) {
+    return(NULL)
+  }
+
+  tryCatch(readRDS(fit_path), error = function(e) NULL)
+}
+
+PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
+  fit_object <- load_pm_parse_fit_object(path, fit = fit)
 
 
   if (!dir.exists(path)) {
     cli::cli_abort(c("x" = "The directory {.path {path}} does not exist."))
   }
 
-  # assumes pred.csv and settings.json are in wd
-  op <- rlang::try_fetch(PM_op$new(path = path),
-    error = function(e) {
-      cli::cli_warn("Unable to create {.cls PM_op} object", parent = e)
-      return(NULL)
-    }
-  )
+  fit_payload <- read_fit_payload_from_outputs(path)
 
-  # assumes theta.csv and posterior.csv are in wd
-  final <- rlang::try_fetch(PM_final$new(path = path),
-    error = function(e) {
-      cli::cli_warn("Unable to create {.cls PM_final} object", parent = e)
-      return(NULL)
-    }
-  )
-
-  # assumes cycles.csv, and settings.json are in wd
-  cycle <- rlang::try_fetch(PM_cycle$new(path = path),
-    error = function(e) {
-      cli::cli_warn("Unable to create {.cls PM_cycle} object", parent = e)
-      return(NULL)
-    }
-  )
-
-  # assumes pred.csv is in wd
-  pop <- rlang::try_fetch(PM_pop$new(path = path),
-    error = function(e) {
-      cli::cli_warn("Unable to create {.cls PM_pop} object", parent = e)
-      return(NULL)
-    }
-  )
-
-  # assumes pred.csv is in wd
-  post <- rlang::try_fetch(PM_post$new(path = path),
-    error = function(e) {
-      cli::cli_warn("Unable to create {.cls PM_post} object", parent = e)
-      return(NULL)
-    }
-  )
-
-  cov <- rlang::try_fetch(PM_cov$new(path = path),
-    error = function(e) {
-      cli::cli_warn("Unable to create {.cls PM_cov} object", parent = e)
-      return(NULL)
-    }
-  )
-
-  config <- rlang::try_fetch(jsonlite::fromJSON(suppressWarnings(readLines(file.path(path, "settings.json"), warn = FALSE))),
-      error = function(e) {
-        cli::cli_warn(c("!" = "Unable to read {.file {file.path(path, 'settings.json')}}"))
-        return(NULL)
-      }
-    )
+  op <- PM_op$new(fit_payload, path = path)
+  final <- PM_final$new(fit_payload, path = path)
+  cycle <- PM_cycle$new(fit_payload, path = path)
+  pop <- PM_pop$new(fit_payload, path = path)
+  post <- PM_post$new(fit_payload, path = path)
+  cov <- PM_cov$new(fit_payload, path = path)
 
   core <- list(
     data = fit_object$data,
     model = fit_object$model,
-    model_binary_path = if (!is.null(fit_object) && inherits(fit_object$model, "PM_model")) fit_object$model$binary_path else NULL,
     op = op,
     cov = cov,
     post = post,
@@ -101,10 +64,12 @@ PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
     cycle = cycle,
     final = final,
     converge = cycle$data$converged,
-    config = config,
+    config = fit_payload$config,
     sys = {
       info <- as.list(Sys.info())
-      info |> keep(names(info) %in% c("sysname", "machine")) |> paste(collapse = " ")
+      info |>
+        keep(names(info) %in% c("sysname", "machine")) |>
+        paste(collapse = " ")
     }
   )
 
@@ -119,3 +84,5 @@ PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
 
   return(invisible(core))
 }
+
+# nolint end

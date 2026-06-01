@@ -230,44 +230,16 @@ PM_final <- R6::R6Class(
   ), # end active
   private = list(
     make = function(data, path) {
-      if (file.exists(file.path(path, "theta.csv"))) {
-        theta <- readr::read_csv(file = file.path(path, "theta.csv"), show_col_types = FALSE)
-      } else if (inherits(data, "PM_final") & !is.null(data$data)) { # file not there, and already PM_final
-        class(data$data) <- c("PM_final_data", "list")
+      config <- NULL
+      if (inherits(data, "PM_final") & !is.null(data$data)) { # file not there, and already PM_final
+        class(data$data) <- c("PM_final_data", "NPAG", "list")
         return(data$data)
-      } else {
-        cli::cli_warn(c(
-          "!" = "Unable to generate final cycle information.",
-          "i" = "{.file {file.path(path, 'theta.csv')}} does not exist, and result does not have valid {.code PM_final} object."
-        ))
-        return(NULL)
       }
 
-      if (file.exists(file.path(path, "posterior.csv"))) {
-        post <- readr::read_csv(file = file.path(path, "posterior.csv"), show_col_types = FALSE)
-      } else if (inherits(data, "PM_final") & !is.null(data$data)) { # file not there, and already PM_final
-        class(data$data) <- c("PM_final_data", "data.frame")
-        return(data$data)
-      } else {
-        cli::cli_warn(c(
-          "!" = "Unable to generate final cycle information.",
-          "i" = "{.file {file.path(path, 'posterior.csv')}} does not exist, and result does not have valid {.code PM_final} object."
-        ))
-        return(NULL)
-      }
-
-      if (file.exists(file.path(path, "settings.json"))) {
-        config <- jsonlite::fromJSON(file.path(path, "settings.json"))
-      } else if (inherits(data, "PM_final")) { # file not there, and already PM_final
-        class(data$data) <- c("PM_final_data", "data.frame")
-        return(data$data)
-      } else {
-        cli::cli_warn(c(
-          "!" = "Unable to generate final cycle information.",
-          "i" = "{.file {file.path(path, 'settings.json')}} does not exist, and result does not have valid {.code PM_final} object."
-        ))
-        return(NULL)
-      }
+      fit_payload <- fit_payload_from_source(data, path)
+      theta <- tibble::as_tibble(fit_payload$theta)
+      post <- tibble::as_tibble(fit_payload$posterior)
+      config <- fit_payload$config
 
       par_names <- names(theta)[names(theta) != "prob"]
 
@@ -345,12 +317,20 @@ PM_final <- R6::R6Class(
       sh <- varEBD / popSD**2
 
       # ranges
-      ab <- config$parameters[[1]] |>
-        tibble::as_tibble() |>
-        dplyr::rename(par = name, min = lower, max = upper)
+      ab <- if (!is.null(config$parameters) && length(config$parameters) > 0) {
+        config$parameters[[1]] |>
+          tibble::as_tibble() |>
+          dplyr::rename(par = name, min = lower, max = upper)
+      } else {
+        tibble::tibble(par = par_names, min = NA_real_, max = NA_real_)
+      }
 
 
-      gridpts <- config$prior$Sobol[1]
+      gridpts <- if (!is.null(config$prior) && !is.null(config$prior$Sobol)) {
+        config$prior$Sobol[1]
+      } else {
+        nrow(theta)
+      }
 
       final <- list(
         popPoints = theta,

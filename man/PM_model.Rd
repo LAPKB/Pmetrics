@@ -76,12 +76,10 @@ Michael Neely
 \section{Public fields}{
   \if{html}{\out{<div class="r6-fields">}}
   \describe{
-    \item{\code{model_list}}{A list containing the model components built by translating
-the original arguments into Rust}
+    \item{\code{model_list}}{A list containing normalized model metadata derived from
+the original R model blocks}
 
     \item{\code{arg_list}}{A list containing the original arguments passed to the model}
-
-    \item{\code{binary_path}}{The full path and filename of the compiled model}
   }
   \if{html}{\out{</div>}}
 }
@@ -94,6 +92,8 @@ the original arguments into Rust}
     \item \href{#method-PM_model-fit}{\code{PM_model$fit()}}
     \item \href{#method-PM_model-map}{\code{PM_model$map()}}
     \item \href{#method-PM_model-sim}{\code{PM_model$sim()}}
+    \item \href{#method-PM_model-dsl}{\code{PM_model$dsl()}}
+    \item \href{#method-PM_model-debug_dsl}{\code{PM_model$debug_dsl()}}
     \item \href{#method-PM_model-compile}{\code{PM_model$compile()}}
     \item \href{#method-PM_model-save}{\code{PM_model$save()}}
     \item \href{#method-PM_model-copy}{\code{PM_model$copy()}}
@@ -497,6 +497,11 @@ This is ignored for analytical library models.}
   cycles = 100,
   prior = "sobol",
   points = 100,
+  cache = TRUE,
+  progress = TRUE,
+  write_logs = FALSE,
+  stdout_logs = TRUE,
+  log_level = "INFO",
   idelta = 0.1,
   tad = 0,
   seed = 23,
@@ -567,6 +572,16 @@ Pmetrics will suggest the minimum number of points that should be tried.
 The greater the initial number of points, the less chance of
 missing the globally maximally likely parameter value distribution,
 but the slower the run.}
+      \item{\code{cache}}{Logical. Whether to enable runtime prediction caching during fitting.
+Default is \code{TRUE}.}
+      \item{\code{progress}}{Logical. Whether to print runtime likelihood-matrix progress during
+fitting. Default is \code{TRUE}.}
+      \item{\code{write_logs}}{Logical. Whether to write fit tracing logs to \code{outputs/log.txt}.
+Default is \code{FALSE}.}
+      \item{\code{stdout_logs}}{Logical. Whether to print fit tracing logs in the R console.
+Default is \code{TRUE}.}
+      \item{\code{log_level}}{Character scalar. Fit tracing level. One of \code{"ERROR"}, \code{"WARN"},
+\code{"INFO"}, \code{"DEBUG"}, or \code{"TRACE"}. Default is \code{"INFO"}.}
       \item{\code{idelta}}{How often to generate posterior predictions in units of time.
 Default is 0.1, which means a prediction is generated every 0.1 hours (6 minutes)
 if the unit of time is hours. Predictions are made at this interval until the time
@@ -673,10 +688,52 @@ the \code{data} object.
 }
 
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_model-dsl"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model-dsl}{}}}
+\subsection{\code{PM_model$dsl()}}{
+  Return the lowered model DSL.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_model$dsl()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    This method returns the pharmsol DSL source generated from the current model.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_model-debug_dsl"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_model-debug_dsl}{}}}
+\subsection{\code{PM_model$debug_dsl()}}{
+  Inspect the lowered model DSL and runtime validation result.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_model$debug_dsl(quiet = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{quiet}}{Logical, if TRUE, suppresses messages and DSL printing.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    This method is useful when you want to debug the exact DSL source that
+Pmetrics sends to the runtime. It returns the lowered DSL, a line-numbered
+copy, and either the rendered validation diagnostic or a success status.
+  }
+  \subsection{Returns}{
+    A list with \code{ok}, \code{stage}, \code{dsl}, \code{numbered_dsl}, and \code{diagnostic}.
+  }
+}
+
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_model-compile"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-compile}{}}}
 \subsection{\code{PM_model$compile()}}{
-  Compile the model to a binary file.
+  Validate the model DSL.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{PM_model$compile(quiet = FALSE)}
@@ -690,9 +747,8 @@ the \code{data} object.
     \if{html}{\out{</div>}}
   }
   \subsection{Details}{
-    This method write the model to a Rust file in a temporary path,
-updates the \code{binary_path} field for the model, and compiles that
-file to a binary file that can be used for fitting or simulation.
+    This method lowers the model to pharmsol DSL and validates that source
+with the runtime compiler used for fitting and simulation.
   }
 }
 

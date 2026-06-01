@@ -9,10 +9,16 @@ name = 'pm_rs'
 
 [dependencies]
 extendr-api = "=0.9.0"
-pmcore = { version = "=0.25.2", features = ["exa"] }
-libloading = "0.9"
+pmcore = { version = "=0.25.2", git = "https://github.com/LAPKB/PMcore", rev = "a7b2ecaa50838730e7dfc823c13812aa57263dd5", features = ["dsl-jit"] }
 
 rayon = "1.10.0"
 anyhow = "1.0.97"
 tracing = "0.1.41"
 tracing-subscriber = "0.3.20"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.140"
+csv = "1.3.1"
+sha2 = "0.10.8"
+
+[dev-dependencies]
+extendr-engine = "=0.9.0"

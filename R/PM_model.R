@@ -78,13 +78,11 @@
 PM_model <- R6::R6Class(
   "PM_model",
   public = list(
-    #' @field model_list A list containing the model components built by translating
-    #' the original arguments into Rust
+    #' @field model_list A list containing normalized model metadata derived from
+    #' the original R model blocks
     model_list = NULL,
     #' @field arg_list A list containing the original arguments passed to the model
     arg_list = NULL,
-    #' @field binary_path The full path and filename of the compiled model
-    binary_path = NULL,
     #' @description
     #' This is the method to create a new `PM_model` object.
     #'
@@ -436,7 +434,6 @@ PM_model <- R6::R6Class(
             }
           })
           self$arg_list$x <- NULL
-          self$binary_path <- x$binary_path
         } else {
           cli::cli_abort(c(
             "x" = "Non supported input for {.arg x}: {typeof(x)}",
@@ -498,12 +495,12 @@ PM_model <- R6::R6Class(
         }
       }
 
-      solver_rust <- NULL
+      normalized_solver <- NULL
       if (!is.null(self$arg_list$solver)) {
         if (type != "ODE") {
           msg <- c(msg, "{.arg solver} is only supported for ODE models.")
         } else {
-          solver_rust <- ode_solver_to_rust(self$arg_list$solver)
+          normalized_solver <- normalize_ode_solver(self$arg_list$solver)
         }
       }
 
@@ -512,7 +509,7 @@ PM_model <- R6::R6Class(
       } else {
         NA_integer_
       }
-      template_n_drug <- if (type == "Analytical") {
+      n_drug <- if (type == "Analytical") {
         max(
           get_max_index(model_template$arg_list$eqn, c("b", "bolus", "r", "rateiv")),
           if (!is.null(model_template$arg_list$lag)) get_max_index(model_template$arg_list$lag, "lag") else 0L,
@@ -524,33 +521,13 @@ PM_model <- R6::R6Class(
         NA_integer_
       }
 
-      # Number of equations and backend slot sizes
+      # Number of equations and channels
       n_eqn <- if (type == "Analytical") {
         template_n_eqn
       } else {
         get_assignments(self$arg_list$eqn, "dx")
       }
-      n_eqn_slots <- if (type == "Analytical") {
-        index_vector_size(template_n_eqn)
-      } else {
-        NA_integer_
-      }
       n_out <- get_assignments(self$arg_list$out, "y")
-      n_out_slots <- if (type == "Analytical") {
-        index_vector_size(get_max_index(self$arg_list$out, "y"))
-      } else {
-        NA_integer_
-      }
-      n_drug <- if (type == "Analytical") {
-        template_n_drug
-      } else {
-        NA_integer_
-      }
-      n_drug_slots <- if (type == "Analytical") {
-        index_vector_size(template_n_drug)
-      } else {
-        NA_integer_
-      }
 
       ## Get the names of the parameters
       parameters <- tolower(names(self$arg_list$pri))
@@ -589,7 +566,7 @@ PM_model <- R6::R6Class(
 
         eqn_list <- map_lgl(required_parameters, \(x){
           any(
-            stringr::str_detect(
+            res <- tryCatch(
               stringr::str_remove_all(tolower(func_to_char(self$arg_list$eqn)), "\\s+"), # string
               paste0(x, "(?=(<-|=))")
             ) # pattern
@@ -610,7 +587,7 @@ PM_model <- R6::R6Class(
         }
 
         if (!is.null(self$arg_fa)) {
-          lag_list <- map_lgl(required_parameters, \(x){
+          fa_list <- map_lgl(required_parameters, \(x){
             any(
               stringr::str_detect(
                 stringr::str_remove_all(tolower(func_to_char(self$arg_list$fa)), "\\s+"), # string
@@ -671,66 +648,6 @@ PM_model <- R6::R6Class(
         }
       } # end parameter checks for Analytical model
 
-      # if Analytical, need to combine sec and eqn
-      if (type == "Analytical") {
-        # shell function
-        sec_eqn <- function() {}
-        sec_body <- if (!is.null(self$arg_list$sec)) as.list(body(self$arg_list$sec))[-1] else list()
-        # define the body of the shell function
-        body(sec_eqn) <- suppressWarnings(as.call(c(
-          quote(`{`),
-          as.list(body(self$arg_list$eqn))[-1], # remove outer `{` of f1
-          sec_body # remove outer `{` of f2
-        )))
-
-        # this will include template and equations in both sec and eqn
-      }
-
-      # sec
-      # still needed for analytic, because these equations will be used
-      # in other blocks
-
-      if (!is.null(self$arg_list$sec)) {
-        sec <- transpile_sec(self$arg_list$sec)
-      } else {
-        sec <- ""
-      }
-
-      # eqn
-      if (type == "ODE") {
-        eqn <- transpile_ode_eqn(self$arg_list$eqn, parameters, covariates, sec)
-      } else if (type == "Analytical") {
-        eqn <- transpile_analytic_eqn(sec_eqn, parameters, covariates)
-      }
-
-      # fa
-      if (!is.null(self$arg_list$fa)) {
-        fa <- transpile_fa(self$arg_list$fa, parameters, covariates, sec)
-      } else {
-        fa <- empty_fa()
-      }
-
-      # lag
-      if (!is.null(self$arg_list$lag)) {
-        lag <- transpile_lag(self$arg_list$lag, parameters, covariates, sec)
-      } else {
-        lag <- empty_lag()
-      }
-
-      # ini
-      if (!is.null(self$arg_list$ini)) {
-        ini <- transpile_ini(self$arg_list$ini, parameters, covariates, sec)
-      } else {
-        ini <- empty_ini()
-      }
-
-      # out
-      if (!is.null(self$arg_list$out)) {
-        out <- transpile_out(self$arg_list$out, parameters, covariates, sec)
-      } else {
-        out <- empty_out()
-      }
-
       # err
       if (is.null(self$arg_list$err)) {
         msg <- c(msg, "Error model is missing and required.")
@@ -747,39 +664,18 @@ PM_model <- R6::R6Class(
         "user"
       }
 
-      # build the model list of rust components
-      model_list <- list(
+      self$model_list <- list(
         pri = self$arg_list$pri,
-        eqn = eqn,
-        sec = sec,
-        lag = lag,
-        fa = fa,
-        ini = ini,
-        out = out,
         n_eqn = n_eqn,
-        n_eqn_slots = n_eqn_slots,
         n_drug = n_drug,
-        n_drug_slots = n_drug_slots,
         n_out = n_out,
-        n_out_slots = n_out_slots,
         parameters = parameters,
         covariates = covariates,
         err = err,
-        solver = self$arg_list$solver,
-        name = name
+        solver = normalized_solver,
+        name = name,
+        type = type
       )
-      # make everything lower case if a character vector
-      self$model_list <- purrr::map(model_list, \(x) {
-        if (is.character(x)) {
-          tolower(x)
-        } else {
-          x
-        }
-      })
-
-      # this one needs to be capital
-      self$model_list$type <- type
-      self$model_list$solver_rust <- solver_rust
 
 
       # Abort if errors
@@ -1000,6 +896,21 @@ PM_model <- R6::R6Class(
     #' missing the globally maximally likely parameter value distribution,
     #' but the slower the run.
     #'
+    #' @param cache Logical. Whether to enable runtime prediction caching during fitting.
+    #' Default is `TRUE`.
+    #'
+    #' @param progress Logical. Whether to print runtime likelihood-matrix progress during
+    #' fitting. Default is `TRUE`.
+    #'
+    #' @param write_logs Logical. Whether to write fit tracing logs to `outputs/log.txt`.
+    #' Default is `FALSE`.
+    #'
+    #' @param stdout_logs Logical. Whether to print fit tracing logs in the R console.
+    #' Default is `TRUE`.
+    #'
+    #' @param log_level Character scalar. Fit tracing level. One of `"ERROR"`, `"WARN"`,
+    #' `"INFO"`, `"DEBUG"`, or `"TRACE"`. Default is `"INFO"`.
+    #'
     #' @param idelta How often to generate posterior predictions in units of time.
     #' Default is 0.1, which means a prediction is generated every 0.1 hours (6 minutes)
     #' if the unit of time is hours. Predictions are made at this interval until the time
@@ -1039,6 +950,11 @@ PM_model <- R6::R6Class(
                    cycles = 100,
                    prior = "sobol",
                    points = 100,
+                   cache = TRUE,
+                   progress = TRUE,
+                   write_logs = FALSE,
+                   stdout_logs = TRUE,
+                   log_level = "INFO",
                    idelta = 0.1,
                    tad = 0,
                    seed = 23,
@@ -1088,15 +1004,17 @@ PM_model <- R6::R6Class(
       if (self$model_list$type == "ODE") { # only need to check these for ODE models
         bolus <- unique(data$standard_data$input[data$standard_data$dur == 0]) |> purrr::discard(~ is.na(.x))
         infusion <- unique(data$standard_data$input[data$standard_data$dur > 0]) |> purrr::discard(~ is.na(.x))
+        bolus_in_model <- collect_index_refs(self$arg_list$eqn, c("b", "bolus"))
+        infusion_in_model <- collect_index_refs(self$arg_list$eqn, c("r", "rateiv"))
         if (length(bolus) > 0) {
-          missing_bolus <- bolus[!stringr::str_detect(self$model_list$eqn, paste0("b\\[", bolus, "\\]"))]
+          missing_bolus <- bolus[!bolus %in% bolus_in_model]
           if (length(missing_bolus) > 0) {
             msg <- c(msg, "Bolus input(s) {paste(missing_bolus, collapse = ', ')} {?is/are} missing from the model equations. Use {.code b[{missing_bolus}]} or {.code bolus[{missing_bolus}]}, for example, to represent bolus inputs in the equations.")
             run_error <- run_error + 1
           }
         }
         if (length(infusion) > 0) {
-          missing_infusion <- infusion[!stringr::str_detect(self$model_list$eqn, paste0("rateiv\\[", infusion, "\\]"))]
+          missing_infusion <- infusion[!infusion %in% infusion_in_model]
           if (length(missing_infusion) > 0) {
             msg <- c(msg, "Infusion input(s) {paste(missing_infusion, collapse = ', ')} {?is/are} missing from the model equations. Use {.code r[{missing_infusion}]} or {.code rateiv[{missing_infusion}]} , for example, to represent infusion inputs in the equations.")
             run_error <- run_error + 1
@@ -1105,7 +1023,7 @@ PM_model <- R6::R6Class(
       }
 
       # covariates
-      modelCov <- self$model_list$cov
+      modelCov <- self$model_list$covariates
       if (length(modelCov) > 0) {
         dataCov <- tolower(getCov(data)$covnames)
         missingCov <- modelCov[!modelCov %in% dataCov]
@@ -1120,6 +1038,38 @@ PM_model <- R6::R6Class(
       if (cycles < 0) {
         msg <- c(msg, "Error: {.arg cycles} must be 0 or greater.")
         run_error <- run_error + 1
+      }
+
+      if (!is.logical(cache) || length(cache) != 1 || is.na(cache)) {
+        msg <- c(msg, "{.arg cache} must be TRUE or FALSE.")
+        run_error <- run_error + 1
+      }
+
+      if (!is.logical(progress) || length(progress) != 1 || is.na(progress)) {
+        msg <- c(msg, "{.arg progress} must be TRUE or FALSE.")
+        run_error <- run_error + 1
+      }
+
+      if (!is.logical(write_logs) || length(write_logs) != 1 || is.na(write_logs)) {
+        msg <- c(msg, "{.arg write_logs} must be TRUE or FALSE.")
+        run_error <- run_error + 1
+      }
+
+      if (!is.logical(stdout_logs) || length(stdout_logs) != 1 || is.na(stdout_logs)) {
+        msg <- c(msg, "{.arg stdout_logs} must be TRUE or FALSE.")
+        run_error <- run_error + 1
+      }
+
+      valid_log_levels <- c("ERROR", "WARN", "INFO", "DEBUG", "TRACE")
+      if (!is.character(log_level) || length(log_level) != 1 || is.na(log_level)) {
+        msg <- c(msg, "{.arg log_level} must be one of {.val {valid_log_levels}}.")
+        run_error <- run_error + 1
+      } else {
+        log_level <- toupper(log_level)
+        if (!(log_level %in% valid_log_levels)) {
+          msg <- c(msg, "{.arg log_level} must be one of {.val {valid_log_levels}}.")
+          run_error <- run_error + 1
+        }
       }
 
       #### Algorithm ####
@@ -1366,7 +1316,7 @@ PM_model <- R6::R6Class(
           cli::cli_inform(
             c("i" = "The previous run from '{path_run}' was read.", " " = "Set {.arg overwrite} to {.val TRUE} to overwrite prior run in '{path_run}'.")
           )
-          return(invisible(PM_load(file = normalizePath(file.path(path_run, "PMout.Rdata"), mustWork = FALSE))))
+          return(invisible(PM_load(path = path, run = run)))
         }
       }
 
@@ -1374,11 +1324,17 @@ PM_model <- R6::R6Class(
 
       #### Save input objects ####
       dir.create(normalizePath(file.path(path_run, "inputs"), mustWork = FALSE), recursive = TRUE)
-      PM_data$new(data_filtered, quiet = TRUE)$save(normalizePath(file.path(path_run, "inputs", "gendata.csv"), mustWork = FALSE), header = FALSE)
+      runtime_data_path <- normalizePath(file.path(path_run, "inputs", "gendata.csv"), mustWork = FALSE)
+      PM_data$new(data_filtered, quiet = TRUE)$save(runtime_data_path, header = FALSE)
+      rewrite_runtime_route_labels(runtime_data_path, self)
+      model_source <- self$dsl()
       suppressWarnings(
-        saveRDS(list(data = data, model = self), file = normalizePath(file.path(path_run, "inputs", "fit.rds"), mustWork = FALSE))
+        saveRDS(
+          list(data = data, model = self, dsl_source = model_source),
+          file = normalizePath(file.path(path_run, "inputs", "fit.rds"), mustWork = FALSE)
+        )
       )
-      file.copy(self$binary_path, normalizePath(file.path(path_run, "inputs"), mustWork = FALSE))
+      writeLines(model_source, normalizePath(file.path(path_run, "inputs", "model.dsl"), mustWork = FALSE))
 
       # Get ranges and calculate points
       ranges <- lapply(self$model_list$pri, function(x) {
@@ -1399,42 +1355,124 @@ PM_model <- R6::R6Class(
       if (intern) {
         ### CALL RUST
         out_path <- normalizePath(file.path(path_run, "outputs"), mustWork = FALSE)
+        dir.create(out_path, recursive = TRUE, showWarnings = FALSE)
         msg <- c(msg, "Run results were saved in folder '{.path {out_path}}'")
+        live_report_session <- NULL
+        live_report_started <- FALSE
+        live_report_requested <- identical(report, "app")
+
+        if (live_report_requested) {
+          live_report_session <- tryCatch(
+            start_live_report_session(show = TRUE),
+            error = function(e) {
+              msg <<- c(msg, "Live status app could not be launched before the fit started.")
+              NULL
+            }
+          )
+
+          if (!is.null(live_report_session)) {
+            live_report_started <- TRUE
+            if (!isTRUE(live_report_session$connected)) {
+              msg <- c(msg, "Live status app did not connect before the first fit cycle.")
+            }
+            on.exit(close_live_report_session(live_report_session), add = TRUE)
+          }
+        }
+
+        fit_params <- list(
+          ranges = ranges, # not important but needed for POSTPROB
+          algorithm = algorithm,
+          error_models = lapply(self$model_list$err, function(x) x$flatten()),
+          cache = cache,
+          progress = progress,
+          write_logs = write_logs,
+          stdout_logs = stdout_logs,
+          log_level = log_level,
+          idelta = idelta,
+          tad = tad,
+          max_cycles = cycles, # will be hardcoded in Rust to 0 for POSTPROB
+          prior = prior, # needs warning if missing and algorithm = POSTPROB
+          points = points, # only relevant for sobol prior
+          seed = seed
+        )
+
+        if (!is.null(live_report_session)) {
+          fit_params$live_session_id <- live_report_session$session$session_id
+        }
+
         fit_call <- function() {
           fit(
-            # defined in extendr-wrappers.R
-            model_path = normalizePath(self$binary_path),
+            model_source = model_source,
             data = normalizePath(file.path(path_run, "inputs", "gendata.csv")),
-            params = list(
-              ranges = ranges, # not important but needed for POSTPROB
-              algorithm = algorithm,
-              error_models = lapply(self$model_list$err, function(x) x$flatten()),
-              idelta = idelta,
-              tad = tad,
-              max_cycles = cycles, # will be hardcoded in Rust to 0 for POSTPROB
-              prior = prior, # needs warning if missing and algorithm = POSTPROB
-              points = points, # only relevant for sobol prior
-              seed = seed
-            ),
+            params = fit_params,
             output_path = out_path,
-            kind = tolower(self$model_list$type)
+            kind = tolower(self$model_list$type),
+            solver = self$model_list$solver
           )
         }
-        rlang::try_fetch(
+        payload_json <- call_pm_bridge(
           if (!is.null(prior_dir) && identical(prior, "prior.csv")) {
             withr::with_dir(prior_dir, fit_call())
           } else {
             fit_call()
           },
+          default_stage = "runtime",
+          default_code = "fit_execution_failed"
+        )
+
+        res <- tryCatch(
+          build_pm_result_from_fit_payload(
+            payload_json = payload_json,
+            data = data,
+            model = self,
+            path = normalizePath(out_path)
+          ),
           error = function(e) {
-            cli::cli_warn("Unable to create {.cls PM_result} object", parent = e)
-            return(NULL)
+            handoff_message <- paste(
+              "Failed to build PM_result from fit payload:",
+              conditionMessage(e)
+            )
+            if (!is.null(live_report_session)) {
+              try(
+                send_live_report_failure(
+                  live_report_session,
+                  handoff_message
+                ),
+                silent = TRUE
+              )
+            }
+
+            abort_pm_bridge_message(
+              message = handoff_message,
+              stage = "handoff",
+              code = "fit_result_build_failed",
+              details = list(path = normalizePath(out_path)),
+              parent = e
+            )
           }
         )
 
-        PM_parse(path = out_path)
-        res <- PM_load(path = normalizePath(out_path), file = "PMout.Rdata")
-        if (report != "none") {
+        if (live_report_started) {
+          msg <- c(msg, "Live status app launched.")
+          if (!is.null(live_report_session$url) && nzchar(live_report_session$url)) {
+            msg <- c(msg, "Live status app URL: {live_report_session$url}")
+          }
+
+          valid_report <- tryCatch(
+            PM_report(res, path = normalizePath(out_path), template = report, quiet = TRUE),
+            error = function(e) {
+              -1
+            }
+          )
+
+          if (valid_report == 1) {
+            msg <- c(msg, "Finished reporting app launched.")
+          } else {
+            msg <- c(msg, "Finished reporting app could not be launched.")
+          }
+
+          msg <- c(msg, "If assigned to a variable, e.g. {.code run{run} <-}, results are available in {.code run{run}}.")
+        } else if (report != "none") {
           valid_report <- tryCatch(
             PM_report(res, path = normalizePath(out_path), template = report, quiet = TRUE),
             error = function(e) {
@@ -1442,7 +1480,11 @@ PM_model <- R6::R6Class(
             }
           )
           if (valid_report == 1) {
-            msg <- c(msg, "Reporting app launched.")
+            if (identical(report, "app")) {
+              msg <- c(msg, "Reporting app launched.")
+            } else {
+              msg <- c(msg, "Report opened.")
+            }
             # if(tolower(algorithm) == "postprob") {this_alg <- "map"} else {this_alg <- "fit"}
             msg <- c(msg, "If assigned to a variable, e.g. {.code run{run} <-}, results are available in {.code run{run}}.")
           } else {
@@ -1555,47 +1597,126 @@ PM_model <- R6::R6Class(
 
       temp_csv <- tempfile(fileext = ".csv")
       data$save(temp_csv, header = FALSE)
+      rewrite_runtime_route_labels(temp_csv, self)
 
-      if (is.null(self$binary_path)) {
-        self$compile(quiet = quiet)
-        if (is.null(self$binary_path)) {
-          cli::cli_abort(c("x" = "Model must be compiled before simulating."))
-        }
-      }
-      sim <- simulate_all(temp_csv, self$binary_path, theta, kind = tolower(self$model_list$type))
+      self$compile(quiet = quiet)
+      sim <- call_pm_bridge(
+        simulate_all(
+          temp_csv,
+          self$dsl(),
+          theta,
+          kind = tolower(self$model_list$type),
+          solver = self$model_list$solver
+        ),
+        default_stage = "runtime",
+        default_code = "simulation_failed"
+      )
 
       return(sim)
     },
     #' @description
-    #' Compile the model to a binary file.
+    #' Return the lowered model DSL.
     #' @details
-    #' This method write the model to a Rust file in a temporary path,
-    #' updates the `binary_path` field for the model, and compiles that
-    #' file to a binary file that can be used for fitting or simulation.
-    #' @param quiet Logical, if TRUE, suppresses messages during compilation.
-    #'
-    compile = function(quiet = FALSE) {
-      if (!is.null(self$binary_path) && file.exists(self$binary_path)) {
-        # model is compiled
-        return(invisible(NULL))
+    #' This method returns the pharmsol DSL source generated from the current model.
+    dsl = function() {
+      new_pm_dsl(private$build_model_dsl())
+    },
+    #' @description
+    #' Inspect the lowered model DSL and runtime validation result.
+    #' @details
+    #' This method is useful when you want to debug the exact DSL source that
+    #' Pmetrics sends to the runtime. It returns the lowered DSL, a line-numbered
+    #' copy, and either the rendered validation diagnostic or a success status.
+    #' @param quiet Logical, if TRUE, suppresses messages and DSL printing.
+    #' @return A list with `ok`, `stage`, `dsl`, `numbered_dsl`, and `diagnostic`.
+    debug_dsl = function(quiet = FALSE) {
+      model_source <- NULL
+      numbered_dsl <- NULL
+      diagnostic <- NULL
+
+      model_source <- tryCatch(
+        as.character(self$dsl()),
+        error = function(e) {
+          diagnostic <<- conditionMessage(e)
+          return(NULL)
+        }
+      )
+
+      if (is.null(model_source)) {
+        if (!quiet) {
+          cli::cli_warn("Model DSL generation failed.")
+          cat(diagnostic, "\n", sep = "")
+        }
+
+        return(invisible(list(
+          ok = FALSE,
+          stage = "dsl",
+          dsl = NULL,
+          numbered_dsl = NULL,
+          diagnostic = diagnostic
+        )))
       }
 
-      model_path <- file.path(tempdir(), "model.rs")
-      private$write_model_to_rust(model_path)
-      output_path <- tempfile(pattern = "model_", fileext = ".pmx")
-      if (!quiet) cli::cli_inform(c("i" = "Compiling model..."))
-      # path inside Pmetrics package
-      template_path <- resolve_template_path()
-      tryCatch(
+      dsl_lines <- strsplit(model_source, "\n", fixed = TRUE)[[1]]
+      numbered_lines <- sprintf("%4d | %s", seq_along(dsl_lines), dsl_lines)
+      numbered_dsl <- paste(numbered_lines, collapse = "\n")
+
+      if (!quiet) {
+        cli::cli_inform(c("i" = "Model DSL:"))
+        writeLines(numbered_lines)
+      }
+
+      validation_stage <- "validated"
+      ok <- tryCatch(
         {
-          compile_model(model_path, output_path, private$get_primary(), template_path, kind = tolower(self$model_list$type))
-          self$binary_path <- output_path
+          validate_model_source(
+            model_source = model_source,
+            kind = tolower(self$model_list$type),
+            solver = self$model_list$solver
+          )
+          TRUE
         },
         error = function(e) {
-          cli::cli_abort(
-            c("x" = "Model compilation failed: {e$message}", "i" = "Please check the model file and try again.")
-          )
+          bridge_error <- parse_pm_bridge_error(conditionMessage(e))
+          diagnostic <<- bridge_error$message
+          validation_stage <<- if (is.null(bridge_error$stage)) "runtime" else bridge_error$stage
+          FALSE
         }
+      )
+
+      if (!quiet) {
+        if (ok) {
+          cli::cli_inform(c("v" = "Runtime validation passed."))
+        } else {
+          cli::cli_warn("Runtime validation failed.")
+          cat(diagnostic, "\n", sep = "")
+        }
+      }
+
+      invisible(list(
+        ok = ok,
+        stage = if (ok) "validated" else validation_stage,
+        dsl = model_source,
+        numbered_dsl = numbered_dsl,
+        diagnostic = if (ok) NULL else diagnostic
+      ))
+    },
+    #' @description
+    #' Validate the model DSL.
+    #' @details
+    #' This method lowers the model to pharmsol DSL and validates that source
+    #' with the runtime compiler used for fitting and simulation.
+    #' @param quiet Logical, if TRUE, suppresses messages during compilation.
+    compile = function(quiet = FALSE) {
+      if (!quiet) cli::cli_inform(c("i" = "Compiling model..."))
+      call_pm_bridge(
+        validate_model_source(
+          model_source = self$dsl(),
+          kind = tolower(self$model_list$type),
+          solver = self$model_list$solver
+        ),
+        default_stage = "compile",
+        default_code = "model_compile_failed"
       )
 
       return(invisible(self))
@@ -1704,7 +1825,7 @@ PM_model <- R6::R6Class(
         "\n  err = list(\n",
         purrr::map_chr((arg_list$err), \(i) {
           sprintf(
-            "    %s(%i, c(%.1f, %.1f, %.1f, %.1f)%s)",
+            "    %s(%.15g, c(%.1f, %.1f, %.1f, %.1f)%s)",
             i$type,
             i$initial,
             ifelse(length(i$coeff) >= 1, i$coeff[1], 0),
@@ -1920,7 +2041,8 @@ PM_model <- R6::R6Class(
 
       coeff_fxns <- err[-1] |>
         purrr::imap(\(x, idx) {
-          glue::glue("{err_type}({gamlam_value}, c({x}), {const_coeff[{idx}]})")
+          fixed_error <- const_gamlam || const_coeff[[idx]]
+          glue::glue("{err_type}({gamlam_value}, c({x}), {fixed_error})")
         }) |>
         unlist()
 
@@ -1931,64 +2053,11 @@ PM_model <- R6::R6Class(
       return(arg_list)
     }, # end R6fromFile
 
-    write_model_to_rust = function(file_path = "main.rs") {
-      # Check if model_list is not NULL
-      if (is.null(self$model_list)) {
-        cli::cli_abort(c("x" = "Model list is empty.", "i" = "Please provide a valid model list."))
-      }
-
-      if (self$model_list$type == "ODE") {
-        placeholders <- c("eqn", "lag", "fa", "ini", "out")
-        base <- paste0(
-          "{\n",
-          "  #[allow(unused_assignments)]\n",
-          "  #[allow(unused_mut)]\n",
-          "  #[allow(unused_variables)]\n",
-          "  fn build_eqn() -> impl Equation {\n",
-          "    ode! {\n",
-          "     diffeq: <eqn>,\n",
-          "     lag: <lag>,\n",
-          "     fa: <fa>,\n",
-          "     init: <ini>,\n",
-          "     out: <out>,\n",
-          "    }",
-          if (!is.null(self$model_list$solver_rust)) {
-            paste0("\n    .with_solver(", self$model_list$solver_rust, ")")
-          } else {
-            ""
-          },
-          "\n  }\n",
-          "  build_eqn()\n",
-          "}"
-        )
-      } else if (self$model_list$type == "Analytical") {
-        placeholders <- c("eqn", "lag", "fa", "ini", "out", "n_eqn_slots", "n_drug_slots", "n_out_slots")
-        base <- paste0(
-          "{\n",
-          "  #[allow(unused_assignments)]\n",
-          "  #[allow(unused_mut)]\n",
-          "  #[allow(unused_variables)]\n",
-          "  fn build_eqn() -> impl Equation {\n",
-          "    equation::Analytical::new(\n",
-          paste("<", placeholders[1:5], ">", sep = "", collapse = ",\n     "),
-          "\n    )\n",
-          "    .with_nstates(<n_eqn_slots>)\n",
-          "    .with_ndrugs(<n_drug_slots>)\n",
-          "    .with_nout(<n_out_slots>)\n",
-          "  }\n",
-          "  build_eqn()\n",
-          "}"
-        )
-      } else {
-        cli::cli_abort(c("x" = "Invalid model type.", "i" = "Please provide a valid model type."))
-      }
-
-
-      # Replace placeholders in the base string with actual values from model_list
-      base <- placeholders |>
-        purrr::reduce(\(x, y) stringr::str_replace(x, stringr::str_c("<", y, ">"), as.character(self$model_list[[y]])), .init = base)
-      # Write the model to a file
-      writeLines(base, file_path)
+    build_model_dsl = function() {
+      pm_model_to_dsl_source(self)
+    },
+    write_model_to_dsl = function(file_path = "model.dsl") {
+      writeLines(private$build_model_dsl(), file_path)
     },
     from_file = function(file_path) {
       self$model_list <- private$makeR6model(model_filename)
@@ -1998,28 +2067,6 @@ PM_model <- R6::R6Class(
     }
   ) # end private
 ) # end R6Class PM_model
-
-ode_solver_to_rust <- function(solver) {
-  if (!is.character(solver) || length(solver) != 1) {
-    cli::cli_abort(c(
-      "x" = "{.arg solver} must be a single character value.",
-      "i" = "Supported values are 'BDF', 'TRBDF2', 'ESDIRK34', and 'TSIT45'."
-    ))
-  }
-
-  solver <- tolower(solver)
-
-  switch(solver,
-    bdf = "OdeSolver::Bdf",
-    trbdf2 = "OdeSolver::Sdirk(SdirkTableau::TrBdf2)",
-    esdirk34 = "OdeSolver::Sdirk(SdirkTableau::Esdirk34)",
-    tsit45 = "OdeSolver::ExplicitRk(ExplicitRkTableau::Tsit45)",
-    cli::cli_abort(c(
-      "x" = "Unsupported {.arg solver} value: {.val {solver}}.",
-      "i" = "Supported values are 'BDF', 'TRBDF2', 'ESDIRK34', and 'TSIT45'."
-    ))
-  )
-}
 
 ##### These functions create various model components
 
@@ -2480,6 +2527,37 @@ plot.PM_model <- function(x,
     build_sum(terms)
   }
 
+  # Extract x[i] pattern from expression
+  extract_x_pattern <- function(expr) {
+    if (is.call(expr) && as.character(expr[[1]]) == "[" &&
+      length(expr) == 3 && as.character(expr[[2]]) == "x") {
+      return(as.numeric(as.character(expr[[3]])))
+    }
+    return(NULL)
+  }
+
+  # Find x[i] pattern in any expression
+  find_x_in_expression <- function(expr) {
+    if (is.call(expr)) {
+      # Check current expression
+      x_idx <- extract_x_pattern(expr)
+      if (!is.null(x_idx)) {
+        return(x_idx)
+      }
+
+      # Recursively check sub-expressions
+      for (i in 1:length(expr)) {
+        if (i > 1) { # Skip the function name
+          x_idx <- find_x_in_expression(expr[[i]])
+          if (!is.null(x_idx)) {
+            return(x_idx)
+          }
+        }
+      }
+    }
+    return(NULL)
+  }
+
   # Parse output equations
   parse_output_equations <- function(equations) {
     # if (is.null(func)) return(list())
@@ -2515,28 +2593,6 @@ plot.PM_model <- function(x,
     }
 
     return(outputs)
-  }
-
-  # Find x[i] pattern in any expression
-  find_x_in_expression <- function(expr) {
-    if (is.call(expr)) {
-      # Check current expression
-      x_idx <- extract_x_pattern(expr)
-      if (!is.null(x_idx)) {
-        return(x_idx)
-      }
-
-      # Recursively check sub-expressions
-      for (i in 1:length(expr)) {
-        if (i > 1) { # Skip the function name
-          x_idx <- find_x_in_expression(expr[[i]])
-          if (!is.null(x_idx)) {
-            return(x_idx)
-          }
-        }
-      }
-    }
-    return(NULL)
   }
 
   # Parse terms from right-hand side recursively
@@ -2586,15 +2642,6 @@ plot.PM_model <- function(x,
     extract_terms(rhs_expr)
 
     return(terms)
-  }
-
-  # Extract x[i] pattern from expression
-  extract_x_pattern <- function(expr) {
-    if (is.call(expr) && as.character(expr[[1]]) == "[" &&
-      length(expr) == 3 && as.character(expr[[2]]) == "x") {
-      return(as.numeric(as.character(expr[[3]])))
-    }
-    return(NULL)
   }
 
   # Extract compartment connections

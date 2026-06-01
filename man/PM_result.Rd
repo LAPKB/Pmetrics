@@ -73,6 +73,7 @@ new optimal sampling results.}
     \item \href{#method-PM_result-opt}{\code{PM_result$opt()}}
     \item \href{#method-PM_result-load}{\code{PM_result$load()}}
     \item \href{#method-PM_result-continue}{\code{PM_result$continue()}}
+    \item \href{#method-PM_result-export}{\code{PM_result$export()}}
     \item \href{#method-PM_result-clone}{\code{PM_result$clone()}}
   }
 }
@@ -402,6 +403,33 @@ from the prior run as the prior for the new run.
     This method is useful if a prior run did not converge before the maximum
 number of cycles. It uses the final population points from the prior run
 as the prior for a new run. The data and model are the same as in the prior run.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_result-export"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-export}{}}}
+\subsection{\code{PM_result$export()}}{
+  Export run results to standard output files.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$export(path = ".")}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{path}}{Path to the output folder. Defaults to current working directory.
+The folder is created if needed.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    Writes key run outputs (iterations, theta, posterior, predictions,
+covariates, and settings) to the target folder.
+  }
+  \subsection{Returns}{
+    Invisibly returns \code{TRUE} when export completes.
   }
 }
 

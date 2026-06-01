@@ -94,31 +94,14 @@ PM_cov <- R6::R6Class(
   ), # end public
   private = list(
     make = function(data, path) {
-      if (file.exists(file.path(path, "posterior.csv"))) {
-        posts <- readr::read_csv(file = file.path(path, "posterior.csv"), show_col_types = FALSE)
-      } else if (inherits(data, "PM_cov") & !is.null(data$data)) { # file not there, and already PM_cov
+      if (inherits(data, "PM_cov") & !is.null(data$data)) { # file not there, and already PM_cov
         class(data$data) <- c("PM_cov_data", "data.frame")
         return(data$data)
-      } else {
-        cli::cli_warn(c(
-          "!" = "Unable to generate covariate-posterior information.",
-          "i" = "{.file {file.path(path, 'posterior.csv')}} does not exist, and result does not have valid {.code PM_cov} object."
-        ))
-        return(NULL)
       }
 
-      if (file.exists(file.path(path, "covs.csv"))) {
-        covs <- readr::read_csv(file = file.path(path, "covs.csv"), show_col_types = FALSE)
-      } else if (inherits(data, "PM_cov")) { # file not there, and already PM_cov
-        class(data$data) <- c("PM_cov_data", "data.frame")
-        return(data$data)
-      } else {
-        cli::cli_warn(c(
-          "!" = "Unable to generate covariate-posterior information.",
-          "i" = "{.file {file.path(path, 'covs.csv')}} does not exist, and result does not have valid {.code PM_cov} object."
-        ))
-        return(NULL)
-      }
+      fit_payload <- fit_payload_from_source(data, path)
+      posts <- tibble::as_tibble(fit_payload$posterior)
+      covs <- tibble::as_tibble(fit_payload$covariates)
 
       covs <- covs |> mutate(block = block + 1)
 
@@ -254,22 +237,21 @@ PM_cov <- R6::R6Class(
 #' @family PMplots
 
 plot.PM_cov <- function(
-  x,
-  formula,
-  line = list(lm = NULL, loess = NULL, ref = NULL),
-  marker = TRUE,
-  colors,
-  icen = "median",
-  include = NULL, exclude = NULL,
-  legend,
-  log = FALSE,
-  grid = TRUE,
-  xlab, ylab,
-  title,
-  stats = TRUE,
-  xlim, ylim,
-  print = TRUE, ...
-) {
+    x,
+    formula,
+    line = list(lm = NULL, loess = NULL, ref = NULL),
+    marker = TRUE,
+    colors,
+    icen = "median",
+    include = NULL, exclude = NULL,
+    legend,
+    log = FALSE,
+    grid = TRUE,
+    xlab, ylab,
+    title,
+    stats = TRUE,
+    xlim, ylim,
+    print = TRUE, ...) {
   if (inherits(x, "PM_cov")) {
     x <- x$data
   }
