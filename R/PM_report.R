@@ -36,9 +36,10 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
 
     reports_candidates <- reports_candidates[nzchar(reports_candidates)]
     reports_candidates <- normalizePath(reports_candidates, mustWork = FALSE)
-    dev_reports_path <- reports_candidates[
+    dev_reports_paths <- reports_candidates[
       file.exists(file.path(reports_candidates, "DESCRIPTION"))
-    ][[1]]
+    ]
+    dev_reports_path <- if (length(dev_reports_paths)) dev_reports_paths[[1]] else ""
 
     if (!is.null(dev_reports_path) && nzchar(dev_reports_path) &&
         pmetrics_require_namespace("pkgload", quietly = TRUE)) {

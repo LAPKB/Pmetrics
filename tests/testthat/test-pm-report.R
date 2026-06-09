@@ -38,6 +38,7 @@ testthat::test_that("PM_report respects the configured HTML report mode", {
             function(...) invisible(NULL)
         },
         pmetrics_require_namespace = function(package, quietly = TRUE) TRUE,
+        .package = "Pmetrics",
         {
             suppressMessages(PM_report(res, path = out_dir, show = FALSE, quiet = TRUE))
         }
@@ -80,6 +81,7 @@ testthat::test_that("PM_report launches the app when report mode is app", {
                     process
                 }
             },
+            .package = "Pmetrics",
             {
                 PM_report(res, show = TRUE, quiet = TRUE)
             }

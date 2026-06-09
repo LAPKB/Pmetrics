@@ -23,6 +23,7 @@ Pmetrics.Rcheck/
 .Rd2pdf*/
 rsconnect/
 po/*~
+.dsl_runtime_validation.log
 
 # Vignettes/docs rendered locally
 vignettes/*.html

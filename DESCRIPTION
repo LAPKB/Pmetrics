@@ -49,6 +49,7 @@ Imports:
     MASS,
     openxlsx,
     parallel,
+    pkgload,
     plotly,
     progress,
     purrr,

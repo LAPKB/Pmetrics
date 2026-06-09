@@ -6,6 +6,11 @@ testthat::skip_if_not(
 )
 
 testthat::test_that("live report session launches app and connects before fit", {
+    pkg_root <- normalizePath(".")
+    testthat::skip_if(
+        !file.exists(file.path(pkg_root, "DESCRIPTION")),
+        "Skipping app-launch connection test in installed package (subprocess/network constraints)"
+    )
     start_live <- getFromNamespace("start_live_report_session", "Pmetrics")
     close_live <- getFromNamespace("close_live_report_session", "Pmetrics")
 

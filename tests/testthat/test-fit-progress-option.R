@@ -22,10 +22,16 @@ run_progress_fit <- function(progress = NULL) {
         )
     }
 
+    load_cmd <- if (file.exists(file.path(pkg_root, "DESCRIPTION"))) {
+        sprintf("devtools::load_all(%s, quiet = TRUE)", shQuote(pkg_root))
+    } else {
+        'library("Pmetrics")'
+    }
+
     writeLines(
         c(
             'Sys.setenv(NOT_CRAN = "true")',
-                        sprintf("devtools::load_all(%s, quiet = TRUE)", shQuote(pkg_root)),
+                        load_cmd,
                         sprintf("run_path <- %s", shQuote(run_path)),
             "dir.create(run_path, recursive = TRUE, showWarnings = FALSE)",
             "mod <- PM_model$new(",

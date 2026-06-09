@@ -11,6 +11,7 @@ normalize_engine_index <- function(x) {
 }
 
 decode_error_model_rows <- function(models, observed_outeq) {
+
   if (length(models) == 0) {
     return(tibble::tibble(
       outeq = numeric(),
@@ -23,6 +24,7 @@ decode_error_model_rows <- function(models, observed_outeq) {
   }
 
   decode_one_model <- function(model, outeq) {
+
     if (is.character(model) && length(model) == 1) {
       return(tibble::tibble(
         outeq = outeq,
@@ -35,8 +37,9 @@ decode_error_model_rows <- function(models, observed_outeq) {
     }
 
     model_type <- names(model)[[1]]
-    model_data <- model[[1]]
-    poly <- purrr::pluck(model_data, "poly")
+    poly <- model[[1]]
+    # model_data <- model[[1]]
+    # poly <- purrr::pluck(model_data, "poly")
 
     tibble::tibble(
       outeq = outeq,

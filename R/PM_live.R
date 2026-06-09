@@ -63,6 +63,11 @@ launch_live_report_app <- function(live_session, launch.browser = TRUE, timeout_
             # In development checkouts, load local code. In installed environments,
             # load the installed package to avoid pkgload-only assumptions.
             loaded <- FALSE
+            pkg_lib <- ""
+            if (nzchar(pkg_path)) {
+                pkg_lib <- normalizePath(dirname(pkg_path), mustWork = FALSE)
+            }
+
             if (
                 nzchar(pkg_path) &&
                 file.exists(file.path(pkg_path, "DESCRIPTION")) &&
@@ -79,7 +84,20 @@ launch_live_report_app <- function(live_session, launch.browser = TRUE, timeout_
             }
 
             if (!isTRUE(loaded)) {
-                loadNamespace("Pmetrics")
+                if (nzchar(pkg_lib) && dir.exists(pkg_lib)) {
+                    .libPaths(unique(c(pkg_lib, .libPaths())))
+                    loaded <- tryCatch(
+                        {
+                            loadNamespace("Pmetrics", lib.loc = pkg_lib)
+                            TRUE
+                        },
+                        error = function(e) FALSE
+                    )
+                }
+
+                if (!isTRUE(loaded)) {
+                    loadNamespace("Pmetrics")
+                }
             }
 
             options(Pmetrics.live_session = unclass(live_session))

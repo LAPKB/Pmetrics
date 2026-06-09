@@ -42,10 +42,17 @@ run_log_control_fit <- function(
 
     fit_call <- sprintf("invisible(mod$fit(%s))", paste(args, collapse = ", "))
 
+    # In source-tree runs, load local code. In installed/check runs, load package.
+    load_cmd <- if (file.exists(file.path(pkg_root, "DESCRIPTION"))) {
+        sprintf("devtools::load_all(%s, quiet = TRUE)", shQuote(pkg_root))
+    } else {
+        'library("Pmetrics")'
+    }
+
     writeLines(
         c(
             'Sys.setenv(NOT_CRAN = "true")',
-                        sprintf("devtools::load_all(%s, quiet = TRUE)", shQuote(pkg_root)),
+                        load_cmd,
                         sprintf("run_path <- %s", shQuote(run_path)),
             "dir.create(run_path, recursive = TRUE, showWarnings = FALSE)",
             "mod <- PM_model$new(",

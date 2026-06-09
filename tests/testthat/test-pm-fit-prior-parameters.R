@@ -25,16 +25,18 @@ run_fit_with_mocked_engine <- function(prior_input) {
   captured_prior <- NULL
   captured_wd <- NULL
 
+  fake_result <- structure(list(path = run_root), class = c("PM_result", "R6"))
+
   fit_result <- testthat::with_mocked_bindings(
     fit = function(model_source, data, params, output_path, kind, solver = NULL) {
       captured_model_source <<- model_source
       captured_prior <<- params$prior
       captured_wd <<- getwd()
       dir.create(output_path, recursive = TRUE, showWarnings = FALSE)
-      invisible(NULL)
+      '{"ok":true}'
     },
-    PM_parse = function(path) invisible(NULL),
-    PM_load = function(path, file, ...) structure(list(path = path), class = c("PM_result", "R6")),
+    build_pm_result_from_fit_payload = function(...) fake_result,
+    .package = "Pmetrics",
     {
       model$fit(
         data = NPex$data,
@@ -135,15 +137,17 @@ test_that("PM_model$fit supports numeric prior run and normalizes theta.csv colu
   captured_prior <- NULL
   captured_wd <- NULL
 
+  fake_result_num <- structure(list(path = run_root), class = c("PM_result", "R6"))
+
   fit_result <- testthat::with_mocked_bindings(
     fit = function(model_source, data, params, output_path, kind, solver = NULL) {
       captured_prior <<- params$prior
       captured_wd <<- getwd()
-      dir.create(output_path, recursive = TRUE)
-      invisible(NULL)
+      dir.create(output_path, recursive = TRUE, showWarnings = FALSE)
+      '{"ok":true}'
     },
-    PM_parse = function(path) invisible(NULL),
-    PM_load = function(path, file, ...) structure(list(path = path), class = c("PM_result", "R6")),
+    build_pm_result_from_fit_payload = function(...) fake_result_num,
+    .package = "Pmetrics",
     {
       model$fit(
         data = NPex$data,
