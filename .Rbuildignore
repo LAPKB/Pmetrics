@@ -19,5 +19,5 @@
 ^Cargo\.lock$
 ^README\.Rmd$
 ^dev$
-.lintr
-.Rprofile
+^\.posit$
+^temp$

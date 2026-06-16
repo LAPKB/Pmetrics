@@ -1,7 +1,7 @@
 Type: Package
 Package: Pmetrics
 Title: Pmetrics for Population Modeling and Simulation
-Version: 3.1.4
+Version: 3.1.5
 Authors@R: c(
     person("Michael", "Neely", , "mneely@usc.edu", role = c("aut", "cre")),
     person("Julián", "Otálvaro", , "juliandavid347@gmail.com", role = "aut"),
