@@ -23,14 +23,17 @@ getPMoptions <- function(opt, warn = TRUE, quiet = FALSE) {
     getOS() == 2 ~ file.path(Sys.getenv("APPDATA"), "PMopts")
   )
 
-  if (dir.exists(opt_dir)) { # external options file exists
-    PMoptionsFile <- file.path(opt_dir, "PMoptions.json")
-  } else { # external options file does not exist
-    PMoptionsFile <- paste(system.file("options", package = "Pmetrics"), "PMoptions.json", sep = "/")
+  # Prefer the external (user) options file, but fall back to the packaged
+  # defaults if it is missing. The directory can exist without the file when a
+  # fresh install fails to write options, which previously left users with no
+  # report_template and broke report generation.
+  PMoptionsFile <- file.path(opt_dir, "PMoptions.json")
+  if (is.na(PMoptionsFile) || !file.exists(PMoptionsFile)) {
+    PMoptionsFile <- file.path(system.file("options", package = "Pmetrics"), "PMoptions.json")
   }
 
 
-  # if it doesn't exist, warn and exit
+  # if neither file exists, warn and exit
   if (!file.exists(PMoptionsFile)) {
     if (warn & !quiet) cli::cli_inform("Run {.help setPMoptions} to create a Pmetrics options file.")
     return(invisible(-1))
@@ -92,7 +95,7 @@ setPMoptions <- function(launch.app = TRUE) {
   )
 
   if (!dir.exists(opt_dir)) {
-    dir.create(opt_dir) # ensure directory exists
+    dir.create(opt_dir, recursive = TRUE) # ensure directory exists
   }
   
   PMoptionsUserFile <- file.path(opt_dir, "PMoptions.json")
@@ -143,9 +146,15 @@ setPMoptions <- function(launch.app = TRUE) {
     synced_opts
   }
 
+  # Write the options file first so that the default options are always
+  # persisted, even when the interactive app is not (or cannot be) launched.
   opts <- sync_pmoptions()
 
-  app <- shiny::shinyApp(
+  # Only build and launch the Shiny options app when explicitly requested.
+  # Building the app on every package load is unnecessary and can fail on a
+  # fresh install before options have been written.
+  if (launch.app) {
+    app <- shiny::shinyApp(
     # --- UI ---
     ui = bslib::page_fluid(
       theme = bslib::bs_theme(
@@ -643,13 +652,11 @@ setPMoptions <- function(launch.app = TRUE) {
         }
       })
     } # end server
-  ) # end shinyApp
+    ) # end shinyApp
 
-
-  # Launch the app without trying to launch another browser
-  if (launch.app) {
+    # Launch the app without trying to launch another browser
     shiny::runApp(app, launch.browser = TRUE)
-  }
+  } # end if (launch.app)
 
   # Re-sync in case app/user edits introduced missing or obsolete keys
   opts <- sync_pmoptions()
