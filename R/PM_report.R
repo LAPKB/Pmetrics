@@ -37,8 +37,13 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
     if (identical(fallback_template, "none")) {
       return(invisible(0))
     }
-    if (identical(fallback_template, "app") || is.null(fallback_template)) {
-      fallback_template <- "ggplot"
+    # Normalize the template. Anything that is not a recognized HTML template
+    # (e.g. "app", or -1/NULL when options were not written on a fresh install)
+    # falls back to the default so that report generation never errors.
+    valid_templates <- c("plotly", "ggplot", "ggplot_rust")
+    if (!is.character(fallback_template) || length(fallback_template) != 1 ||
+      !fallback_template %in% valid_templates) {
+      fallback_template <- "plotly"
     }
 
     template_file <- switch(fallback_template,
