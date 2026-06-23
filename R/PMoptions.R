@@ -262,7 +262,7 @@ setPMoptions <- function(launch.app = TRUE) {
                   choices = c(
                     "Interactive report app" = "app",
                     "Plotly" = "plotly",
-                    "ggplot2" = "ggplot2",
+                    "ggplot2" = "ggplot",
                     "None" = "none"
                   ),
                   selected = "app"
@@ -474,7 +474,7 @@ setPMoptions <- function(launch.app = TRUE) {
         if (!is.null(settings$dec)) shiny::updateSelectInput(session, "dec", selected = settings$dec)
         if (!is.null(settings$digits)) shiny::updateNumericInput(session, "digits", value = settings$digits)
         if (!is.null(settings$report_template)) {
-          report_value <- if (settings$report_template %in% "app") settings$report_template else "app"
+          report_value <- if (settings$report_template %in% c("app","plotly","ggplot","none")) settings$report_template else "app"
           shiny::updateSelectInput(session, "report_template", selected = report_value)
         }
         if (!is.null(settings$ic_method)) shiny::updateSelectInput(session, "ic_method", selected = settings$ic_method)
