@@ -1,4 +1,98 @@
 # R-to-Rust transpiler for Pmetrics model blocks.
+#
+# ---------------------------------------------------------------------------
+# Supported R functions and operations
+# ---------------------------------------------------------------------------
+# The transpiler converts the R code written inside model blocks (e.g. `eqn`,
+# `sec`, `fa`, `lag`, `ini`, `out`) into Rust. Only the functions and operators
+# listed below are recognized. Using anything else triggers an informative
+# error from `expr_to_rust()` naming the unsupported function or operator.
+#
+# Grouping / structure
+#   ( )            parentheses for grouping
+#   { }            statement blocks
+#   if / else      conditional expressions
+#   for            for-loops, e.g. `for (i in 1:n) { ... }`
+#   <-  =          assignment (to scalars or indexed vectors such as `dx[1]`)
+#   x[i]           indexing of vectors (e.g. `x[1]`, `dx[2]`, `p[3]`)
+#
+# Arithmetic operators
+#   +  -  *  /  ^  (binary and unary +/-)
+#
+# Comparison operators
+#   ==  !=  >=  <=  >  <
+#
+# Logical operators
+#   &  |  !       (transpiled to Rust `&&`, `||`, `!`)
+#
+# Mathematical functions
+#   abs, exp, sqrt
+#   ln, log (natural log), log10, log2
+#
+# Trigonometric functions
+#   sin, cos, tan, asin, acos, atan, atan2
+#
+# Hyperbolic functions
+#   sinh, cosh, tanh, asinh, acosh, atanh
+#
+# Rounding functions
+#   floor, ceiling, round, trunc
+#
+# Pmetrics helper functions
+#   get_e2
+#
+# NOTE: Keep `supported_transpiler_ops()` (below) in sync with the `switch()`
+# in `expr_to_rust()` so error messages stay accurate.
+# ---------------------------------------------------------------------------
+
+# Human-readable catalogue of supported operations, grouped by category.
+# Used to build helpful error messages when an unsupported function or
+# operator is encountered. Must mirror the `switch()` in `expr_to_rust()`.
+supported_transpiler_ops <- function() {
+  list(
+    "Grouping/structure" = c("(", "{", "if", "else", "for", "<-", "=", "[ ] (indexing)"),
+    "Arithmetic" = c("+", "-", "*", "/", "^"),
+    "Comparison" = c("==", "!=", ">=", "<=", ">", "<"),
+    "Logical" = c("&", "|", "!"),
+    "Math" = c("abs", "exp", "sqrt", "ln", "log", "log10", "log2"),
+    "Trigonometric" = c("sin", "cos", "tan", "asin", "acos", "atan", "atan2"),
+    "Hyperbolic" = c("sinh", "cosh", "tanh", "asinh", "acosh", "atanh"),
+    "Rounding" = c("floor", "ceiling", "round", "trunc"),
+    "Pmetrics helpers" = c("get_e2")
+  )
+}
+
+# Raise an informative error naming the unsupported function/operator and
+# listing what the transpiler does support.
+abort_unsupported_op <- function(op) {
+  ops <- supported_transpiler_ops()
+  operators <- c(
+    ops$Arithmetic, ops$Comparison, ops$Logical,
+    "(", "{", "if", "else", "for", "<-", "=", "[ ]"
+  )
+  is_operator <- op %in% operators
+  kind <- if (is_operator) "operator" else "function"
+
+  supported_lines <- vapply(
+    names(ops),
+    function(cat) {
+      members <- paste(ops[[cat]], collapse = ", ")
+      # Escape braces so cli does not treat them as glue interpolation.
+      members <- gsub("\\{", "{{", members)
+      members <- gsub("\\}", "}}", members)
+      sprintf("{.strong %s}: %s", cat, members)
+    },
+    character(1)
+  )
+  names(supported_lines) <- rep("*", length(supported_lines))
+
+  cli::cli_abort(c(
+    "x" = "Unsupported {kind} {.val {op}} in model block.",
+    "i" = "The model transpiler does not know how to convert {.val {op}} to Rust.",
+    "i" = "Supported functions and operators are:",
+    supported_lines
+  ))
+}
 
 index_vector_size <- function(max_index) {
   if (max_index <= 0L) {
@@ -271,7 +365,7 @@ expr_to_rust <- function(
         rust_args[[4]], rust_args[[5]], rust_args[[6]]
       )
     },
-    stop(sprintf("Unsupported operation: %s", op))
+    abort_unsupported_op(op)
   )
 }
 
