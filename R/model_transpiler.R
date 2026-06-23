@@ -338,9 +338,9 @@ expr_to_rust <- function(
       then_code <- expr_to_rust(args[[2]], params, covs, declared)
       if (length(args) == 3) {
         else_code <- expr_to_rust(args[[3]], params, covs, declared)
-        sprintf("if %s { %s } else { %s };", cond, then_code, else_code)
+        sprintf("if %s { %s } else { %s }", cond, then_code, else_code)
       } else {
-        sprintf("if %s { %s };", cond, then_code)
+        sprintf("if %s { %s }", cond, then_code)
       }
     },
 

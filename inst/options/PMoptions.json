@@ -6,10 +6,8 @@
   "bias_method": "percent_mwe",
   "imp_method": "percent_rmbawse",
   "ic_method": "aic",
-  "report_template": "plotly",
+  "report_template": "app",
   "date_format": "%m/%d/%y",
   "update_check": "weekly",
-  "update_timeout": 1,
-  "backend": "rust",
-  "model_template_path": ""
+  "update_timeout": 1
 }

@@ -221,11 +221,12 @@ setPMoptions <- function(launch.app = TRUE) {
                   "date_format",
                   bslib::tooltip(
                     shiny::tags$span("Date format", shiny::icon("circle-question", class = "ms-1 text-muted")),
-                    "Date format used to parse date-time strings, e.g. the 'start' argument in BestDose"
+                    "Format used to parse date strings"
                   ),
                   choices = c(
-                    "MM/DD/YY \u2014 United States" = "%m/%d/%y",
-                    "DD/MM/YY \u2014 International" = "%d/%m/%y"
+                    "MM/DD/YY (United States)" = "%m/%d/%y",
+                    "DD/MM/YY (International)" = "%d/%m/%y",
+                    "YYYY-MM-DD (ISO 8601)" = "%Y-%m-%d"
                   ),
                   selected = "%m/%d/%y"
                 )
@@ -265,10 +266,13 @@ setPMoptions <- function(launch.app = TRUE) {
                   "report_template",
                   bslib::tooltip(
                     shiny::tags$span("Report mode", shiny::icon("circle-question", class = "ms-1 text-muted")),
-                    "Launch the Shiny report app after a run finishes"
+                    "Report options after a run finishes"
                   ),
                   choices = c(
-                    "Interactive report app" = "app"
+                    "Interactive report app" = "app",
+                    "Plotly" = "plotly",
+                    "ggplot2" = "ggplot",
+                    "None" = "none"
                   ),
                   selected = "app"
                 )
@@ -479,7 +483,7 @@ setPMoptions <- function(launch.app = TRUE) {
         if (!is.null(settings$dec)) shiny::updateSelectInput(session, "dec", selected = settings$dec)
         if (!is.null(settings$digits)) shiny::updateNumericInput(session, "digits", value = settings$digits)
         if (!is.null(settings$report_template)) {
-          report_value <- if (settings$report_template %in% "app") settings$report_template else "app"
+          report_value <- if (settings$report_template %in% c("app","plotly","ggplot","none")) settings$report_template else "app"
           shiny::updateSelectInput(session, "report_template", selected = report_value)
         }
         if (!is.null(settings$ic_method)) shiny::updateSelectInput(session, "ic_method", selected = settings$ic_method)
@@ -575,8 +579,6 @@ setPMoptions <- function(launch.app = TRUE) {
           date_format = input$date_format,
           update_check = input$update_check,
           update_timeout = as.numeric(input$update_timeout)
-          # backend = input$backend,
-          # model_template_path = input$model_template_path
         )
 
         tryCatch(

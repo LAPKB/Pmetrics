@@ -7,21 +7,17 @@
 .Renviron
 .Rproj.user/
 .vscode/
+.posit/
 .DS_Store
 PmetricsGit.Rproj
-
 
 # Build/check artifacts
 /*.tar.gz
 /*.Rcheck/
-..Rcheck/
-Pmetrics.Rcheck/
 *_cache/
-/cache/
 *.utf8.md
 *.knit.md
 .Rd2pdf*/
-rsconnect/
 po/*~
 
 # Vignettes/docs rendered locally
@@ -40,9 +36,6 @@ PMchangelog.html
 src/*.o
 src/*.so
 src/*.dll
-src/Pmetrics.so
-src/knn.o
-src/registerDynamicSymbol.o
 src/symbols.rds
 inst/compiledFortran/
 
@@ -53,32 +46,16 @@ Cargo.lock
 # Generated config/templates
 inst/rust/template/*
 
-# Training book outputs
-inst/Learn/.quarto/
-inst/Learn/_book/
-inst/Learn/_site/
-inst/Learn/_freeze/
-
-# Simulation / report artifacts
+# Example runs
 data-raw/Runs/
-tests/testthat/Runs/
-Examples
-!inst/Examples/
-Experimental
-other/
-1
-2
-3
-errors.xlsx
+inst/Examples/
+
 
 # Misc project outputs
 *_test.R
 !inst/Examples/Rscript/*_test.R
 docs/
-docs
 src/rust/vendor
-src/Makevars
-src/Makevars.win
 
 /.quarto/
 **/*.quarto_ipynb

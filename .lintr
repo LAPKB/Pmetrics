@@ -1,7 +1,0 @@
-linters: linters_with_defaults(
-  return_linter = NULL,
-  line_length_linter = line_length_linter(12000L),
-  object_name_linter = object_name_linter(
-    styles = c("snake_case", "camelCase", "CamelCase", "SNAKE_CASE", "lowercase", "UPPERCASE", "symbols")
-  )
-  )
