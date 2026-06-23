@@ -41,11 +41,12 @@ your system.
 
 `Pmetrics` is distributed on
 [r-universe](https://lapkb.r-universe.dev/Pmetrics), and built for
-Windows, MacOS, and Linux. To install, you must specify `r-universe` as
-the repository using
+Windows, MacOS, and Linux. To install, specify both the `r-universe` and
+CRAN repositories so that Pmetrics and its dependencies can all be
+found:
 
 ``` r
-install.packages("Pmetrics", repos = "https://lapkb.r-universe.dev")
+install.packages("Pmetrics", repos = c("https://lapkb.r-universe.dev", "https://cloud.r-project.org"))
 ```
 
 For updating the package and for easier future installations, you can
