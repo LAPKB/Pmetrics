@@ -392,50 +392,10 @@ PM_load <- function(run, path = ".", file = "PMout.Rdata") {
     result <- output2List(Out = get(load(found)))
     rebuild <- PM_result$new(result, path = dirname(found), quiet = TRUE)
 
-    inputs_dir <- normalizePath(file.path(dirname(found), "..", "inputs"), mustWork = FALSE)
-    inputs_binaries <- if (dir.exists(inputs_dir)) {
-      list.files(inputs_dir, pattern = "\\.pmx$", full.names = TRUE)
-    } else {
-      character(0)
-    }
-
-    if (inherits(rebuild$model, "PM_model")) {
-      is_valid_path <- function(x) {
-        is.character(x) && length(x) == 1 && !is.na(x) && nzchar(x)
-      }
-
-      # Prefer the binary path stored in the saved result (model_binary_path);
-      # fall back to the model's current binary_path field if not available.
-      target_binary_path <- result$model_binary_path
-      if (!is_valid_path(target_binary_path)) {
-        target_binary_path <- rebuild$model$binary_path
-      }
-
-      if (length(inputs_binaries) > 0) {
-        source_binary <- inputs_binaries[1]
-        if (is_valid_path(target_binary_path)) {
-          preferred_source <- normalizePath(file.path(inputs_dir, basename(target_binary_path)), mustWork = FALSE)
-          if (file.exists(preferred_source)) {
-            source_binary <- preferred_source
-          }
-        }
-
-        if (is_valid_path(target_binary_path)) {
-          target_binary_path <- normalizePath(target_binary_path, mustWork = FALSE)
-          copied <- tryCatch(
-            {
-              dir.create(dirname(target_binary_path), recursive = TRUE, showWarnings = FALSE)
-              isTRUE(file.copy(source_binary, target_binary_path, overwrite = TRUE))
-            },
-            error = function(e) FALSE
-          )
-          rebuild$model$binary_path <- if (copied) target_binary_path else source_binary
-        } else {
-          rebuild$model$binary_path <- source_binary
-        }
-      } else {
-        rebuild$model$binary_path <- NULL
-      }
+    # Ensure the rebuilt model carries its pharmsol DSL source so it can be
+    # re-simulated without recompilation. Older results may not have stored it.
+    if (inherits(rebuild$model, "PM_model") && is.null(rebuild$model$dsl)) {
+      rebuild$model$dsl <- tryCatch(model_to_dsl(rebuild$model), error = function(e) NULL)
     }
 
     return(rebuild)

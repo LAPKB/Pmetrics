@@ -1,8 +1,5 @@
 use extendr_api::prelude::*;
-use pmcore::prelude::{
-    simulator::{Prediction, SubjectPredictions},
-    Predictions,
-};
+use pmcore::prelude::simulator::Prediction;
 
 //look at https://extendr.github.io/extendr/extendr_api/derive.IntoDataFrameRow.html
 
@@ -56,13 +53,9 @@ impl SimulationRow {
         rows
     }
 
-    pub fn from_subject_predictions(
-        subject_predictions: SubjectPredictions,
-        id: &str,
-        spp_index: usize,
-    ) -> Vec<Self> {
+    pub fn from_predictions(predictions: Vec<Prediction>, id: &str, spp_index: usize) -> Vec<Self> {
         let mut rows = Vec::new();
-        for prediction in subject_predictions.get_predictions().iter() {
+        for prediction in predictions.iter() {
             rows.extend(Self::from_prediction(prediction, id, spp_index));
         }
         rows

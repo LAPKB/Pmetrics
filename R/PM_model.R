@@ -83,8 +83,12 @@ PM_model <- R6::R6Class(
     model_list = NULL,
     #' @field arg_list A list containing the original arguments passed to the model
     arg_list = NULL,
-    #' @field binary_path The full path and filename of the compiled model
+    #' @field binary_path Deprecated. Retained as `NULL` for backward compatibility;
+    #' models are no longer compiled to a binary. See the `dsl` field.
     binary_path = NULL,
+    #' @field dsl The model definition rendered as pharmsol DSL source, used by the
+    #' Rust backend to JIT-compile the model at run time.
+    dsl = NULL,
     #' @description
     #' This is the method to create a new `PM_model` object.
     #'
@@ -436,7 +440,7 @@ PM_model <- R6::R6Class(
             }
           })
           self$arg_list$x <- NULL
-          self$binary_path <- x$binary_path
+          self$dsl <- x$dsl
         } else {
           cli::cli_abort(c(
             "x" = "Non supported input for {.arg x}: {typeof(x)}",
@@ -737,6 +741,22 @@ PM_model <- R6::R6Class(
       }
       if (length(self$arg_list$err) != n_out) {
         msg <- c(msg, "There must be one error model for each output equation.")
+      }
+      # Validate the output equation (`outeq`) each error model is declared for.
+      if (!is.null(self$arg_list$err) && length(self$arg_list$err) > 0) {
+        err_outeqs <- purrr::map_dbl(self$arg_list$err, \(e) {
+          if (inherits(e, "PM_err") && !is.null(e$outeq)) as.numeric(e$outeq) else NA_real_
+        })
+        if (any(is.na(err_outeqs)) || any(err_outeqs %% 1 != 0) || any(err_outeqs < 1)) {
+          msg <- c(msg, "Each error model must declare a positive integer {.arg outeq} (the output equation it applies to).")
+        } else {
+          if (any(err_outeqs > n_out)) {
+            msg <- c(msg, "Error model {.arg outeq} values must be between 1 and the number of outputs ({n_out}).")
+          }
+          if (anyDuplicated(err_outeqs) > 0) {
+            msg <- c(msg, "Each output equation may have only one error model; duplicate {.arg outeq} values were found.")
+          }
+        }
       }
       err <- self$arg_list$err
 
@@ -1378,7 +1398,9 @@ PM_model <- R6::R6Class(
       suppressWarnings(
         saveRDS(list(data = data, model = self), file = normalizePath(file.path(path_run, "inputs", "fit.rds"), mustWork = FALSE))
       )
-      file.copy(self$binary_path, normalizePath(file.path(path_run, "inputs"), mustWork = FALSE))
+      # Persist the DSL source alongside the run inputs for reproducibility.
+      if (is.null(self$dsl)) self$compile(quiet = TRUE)
+      writeLines(self$dsl, normalizePath(file.path(path_run, "inputs", "model.txt"), mustWork = FALSE))
 
       # Get ranges and calculate points
       ranges <- lapply(self$model_list$pri, function(x) {
@@ -1403,7 +1425,7 @@ PM_model <- R6::R6Class(
         fit_call <- function() {
           fit(
             # defined in extendr-wrappers.R
-            model_path = normalizePath(self$binary_path),
+            model_source = self$dsl,
             data = normalizePath(file.path(path_run, "inputs", "gendata.csv")),
             params = list(
               ranges = ranges, # not important but needed for POSTPROB
@@ -1416,8 +1438,7 @@ PM_model <- R6::R6Class(
               points = points, # only relevant for sobol prior
               seed = seed
             ),
-            output_path = out_path,
-            kind = tolower(self$model_list$type)
+            output_path = out_path
           )
         }
         rlang::try_fetch(
@@ -1556,44 +1577,39 @@ PM_model <- R6::R6Class(
       temp_csv <- tempfile(fileext = ".csv")
       data$save(temp_csv, header = FALSE)
 
-      if (is.null(self$binary_path)) {
+      if (is.null(self$dsl)) {
         self$compile(quiet = quiet)
-        if (is.null(self$binary_path)) {
-          cli::cli_abort(c("x" = "Model must be compiled before simulating."))
+        if (is.null(self$dsl)) {
+          cli::cli_abort(c("x" = "Model must be prepared before simulating."))
         }
       }
-      sim <- simulate_all(temp_csv, self$binary_path, theta, kind = tolower(self$model_list$type))
+      sim <- simulate_all(temp_csv, self$dsl, theta)
 
       return(sim)
     },
     #' @description
-    #' Compile the model to a binary file.
+    #' Render the model to pharmsol DSL source.
     #' @details
-    #' This method write the model to a Rust file in a temporary path,
-    #' updates the `binary_path` field for the model, and compiles that
-    #' file to a binary file that can be used for fitting or simulation.
-    #' @param quiet Logical, if TRUE, suppresses messages during compilation.
+    #' This method generates the pharmsol DSL representation of the model and
+    #' stores it in the `dsl` field. The Rust backend JIT-compiles this source at
+    #' run time, so no Rust toolchain or separate compilation step is required.
+    #' The method name is retained for backward compatibility.
+    #' @param quiet Logical, if TRUE, suppresses messages.
     #'
     compile = function(quiet = FALSE) {
-      if (!is.null(self$binary_path) && file.exists(self$binary_path)) {
-        # model is compiled
-        return(invisible(NULL))
+      if (!is.null(self$dsl)) {
+        # already rendered
+        return(invisible(self))
       }
 
-      model_path <- file.path(tempdir(), "model.rs")
-      private$write_model_to_rust(model_path)
-      output_path <- tempfile(pattern = "model_", fileext = ".pmx")
-      if (!quiet) cli::cli_inform(c("i" = "Compiling model..."))
-      # path inside Pmetrics package
-      template_path <- resolve_template_path()
+      if (!quiet) cli::cli_inform(c("i" = "Preparing model..."))
       tryCatch(
         {
-          compile_model(model_path, output_path, private$get_primary(), template_path, kind = tolower(self$model_list$type))
-          self$binary_path <- output_path
+          self$dsl <- model_to_dsl(self)
         },
         error = function(e) {
           cli::cli_abort(
-            c("x" = "Model compilation failed: {e$message}", "i" = "Please check the model file and try again.")
+            c("x" = "Model preparation failed: {conditionMessage(e)}", "i" = "Please check the model definition and try again.")
           )
         }
       )
@@ -1920,7 +1936,7 @@ PM_model <- R6::R6Class(
 
       coeff_fxns <- err[-1] |>
         purrr::imap(\(x, idx) {
-          glue::glue("{err_type}({gamlam_value}, c({x}), {const_coeff[{idx}]})")
+          glue::glue("{err_type}({gamlam_value}, c({x}), {const_coeff[{idx}]}, outeq = {idx})")
         }) |>
         unlist()
 
@@ -2031,9 +2047,12 @@ ode_solver_to_rust <- function(solver) {
 #' @param initial Initial value for lambda
 #' @param coeff Vector of coefficients defining assay error polynomial
 #' @param fixed Estimate if `FALSE` (default).
+#' @param outeq The output equation number (1-based) this error model applies to.
+#' Defaults to `1`. This must match the output index used in the model's `out`
+#' block, e.g. `outeq = 2` corresponds to `Y[2]`.
 #' @export
-additive <- function(initial, coeff, fixed = FALSE) {
-  PM_err$new(type = "additive", initial = initial, coeff = coeff, fixed = fixed)
+additive <- function(initial, coeff, fixed = FALSE, outeq = 1) {
+  PM_err$new(type = "additive", initial = initial, coeff = coeff, fixed = fixed, outeq = outeq)
 }
 
 
@@ -2045,9 +2064,12 @@ additive <- function(initial, coeff, fixed = FALSE) {
 #' @param initial Initial value for gamma
 #' @param coeff Vector of coefficients defining assay error polynomial
 #' @param fixed Estimate if `FALSE` (default).
+#' @param outeq The output equation number (1-based) this error model applies to.
+#' Defaults to `1`. This must match the output index used in the model's `out`
+#' block, e.g. `outeq = 2` corresponds to `Y[2]`.
 #' @export
-proportional <- function(initial, coeff, fixed = FALSE) {
-  PM_err$new(type = "proportional", initial = initial, coeff = coeff, fixed = fixed)
+proportional <- function(initial, coeff, fixed = FALSE, outeq = 1) {
+  PM_err$new(type = "proportional", initial = initial, coeff = coeff, fixed = fixed, outeq = outeq)
 }
 
 PM_err <- R6::R6Class(
@@ -2061,21 +2083,24 @@ PM_err <- R6::R6Class(
     coeff = NULL,
     #' @field fixed If `TRUE`, the error model is fixed and not estimated.
     fixed = NULL,
-    initialize = function(type, initial, coeff, fixed) {
+    #' @field outeq The output equation number (1-based) the error model applies to.
+    outeq = NULL,
+    initialize = function(type, initial, coeff, fixed, outeq = 1) {
       self$type <- type
       self$initial <- initial
       self$coeff <- coeff
       self$fixed <- fixed
+      self$outeq <- outeq
     },
     print = function() {
       if (self$fixed) {
-        cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with fixed value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
+        cli::cli_text("{.strong {tools::toTitleCase(self$type)}} (output {self$outeq}), with fixed value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
       } else {
-        cli::cli_text("{.strong {tools::toTitleCase(self$type)}}, with initial value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
+        cli::cli_text("{.strong {tools::toTitleCase(self$type)}} (output {self$outeq}), with initial value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
       }
     },
     flatten = function() {
-      list(initial = self$initial, coeff = self$coeff, type = self$type, fixed = self$fixed)
+      list(initial = self$initial, coeff = self$coeff, type = self$type, fixed = self$fixed, outeq = self$outeq)
     }
   )
 )

@@ -81,7 +81,11 @@ the original arguments into Rust}
 
     \item{\code{arg_list}}{A list containing the original arguments passed to the model}
 
-    \item{\code{binary_path}}{The full path and filename of the compiled model}
+    \item{\code{binary_path}}{Deprecated. Retained as \code{NULL} for backward compatibility;
+models are no longer compiled to a binary. See the \code{dsl} field.}
+
+    \item{\code{dsl}}{The model definition rendered as pharmsol DSL source, used by the
+Rust backend to JIT-compile the model at run time.}
   }
   \if{html}{\out{</div>}}
 }
@@ -676,7 +680,7 @@ the \code{data} object.
 \if{html}{\out{<a id="method-PM_model-compile"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_model-compile}{}}}
 \subsection{\code{PM_model$compile()}}{
-  Compile the model to a binary file.
+  Render the model to pharmsol DSL source.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{PM_model$compile(quiet = FALSE)}
@@ -685,14 +689,15 @@ the \code{data} object.
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{quiet}}{Logical, if TRUE, suppresses messages during compilation.}
+      \item{\code{quiet}}{Logical, if TRUE, suppresses messages.}
     }
     \if{html}{\out{</div>}}
   }
   \subsection{Details}{
-    This method write the model to a Rust file in a temporary path,
-updates the \code{binary_path} field for the model, and compiles that
-file to a binary file that can be used for fitting or simulation.
+    This method generates the pharmsol DSL representation of the model and
+stores it in the \code{dsl} field. The Rust backend JIT-compiles this source at
+run time, so no Rust toolchain or separate compilation step is required.
+The method name is retained for backward compatibility.
   }
 }
 
