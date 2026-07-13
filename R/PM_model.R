@@ -89,6 +89,10 @@ PM_model <- R6::R6Class(
     #' @field dsl The model definition rendered as pharmsol DSL source, used by the
     #' Rust backend to JIT-compile the model at run time.
     dsl = NULL,
+    #' @field input_remap A list describing any data input remapping required by
+    #' the DSL model (used when an input drives both a bolus and an infusion
+    #' route). Each element is a list with `kind`, `from`, and `to`.
+    input_remap = NULL,
     #' @description
     #' This is the method to create a new `PM_model` object.
     #'
@@ -441,6 +445,7 @@ PM_model <- R6::R6Class(
           })
           self$arg_list$x <- NULL
           self$dsl <- x$dsl
+          self$input_remap <- x$input_remap
         } else {
           cli::cli_abort(c(
             "x" = "Non supported input for {.arg x}: {typeof(x)}",
@@ -1401,6 +1406,12 @@ PM_model <- R6::R6Class(
       # Persist the DSL source alongside the run inputs for reproducibility.
       if (is.null(self$dsl)) self$compile(quiet = TRUE)
       writeLines(self$dsl, normalizePath(file.path(path_run, "inputs", "model.txt"), mustWork = FALSE))
+      # Apply any input remapping required by the DSL model (e.g. when an input
+      # drives both a bolus and an infusion route).
+      remap_input_csv(
+        normalizePath(file.path(path_run, "inputs", "gendata.csv"), mustWork = FALSE),
+        self$input_remap
+      )
 
       # Get ranges and calculate points
       ranges <- lapply(self$model_list$pri, function(x) {
@@ -1452,6 +1463,26 @@ PM_model <- R6::R6Class(
             return(NULL)
           }
         )
+
+        # The Rust backend writes the estimation artifacts (theta.csv,
+        # posterior.csv, pred.csv, covs.csv, cycles.csv, result.json). The
+        # Pmetrics output parsers additionally expect a `settings.json` file
+        # describing the run configuration, which we write here from the model
+        # and fit settings.
+        if (file.exists(file.path(out_path, "theta.csv"))) {
+          write_settings_json(
+            path = file.path(out_path, "settings.json"),
+            param_ranges = ranges,
+            error_models = self$model_list$err,
+            algorithm = algorithm,
+            cycles = cycles,
+            idelta = idelta,
+            tad = tad,
+            prior = prior,
+            points = points,
+            seed = seed
+          )
+        }
 
         PM_parse(path = out_path)
         res <- PM_load(path = normalizePath(out_path), file = "PMout.Rdata")
@@ -1583,6 +1614,8 @@ PM_model <- R6::R6Class(
           cli::cli_abort(c("x" = "Model must be prepared before simulating."))
         }
       }
+      # Apply any input remapping required by the DSL model.
+      remap_input_csv(temp_csv, self$input_remap)
       sim <- simulate_all(temp_csv, self$dsl, theta)
 
       return(sim)
@@ -1605,7 +1638,9 @@ PM_model <- R6::R6Class(
       if (!quiet) cli::cli_inform(c("i" = "Preparing model..."))
       tryCatch(
         {
-          self$dsl <- model_to_dsl(self)
+          rendered <- model_to_dsl(self)
+          self$dsl <- rendered$dsl
+          self$input_remap <- rendered$remap
         },
         error = function(e) {
           cli::cli_abort(

@@ -395,7 +395,11 @@ PM_load <- function(run, path = ".", file = "PMout.Rdata") {
     # Ensure the rebuilt model carries its pharmsol DSL source so it can be
     # re-simulated without recompilation. Older results may not have stored it.
     if (inherits(rebuild$model, "PM_model") && is.null(rebuild$model$dsl)) {
-      rebuild$model$dsl <- tryCatch(model_to_dsl(rebuild$model), error = function(e) NULL)
+      rendered <- tryCatch(model_to_dsl(rebuild$model), error = function(e) NULL)
+      if (!is.null(rendered)) {
+        rebuild$model$dsl <- rendered$dsl
+        rebuild$model$input_remap <- rendered$remap
+      }
     }
 
     return(rebuild)

@@ -354,33 +354,106 @@ dsl_ini_block <- function(fun) {
   list(derived = derived, lines = lines)
 }
 
-# Deduplicate routes, keeping declaration order, and detect conflicts (an input
-# used as both bolus and infusion, or targeting different compartments).
+# Finalize route usages into concrete DSL routes plus a data-remap table.
+#
+# Each usage is `list(kind, input, comp)` where `input` is the 1-based Pmetrics
+# data input number. The DSL requires a unique label per route, but the pharmsol
+# runtime keeps *separate* index spaces for bolus and infusion routes, so a
+# single data input can legitimately drive both a bolus and an infusion route.
+# To express that in the DSL we keep the bolus on the original `input_{n}` label
+# and give the infusion a fresh `input_{m}` label, recording a remap so the
+# data's infusion events (DUR > 0) on input `n` are rewritten to input `m` at
+# fit/simulation time.
+#
+# Returns `list(routes = <list of {kind, label, comp}>, remap = <list of
+# {kind, from, to}>)`.
 dsl_finalize_routes <- function(routes) {
   by_input <- list()
+  seen_inputs <- integer(0)
   for (r in routes) {
     key <- as.character(r$input)
     if (is.null(by_input[[key]])) {
-      by_input[[key]] <- r
-    } else {
-      prev <- by_input[[key]]
-      if (prev$comp != r$comp) {
+      by_input[[key]] <- list()
+      seen_inputs <- c(seen_inputs, r$input)
+    }
+    by_input[[key]][[length(by_input[[key]]) + 1L]] <- r
+  }
+
+  inputs <- sort(unique(seen_inputs))
+  next_label <- if (length(inputs) > 0) max(inputs) + 1L else 1L
+
+  final_routes <- list()
+  remap <- list()
+
+  for (inp in inputs) {
+    grp <- by_input[[as.character(inp)]]
+    has_bolus <- any(vapply(grp, function(r) identical(r$kind, "bolus"), logical(1)))
+
+    for (kd in c("bolus", "infusion")) {
+      comps <- unique(vapply(
+        Filter(function(r) identical(r$kind, kd), grp),
+        function(r) as.integer(r$comp), integer(1)
+      ))
+      if (length(comps) == 0) next
+      if (length(comps) > 1) {
         cli::cli_abort(c(
-          "x" = "Input {r$input} is directed to more than one compartment.",
-          "i" = "Each drug input may target a single compartment in the DSL backend."
+          "x" = "Input {inp} directs a {kd} into more than one compartment.",
+          "i" = "Each input may direct a bolus (or an infusion) into a single compartment."
         ))
       }
-      if (prev$kind != r$kind) {
-        cli::cli_abort(c(
-          "x" = "Input {r$input} is used as both a bolus and an infusion.",
-          "i" = "The DSL backend requires each drug input to be either a bolus or an infusion, not both."
-        ))
+      comp <- comps[[1]]
+
+      # Bolus keeps the original input label. When the same input is also used as
+      # an infusion, the infusion route receives a fresh label and the data is
+      # remapped accordingly.
+      label <- inp
+      if (identical(kd, "infusion") && has_bolus) {
+        label <- next_label
+        next_label <- next_label + 1L
+        remap[[length(remap) + 1L]] <- list(kind = "infusion", from = inp, to = label)
       }
+
+      final_routes[[length(final_routes) + 1L]] <- list(kind = kd, label = label, comp = comp)
     }
   }
-  # Preserve ascending input order for deterministic output.
-  inputs <- sort(as.integer(names(by_input)))
-  lapply(inputs, function(i) by_input[[as.character(i)]])
+
+  list(routes = final_routes, remap = remap)
+}
+
+# Rewrite the `INPUT` column of a Pmetrics CSV to apply a route input remap.
+#
+# `remap` is the table returned by [dsl_finalize_routes]. For each infusion
+# remap `{from, to}`, dose rows with a positive duration (`DUR > 0`) and
+# `INPUT == from` are rewritten to `INPUT == to`, so that infusion events bind to
+# the separately-labelled infusion route in the DSL model.
+remap_input_csv <- function(path, remap) {
+  if (length(remap) == 0 || !file.exists(path)) {
+    return(invisible(path))
+  }
+
+  df <- utils::read.csv(
+    path,
+    check.names = FALSE, colClasses = "character",
+    na.strings = character(0), stringsAsFactors = FALSE
+  )
+  cols <- toupper(names(df))
+  dur_col <- match("DUR", cols)
+  input_col <- match("INPUT", cols)
+  if (is.na(dur_col) || is.na(input_col)) {
+    cli::cli_abort("Unable to apply input remap: {.field DUR}/{.field INPUT} columns not found.")
+  }
+
+  dur <- suppressWarnings(as.numeric(df[[dur_col]]))
+  input <- df[[input_col]]
+  for (m in remap) {
+    if (identical(m$kind, "infusion")) {
+      sel <- !is.na(dur) & dur > 0 & input == as.character(m$from)
+      df[[input_col]][sel] <- as.character(m$to)
+    }
+  }
+
+  utils::write.csv(df, path, row.names = FALSE, quote = FALSE, na = ".")
+  invisible(path)
 }
 
 # Map Pmetrics analytical library template names to DSL analytical structures.
@@ -481,11 +554,13 @@ model_to_dsl <- function(model) {
   states <- paste0("x", seq_len(n_states))
   outputs <- paste0("outeq_", seq_len(n_out))
 
-  routes <- dsl_finalize_routes(eqn$routes)
-  # Pmetrics data uses 1-based INPUT labels, so drug input `j` maps to the DSL
-  # route label `input_{j}` (numeric label resolves to index j).
+  routes_result <- dsl_finalize_routes(eqn$routes)
+  routes <- routes_result$routes
+  # Pmetrics data uses 1-based INPUT labels. Bolus routes keep the data input
+  # label; infusion routes that share an input with a bolus receive a fresh
+  # label (see `dsl_finalize_routes`), captured in the remap table.
   route_lines <- vapply(routes, function(r) {
-    sprintf("%s(input_%d) -> x%d", r$kind, r$input, r$comp)
+    sprintf("%s(input_%d) -> x%d", r$kind, r$label, r$comp)
   }, character(1))
 
   # Assemble the DSL text in an order that respects definite assignment:
@@ -510,7 +585,7 @@ model_to_dsl <- function(model) {
     out$out
   )
 
-  paste(lines, collapse = "\n")
+  list(dsl = paste(lines, collapse = "\n"), remap = routes_result$remap)
 }
 
 # Assemble DSL text for an analytical (library-structure) model.
@@ -549,7 +624,9 @@ dsl_analytical <- function(model, header, derived, parameters) {
     out$out
   )
 
-  paste(lines, collapse = "\n")
+  # Analytical (library-structure) models declare no explicit routes, so there
+  # is nothing to remap.
+  list(dsl = paste(lines, collapse = "\n"), remap = list())
 }
 
 # Number of states (compartments) for a DSL analytical structure.

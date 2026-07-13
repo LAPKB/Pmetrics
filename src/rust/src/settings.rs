@@ -101,21 +101,33 @@ pub(crate) fn settings(settings: List, params: &[String], output_path: &str) -> 
         }
         let outeq = outeq_1based - 1;
 
-        let gamlam = get_field(&em, "initial")?
-            .as_real()
-            .ok_or_else(|| anyhow!("error_models for outeq {} initial is not a real number", outeq_1based))?;
-        let type_vec = get_field(&em, "type")?
-            .as_string_vector()
-            .ok_or_else(|| anyhow!("error_models for outeq {} type is not a character vector", outeq_1based))?;
+        let gamlam = get_field(&em, "initial")?.as_real().ok_or_else(|| {
+            anyhow!(
+                "error_models for outeq {} initial is not a real number",
+                outeq_1based
+            )
+        })?;
+        let type_vec = get_field(&em, "type")?.as_string_vector().ok_or_else(|| {
+            anyhow!(
+                "error_models for outeq {} type is not a character vector",
+                outeq_1based
+            )
+        })?;
         let err_type = type_vec
             .first()
             .ok_or_else(|| anyhow!("error_models for outeq {} type is empty", outeq_1based))?;
-        let fixed = get_field(&em, "fixed")?
-            .as_logical()
-            .ok_or_else(|| anyhow!("error_models for outeq {} fixed is not logical", outeq_1based))?;
-        let coeff = get_field(&em, "coeff")?
-            .as_real_vector()
-            .ok_or_else(|| anyhow!("error_models for outeq {} coeff is not a numeric vector", outeq_1based))?;
+        let fixed = get_field(&em, "fixed")?.as_logical().ok_or_else(|| {
+            anyhow!(
+                "error_models for outeq {} fixed is not logical",
+                outeq_1based
+            )
+        })?;
+        let coeff = get_field(&em, "coeff")?.as_real_vector().ok_or_else(|| {
+            anyhow!(
+                "error_models for outeq {} coeff is not a numeric vector",
+                outeq_1based
+            )
+        })?;
         if coeff.len() < 4 {
             bail!(
                 "error_models for outeq {} coeff must have at least 4 values, got {}",
