@@ -177,6 +177,28 @@ dsl_route_of <- function(expr) {
   NULL
 }
 
+# Return the sorted, unique data input indices referenced by bolus (`b[]` /
+# `bolus[]`) or infusion (`rateiv[]` / `r[]`) terms in a model equation function.
+# Used to validate that the model represents every dose input present in the data.
+eqn_route_inputs <- function(fun, kind = c("bolus", "infusion")) {
+  kind <- match.arg(kind)
+  targets <- if (kind == "bolus") c("b", "bolus") else c("rateiv", "r")
+  found <- integer(0)
+  walk <- function(expr) {
+    if (is.call(expr)) {
+      if (identical(expr[[1]], as.name("[")) &&
+        tolower(as.character(expr[[2]])) %in% targets &&
+        is.numeric(expr[[3]]) && length(expr[[3]]) == 1) {
+        found <<- c(found, as.integer(expr[[3]]))
+      }
+      lapply(as.list(expr), walk)
+    }
+    invisible(NULL)
+  }
+  walk(if (is.function(fun)) body(fun) else fun)
+  sort(unique(found))
+}
+
 # Build a DSL expression string from a list of signed terms.
 dsl_join_terms <- function(terms) {
   if (length(terms) == 0) {

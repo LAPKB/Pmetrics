@@ -241,13 +241,13 @@ make_valid <- function(...) {
 #' @description
 #' `r lifecycle::badge("deprecated")`
 #'
-#' Use PM_build instead.
+#' Building is no longer required; models are compiled just-in-time at run time.
 #' @param ... Not used
 #' @author Michael Neely
 #' @keywords internal
 #' @export
 PMbuild <- function(...) {
-  lifecycle::deprecate_warn("2.1.0", "PMbuild()", details = "Use PM_build() to compile Rust.")
+  lifecycle::deprecate_warn("2.1.0", "PMbuild()", details = "Building is no longer required; models are compiled just-in-time at run time.")
 }
 
 
