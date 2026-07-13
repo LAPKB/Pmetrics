@@ -86,6 +86,10 @@ models are no longer compiled to a binary. See the \code{dsl} field.}
 
     \item{\code{dsl}}{The model definition rendered as pharmsol DSL source, used by the
 Rust backend to JIT-compile the model at run time.}
+
+    \item{\code{input_remap}}{A list describing any data input remapping required by
+the DSL model (used when an input drives both a bolus and an infusion
+route). Each element is a list with \code{kind}, \code{from}, and \code{to}.}
   }
   \if{html}{\out{</div>}}
 }
