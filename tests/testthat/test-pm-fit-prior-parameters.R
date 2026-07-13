@@ -15,8 +15,6 @@ make_prior_df <- function(param_names, n = 8, seed = 42) {
 
 run_fit_with_mocked_engine <- function(prior_input) {
   model <- PM_model$new(x = NPex$model, compile = FALSE)
-  model$binary_path <- tempfile(fileext = ".pmx")
-  file.create(model$binary_path)
 
   run_root <- withr::local_tempdir(pattern = "prior-params-")
   prior_file <- file.path(run_root, "input-prior.csv")
@@ -27,7 +25,7 @@ run_fit_with_mocked_engine <- function(prior_input) {
   captured_wd <- NULL
 
   fit_result <- testthat::with_mocked_bindings(
-    fit = function(model_path, data, params, output_path, kind) {
+    fit = function(model_source, data, params, output_path) {
       captured_prior <<- params$prior
       captured_wd <<- getwd()
       dir.create(output_path, recursive = TRUE)
@@ -128,14 +126,12 @@ test_that("PM_model$fit supports numeric prior run and normalizes theta.csv colu
   utils::write.csv(theta_df, file.path(theta_dir, "theta.csv"), row.names = FALSE)
 
   model <- PM_model$new(x = NPex$model, compile = FALSE)
-  model$binary_path <- tempfile(fileext = ".pmx")
-  file.create(model$binary_path)
 
   captured_prior <- NULL
   captured_wd <- NULL
 
   fit_result <- testthat::with_mocked_bindings(
-    fit = function(model_path, data, params, output_path, kind) {
+    fit = function(model_source, data, params, output_path) {
       captured_prior <<- params$prior
       captured_wd <<- getwd()
       dir.create(output_path, recursive = TRUE)

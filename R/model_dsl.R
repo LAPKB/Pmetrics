@@ -497,6 +497,24 @@ dsl_analytical_structure <- function(tem) {
   )
 }
 
+# Derived-parameter aliases mapping Pmetrics library parameter names to the names
+# required by each DSL analytical structure. Each entry is
+# `<dsl_required_name> = <library_parameter_name>`.
+dsl_analytical_param_map <- function(structure) {
+  switch(structure,
+    "two_compartments" = c(kcp = "k12", kpc = "k21"),
+    "two_compartments_cl" = c(vc = "v1", vp = "v2"),
+    "two_compartments_with_absorption" = c(kcp = "k23", kpc = "k32"),
+    "two_compartments_cl_with_absorption" = c(vc = "v2", vp = "v3"),
+    "three_compartments" = c(k10 = "ke"),
+    "three_compartments_cl" = c(vc = "v1"),
+    "three_compartments_with_absorption" = c(
+      k10 = "ke", k12 = "k23", k13 = "k24", k21 = "k32", k31 = "k42"
+    ),
+    character(0)
+  )
+}
+
 # Assemble the full pharmsol DSL text for a PM_model object.
 model_to_dsl <- function(model) {
   arg_list <- model$arg_list
@@ -629,17 +647,38 @@ dsl_analytical <- function(model, header, derived, parameters) {
   out <- dsl_out_block(arg_list$out)
   derived <- c(derived, out$derived)
 
+  # The DSL analytical structures require specific derived-parameter names (e.g.
+  # `kcp`, `kpc`, `vc`). The Pmetrics model-library templates use their own
+  # parameter names, so emit derived aliases mapping the library names to the
+  # names the structure expects.
+  param_aliases <- dsl_analytical_param_map(structure)
+  if (length(param_aliases) > 0) {
+    alias_lines <- paste0(names(param_aliases), " = ", unname(param_aliases))
+    derived <- c(alias_lines, derived)
+  }
+
   # Determine the number of compartments the structure requires.
   n_states <- dsl_analytical_state_count(structure)
   states <- paste0("x", seq_len(n_states))
   n_out <- get_max_assignment_index(arg_list$out, "y")
   outputs <- paste0("outeq_", seq_len(n_out))
 
+  # Declare the dose route. Absorption ("bolus") templates receive a bolus into
+  # the depot (x1); IV templates receive an infusion into the central
+  # compartment (x1).
+  route_line <- if (stringr::str_detect(structure, "absorption")) {
+    "bolus(input_1) -> x1"
+  } else {
+    "infusion(input_1) -> x1"
+  }
+
   lines <- c(
     header,
     sprintf("structure = %s", structure),
     sprintf("states = %s", paste(states, collapse = ", ")),
     sprintf("outputs = %s", paste(outputs, collapse = ", ")),
+    "",
+    route_line,
     "",
     derived,
     if (length(derived) > 0) "" else NULL,

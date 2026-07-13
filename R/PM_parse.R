@@ -38,8 +38,14 @@ write_settings_json <- function(path, param_ranges, error_models, algorithm,
   n_out <- length(error_models)
   models <- vector("list", n_out + 1L)
   models[[1]] <- "None"
-  for (e in error_models) {
-    oq <- as.integer(e$outeq)
+  for (i in seq_along(error_models)) {
+    e <- error_models[[i]]
+    # Fall back to positional order if the error model does not carry a valid
+    # `outeq` (e.g. models created before `outeq` was introduced).
+    oq <- suppressWarnings(as.integer(e$outeq))
+    if (length(oq) != 1 || is.na(oq) || oq < 1) {
+      oq <- i
+    }
     coeff <- as.numeric(e$coeff)
     length(coeff) <- 4 # pad with NA if shorter; then replace NA with 0
     coeff[is.na(coeff)] <- 0

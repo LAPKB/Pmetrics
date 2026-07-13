@@ -689,12 +689,14 @@ PM_model <- R6::R6Class(
         msg <- c(msg, "There must be one error model for each output equation.")
       }
       # Validate the output equation (`outeq`) each error model is declared for.
+      # Error models created before `outeq` existed default to positional order.
       if (!is.null(self$arg_list$err) && length(self$arg_list$err) > 0) {
-        err_outeqs <- purrr::map_dbl(self$arg_list$err, \(e) {
-          if (inherits(e, "PM_err") && !is.null(e$outeq)) as.numeric(e$outeq) else NA_real_
+        err_outeqs <- purrr::imap_dbl(self$arg_list$err, \(e, i) {
+          oq <- if (inherits(e, "PM_err")) suppressWarnings(as.numeric(e$outeq)) else NA_real_
+          if (length(oq) != 1 || is.na(oq)) i else oq
         })
-        if (any(is.na(err_outeqs)) || any(err_outeqs %% 1 != 0) || any(err_outeqs < 1)) {
-          msg <- c(msg, "Each error model must declare a positive integer {.arg outeq} (the output equation it applies to).")
+        if (any(err_outeqs %% 1 != 0) || any(err_outeqs < 1)) {
+          msg <- c(msg, "Each error model {.arg outeq} must be a positive integer (the output equation it applies to).")
         } else {
           if (any(err_outeqs > n_out)) {
             msg <- c(msg, "Error model {.arg outeq} values must be between 1 and the number of outputs ({n_out}).")

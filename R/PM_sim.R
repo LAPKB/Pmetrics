@@ -610,7 +610,11 @@ PM_sim <- R6::R6Class(
           final <- poppar$final$data # PM_final_data
           msg <- c(msg, "Prior obtained from {.arg PM_result}.")
           if (missing(model)) {
-            model <- poppar$model
+            # Reconstruct the model from its definition so it uses the current
+            # class methods. Models stored inside saved `PM_result` objects may
+            # carry outdated methods (R6 serializes method closures), so using
+            # them directly can invoke removed functions.
+            model <- PM_model$new(poppar$model, compile = FALSE)
             msg <- c(msg, "Model obtained from {.arg PM_result}.")
           } else {
             model <- PM_model$new(model, compile = FALSE) # compile later
@@ -738,9 +742,10 @@ PM_sim <- R6::R6Class(
           if (missing(model)) {
             model <- "model.txt"
           } # try the default
-          if (!inherits(model, "PM_model")) {
-            model <- PM_model$new(model, compile = FALSE)
-          } # compile later
+          # Always reconstruct through PM_model$new so the model uses the current
+          # class methods. Models supplied from saved objects may carry outdated
+          # methods (R6 serializes method closures).
+          model <- PM_model$new(model, compile = FALSE) # compile later
           
           if (missing(data)) {
             data <- "data.csv"
@@ -1595,15 +1600,13 @@ PM_sim <- R6::R6Class(
         rename(comp = state_index, nsim = spp_index, amt = state) |>
         mutate(nsim = nsim + 1)
         
-        if (identical(mod$model_list$type, "ODE")) {
-          sim_res <- sim_res |> filter(comp != 0)
-        } else {
-          sim_res <- sim_res |>
+        # The simulation engine reports 0-based output and compartment indices;
+        # normalize both to the 1-based convention used throughout Pmetrics.
+        sim_res <- sim_res |>
           mutate(
             outeq = normalize_engine_index(outeq),
             comp = normalize_engine_index(comp)
           )
-        }
         
         sim_res <- sim_res |>
         arrange(.id, comp, nsim, time, outeq) |>

@@ -1,6 +1,11 @@
 library(Pmetrics)
 
-test_that("PM_load tolerates missing inputs binary and fit recompiles", {
+# The compiled-binary workflow (.pmx files, `binary_path`) has been replaced by
+# just-in-time compilation of the pharmsol DSL. These tests verify the
+# equivalent behaviour: a loaded run has no binary, but the model carries (or
+# regenerates) its DSL source and can be re-fit and re-simulated.
+
+test_that("PM_load works without a compiled binary and the model can be re-fit", {
   local_exa_tmp_cleanup()
   run_root <- tempfile("pmetrics-load-fallback-")
   dir.create(run_root, recursive = TRUE)
@@ -19,20 +24,20 @@ test_that("PM_load tolerates missing inputs binary and fit recompiles", {
 
   expect_true(inherits(run_initial, "PM_result"))
 
+  # No compiled binaries are produced; the DSL source is written instead.
   inputs_dir <- file.path(run_root, "1", "inputs")
-  pmx_files <- list.files(inputs_dir, pattern = "\\.pmx$", full.names = TRUE)
-  expect_gt(length(pmx_files), 0)
+  expect_equal(length(list.files(inputs_dir, pattern = "\\.pmx$")), 0)
+  expect_true(file.exists(file.path(inputs_dir, "model.txt")))
 
-  backup_paths <- paste0(pmx_files, ".bak")
-  file.rename(pmx_files, backup_paths)
+  loaded <- PM_load(path = run_root, run = 1)
+  expect_true(inherits(loaded, "PM_result"))
+  expect_true(is.null(loaded$model$binary_path))
+  # The loaded model carries its DSL source so it can be used without recompiling.
+  expect_true(is.character(loaded$model$dsl))
 
-  loaded_missing <- PM_load(path = run_root, run = 1)
-  expect_true(inherits(loaded_missing, "PM_result"))
-  expect_true(is.null(loaded_missing$model$binary_path))
-
-  run_recompiled <- suppressMessages(
-    loaded_missing$model$fit(
-      data = loaded_missing$data,
+  run_refit <- suppressMessages(
+    loaded$model$fit(
+      data = loaded$data,
       path = run_root,
       run = 2,
       overwrite = TRUE,
@@ -41,11 +46,10 @@ test_that("PM_load tolerates missing inputs binary and fit recompiles", {
     )
   )
 
-  expect_true(is.character(run_recompiled$model$binary_path))
-  expect_true(file.exists(run_recompiled$model$binary_path))
+  expect_true(inherits(run_refit, "PM_result"))
 })
 
-test_that("PM_sim$new recompiles when PM_load has no inputs binary", {
+test_that("PM_sim$new works on a loaded run without a compiled binary", {
   local_exa_tmp_cleanup()
   run_root <- tempfile("pmetrics-sim-fallback-")
   dir.create(run_root, recursive = TRUE)
@@ -64,29 +68,19 @@ test_that("PM_sim$new recompiles when PM_load has no inputs binary", {
 
   expect_true(inherits(run_initial, "PM_result"))
 
-  inputs_dir <- file.path(run_root, "1", "inputs")
-  pmx_files <- list.files(inputs_dir, pattern = "\\.pmx$", full.names = TRUE)
-  expect_gt(length(pmx_files), 0)
+  loaded <- PM_load(path = run_root, run = 1)
+  expect_true(is.null(loaded$model$binary_path))
 
-  file.rename(pmx_files, paste0(pmx_files, ".bak"))
-
-  loaded_missing <- PM_load(path = run_root, run = 1)
-  expect_true(is.null(loaded_missing$model$binary_path))
-
-  sim_from_missing <- suppressMessages(
+  sim_from_loaded <- suppressMessages(
     PM_sim$new(
-      poppar = loaded_missing$final,
-      model = loaded_missing$model,
-      data = loaded_missing$data,
+      poppar = loaded$final,
+      model = loaded$model,
+      data = loaded$data,
       include = 1,
       nsim = 1,
       predInt = 1
     )
   )
 
-  expect_true(inherits(sim_from_missing, "PM_sim"))
-  # PM_model is R6 (reference semantics), so compile() inside PM_sim$new updates
-  # loaded_missing$model$binary_path in place
-  expect_true(is.character(loaded_missing$model$binary_path))
-  expect_true(file.exists(loaded_missing$model$binary_path))
+  expect_true(inherits(sim_from_loaded, "PM_sim"))
 })
