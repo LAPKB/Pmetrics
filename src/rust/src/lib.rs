@@ -3,6 +3,13 @@ mod logs;
 mod settings;
 mod simulation;
 
+use mimalloc::MiMalloc;
+
+/// Use mimalloc as the global allocator for improved allocation performance
+/// across Windows, macOS, and Linux.
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
+
 use anyhow::Result;
 use extendr_api::prelude::*;
 use pmcore::prelude::data::{read_pmetrics, Data};
