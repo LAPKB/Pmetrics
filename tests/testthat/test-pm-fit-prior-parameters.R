@@ -25,7 +25,7 @@ run_fit_with_mocked_engine <- function(prior_input) {
   captured_wd <- NULL
 
   fit_result <- testthat::with_mocked_bindings(
-    fit = function(model_source, data, params, output_path) {
+    fit = function(model_source, data, params, output_path, solver = NULL) {
       captured_prior <<- params$prior
       captured_wd <<- getwd()
       dir.create(output_path, recursive = TRUE)
@@ -131,7 +131,7 @@ test_that("PM_model$fit supports numeric prior run and normalizes theta.csv colu
   captured_wd <- NULL
 
   fit_result <- testthat::with_mocked_bindings(
-    fit = function(model_source, data, params, output_path) {
+    fit = function(model_source, data, params, output_path, solver = NULL) {
       captured_prior <<- params$prior
       captured_wd <<- getwd()
       dir.create(output_path, recursive = TRUE)

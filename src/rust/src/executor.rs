@@ -14,9 +14,35 @@ use std::path::PathBuf;
 /// This replaces the old workflow of compiling a Rust source file into a shared
 /// library with `cargo` and loading it at runtime. The model text is compiled
 /// in-process, so no Rust toolchain is required on the user's machine.
-pub(crate) fn compile_dsl(source: &str) -> Result<CompiledRuntimeModel> {
-    compile_module_source_to_runtime(source, None, RuntimeCompilationTarget::Jit, |_, _| {})
-        .map_err(|e| anyhow::anyhow!("Failed to compile model: {e}"))
+pub(crate) fn compile_dsl(source: &str, solver: Option<&str>) -> Result<CompiledRuntimeModel> {
+    let model =
+        compile_module_source_to_runtime(source, None, RuntimeCompilationTarget::Jit, |_, _| {})
+            .map_err(|e| anyhow::anyhow!("Failed to compile model: {e}"))?;
+
+    let solver = match solver.map(|value| value.trim().to_ascii_uppercase()) {
+        None => None,
+        Some(value) if value.is_empty() => None,
+        Some(value) => Some(match value.as_str() {
+            "BDF" => OdeSolver::Bdf,
+            "TRBDF2" => OdeSolver::Sdirk(SdirkTableau::TrBdf2),
+            "ESDIRK34" => OdeSolver::Sdirk(SdirkTableau::Esdirk34),
+            "TSIT45" => OdeSolver::ExplicitRk(ExplicitRkTableau::Tsit45),
+            _ => return Err(anyhow::anyhow!("Unsupported ODE solver: {value}")),
+        }),
+    };
+
+    match (model, solver) {
+        (CompiledRuntimeModel::Ode(model), Some(solver)) => {
+            Ok(CompiledRuntimeModel::Ode(model.with_solver(solver)))
+        }
+        (CompiledRuntimeModel::Analytical(_), Some(_)) => Err(anyhow::anyhow!(
+            "ODE solver selection requires an ODE model"
+        )),
+        (model, None) => Ok(model),
+        (CompiledRuntimeModel::Sde(_), Some(_)) => Err(anyhow::anyhow!(
+            "ODE solver selection requires an ODE model"
+        )),
+    }
 }
 
 /// The ordered list of parameter names declared by the model.
@@ -30,7 +56,7 @@ fn param_names(model: &CompiledRuntimeModel) -> Vec<String> {
 }
 
 pub(crate) fn model_parameters(source: &str) -> Result<Vec<String>> {
-    Ok(param_names(&compile_dsl(source)?))
+    Ok(param_names(&compile_dsl(source, None)?))
 }
 
 /// Simulate a subject at a support point using an already-compiled model.
@@ -76,8 +102,9 @@ pub(crate) fn fit(
     data: Data,
     params: List,
     output_path: PathBuf,
+    solver: Option<&str>,
 ) -> std::result::Result<(), anyhow::Error> {
-    let model = compile_dsl(source)?;
+    let model = compile_dsl(source, solver)?;
     let names = param_names(&model);
     let output_path_str = output_path
         .to_str()

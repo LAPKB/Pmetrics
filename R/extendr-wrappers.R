@@ -14,29 +14,32 @@ NULL
 #' @param data_path Path to the data file.
 #' @param model_source Model definition written in the pharmsol DSL.
 #' @param spp One support point as a numeric vector.
+#' @param solver Optional ODE solver name.
 #' @return Simulation results.
 #' @keywords internal
 #' @export
-simulate_one <- function(data_path, model_source, spp) .Call(wrap__simulate_one, data_path, model_source, spp)
+simulate_one <- function(data_path, model_source, spp, solver = NULL) .Call(wrap__simulate_one, data_path, model_source, spp, solver)
 
 #' Simulates all subjects in the data set using the given model.
 #' @param data_path Path to the data file.
 #' @param model_source Model definition written in the pharmsol DSL.
 #' @param theta Data frame of support points.
+#' @param solver Optional ODE solver name.
 #' @return Simulation results.
 #' @keywords internal
 #' @export
-simulate_all <- function(data_path, model_source, theta) .Call(wrap__simulate_all, data_path, model_source, theta)
+simulate_all <- function(data_path, model_source, theta, solver = NULL) .Call(wrap__simulate_all, data_path, model_source, theta, solver)
 
 #' Fits the given model to the data using the provided settings.
 #' @param model_source Model definition written in the pharmsol DSL.
 #' @param data Path to the data file.
 #' @param params List of fitting parameters.
 #' @param output_path Path to save the fitting results.
+#' @param solver Optional ODE solver name.
 #' @return Result of the fitting process.
 #' @keywords internal
 #' @export
-fit <- function(model_source, data, params, output_path) .Call(wrap__fit, model_source, data, params, output_path)
+fit <- function(model_source, data, params, output_path, solver = NULL) .Call(wrap__fit, model_source, data, params, output_path, solver)
 
 #' Retrieves the model parameters from the given model.
 #' @param model_source Model definition written in the pharmsol DSL.

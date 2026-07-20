@@ -511,8 +511,6 @@ PM_model <- R6::R6Class(
         if (type != "ODE") {
           msg <- c(msg, "{.arg solver} is only supported for ODE models.")
         } else {
-          # Validate the solver name. The DSL backend currently uses its default
-          # solver, so the value is advisory.
           validate_ode_solver(self$arg_list$solver)
         }
       }
@@ -1382,27 +1380,22 @@ PM_model <- R6::R6Class(
               ranges = ranges, # not important but needed for POSTPROB
               algorithm = algorithm,
               error_models = lapply(self$model_list$err, function(x) x$flatten()),
-              idelta = idelta,
-              tad = tad,
-              max_cycles = cycles, # will be hardcoded in Rust to 0 for POSTPROB
+              idelta = as.numeric(idelta),
+              tad = as.numeric(tad),
+              max_cycles = as.numeric(cycles), # will be hardcoded in Rust to 0 for POSTPROB
               prior = prior, # needs warning if missing and algorithm = POSTPROB
-              points = points, # only relevant for sobol prior
-              seed = seed
+              points = as.numeric(points), # only relevant for sobol prior
+              seed = as.numeric(seed)
             ),
-            output_path = out_path
+            output_path = out_path,
+            solver = self$model_list$solver
           )
         }
-        rlang::try_fetch(
-          if (!is.null(prior_dir) && identical(prior, "prior.csv")) {
-            withr::with_dir(prior_dir, fit_call())
-          } else {
-            fit_call()
-          },
-          error = function(e) {
-            cli::cli_warn("Unable to create {.cls PM_result} object", parent = e)
-            return(NULL)
-          }
-        )
+        if (!is.null(prior_dir) && identical(prior, "prior.csv")) {
+          withr::with_dir(prior_dir, fit_call())
+        } else {
+          fit_call()
+        }
 
         # The Rust backend writes the estimation artifacts (theta.csv,
         # posterior.csv, pred.csv, covs.csv, cycles.csv, result.json). The
@@ -1556,7 +1549,14 @@ PM_model <- R6::R6Class(
       }
       # Apply any input remapping required by the DSL model.
       remap_input_csv(temp_csv, self$input_remap)
-      sim <- simulate_all(temp_csv, self$dsl, theta)
+      sim <- simulate_all(
+        temp_csv,
+        self$dsl,
+        theta,
+        solver = self$model_list$solver
+      )
+      sim$outeq <- sim$outeq + 1L
+      sim$state_index <- sim$state_index + 1L
 
       return(sim)
     },

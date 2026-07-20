@@ -40,6 +40,7 @@ fn simulate_one(
     data_path: &str,
     model_source: &str,
     spp: &[f64],
+    solver: Nullable<String>,
 ) -> Result<Dataframe<SimulationRow>> {
     validate_data_path(data_path)?;
     let data = read_data(data_path)?;
@@ -48,7 +49,8 @@ fn simulate_one(
         .first()
         .ok_or_else(|| anyhow::anyhow!("Data set contains no subjects"))?;
 
-    let model = executor::compile_dsl(model_source)?;
+    let solver = solver.into_option();
+    let model = executor::compile_dsl(model_source, solver.as_deref())?;
     let rows = executor::simulate_model(&model, first_subject, spp, 0)?;
 
     rows.into_dataframe()
@@ -66,6 +68,7 @@ fn simulate_all(
     data_path: &str,
     model_source: &str,
     theta: RMatrix<f64>,
+    solver: Nullable<String>,
 ) -> Result<Dataframe<SimulationRow>> {
     use rayon::prelude::*;
 
@@ -73,7 +76,8 @@ fn simulate_all(
     let theta = parse_theta(theta)?;
     let data = read_data(data_path)?;
     let subjects = data.subjects();
-    let model = executor::compile_dsl(model_source)?;
+    let solver = solver.into_option();
+    let model = executor::compile_dsl(model_source, solver.as_deref())?;
 
     let rows: Vec<_> = theta
         .par_iter()
@@ -102,13 +106,26 @@ fn simulate_all(
 /// @return Result of the fitting process.
 /// @export
 #[extendr]
-pub fn fit(model_source: &str, data: &str, params: List, output_path: &str) -> Result<()> {
+pub fn fit(
+    model_source: &str,
+    data: &str,
+    params: List,
+    output_path: &str,
+    solver: Nullable<String>,
+) -> Result<()> {
     RFormatLayer::reset_global_timer();
     setup_logs()?;
     println!("Initializing model fit...");
     validate_data_path(data)?;
     let data = read_data(data)?;
-    executor::fit(model_source, data, params, output_path.into())?;
+    let solver = solver.into_option();
+    executor::fit(
+        model_source,
+        data,
+        params,
+        output_path.into(),
+        solver.as_deref(),
+    )?;
     Ok(())
 }
 
