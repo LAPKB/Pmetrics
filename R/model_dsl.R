@@ -16,9 +16,9 @@
 #
 # Naming conventions used by the emitter:
 #   * States   `x[i]`            -> `x{i}`          (declared in `states = ...`)
-#   * Outputs  `Y[i]` / `y[i]`   -> `outeq_{i-1}`   (declared in `outputs = ...`)
-#   * Inputs   `b[j]`/`bolus[j]` -> `bolus(input_{j-1}) -> x{k}`   (route)
-#              `rateiv[j]`/`r[j]`-> `infusion(input_{j-1}) -> x{k}`(route)
+#   * Outputs  `Y[i]` / `y[i]`   -> `outeq_{i}`     (declared in `outputs = ...`)
+#   * Inputs   `b[j]`/`bolus[j]` -> `bolus(input_{j}) -> x{k}`    (route)
+#              `rateiv[j]`/`r[j]`-> `infusion(input_{j}) -> x{k}` (route)
 #   * Params / covariates keep their (lower-cased) names.
 #
 # Infusions and boluses are declared as routes into the compartment in which they
