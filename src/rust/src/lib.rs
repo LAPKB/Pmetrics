@@ -153,6 +153,74 @@ fn model_parameters(model_source: &str) -> Result<Vec<String>> {
     executor::model_parameters(model_source)
 }
 
+#[extendr]
+fn model_metadata(model_source: &str, solver: Nullable<String>) -> Result<List> {
+    let solver = solver.into_option();
+    let model = executor::compile_dsl(model_source, solver.as_deref())?;
+    let info = model.info();
+
+    let mut covariates = info.covariates.clone();
+    covariates.sort_by_key(|covariate| covariate.index);
+    let covariate_names = covariates
+        .iter()
+        .map(|covariate| covariate.name.clone())
+        .collect::<Vec<_>>();
+    let covariate_interpolation = covariates
+        .iter()
+        .map(|covariate| {
+            covariate
+                .interpolation
+                .map(|value| format!("{value:?}").to_lowercase())
+                .unwrap_or_default()
+        })
+        .collect::<Vec<_>>();
+
+    let mut states = info.states.clone();
+    states.sort_by_key(|state| state.offset);
+    let state_names = states
+        .into_iter()
+        .map(|state| state.name)
+        .collect::<Vec<_>>();
+
+    let mut routes = info.routes.clone();
+    routes.sort_by_key(|route| route.declaration_index);
+    let route_names = routes
+        .iter()
+        .map(|route| route.name.clone())
+        .collect::<Vec<_>>();
+    let route_kinds = routes
+        .iter()
+        .map(|route| {
+            route
+                .kind
+                .map(|value| format!("{value:?}").to_lowercase())
+                .unwrap_or_default()
+        })
+        .collect::<Vec<_>>();
+
+    let mut outputs = info.outputs.clone();
+    outputs.sort_by_key(|output| output.index);
+    let output_names = outputs
+        .into_iter()
+        .map(|output| output.name)
+        .collect::<Vec<_>>();
+
+    Ok(list!(
+        name = info.name.clone(),
+        kind = info.kind.keyword(),
+        parameters = info.parameters.clone(),
+        covariates = covariate_names,
+        covariate_interpolation = covariate_interpolation,
+        states = state_names,
+        routes = route_names,
+        route_kinds = route_kinds,
+        outputs = output_names,
+        state_len = info.state_len as i32,
+        route_len = info.route_len as i32,
+        output_len = info.output_len as i32
+    ))
+}
+
 /// Initialize the tracing subscriber with the custom R formatter
 /// @keywords internal
 /// @export
@@ -180,6 +248,7 @@ extendr_module! {
     fn simulate_all;
     fn fit;
     fn model_parameters;
+    fn model_metadata;
     fn setup_logs;
 }
 

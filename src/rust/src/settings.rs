@@ -51,7 +51,12 @@ fn get_real_or(map: &HashMap<&str, Robj>, key: &str, default: f64) -> AnyResult<
     Ok(get_field(map, key)?.as_real().unwrap_or(default))
 }
 
-pub(crate) fn settings(settings: List, params: &[String], output_path: &str) -> Result<RunConfig> {
+pub(crate) fn settings(
+    settings: List,
+    params: &[String],
+    outputs: &[String],
+    output_path: &str,
+) -> Result<RunConfig> {
     let settings: HashMap<&str, Robj> = HashMap::try_from(&settings)
         .map_err(|e| anyhow!("Failed to convert settings list to map: {}", e))?;
 
@@ -76,10 +81,7 @@ pub(crate) fn settings(settings: List, params: &[String], output_path: &str) -> 
 
     let error_models_raw = get_list(&settings, "error_models")?;
     // Each error model declares the 1-based output equation (`outeq`) it applies
-    // to. Error models are stored by output *slot* (declaration order, 0-based),
-    // so the declared `outeq` maps to slot `outeq - 1`. The model DSL declares
-    // outputs with 1-based numeric labels (`outeq_1`, ...) to match the Pmetrics
-    // data `OUTEQ` column, and the first declared output occupies slot 0.
+    // to. The number selects an output by declaration order.
     let mut ems = AssayErrorModels::new();
 
     for (i, (_, em)) in error_models_raw.iter().enumerate() {
@@ -100,6 +102,14 @@ pub(crate) fn settings(settings: List, params: &[String], output_path: &str) -> 
             bail!("error_models[{}].outeq must be 1 or greater", i + 1);
         }
         let outeq = outeq_1based - 1;
+        let output = outputs.get(outeq).ok_or_else(|| {
+            anyhow!(
+                "error_models[{}].outeq is {}, but the model has {} outputs",
+                i + 1,
+                outeq_1based,
+                outputs.len()
+            )
+        })?;
 
         let gamlam = get_field(&em, "initial")?.as_real().ok_or_else(|| {
             anyhow!(
@@ -154,7 +164,7 @@ pub(crate) fn settings(settings: List, params: &[String], output_path: &str) -> 
             }
             err => bail!("Invalid Error type: {}", err),
         };
-        ems = ems.add(outeq, model)?;
+        ems = ems.add(output.clone(), model)?;
     }
 
     let prior = get_str(&settings, "prior")?;

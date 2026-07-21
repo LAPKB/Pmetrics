@@ -55,6 +55,12 @@ fn param_names(model: &CompiledRuntimeModel) -> Vec<String> {
         .collect()
 }
 
+fn output_names(model: &CompiledRuntimeModel) -> Vec<String> {
+    let mut outputs = model.info().outputs.clone();
+    outputs.sort_by_key(|output| output.index);
+    outputs.into_iter().map(|output| output.name).collect()
+}
+
 pub(crate) fn model_parameters(source: &str) -> Result<Vec<String>> {
     Ok(param_names(&compile_dsl(source, None)?))
 }
@@ -106,10 +112,11 @@ pub(crate) fn fit(
 ) -> std::result::Result<(), anyhow::Error> {
     let model = compile_dsl(source, solver)?;
     let names = param_names(&model);
+    let outputs = output_names(&model);
     let output_path_str = output_path
         .to_str()
         .ok_or_else(|| anyhow::anyhow!("Output path contains invalid UTF-8: {:?}", output_path))?;
-    let config = settings(params, &names, output_path_str)?;
+    let config = settings(params, &names, &outputs, output_path_str)?;
 
     match model {
         CompiledRuntimeModel::Ode(eq) => run_fit(eq, data, config),

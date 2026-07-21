@@ -48,6 +48,8 @@ fit <- function(model_source, data, params, output_path, solver = NULL) .Call(wr
 #' @export
 model_parameters <- function(model_source) .Call(wrap__model_parameters, model_source)
 
+model_metadata <- function(model_source, solver = NULL) .Call(wrap__model_metadata, model_source, solver)
+
 #' Initialize the tracing subscriber with the custom R formatter
 #' @keywords internal
 #' @export

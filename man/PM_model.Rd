@@ -20,6 +20,25 @@ directly in R, or by reading a model text file. When reading a model text file,
 the list code is generated and copied to the clipboard for pasting in to scripts.
 Model files will be deprecated in future versions of Pmetrics.
 
+Use \code{PM_model$from_dsl()} to create a model directly from pharmsol DSL text.
+The DSL defines the model structure. The \code{pri} and \code{err} arguments provide
+the Pmetrics parameter ranges and error models.
+
+\section{Create a model from DSL}{
+\preformatted{PM_model$from_dsl(
+  dsl,
+  pri,
+  err,
+  input_map = NULL,
+  solver = NULL,
+  quiet = FALSE
+)}
+
+\code{dsl} is one character string containing the model source. \code{input_map} is an
+optional named integer vector that maps DSL route names to Pmetrics \code{INPUT}
+values. Routes named \code{input_1}, \code{input_2}, and so on are mapped automatically.
+}
+
 \strong{Some notes on the example at the end of this help page:}
 \itemize{
 \item It's a complete example of a three compartment model with delayed absorption.

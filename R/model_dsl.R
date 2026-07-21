@@ -442,12 +442,7 @@ dsl_finalize_routes <- function(routes) {
   list(routes = final_routes, remap = remap)
 }
 
-# Rewrite the `INPUT` column of a Pmetrics CSV to apply a route input remap.
-#
-# `remap` is the table returned by [dsl_finalize_routes]. For each infusion
-# remap `{from, to}`, dose rows with a positive duration (`DUR > 0`) and
-# `INPUT == from` are rewritten to `INPUT == to`, so that infusion events bind to
-# the separately-labelled infusion route in the DSL model.
+# Rewrite Pmetrics data labels to match DSL route and output names.
 remap_input_csv <- function(path, remap) {
   if (length(remap) == 0 || !file.exists(path)) {
     return(invisible(path))
@@ -461,16 +456,32 @@ remap_input_csv <- function(path, remap) {
   cols <- toupper(names(df))
   dur_col <- match("DUR", cols)
   input_col <- match("INPUT", cols)
-  if (is.na(dur_col) || is.na(input_col)) {
-    cli::cli_abort("Unable to apply input remap: {.field DUR}/{.field INPUT} columns not found.")
+  outeq_col <- match("OUTEQ", cols)
+
+  has_routes <- any(vapply(remap, function(x) x$kind %in% c("bolus", "infusion"), logical(1)))
+  has_outputs <- any(vapply(remap, function(x) identical(x$kind, "output"), logical(1)))
+  if (has_routes && (is.na(dur_col) || is.na(input_col))) {
+    cli::cli_abort("Unable to apply route mapping: {.field DUR}/{.field INPUT} columns not found.")
+  }
+  if (has_outputs && is.na(outeq_col)) {
+    cli::cli_abort("Unable to apply output mapping: {.field OUTEQ} column not found.")
   }
 
-  dur <- suppressWarnings(as.numeric(df[[dur_col]]))
-  input <- df[[input_col]]
+  if (has_routes) {
+    dur <- suppressWarnings(as.numeric(df[[dur_col]]))
+    input <- df[[input_col]]
+  }
+
   for (m in remap) {
     if (identical(m$kind, "infusion")) {
       sel <- !is.na(dur) & dur > 0 & input == as.character(m$from)
       df[[input_col]][sel] <- as.character(m$to)
+    } else if (identical(m$kind, "bolus")) {
+      sel <- (is.na(dur) | dur <= 0) & input == as.character(m$from)
+      df[[input_col]][sel] <- as.character(m$to)
+    } else if (identical(m$kind, "output")) {
+      sel <- df[[outeq_col]] == as.character(m$from)
+      df[[outeq_col]][sel] <- as.character(m$to)
     }
   }
 
