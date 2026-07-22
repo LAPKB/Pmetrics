@@ -2,7 +2,7 @@ use crate::settings::{settings, RunConfig};
 use crate::simulation::SimulationRow;
 
 use extendr_api::List;
-use pharmsol::dsl::{
+use pmcore::prelude::pharmsol::dsl::{
     compile_module_source_to_runtime, CompiledRuntimeModel, RuntimeCompilationTarget,
 };
 use pmcore::prelude::{simulator::Prediction, *};
