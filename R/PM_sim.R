@@ -1043,7 +1043,14 @@ PM_sim <- R6::R6Class(
         
         # PARAMETER LIMITS --------------------------------------------------------
         if (all(is.null(limits))) { # limits are omitted altogether
-          parLimits <- tibble::tibble(par = 1:npar, min = rep(-Inf, npar), max = rep(Inf, npar))
+          # use the parameter names (not positional indices) so that limits can
+          # be matched to parameters by name in generate_multimodal_samples()
+          par_names <- if (useTheta) {
+            setdiff(names(poppar$popPoints), "prob")
+          } else {
+            names(poppar$popMean)
+          }
+          parLimits <- tibble::tibble(par = par_names, min = rep(-Inf, npar), max = rep(Inf, npar))
         } else if (!any(is.na(limits)) & is.vector(limits)) { # no limit is NA and specified as vector of length 1 or 2
           # so first check to make sure poppar is a PM_final_data object
           if (!inherits(poppar, "PM_final_data")) {
