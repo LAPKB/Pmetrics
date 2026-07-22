@@ -23,21 +23,23 @@ Model files will be deprecated in future versions of Pmetrics.
 Use \code{PM_model$from_dsl()} to create a model directly from pharmsol DSL text.
 The DSL defines the model structure. The \code{pri} and \code{err} arguments provide
 the Pmetrics parameter ranges and error models.
-
+}
 \section{Create a model from DSL}{
-\preformatted{PM_model$from_dsl(
+
+
+\if{html}{\out{<div class="sourceCode">}}\preformatted{PM_model$from_dsl(
   dsl,
   pri,
   err,
   input_map = NULL,
   solver = NULL,
   quiet = FALSE
-)}
+)
+}\if{html}{\out{</div>}}
 
 \code{dsl} is one character string containing the model source. \code{input_map} is an
 optional named integer vector that maps DSL route names to Pmetrics \code{INPUT}
 values. Routes named \code{input_1}, \code{input_2}, and so on are mapped automatically.
-}
 
 \strong{Some notes on the example at the end of this help page:}
 \itemize{
@@ -48,6 +50,7 @@ a \code{dontrun} block to avoid automatic compilation.
 \code{eqn = function(){three_comp_bolus}}.
 }
 }
+
 \examples{
 
 mod_list <- list(
@@ -106,9 +109,8 @@ models are no longer compiled to a binary. See the \code{dsl} field.}
     \item{\code{dsl}}{The model definition rendered as pharmsol DSL source, used by the
 Rust backend to JIT-compile the model at run time.}
 
-    \item{\code{input_remap}}{A list describing any data input remapping required by
-the DSL model (used when an input drives both a bolus and an infusion
-route). Each element is a list with \code{kind}, \code{from}, and \code{to}.}
+    \item{\code{input_remap}}{A list describing data label changes required by the
+DSL model. Each element is a list with \code{kind}, \code{from}, and \code{to}.}
   }
   \if{html}{\out{</div>}}
 }
@@ -184,7 +186,9 @@ Again, all R code will be converted to lowercase prior to translation into Rust.
   out = NULL,
   err = NULL,
   solver = NULL,
-  ...
+  ...,
+  .dsl = NULL,
+  .input_map = NULL
 )}
     \if{html}{\out{</div>}}
   }
@@ -458,6 +462,8 @@ for 3 outputs with the same error model:
 Supported values are "BDF", "TRBDF2", "ESDIRK34", and "TSIT45".
 This is ignored for analytical library models.}
       \item{\code{...}}{Not currently used.}
+      \item{\code{.dsl}}{Internal DSL source used by \code{PM_model$from_dsl()}.}
+      \item{\code{.input_map}}{Internal route mapping used by \code{PM_model$from_dsl()}.}
     }
     \if{html}{\out{</div>}}
   }

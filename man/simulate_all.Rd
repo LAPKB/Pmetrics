@@ -4,7 +4,7 @@
 \alias{simulate_all}
 \title{Simulates all subjects in the data set using the given model.}
 \usage{
-simulate_all(data_path, model_source, theta)
+simulate_all(data_path, model_source, theta, solver = NULL)
 }
 \arguments{
 \item{data_path}{Path to the data file.}
@@ -12,6 +12,8 @@ simulate_all(data_path, model_source, theta)
 \item{model_source}{Model definition written in the pharmsol DSL.}
 
 \item{theta}{Data frame of support points.}
+
+\item{solver}{Optional ODE solver name.}
 }
 \value{
 Simulation results.

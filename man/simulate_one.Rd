@@ -4,7 +4,7 @@
 \alias{simulate_one}
 \title{Simulates the first subject in the data set using the given model.}
 \usage{
-simulate_one(data_path, model_source, spp)
+simulate_one(data_path, model_source, spp, solver = NULL)
 }
 \arguments{
 \item{data_path}{Path to the data file.}
@@ -12,6 +12,8 @@ simulate_one(data_path, model_source, spp)
 \item{model_source}{Model definition written in the pharmsol DSL.}
 
 \item{spp}{One support point as a numeric vector.}
+
+\item{solver}{Optional ODE solver name.}
 }
 \value{
 Simulation results.

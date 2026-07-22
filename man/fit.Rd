@@ -4,7 +4,7 @@
 \alias{fit}
 \title{Fits the given model to the data using the provided settings.}
 \usage{
-fit(model_source, data, params, output_path)
+fit(model_source, data, params, output_path, solver = NULL)
 }
 \arguments{
 \item{model_source}{Model definition written in the pharmsol DSL.}
@@ -14,6 +14,8 @@ fit(model_source, data, params, output_path)
 \item{params}{List of fitting parameters.}
 
 \item{output_path}{Path to save the fitting results.}
+
+\item{solver}{Optional ODE solver name.}
 }
 \value{
 Result of the fitting process.
