@@ -2,23 +2,23 @@
 % Please edit documentation in R/extendr-wrappers.R
 \name{simulate_one}
 \alias{simulate_one}
-\title{Simulates the first subject in the data set using the model at the given path.}
+\title{Simulates the first subject in the data set using the given model.}
 \usage{
-simulate_one(data_path, model_path, spp, kind)
+simulate_one(data_path, model_source, spp, solver = NULL)
 }
 \arguments{
 \item{data_path}{Path to the data file.}
 
-\item{model_path}{Path to the compiled model file.}
+\item{model_source}{Model definition written in the pharmsol DSL.}
 
-\item{spp}{One support point as a numeric vector with probabiltity.}
+\item{spp}{One support point as a numeric vector.}
 
-\item{kind}{Kind of model, which can either be "ODE" or "Analytical".}
+\item{solver}{Optional ODE solver name.}
 }
 \value{
 Simulation results.
 }
 \description{
-Simulates the first subject in the data set using the model at the given path.
+Simulates the first subject in the data set using the given model.
 }
 \keyword{internal}

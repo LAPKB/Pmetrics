@@ -10,74 +10,45 @@
 #' @useDynLib Pmetrics, .registration = TRUE
 NULL
 
-#' Simulates the first subject in the data set using the model at the given path.
+#' Simulates the first subject in the data set using the given model.
 #' @param data_path Path to the data file.
-#' @param model_path Path to the compiled model file.
-#' @param spp One support point as a numeric vector with probabiltity.
-#' @param kind Kind of model, which can either be "ODE" or "Analytical".
+#' @param model_source Model definition written in the pharmsol DSL.
+#' @param spp One support point as a numeric vector.
+#' @param solver Optional ODE solver name.
 #' @return Simulation results.
 #' @keywords internal
 #' @export
-simulate_one <- function(data_path, model_path, spp, kind) .Call(wrap__simulate_one, data_path, model_path, spp, kind)
+simulate_one <- function(data_path, model_source, spp, solver = NULL) .Call(wrap__simulate_one, data_path, model_source, spp, solver)
 
-#' Simulates all subjects in the data set using the model at the given path.
+#' Simulates all subjects in the data set using the given model.
 #' @param data_path Path to the data file.
-#' @param model_path Path to the compiled model file.
+#' @param model_source Model definition written in the pharmsol DSL.
 #' @param theta Data frame of support points.
-#' @param kind Kind of model, which can either be "ODE" or "Analytical".
+#' @param solver Optional ODE solver name.
 #' @return Simulation results.
 #' @keywords internal
 #' @export
-simulate_all <- function(data_path, model_path, theta, kind) .Call(wrap__simulate_all, data_path, model_path, theta, kind)
+simulate_all <- function(data_path, model_source, theta, solver = NULL) .Call(wrap__simulate_all, data_path, model_source, theta, solver)
 
-#' Compiles the text representation of a model into a binary file.
-#' @param model_path Path to the model file.
-#' @param output_path Path to save the compiled model.
-#' @param params List of model parameters.
-#' @param template_path Path to the template directory.
-#' @param kind Kind of model, which can either be "ODE" or "Analytical".
-#' @return Result of the compilation process.
-#' @keywords internal
-#' @export
-compile_model <- function(model_path, output_path, params, template_path, kind) .Call(wrap__compile_model, model_path, output_path, params, template_path, kind)
-
-#' Dummy function to cache compilation artifacts.
-#' @param template_path Path to the template directory.
-#' @return Path to the build directory.
-#' @keywords internal
-#' @export
-dummy_compile <- function(template_path) .Call(wrap__dummy_compile, template_path)
-
-#' Checks if Cargo is installed on the system.
-#' @return TRUE if Cargo is installed, FALSE otherwise.
-#' @keywords internal
-#' @export
-is_cargo_installed <- function() .Call(wrap__is_cargo_installed)
-
-#' Fits the model at the given path to the data at the given path using the provided parameters.
-#' @param model_path Path to the compiled model file.
+#' Fits the given model to the data using the provided settings.
+#' @param model_source Model definition written in the pharmsol DSL.
 #' @param data Path to the data file.
 #' @param params List of fitting parameters.
 #' @param output_path Path to save the fitting results.
-#' @param kind Kind of model, which can either be "ODE" or "Analytical".
+#' @param solver Optional ODE solver name.
 #' @return Result of the fitting process.
 #' @keywords internal
 #' @export
-fit <- function(model_path, data, params, output_path, kind) .Call(wrap__fit, model_path, data, params, output_path, kind)
+fit <- function(model_source, data, params, output_path, solver = NULL) .Call(wrap__fit, model_source, data, params, output_path, solver)
 
-#' Retrieves the model parameters from the compiled model at the given path.
-#' @param model_path Path to the compiled model file.
-#' @param kind Kind of model, which can either be "ODE" or "Analytical".
+#' Retrieves the model parameters from the given model.
+#' @param model_source Model definition written in the pharmsol DSL.
 #' @return List of model parameters.
 #' @keywords internal
 #' @export
-model_parameters <- function(model_path, kind) .Call(wrap__model_parameters, model_path, kind)
+model_parameters <- function(model_source) .Call(wrap__model_parameters, model_source)
 
-#' Retrieves the temporary path used for building models.
-#' @return Temporary build path.
-#' @keywords internal
-#' @export
-temporary_path <- function() .Call(wrap__temporary_path)
+model_metadata <- function(model_source, solver = NULL) .Call(wrap__model_metadata, model_source, solver)
 
 #' Initialize the tracing subscriber with the custom R formatter
 #' @keywords internal

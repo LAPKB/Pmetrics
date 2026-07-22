@@ -39,16 +39,13 @@ test_that("Model can be reconstructed from an existing PM_model", {
 
 test_that("Current workflow: PM_model + PM_data + PM_model$fit", {
   skip_on_cran()
-  skip_if_not(
-    is_cargo_installed(),
-    message = "Cargo is required to compile and run PM_model$fit tests."
-  )
   local_exa_tmp_cleanup()
 
   mod1 <- build_example_ode_model(compile = TRUE)
   ex_data <- PM_data$new(data = "ex.csv", quiet = TRUE)
 
-  expect_true(file.exists(mod1$binary_path))
+  # Compiling now renders the model to the pharmsol DSL (no binary is produced).
+  expect_true(is.character(mod1$dsl))
 
   run_path <- withr::local_tempdir()
   ex_res <- mod1$fit(

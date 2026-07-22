@@ -142,9 +142,6 @@ test_that("PM_pta methods: summary and plot", {
 })
 
 test_that("PM_opt methods: print and plot", {
-  if (!is_cargo_installed()) {
-    skip("Cargo is not installed in this environment")
-  }
 
   opt_obj <- tryCatch(
     PM_opt$new(

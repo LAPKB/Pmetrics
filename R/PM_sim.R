@@ -610,7 +610,11 @@ PM_sim <- R6::R6Class(
           final <- poppar$final$data # PM_final_data
           msg <- c(msg, "Prior obtained from {.arg PM_result}.")
           if (missing(model)) {
-            model <- poppar$model
+            # Reconstruct the model from its definition so it uses the current
+            # class methods. Models stored inside saved `PM_result` objects may
+            # carry outdated methods (R6 serializes method closures), so using
+            # them directly can invoke removed functions.
+            model <- PM_model$new(poppar$model, compile = FALSE)
             msg <- c(msg, "Model obtained from {.arg PM_result}.")
           } else {
             model <- PM_model$new(model, compile = FALSE) # compile later
@@ -738,9 +742,10 @@ PM_sim <- R6::R6Class(
           if (missing(model)) {
             model <- "model.txt"
           } # try the default
-          if (!inherits(model, "PM_model")) {
-            model <- PM_model$new(model, compile = FALSE)
-          } # compile later
+          # Always reconstruct through PM_model$new so the model uses the current
+          # class methods. Models supplied from saved objects may carry outdated
+          # methods (R6 serializes method closures).
+          model <- PM_model$new(model, compile = FALSE) # compile later
           
           if (missing(data)) {
             data <- "data.csv"
@@ -754,7 +759,7 @@ PM_sim <- R6::R6Class(
         # set default  values
         
         if (is.null(split)) {
-          if (inherits(poppar, "NPAG")) {
+          if (inherits(final, "NPAG") || inherits(poppar, "NPAG")) {
             split <- TRUE
           } else {
             split <- FALSE
@@ -830,11 +835,11 @@ PM_sim <- R6::R6Class(
           include = include, exclude = exclude, nsim = nsim,
           predInt = predInt,
           covariate = covariate, usePost = usePost,
-          seed = seed, ode = ode,
+          seed = seed,
           noise = noise,
-          makecsv = makecsv, outname = outname, clean = clean,
+          makecsv = makecsv,
           quiet = quiet, useTheta = useTheta,
-          nocheck = nocheck, overwrite = overwrite, msg = msg
+          msg = msg
         )
         
         return(self)
@@ -947,10 +952,10 @@ PM_sim <- R6::R6Class(
     SIMrun = function(poppar, limits, model, data, split,
       include, exclude, nsim, predInt,
       covariate, usePost,
-      seed, ode,
+      seed,
       noise,
-      makecsv, outname, clean, quiet, useTheta,
-      nocheck, overwrite, msg) {
+      makecsv, quiet, useTheta,
+      msg) {
         # DATA PROCESSING AND VALIDATION ------------------------------------------
         
         
@@ -996,9 +1001,9 @@ PM_sim <- R6::R6Class(
           cli::cli_abort(c("x" = "No subjects to simulate."))
         }
         
-        if (template_numeqt != mod_numeqt) {
-          cli::cli_abort(c("x" = "Number of output equations in model and data do not match."))
-        }
+        # if (template_numeqt != mod_numeqt) {
+        #   cli::cli_abort(c("x" = "Number of output equations in model and data do not match."))
+        # }
         
         # if (!identical(sort(template_covnames), sort(mod_list$cov))) {
         #   cli::cli_abort(c("x" = "Covariate names in model and data do not match."))
@@ -1038,7 +1043,14 @@ PM_sim <- R6::R6Class(
         
         # PARAMETER LIMITS --------------------------------------------------------
         if (all(is.null(limits))) { # limits are omitted altogether
-          parLimits <- tibble::tibble(par = 1:npar, min = rep(-Inf, npar), max = rep(Inf, npar))
+          # use the parameter names (not positional indices) so that limits can
+          # be matched to parameters by name in generate_multimodal_samples()
+          par_names <- if (useTheta) {
+            setdiff(names(poppar$popPoints), "prob")
+          } else {
+            names(poppar$popMean)
+          }
+          parLimits <- tibble::tibble(par = par_names, min = rep(-Inf, npar), max = rep(Inf, npar))
         } else if (!any(is.na(limits)) & is.vector(limits)) { # no limit is NA and specified as vector of length 1 or 2
           # so first check to make sure poppar is a PM_final_data object
           if (!inherits(poppar, "PM_final_data")) {
@@ -1309,16 +1321,39 @@ PM_sim <- R6::R6Class(
           poppar$popCov <- covMat
           
           
-          # if split is true, then remake (augment) popPoints by adding mean covariate prior to each point
+          # if split is true, augment popPoints with one covariate draw per support
+          # point sampled from the covariate distribution. Using a constant mean
+          # for every point makes the covariate columns have zero variance,
+          # producing a singular covariance matrix and a very high rejection rate.
           if (split) {
-            add_vector_columns <- function(df, v) {
-              v_df <- as_tibble(as.list(v)) # convert named vector to one-row tibble
-              df |> bind_cols(v_df[rep(1, nrow(df)), ]) # replicate the row to match df
+            ndist_split <- nrow(poppar$popPoints)
+            cov_cov_mat <- covMat[(npar + 1):(npar + nsimcov), (npar + 1):(npar + nsimcov), drop = FALSE]
+            cov_mean_vec <- covMean[1:nsimcov]
+            cov_lower <- covLimits$min
+            cov_upper <- covLimits$max
+            
+            # draw one covariate set per support point, rejecting out-of-bounds draws
+            cov_point_samples <- matrix(NA_real_, nrow = ndist_split, ncol = nsimcov,
+                                        dimnames = list(NULL, names(cov_mean_vec)))
+            for (.sp in seq_len(ndist_split)) {
+              for (.attempt in seq_len(100)) {
+                draw <- tryCatch(
+                  suppressWarnings(MASS::mvrnorm(1, mu = cov_mean_vec, Sigma = cov_cov_mat)),
+                  error = function(e) cov_mean_vec
+                )
+                if (!any(draw < cov_lower) && !any(draw > cov_upper)) {
+                  cov_point_samples[.sp, ] <- draw
+                  break
+                }
+                if (.attempt == 100) cov_point_samples[.sp, ] <- cov_mean_vec # fallback to mean
+              }
             }
             
-            poppar$popPoints <- poppar$popPoints |>
-            add_vector_columns(covMean) |>
-            select(-prob, everything(), prob)
+            poppar$popPoints <- dplyr::bind_cols(
+              poppar$popPoints |> dplyr::select(-prob),
+              tibble::as_tibble(cov_point_samples),
+              poppar$popPoints |> dplyr::select(prob)
+            )
           }
         } else {
           simWithCov <- FALSE
@@ -1493,7 +1528,7 @@ PM_sim <- R6::R6Class(
         
         
         # FINAL RETURN ------------------------------------------------------------
-        if (length(msg) > 0) {
+        if (!quiet && length(msg) > 0) {
           cli::cli_alert_info("Simulation messages:")
           purrr::walk(msg, \(m) cli::cli_bullets(c("*" = m)))
           return(invisible(NULL))
@@ -1595,15 +1630,13 @@ PM_sim <- R6::R6Class(
         rename(comp = state_index, nsim = spp_index, amt = state) |>
         mutate(nsim = nsim + 1)
         
-        if (identical(mod$model_list$type, "ODE")) {
-          sim_res <- sim_res |> filter(comp != 0)
-        } else {
-          sim_res <- sim_res |>
+        # The simulation engine reports 0-based output and compartment indices;
+        # normalize both to the 1-based convention used throughout Pmetrics.
+        sim_res <- sim_res |>
           mutate(
             outeq = normalize_engine_index(outeq),
             comp = normalize_engine_index(comp)
           )
-        }
         
         sim_res <- sim_res |>
         arrange(.id, comp, nsim, time, outeq) |>
@@ -2600,45 +2633,59 @@ generate_multimodal_samples <- function(num_samples, weights, means, cov_matrix,
   samples_per_mode <- stats::rmultinom(1, size = num_samples, prob = weights)
   
   # function used later to check if any parameters are outside their limits
-  outside_check <- function(x) {
-    any(x - limits$min < 0) | # any parameter < lower limit
-    any(x - limits$max > 0) # any parameter > upper limit
+  outside_check <- function(x, lower, upper) {
+    x <- unlist(x, use.names = TRUE)
+    any(x < lower[names(x)]) || any(x > upper[names(x)])
   }
+  
+  lower_bounds <- stats::setNames(limits$min, limits$par)
+  upper_bounds <- stats::setNames(limits$max, limits$par)
   
   # Generate samples bounded by limits for each mode
   all_samples <- map(1:length(weights), function(j) {
-    samples <- tryCatch(suppressWarnings(MASS::mvrnorm(n = samples_per_mode[j, ], mu = as.matrix(means[[j]], nrow = 1), Sigma = cov_matrix)), error = function(e) NULL)
+    mu_j <- unlist(means[[j]], use.names = TRUE)
+    par_names <- names(mu_j)
+    lower_j <- lower_bounds[par_names]
+    upper_j <- upper_bounds[par_names]
+    n_j <- as.integer(samples_per_mode[j, ])
     
-    # replace any outside their limits
-    if (!is.null(samples)) {
-      if (!is.matrix(samples)) {
-        samples <- as.data.frame(as.list(samples))
-        names(samples) <- names(means[[j]])
+    keep_list <- vector("list", n_j)
+    discard_list <- list()
+    
+    for (k in seq_len(n_j)) {
+      cycle_num <- 0
+      repeat {
+        draw <- tryCatch(
+          suppressWarnings(MASS::mvrnorm(
+            n = 1,
+            mu = as.numeric(mu_j),
+            Sigma = cov_matrix
+          )),
+          error = function(e) NULL
+        )
+        cycle_num <- cycle_num + 1
+        if (!is.null(draw)) {
+          names(draw) <- par_names
+          if (!outside_check(draw, lower_j, upper_j)) {
+            keep_list[[k]] <- as.data.frame(as.list(unname(draw)))
+            names(keep_list[[k]]) <- par_names
+            break
+          }
+          discard_list[[length(discard_list) + 1]] <- as.data.frame(as.list(unname(draw)))
+          names(discard_list[[length(discard_list)]]) <- par_names
+        }
+        if (cycle_num >= 500) {
+          cli::cli_abort(c(
+            "x" = "Unable to generate simulated parameters within limits after repeated attempts.",
+            "i" = "The constrained draw failed for mode {.val {j}} and row {.val {k}}."
+          ))
+        }
       }
-      
-      discarded <- NULL
-      if (!all(is.null(limits))) {
-        for (k in 1:nrow(samples)) {
-          cycle_num <- 0
-          outside <- outside_check(samples[k, ])
-          while (outside && cycle_num < 20) {
-            new_sample <- tryCatch(suppressWarnings(MASS::mvrnorm(n = 1, mu = as.matrix(means[[j]], nrow = 1), Sigma = cov_matrix)), error = function(e) NULL)
-            cycle_num <- cycle_num + 1
-            outside <- outside_check(new_sample)
-          }
-          if (outside) {
-            cli::cli_abort(c("x" = "Unable to generate simulated parameters within limits after 20 attempts per row."))
-          }
-          if (cycle_num > 0) {
-            discarded <- rbind(discarded, samples[k, ])
-            samples[k, ] <- new_sample
-          }
-        } # end loop to fix thetas out of range
-      }
-      
-      
-      list(keep = samples, discard = discarded) # the final set of samples for this mode
     }
+    
+    samples <- dplyr::bind_rows(keep_list)
+    discarded <- if (length(discard_list) > 0) dplyr::bind_rows(discard_list) else NULL
+    list(keep = samples, discard = discarded)
   })
   
   

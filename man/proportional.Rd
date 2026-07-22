@@ -4,7 +4,7 @@
 \alias{proportional}
 \title{Proportional error model}
 \usage{
-proportional(initial, coeff, fixed = FALSE)
+proportional(initial, coeff, fixed = FALSE, outeq = 1)
 }
 \arguments{
 \item{initial}{Initial value for gamma}
@@ -12,6 +12,10 @@ proportional(initial, coeff, fixed = FALSE)
 \item{coeff}{Vector of coefficients defining assay error polynomial}
 
 \item{fixed}{Estimate if \code{FALSE} (default).}
+
+\item{outeq}{The output equation number (1-based) this error model applies to.
+Defaults to \code{1}. This must match the output index used in the model's \code{out}
+block, e.g. \code{outeq = 2} corresponds to \code{Y[2]}.}
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}

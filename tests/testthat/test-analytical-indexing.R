@@ -1,10 +1,5 @@
 testthat::skip_on_cran()
 
-testthat::skip_if_not(
-  is_cargo_installed(),
-  message = "Cargo is required to compile analytical indexing tests."
-)
-
 one_comp_iv <- NULL
 
 build_one_comp_iv_analytical_model <- function(compile = FALSE) {
@@ -37,22 +32,17 @@ make_one_comp_iv_fit_data <- function() {
   )
 }
 
-test_that("Analytical generation preserves 1-based indices and padded sizes", {
+test_that("Analytical generation preserves 1-based indices", {
   mod <- build_one_comp_iv_analytical_model(compile = FALSE)
-  rust_file <- tempfile(fileext = ".rs")
-  on.exit(unlink(rust_file), add = TRUE)
-
-  mod$.__enclos_env__$private$write_model_to_rust(rust_file)
-  rust <- paste(readLines(rust_file), collapse = "\n")
+  mod$compile(quiet = TRUE)
+  dsl <- mod$dsl
 
   testthat::expect_equal(mod$model_list$n_out, 1)
-  testthat::expect_equal(mod$model_list$n_out_slots, 2)
-  testthat::expect_match(rust, "equation::Analytical::new")
-  testthat::expect_match(rust, "\\.with_nstates\\(2\\)")
-  testthat::expect_match(rust, "\\.with_ndrugs\\(2\\)")
-  testthat::expect_match(rust, "\\.with_nout\\(2\\)")
-  testthat::expect_match(rust, "y\\[1\\]")
-  testthat::expect_false(grepl("y[0]", rust, fixed = TRUE))
+  testthat::expect_match(dsl, "kind = analytical")
+  testthat::expect_match(dsl, "structure = one_compartment")
+  testthat::expect_match(dsl, "out\\(outeq_1\\)")
+  # Outputs are 1-based to match the Pmetrics data OUTEQ column.
+  testthat::expect_false(grepl("outeq_0", dsl, fixed = TRUE))
 })
 
 test_that("Analytical fit runs one NPAG cycle with y[1] and one error model", {

@@ -2,19 +2,17 @@
 % Please edit documentation in R/extendr-wrappers.R
 \name{model_parameters}
 \alias{model_parameters}
-\title{Retrieves the model parameters from the compiled model at the given path.}
+\title{Retrieves the model parameters from the given model.}
 \usage{
-model_parameters(model_path, kind)
+model_parameters(model_source)
 }
 \arguments{
-\item{model_path}{Path to the compiled model file.}
-
-\item{kind}{Kind of model, which can either be "ODE" or "Analytical".}
+\item{model_source}{Model definition written in the pharmsol DSL.}
 }
 \value{
 List of model parameters.
 }
 \description{
-Retrieves the model parameters from the compiled model at the given path.
+Retrieves the model parameters from the given model.
 }
 \keyword{internal}

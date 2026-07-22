@@ -6,14 +6,18 @@
 \usage{
 PM_build()
 }
+\value{
+Invisibly returns \code{NULL}.
+}
 \description{
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
 
-Compile Rust source code used by Pmetrics.
+Building Pmetrics is no longer required. Models are now written in the
+pharmsol DSL and compiled just-in-time by the bundled Rust backend, so there
+is no separate compilation step and no Rust toolchain is needed.
 
-\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-
-Compile Rust source code used by Pmetrics.
+This function is retained so that existing scripts continue to run; it simply
+informs the user that no action is necessary.
 }
 \author{
 Michael Neely and Julian Otalvaro

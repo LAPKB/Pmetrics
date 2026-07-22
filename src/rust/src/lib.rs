@@ -1,170 +1,131 @@
-// mod build;
-
 mod executor;
 mod logs;
 mod settings;
 mod simulation;
 
+use mimalloc::MiMalloc;
+
+/// Use mimalloc as the global allocator for improved allocation performance
+/// across Windows, macOS, and Linux.
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
+
 use anyhow::Result;
 use extendr_api::prelude::*;
-use pmcore::prelude::{
-    data::{read_pmetrics, Data},
-    pharmsol::exa::build,
-    Analytical, ODE,
-};
+use pmcore::prelude::data::{read_pmetrics, Data};
 use simulation::SimulationRow;
-use std::process::Command;
 use tracing_subscriber::layer::SubscriberExt;
 
 use crate::logs::RFormatLayer;
 
-fn validate_paths(data_path: &str, model_path: &str) -> Result<()> {
+fn validate_data_path(data_path: &str) -> Result<()> {
     if !std::path::Path::new(data_path).exists() {
         return Err(anyhow::anyhow!("Data path does not exist: {}", data_path));
-    }
-    if !std::path::Path::new(model_path).exists() {
-        return Err(anyhow::anyhow!("Model path does not exist: {}", model_path));
     }
     Ok(())
 }
 
-fn read_pmetrics_for_kind(data_path: &str, kind: &str) -> Result<Data> {
-    match kind {
-        "ode" | "analytical" => {}
-        err => return Err(anyhow::format_err!("{} is not a supported model type", err)),
-    }
-
+fn read_data(data_path: &str) -> Result<Data> {
     read_pmetrics(data_path).map_err(|err| anyhow::format_err!("Failed to parse data: {}", err))
 }
 
-/// Simulates the first subject in the data set using the model at the given path.
+/// Simulates the first subject in the data set using the given model.
 /// @param data_path Path to the data file.
-/// @param model_path Path to the compiled model file.
-/// @param spp One support point as a numeric vector with probabiltity.
-/// @param kind Kind of model, which can either be "ODE" or "Analytical".
+/// @param model_source Model definition written in the pharmsol DSL.
+/// @param spp One support point as a numeric vector.
 /// @return Simulation results.
-///@export
+/// @export
 #[extendr]
 fn simulate_one(
     data_path: &str,
-    model_path: &str,
+    model_source: &str,
     spp: &[f64],
-    kind: &str,
+    solver: Nullable<String>,
 ) -> Result<Dataframe<SimulationRow>> {
-    validate_paths(data_path, model_path)?;
-    let data = read_pmetrics_for_kind(data_path, kind)?;
+    validate_data_path(data_path)?;
+    let data = read_data(data_path)?;
     let subjects = data.subjects();
     let first_subject = subjects
         .first()
         .ok_or_else(|| anyhow::anyhow!("Data set contains no subjects"))?;
-    let rows = match kind {
-        "ode" => executor::simulate::<ODE>(model_path.into(), first_subject, &spp.to_vec(), 0)?,
-        "analytical" => {
-            executor::simulate::<Analytical>(model_path.into(), first_subject, &spp.to_vec(), 0)?
-        }
-        _ => {
-            return Err(anyhow::format_err!(
-                "{} is not a supported model type",
-                kind
-            ));
-        }
-    };
+
+    let solver = solver.into_option();
+    let model = executor::compile_dsl(model_source, solver.as_deref())?;
+    let rows = executor::simulate_model(&model, first_subject, spp, 0)?;
+
     rows.into_dataframe()
         .map_err(|e| anyhow::anyhow!("Failed to build data frame: {}", e))
 }
 
-/// Simulates all subjects in the data set using the model at the given path.
+/// Simulates all subjects in the data set using the given model.
 /// @param data_path Path to the data file.
-/// @param model_path Path to the compiled model file.
+/// @param model_source Model definition written in the pharmsol DSL.
 /// @param theta Data frame of support points.
-/// @param kind Kind of model, which can either be "ODE" or "Analytical".
 /// @return Simulation results.
 /// @export
 #[extendr]
 fn simulate_all(
     data_path: &str,
-    model_path: &str,
+    model_source: &str,
     theta: RMatrix<f64>,
-    kind: &str,
+    solver: Nullable<String>,
 ) -> Result<Dataframe<SimulationRow>> {
     use rayon::prelude::*;
 
-    validate_paths(data_path, model_path)?;
+    validate_data_path(data_path)?;
     let theta = parse_theta(theta)?;
-    let data = read_pmetrics_for_kind(data_path, kind)?;
+    let data = read_data(data_path)?;
     let subjects = data.subjects();
+    let solver = solver.into_option();
+    let model = executor::compile_dsl(model_source, solver.as_deref())?;
 
-    let rows: Vec<_> = match kind {
-        "ode" => theta
-            .par_iter()
-            .enumerate()
-            .map(|(i, spp)| {
-                subjects
-                    .par_iter()
-                    .map(|subject| executor::simulate::<ODE>(model_path.into(), subject, spp, i))
-                    .collect::<Result<Vec<_>>>()
-                    .map(|v| v.into_iter().flatten().collect::<Vec<_>>())
-            })
-            .collect::<Result<Vec<_>>>()?
-            .into_iter()
-            .flatten()
-            .collect(),
-        "analytical" => theta
-            .par_iter()
-            .enumerate()
-            .map(|(i, spp)| {
-                subjects
-                    .par_iter()
-                    .map(|subject| {
-                        executor::simulate::<Analytical>(model_path.into(), subject, spp, i)
-                    })
-                    .collect::<Result<Vec<_>>>()
-                    .map(|v| v.into_iter().flatten().collect::<Vec<_>>())
-            })
-            .collect::<Result<Vec<_>>>()?
-            .into_iter()
-            .flatten()
-            .collect(),
-        _ => {
-            return Err(anyhow::format_err!(
-                "{} is not a supported model type",
-                kind
-            ));
-        }
-    };
+    let rows: Vec<_> = theta
+        .par_iter()
+        .enumerate()
+        .map(|(i, spp)| {
+            subjects
+                .par_iter()
+                .map(|subject| executor::simulate_model(&model, subject, spp, i))
+                .collect::<Result<Vec<_>>>()
+                .map(|v| v.into_iter().flatten().collect::<Vec<_>>())
+        })
+        .collect::<Result<Vec<_>>>()?
+        .into_iter()
+        .flatten()
+        .collect();
 
     rows.into_dataframe()
         .map_err(|e| anyhow::anyhow!("Failed to build data frame: {}", e))
 }
 
-/// Fits the model at the given path to the data at the given path using the provided parameters.
-/// @param model_path Path to the compiled model file.
+/// Fits the given model to the data using the provided settings.
+/// @param model_source Model definition written in the pharmsol DSL.
 /// @param data Path to the data file.
 /// @param params List of fitting parameters.
 /// @param output_path Path to save the fitting results.
-/// @param kind Kind of model, which can either be "ODE" or "Analytical".
 /// @return Result of the fitting process.
 /// @export
 #[extendr]
 pub fn fit(
-    model_path: &str,
+    model_source: &str,
     data: &str,
     params: List,
     output_path: &str,
-    kind: &str,
+    solver: Nullable<String>,
 ) -> Result<()> {
     RFormatLayer::reset_global_timer();
     setup_logs()?;
     println!("Initializing model fit...");
-    validate_paths(data, model_path)?;
-    let data = read_pmetrics_for_kind(data, kind)?;
-    match kind {
-        "ode" => executor::fit::<ODE>(model_path.into(), data, params, output_path.into())?,
-        "analytical" => {
-            executor::fit::<Analytical>(model_path.into(), data, params, output_path.into())?
-        }
-        err => return Err(anyhow::format_err!("{} is not a supported model type", err)),
-    };
+    validate_data_path(data)?;
+    let data = read_data(data)?;
+    let solver = solver.into_option();
+    executor::fit(
+        model_source,
+        data,
+        params,
+        output_path.into(),
+        solver.as_deref(),
+    )?;
     Ok(())
 }
 
@@ -183,91 +144,81 @@ fn parse_theta(matrix: RMatrix<f64>) -> Result<Vec<Vec<f64>>> {
     Ok(theta)
 }
 
-/// Compiles the text representation of a model into a binary file.
-/// @param model_path Path to the model file.
-/// @param output_path Path to save the compiled model.
-/// @param params List of model parameters.
-/// @param template_path Path to the template directory.
-/// @param kind Kind of model, which can either be "ODE" or "Analytical".
-/// @return Result of the compilation process.
-/// @export
-#[extendr]
-fn compile_model(
-    model_path: &str,
-    output_path: &str,
-    params: Strings,
-    template_path: &str,
-    kind: &str,
-) -> Result<()> {
-    let params: Vec<String> = params.iter().map(|x| x.to_string()).collect();
-    let model_txt = std::fs::read_to_string(model_path)
-        .map_err(|e| anyhow::anyhow!("Failed to read model file '{}': {}", model_path, e))?;
-    let template_path = std::path::PathBuf::from(template_path);
-    match kind {
-        "ode" => build::compile::<ODE>(
-            model_txt,
-            Some(output_path.into()),
-            params.to_vec(),
-            template_path,
-            |_key, val| {
-                print!("{}", val);
-            },
-        )?,
-        "analytical" => build::compile::<Analytical>(
-            model_txt,
-            Some(output_path.into()),
-            params.to_vec(),
-            template_path,
-            |_key, val| {
-                print!("{}", val);
-            },
-        )?,
-        err => return Err(anyhow::format_err!("{} is not a supported model type", err)),
-    };
-
-    Ok(())
-}
-
-/// Dummy function to cache compilation artifacts.
-/// @param template_path Path to the template directory.
-/// @return Path to the build directory.
-/// @export
-#[extendr]
-fn dummy_compile(template_path: &str) -> Result<String> {
-    let template_path = std::path::PathBuf::from(template_path);
-    let build_path = build::dummy_compile(template_path, |_key, val| {
-        print!("{}", val);
-    })?;
-    Ok(build_path)
-}
-/// Checks if Cargo is installed on the system.
-/// @return TRUE if Cargo is installed, FALSE otherwise.
-/// @export
-#[extendr]
-fn is_cargo_installed() -> bool {
-    Command::new("cargo").arg("--version").output().is_ok()
-}
-
-/// Retrieves the model parameters from the compiled model at the given path.
-/// @param model_path Path to the compiled model file.
-/// @param kind Kind of model, which can either be "ODE" or "Analytical".
+/// Retrieves the model parameters from the given model.
+/// @param model_source Model definition written in the pharmsol DSL.
 /// @return List of model parameters.
 /// @export
 #[extendr]
-fn model_parameters(model_path: &str, kind: &str) -> Result<Vec<String>> {
-    match kind {
-        "ode" => Ok(executor::model_parameters::<ODE>(model_path.into())),
-        "analytical" => Ok(executor::model_parameters::<Analytical>(model_path.into())),
-        err => Err(anyhow::format_err!("{} is not a supported model type", err)),
-    }
+fn model_parameters(model_source: &str) -> Result<Vec<String>> {
+    executor::model_parameters(model_source)
 }
 
-/// Retrieves the temporary path used for building models.
-/// @return Temporary build path.
-/// @export
 #[extendr]
-fn temporary_path() -> String {
-    build::temp_path().to_string_lossy().to_string()
+fn model_metadata(model_source: &str, solver: Nullable<String>) -> Result<List> {
+    let solver = solver.into_option();
+    let model = executor::compile_dsl(model_source, solver.as_deref())?;
+    let info = model.info();
+
+    let mut covariates = info.covariates.clone();
+    covariates.sort_by_key(|covariate| covariate.index);
+    let covariate_names = covariates
+        .iter()
+        .map(|covariate| covariate.name.clone())
+        .collect::<Vec<_>>();
+    let covariate_interpolation = covariates
+        .iter()
+        .map(|covariate| {
+            covariate
+                .interpolation
+                .map(|value| format!("{value:?}").to_lowercase())
+                .unwrap_or_default()
+        })
+        .collect::<Vec<_>>();
+
+    let mut states = info.states.clone();
+    states.sort_by_key(|state| state.offset);
+    let state_names = states
+        .into_iter()
+        .map(|state| state.name)
+        .collect::<Vec<_>>();
+
+    let mut routes = info.routes.clone();
+    routes.sort_by_key(|route| route.declaration_index);
+    let route_names = routes
+        .iter()
+        .map(|route| route.name.clone())
+        .collect::<Vec<_>>();
+    let route_kinds = routes
+        .iter()
+        .map(|route| {
+            route
+                .kind
+                .map(|value| format!("{value:?}").to_lowercase())
+                .unwrap_or_default()
+        })
+        .collect::<Vec<_>>();
+
+    let mut outputs = info.outputs.clone();
+    outputs.sort_by_key(|output| output.index);
+    let output_names = outputs
+        .into_iter()
+        .map(|output| output.name)
+        .collect::<Vec<_>>();
+
+    Ok(list!(
+        name = info.name.clone(),
+        kind = info.kind.keyword(),
+        parameters = info.parameters.clone(),
+        covariates = covariate_names,
+        covariate_interpolation = covariate_interpolation,
+        states = state_names,
+        routes = route_names,
+        route_kinds = route_kinds,
+        outputs = output_names,
+        state_len = info.state_len as i32,
+        route_len = info.route_len as i32,
+        output_len = info.output_len as i32
+    ))
 }
 
 /// Initialize the tracing subscriber with the custom R formatter
@@ -295,14 +246,10 @@ extendr_module! {
     mod Pmetrics;
     fn simulate_one;
     fn simulate_all;
-    fn compile_model;
-    fn dummy_compile;
-    fn is_cargo_installed;
     fn fit;
     fn model_parameters;
-    fn temporary_path;
+    fn model_metadata;
     fn setup_logs;
-
 }
 
 // To generate the exported function in R, run the following command:

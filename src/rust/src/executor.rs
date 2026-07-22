@@ -1,55 +1,138 @@
-use crate::settings::settings;
-use extendr_api::List;
+use crate::settings::{settings, RunConfig};
+use crate::simulation::SimulationRow;
 
-use pmcore::prelude::{pharmsol::exa::load::load, simulator::SubjectPredictions, Predictions, *};
+use extendr_api::List;
+use pmcore::prelude::pharmsol::dsl::{
+    compile_module_source_to_runtime, CompiledRuntimeModel, RuntimeCompilationTarget,
+};
+use pmcore::prelude::{simulator::Prediction, *};
 
 use std::path::PathBuf;
 
-use crate::simulation::SimulationRow;
+/// Parse and JIT-compile a model written in the pharmsol DSL.
+///
+/// This replaces the old workflow of compiling a Rust source file into a shared
+/// library with `cargo` and loading it at runtime. The model text is compiled
+/// in-process, so no Rust toolchain is required on the user's machine.
+pub(crate) fn compile_dsl(source: &str, solver: Option<&str>) -> Result<CompiledRuntimeModel> {
+    let model =
+        compile_module_source_to_runtime(source, None, RuntimeCompilationTarget::Jit, |_, _| {})
+            .map_err(|e| anyhow::anyhow!("Failed to compile model: {e}"))?;
 
-pub(crate) fn model_parameters<E: Equation>(model_path: PathBuf) -> Vec<String> {
-    let (_lib, (_ode, meta)) = unsafe { load::<E>(model_path) };
-    meta.get_params().clone()
+    let solver = match solver.map(|value| value.trim().to_ascii_uppercase()) {
+        None => None,
+        Some(value) if value.is_empty() => None,
+        Some(value) => Some(match value.as_str() {
+            "BDF" => OdeSolver::Bdf,
+            "TRBDF2" => OdeSolver::Sdirk(SdirkTableau::TrBdf2),
+            "ESDIRK34" => OdeSolver::Sdirk(SdirkTableau::Esdirk34),
+            "TSIT45" => OdeSolver::ExplicitRk(ExplicitRkTableau::Tsit45),
+            _ => return Err(anyhow::anyhow!("Unsupported ODE solver: {value}")),
+        }),
+    };
+
+    match (model, solver) {
+        (CompiledRuntimeModel::Ode(model), Some(solver)) => {
+            Ok(CompiledRuntimeModel::Ode(model.with_solver(solver)))
+        }
+        (CompiledRuntimeModel::Analytical(_), Some(_)) => Err(anyhow::anyhow!(
+            "ODE solver selection requires an ODE model"
+        )),
+        (model, None) => Ok(model),
+        (CompiledRuntimeModel::Sde(_), Some(_)) => Err(anyhow::anyhow!(
+            "ODE solver selection requires an ODE model"
+        )),
+    }
 }
 
-pub(crate) fn simulate<E: Equation + Send>(
-    model_path: PathBuf,
+/// The ordered list of parameter names declared by the model.
+fn param_names(model: &CompiledRuntimeModel) -> Vec<String> {
+    model
+        .metadata()
+        .parameters()
+        .iter()
+        .map(|p| p.name().to_string())
+        .collect()
+}
+
+fn output_names(model: &CompiledRuntimeModel) -> Vec<String> {
+    let mut outputs = model.info().outputs.clone();
+    outputs.sort_by_key(|output| output.index);
+    outputs.into_iter().map(|output| output.name).collect()
+}
+
+pub(crate) fn model_parameters(source: &str) -> Result<Vec<String>> {
+    Ok(param_names(&compile_dsl(source, None)?))
+}
+
+/// Simulate a subject at a support point using an already-compiled model.
+pub(crate) fn simulate_model(
+    model: &CompiledRuntimeModel,
     subject: &Subject,
-    support_point: &Vec<f64>,
+    support_point: &[f64],
     spp_index: usize,
 ) -> Result<Vec<SimulationRow>> {
-    let (_lib, (model, meta)) = unsafe { load::<E>(model_path) };
-    if meta.get_params().len() != support_point.len() {
+    let nparams = model.metadata().parameters().len();
+    if nparams != support_point.len() {
         return Err(anyhow::anyhow!(
             "Support point has {} values but model expects {} parameters",
             support_point.len(),
-            meta.get_params().len()
+            nparams
         ));
     }
-    let predictions: SubjectPredictions = model
-        .estimate_predictions(subject, support_point)?
-        .get_predictions()
-        .into();
-    Ok(SimulationRow::from_subject_predictions(
+
+    let predictions: Vec<Prediction> = match model {
+        CompiledRuntimeModel::Ode(eq) => eq
+            .estimate_predictions_dense(subject, support_point)?
+            .get_predictions(),
+        CompiledRuntimeModel::Analytical(eq) => eq
+            .estimate_predictions_dense(subject, support_point)?
+            .get_predictions(),
+        CompiledRuntimeModel::Sde(_) => {
+            return Err(anyhow::anyhow!(
+                "SDE models are not supported for simulation"
+            ))
+        }
+    };
+
+    Ok(SimulationRow::from_predictions(
         predictions,
         subject.id(),
         spp_index,
     ))
 }
 
-pub(crate) fn fit<E: Equation + Send>(
-    model_path: PathBuf,
+/// Fit a model (given as DSL source) to the data and write the output artifacts.
+pub(crate) fn fit(
+    source: &str,
     data: Data,
     params: List,
     output_path: PathBuf,
+    solver: Option<&str>,
 ) -> std::result::Result<(), anyhow::Error> {
-    let (_lib, (eq, meta)) = unsafe { load::<E>(model_path) };
+    let model = compile_dsl(source, solver)?;
+    let names = param_names(&model);
+    let outputs = output_names(&model);
     let output_path_str = output_path
         .to_str()
         .ok_or_else(|| anyhow::anyhow!("Output path contains invalid UTF-8: {:?}", output_path))?;
-    let settings = settings(params, meta.get_params(), output_path_str)?;
-    let mut algorithm = dispatch_algorithm(settings, eq, data)?;
-    let mut result = algorithm.fit()?;
-    result.write_outputs()?;
+    let config = settings(params, &names, &outputs, output_path_str)?;
+
+    match model {
+        CompiledRuntimeModel::Ode(eq) => run_fit(eq, data, config),
+        CompiledRuntimeModel::Analytical(eq) => run_fit(eq, data, config),
+        CompiledRuntimeModel::Sde(_) => {
+            Err(anyhow::anyhow!("SDE models are not supported for fitting"))
+        }
+    }
+}
+
+fn run_fit<E>(eq: E, data: Data, config: RunConfig) -> Result<()>
+where
+    E: Equation + EquationMetadataSource + Send + 'static,
+{
+    let result = EstimationProblem::nonparametric(eq, data, config.prior, config.error_models)?
+        .fit_with(config.algorithm)?;
+    result.write_outputs(&config.output_path, config.idelta, config.tad)?;
     Ok(())
 }

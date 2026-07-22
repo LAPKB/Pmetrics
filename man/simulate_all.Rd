@@ -2,23 +2,23 @@
 % Please edit documentation in R/extendr-wrappers.R
 \name{simulate_all}
 \alias{simulate_all}
-\title{Simulates all subjects in the data set using the model at the given path.}
+\title{Simulates all subjects in the data set using the given model.}
 \usage{
-simulate_all(data_path, model_path, theta, kind)
+simulate_all(data_path, model_source, theta, solver = NULL)
 }
 \arguments{
 \item{data_path}{Path to the data file.}
 
-\item{model_path}{Path to the compiled model file.}
+\item{model_source}{Model definition written in the pharmsol DSL.}
 
 \item{theta}{Data frame of support points.}
 
-\item{kind}{Kind of model, which can either be "ODE" or "Analytical".}
+\item{solver}{Optional ODE solver name.}
 }
 \value{
 Simulation results.
 }
 \description{
-Simulates all subjects in the data set using the model at the given path.
+Simulates all subjects in the data set using the given model.
 }
 \keyword{internal}

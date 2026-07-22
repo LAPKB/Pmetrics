@@ -28,12 +28,17 @@ only a suggested donation.
 You can download and install [R](https://r-project.org) from the
 [Comprehensive R Archive Network (CRAN)](https://cran.r-project.org/).
 
-### Rust (required)
+### Rust (optional, for source installations only)
 
-The simulation engine for `Pmetrics` is written in `Rust`, which is
-required to fit models.
+The computational engine for `Pmetrics` is written in `Rust` and is
+bundled with the package. Models are compiled just-in-time at run time,
+so **Rust is not required to fit or simulate models**. Pre-built
+binaries are available on
+[r-universe](https://lapkb.r-universe.dev/Pmetrics) for Windows, MacOS,
+and Linux, so most users do not need Rust at all.
 
-Follow the instructions on the [Rust
+You only need a Rust toolchain if you build `Pmetrics` from source. In
+that case, follow the instructions on the [Rust
 website](https://www.rust-lang.org/tools/install) to install Rust on
 your system.
 
@@ -61,10 +66,10 @@ With this setup, you can install or update Pmetrics using the standard
 command `install.packages("Pmetrics")` without specifying the repository
 each time.
 
-Note: if you are a Windows user and experience an error while installing
-Pmetrics that mentions `Linker.exe`. That means the Rust toolchain is
-misconfigured to your system. To fix it, open a terminal (CMD or
-PowerShell) and execute the following two lines:
+Note: if you are a Windows user building from source and experience an
+error while installing Pmetrics that mentions `Linker.exe`. That means
+the Rust toolchain is misconfigured to your system. To fix it, open a
+terminal (CMD or PowerShell) and execute the following two lines:
 
 ``` bash
 rustup toolchain install stable-x86_64-pc-windows-gnu
