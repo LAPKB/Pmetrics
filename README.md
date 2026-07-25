@@ -37,8 +37,10 @@ binaries are available on
 [r-universe](https://lapkb.r-universe.dev/Pmetrics) for Windows, MacOS,
 and Linux, so most users do not need Rust at all.
 
-You only need a Rust toolchain if you build `Pmetrics` from source. In
-that case, follow the instructions on the [Rust
+You only need a Rust toolchain if you build `Pmetrics` from source. For
+example, if you are installing from github rather than
+[r-universe](https://lapkb.r-universe.dev/Pmetrics). In that case,
+follow the instructions on the [Rust
 website](https://www.rust-lang.org/tools/install) to install Rust on
 your system.
 
