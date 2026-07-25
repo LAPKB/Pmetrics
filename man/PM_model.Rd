@@ -440,24 +440,17 @@ could be defined as:
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{err = list(
   proportional(2, c(0.1, 0.15, 0, 0)),
-  proportional(3, c(0.05, 0.1, 0, 0)),
-  additive(1, c(0.2, 0.25, 0, 0))
+  proportional(3, c(0.05, 0.1, 0, 0), outeq = 2),
+  additive(1, c(0.2, 0.25, 0, 0), outeq = 3)
 )
 }\if{html}{\out{</div>}}
 
 This defines the first two output equations to have proportional error
 with initial values of 2 and 3, respectively, and the third output equation
 to have additive error with initial value of 1. Each output is measured by
-a different assay with different error characteristics.
-
-If all the output equations have the same error model, you can
-simply use a single error model embedded in \code{\link[=replicate]{replicate()}} , e.g.,
-for 3 outputs with the same error model:
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{err = list(
-  replicate(3, proportional(2, c(0.1, 0.15, 0, 0)))
-)
-}\if{html}{\out{</div>}}}
+a different assay with different error characteristics. Note that you must specify
+which outeq corresponds to the values, with a default \code{outeq = 1}, which is not required
+if there is only one output equation.}
       \item{\code{solver}}{Optional ODE solver for user-defined ODE models.
 Supported values are "BDF", "TRBDF2", "ESDIRK34", and "TSIT45".
 This is ignored for analytical library models.}
