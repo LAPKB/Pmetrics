@@ -53,6 +53,31 @@ getPMoptions <- function(opt, warn = TRUE, quiet = FALSE) {
   }
 }
 
+.pmoptions_theme <- function() {
+  bslib::bs_theme(
+    bootswatch = "flatly",
+    primary = "#2c3e50",
+    font_scale = 0.8,
+    "card-border-radius" = "0.5rem"
+  )
+}
+
+.pmoptions_dropdown_css <- function() {
+  paste(
+    ".pmetrics-options-app .bslib-card,",
+    ".pmetrics-options-app .bslib-card > .card-body {",
+    "  overflow: visible;",
+    "}",
+    ".pmetrics-options-app .selectize-control {",
+    "  position: relative;",
+    "}",
+    ".pmetrics-options-app .selectize-dropdown {",
+    "  z-index: 1060;",
+    "}",
+    sep = "\n"
+  )
+}
+
 #' @title Set Pmetrics User Options
 #' @description
 #' `r lifecycle::badge("stable")`
@@ -157,14 +182,13 @@ setPMoptions <- function(launch.app = TRUE) {
     app <- shiny::shinyApp(
     # --- UI ---
     ui = bslib::page_fluid(
-      theme = bslib::bs_theme(
-        bootswatch = "flatly",
-        primary = "#2c3e50",
-        "card-border-radius" = "0.5rem"
-      ),
+      theme = .pmoptions_theme(),
       title = "Pmetrics Options",
+      shiny::tags$head(
+        shiny::tags$style(shiny::HTML(.pmoptions_dropdown_css()))
+      ),
       shiny::tags$div(
-        class = "container-fluid p-4",
+        class = "pmetrics-options-app container-fluid p-4",
 
         # Header
         shiny::tags$div(

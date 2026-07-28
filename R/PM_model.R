@@ -1020,8 +1020,9 @@ PM_model <- R6::R6Class(
     #    #' will speed up the first cycle by 0.8 * 8 = 6.4-fold.  Subsequent cycles approach about 50\%, e.g. 4-fold increase on an 8-core
     #    #' machine.  Overall speed up for a run will therefore depend on the number of cycles run and the number of cores.
     #' @param algorithm The algorithm to use for the run.  Default is "NPAG" for the **N**on-**P**arametric **A**daptive **G**rid. Alternatives: "NPOD".
-    #' @param report If missing, the default Pmetrics report template as specified in [getPMoptions]
-    #' is used. Otherwise can be "plotly", "ggplot", or "none".
+    #' @param report If missing, the default Pmetrics report mode specified by
+    #' [getPMoptions] is used. Otherwise, choose `"app"`, `"plotly"`,
+    #' `"ggplot"`, or `"none"`.
     #' @param quiet Boolean operator to suppress messages during the run.  Default is `FALSE`.
     #' @return A successful run will result in creation of a new folder in the working
     #' directory with the results inside the folder.
@@ -1471,7 +1472,8 @@ PM_model <- R6::R6Class(
 
         PM_parse(path = out_path)
         res <- PM_load(path = normalizePath(out_path), file = "PMout.Rdata")
-        if (report != "none") {
+        if (!identical(report, "none")) {
+          resolved_report <- .resolve_report_mode(report, warn = FALSE)$mode
           valid_report <- tryCatch(
             PM_report(res, path = normalizePath(out_path), template = report, quiet = TRUE),
             error = function(e) {
@@ -1479,11 +1481,21 @@ PM_model <- R6::R6Class(
             }
           )
           if (valid_report == 1) {
-            msg <- c(msg, "Reporting app launched.")
+            if (identical(resolved_report, "app")) {
+              msg <- c(msg, "Reporting app launched.")
+            } else {
+              msg <- c(msg, "Report generated.")
+            }
             # if(tolower(algorithm) == "postprob") {this_alg <- "map"} else {this_alg <- "fit"}
             msg <- c(msg, "If assigned to a variable, e.g. {.code run{run} <-}, results are available in {.code run{run}}.")
+          } else if (valid_report == 0) {
+            msg <- c(msg, "No report generated because the saved default report mode is {.val none}.")
           } else {
-            msg <- c(msg, "Reporting app could not be launched.")
+            if (identical(resolved_report, "app")) {
+              msg <- c(msg, "Reporting app could not be launched.")
+            } else {
+              msg <- c(msg, "Report could not be generated.")
+            }
           }
         }
 
