@@ -606,8 +606,9 @@ time = \code{tad} after the last dose}
       \item{\code{seed}}{Seed used if \code{prior = "sobol"}. Ignored otherwise.}
       \item{\code{overwrite}}{Boolean operator to overwrite existing run result folders.  Default is \code{FALSE}.}
       \item{\code{algorithm}}{The algorithm to use for the run.  Default is "NPAG" for the \strong{N}on-\strong{P}arametric \strong{A}daptive \strong{G}rid. Alternatives: "NPOD".}
-      \item{\code{report}}{If missing, the default Pmetrics report template as specified in \link{getPMoptions}
-is used. Otherwise can be "plotly", "ggplot", or "none".}
+      \item{\code{report}}{If missing, the default Pmetrics report mode specified by
+\link{getPMoptions} is used. Otherwise, choose \code{"app"}, \code{"plotly"},
+\code{"ggplot"}, or \code{"none"}.}
       \item{\code{quiet}}{Boolean operator to suppress messages during the run.  Default is \code{FALSE}.}
       \item{\code{intern}}{Run NPAG in the R console without a batch script.  Default is TRUE.}
     }
