@@ -69,6 +69,7 @@ Imports:
     withr
 Additional_repositories: https://lapkb.r-universe.dev
 Suggests:
+    covr,
     devtools,
     mclust,
     PmetricsReports,
