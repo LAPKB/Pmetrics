@@ -1,0 +1,16 @@
+coverage:
+  status:
+    project:
+      default:
+        # Allow small drops in overall coverage without failing the check
+        threshold: 1%
+    patch:
+      default:
+        # Require new/changed lines in a PR to be reasonably covered
+        target: 70%
+        threshold: 5%
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false
