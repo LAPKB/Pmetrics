@@ -22,6 +22,21 @@
   requireNamespace(package, quietly = TRUE)
 }
 
+# Environment used to track state for the current R session, e.g. whether
+# a given warning has already been shown once this session.
+.report_session_state <- new.env(parent = emptyenv())
+
+#' @param key Character string uniquely identifying the warning.
+#' @param message A named character vector passed to `cli::cli_warn()`.
+#' @noRd
+.report_warn_once <- function(key, message) {
+  if (isTRUE(.report_session_state[[key]])) {
+    return(invisible(NULL))
+  }
+  .report_session_state[[key]] <- TRUE
+  cli::cli_warn(message)
+}
+
 .report_app_runner <- function() {
   getExportedValue("PmetricsReports", "run_app")
 }
@@ -164,7 +179,7 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
   }
 
   if (!.report_dependency_available("PmetricsReports")) {
-    cli::cli_warn(c(
+    .report_warn_once("PmetricsReports_unavailable", c(
       "!" = "The {.pkg PmetricsReports} package is not available.",
       "i" = "Falling back to legacy HTML report generation.",
       "i" = "{.code install.packages('PmetricsReports', repos = 'https://lapkb.r-universe.dev')} for a better experience."
