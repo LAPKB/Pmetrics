@@ -74,6 +74,34 @@ test_that("Inline if/else expressions emit parenthesized, unbraced DSL condition
   )
 })
 
+test_that("Conditionals in unsupported positions raise a clear R-level error", {
+  # The DSL accepts a conditional only as a whole equation right-hand side or
+  # chained in the `else` branch. Other positions must fail with an actionable
+  # R error rather than a cryptic DSL parse error on generated code. Patterns
+  # match single tokens so they survive cli line-wrapping of the message.
+  expr_to_dsl <- getFromNamespace("expr_to_dsl", "Pmetrics")
+
+  # Nested inside an operator or function call.
+  testthat::expect_error(
+    expr_to_dsl(quote(2 * if (c) a else b)),
+    "right-hand"
+  )
+  testthat::expect_error(
+    expr_to_dsl(quote(exp(if (c) a else b))),
+    "right-hand"
+  )
+  # In the `then` branch (only the `else` branch may chain).
+  testthat::expect_error(
+    expr_to_dsl(quote(if (a) (if (b) x else y) else z)),
+    "right-hand"
+  )
+  # Missing `else` branch.
+  testthat::expect_error(
+    expr_to_dsl(quote(if (a) b)),
+    "include"
+  )
+})
+
 test_that("Secondary if/else conditionals generate a parseable DSL model", {
   mod <- PM_model$new(
     list(

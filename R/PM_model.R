@@ -1444,11 +1444,29 @@ PM_model <- R6::R6Class(
             solver = self$model_list$solver
           )
         }
-        if (!is.null(prior_dir) && identical(prior, "prior.csv")) {
-          withr::with_dir(prior_dir, fit_call())
-        } else {
-          fit_call()
-        }
+        tryCatch(
+          {
+            if (!is.null(prior_dir) && identical(prior, "prior.csv")) {
+              withr::with_dir(prior_dir, fit_call())
+            } else {
+              fit_call()
+            }
+          },
+          error = function(e) {
+            msg_txt <- conditionMessage(e)
+            # The DSL is generated from the model definition, so the backend's
+            # line numbers refer to generated text, not the user's R script.
+            if (grepl("compile model|parse DSL|DSL[0-9]{4}", msg_txt, ignore.case = TRUE)) {
+              hint <- paste(
+                "The model source is generated from your model definition;",
+                "any reported line numbers refer to that generated text, not your R script.",
+                "Check the secondary, output, and derivative equations for unsupported constructs."
+              )
+              stop(paste0(msg_txt, "\n\n", hint), call. = FALSE)
+            }
+            stop(e)
+          }
+        )
 
         # The Rust backend writes the estimation artifacts (theta.csv,
         # posterior.csv, pred.csv, covs.csv, cycles.csv, result.json). The
