@@ -51,3 +51,54 @@ test_that("Analytical migration produces a DSL structure model", {
   testthat::expect_match(dsl, "structure = one_compartment")
   testthat::expect_no_error(model_parameters(dsl))
 })
+
+test_that("Inline if/else expressions emit parenthesized, unbraced DSL conditionals", {
+  # Regression: the pharmsol DSL authoring surface requires
+  # `if (cond) a else b` (parenthesized condition, bare branch expressions).
+  # A prior emitter produced `if cond { a } else { b }`, which the backend
+  # rejected with DSL1000 "expected `(` after `if` in conditional expression".
+  expr_to_dsl <- getFromNamespace("expr_to_dsl", "Pmetrics")
+
+  testthat::expect_equal(
+    expr_to_dsl(quote(if (eff_time > t1) kehc else 0)),
+    "if (eff_time > t1) kehc else 0.0"
+  )
+  # Right-associative else-if chains stay valid (nested if lands in `else`).
+  testthat::expect_equal(
+    expr_to_dsl(quote(if (c1) a else if (c2) b else 0)),
+    "if (c1) a else if (c2) b else 0.0"
+  )
+  # The broken braced form must never be emitted.
+  testthat::expect_false(
+    grepl("{", expr_to_dsl(quote(if (a > b) x else y)), fixed = TRUE)
+  )
+})
+
+test_that("Secondary if/else conditionals generate a parseable DSL model", {
+  mod <- PM_model$new(
+    list(
+      pri = list(
+        CL = ab(0.5, 1.5),
+        V = ab(5, 15)
+      ),
+      sec = function() {
+        cl_eff <- if (CL > 1) CL * 1.5 else CL
+      },
+      eqn = function() {
+        dx[1] <- -(cl_eff / V) * x[1] + rateiv[1]
+      },
+      out = function() {
+        y[1] <- x[1] / V
+      },
+      err = list(additive(1, c(0.1, 0, 0, 0)))
+    ),
+    compile = FALSE
+  )
+  mod$compile(quiet = TRUE)
+  dsl <- mod$dsl
+
+  testthat::expect_match(dsl, "cl_eff = if (cl > 1.0)", fixed = TRUE)
+  testthat::expect_false(grepl("} else {", dsl, fixed = TRUE))
+  # The generated conditional must be accepted by the pharmsol backend.
+  testthat::expect_no_error(model_parameters(dsl))
+})
