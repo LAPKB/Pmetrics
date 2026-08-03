@@ -221,10 +221,15 @@ dsl_join_terms <- function(terms) {
   if (length(terms) == 0) {
     return("0.0")
   }
+  # A conditional is only valid as a whole equation right-hand side, so it may
+  # appear only as a lone, positively-signed term (emitted bare). When summed
+  # with other terms (or negated) it must raise the R-level guard error instead
+  # of emitting DSL the backend will reject.
+  allow_if <- length(terms) == 1L && terms[[1]]$sign > 0
   pieces <- character(0)
   for (i in seq_along(terms)) {
     t <- terms[[i]]
-    es <- expr_to_dsl(t$expr)
+    es <- expr_to_dsl(t$expr, allow_if = allow_if)
     if (i == 1) {
       pieces <- if (t$sign < 0) sprintf("-(%s)", es) else es
     } else {

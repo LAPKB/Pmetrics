@@ -102,6 +102,31 @@ test_that("Conditionals in unsupported positions raise a clear R-level error", {
   )
 })
 
+test_that("Conditionals embedded in derivative equations raise a clear error", {
+  # Regression: the additive-term path for `dx` equations must not bypass the
+  # conditional guard. An `if` summed with other terms is rejected, but a lone
+  # whole-RHS conditional (which the backend accepts) still emits.
+  dsl_eqn_block <- getFromNamespace("dsl_eqn_block", "Pmetrics")
+
+  testthat::expect_error(
+    dsl_eqn_block(function() {
+      dx[1] <- a + if (c) b else d
+    }),
+    "right-hand"
+  )
+  testthat::expect_error(
+    dsl_eqn_block(function() {
+      dx[1] <- a - if (c) b else d
+    }),
+    "right-hand"
+  )
+  # A whole-RHS conditional remains valid and is emitted bare.
+  whole_rhs <- dsl_eqn_block(function() {
+    dx[1] <- if (c) a else b
+  })
+  testthat::expect_equal(whole_rhs$dx, "dx(x1) = if (c) a else b")
+})
+
 test_that("Secondary if/else conditionals generate a parseable DSL model", {
   mod <- PM_model$new(
     list(
