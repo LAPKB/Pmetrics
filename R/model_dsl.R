@@ -107,7 +107,7 @@ expr_to_dsl <- function(expr) {
       cond <- a[[1]]
       then_code <- a[[2]]
       if (length(a) == 3) {
-        # The pharmsol DSL authoring surface requires `if (cond) then else else`
+        # The pharmsol DSL authoring surface requires `if (cond) then_expr else else_expr`
         # with a parenthesized condition and bare (unbraced) branch expressions.
         sprintf("if (%s) %s else %s", cond, then_code, a[[3]])
       } else {
