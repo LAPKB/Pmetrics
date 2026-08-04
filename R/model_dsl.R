@@ -41,7 +41,7 @@ dsl_function_map <- function() {
 }
 
 # Convert a pure R expression (no assignments or blocks) to a DSL expression.
-expr_to_dsl <- function(expr) {
+expr_to_dsl <- function(expr, allow_if = TRUE) {
   # Numeric literals: emit integers with a trailing `.0` so the DSL treats them
   # as floating point, matching the Rust transpiler's behaviour.
   if (is.numeric(expr) && length(expr) == 1) {
@@ -80,8 +80,37 @@ expr_to_dsl <- function(expr) {
     return(sprintf("%s%d", var, idx))
   }
 
+  # Conditionals map to `if (cond) then else else`. The pharmsol DSL authoring
+  # surface only accepts a conditional as an entire equation right-hand side or
+  # as the `else` branch of another conditional (an `else if` chain). Any other
+  # position (nested in an operator/function, or in the `then` branch) is
+  # rejected by the DSL parser, so we catch it here to give an R-level error
+  # that points at the model instead of a cryptic parse error on generated code.
+  if (op == "if") {
+    if (!allow_if) {
+      cli::cli_abort(c(
+        "x" = "A conditional {.code if (...) ... else ...} can only be a whole equation right-hand side.",
+        "i" = "It cannot be nested inside another expression (e.g. {.code 2 * if (...)}) or in the {.code then} branch.",
+        "i" = "Assign it to a secondary variable first, e.g. {.code tmp = if (cond) a else b}, then use {.code tmp}."
+      ))
+    }
+    args <- as.list(expr[-1])
+    if (length(args) != 3) {
+      cli::cli_abort(c(
+        "x" = "Conditional expressions in the DSL must include an `else` branch.",
+        "i" = "Write {.code if (cond) a else b}."
+      ))
+    }
+    # Only the `else` branch may itself be a conditional (right-associative
+    # `else if` chains); the condition and `then` branch may not.
+    cond <- expr_to_dsl(args[[1]], allow_if = FALSE)
+    then_code <- expr_to_dsl(args[[2]], allow_if = FALSE)
+    else_code <- expr_to_dsl(args[[3]], allow_if = TRUE)
+    return(sprintf("if (%s) %s else %s", cond, then_code, else_code))
+  }
+
   args <- as.list(expr[-1])
-  a <- lapply(args, expr_to_dsl)
+  a <- lapply(args, function(x) expr_to_dsl(x, allow_if = FALSE))
 
   fmap <- dsl_function_map()
 
@@ -103,20 +132,6 @@ expr_to_dsl <- function(expr) {
     "|" = sprintf("%s || %s", a[[1]], a[[2]]),
     "||" = sprintf("%s || %s", a[[1]], a[[2]]),
     "!" = sprintf("!(%s)", a[[1]]),
-    "if" = {
-      cond <- a[[1]]
-      then_code <- a[[2]]
-      if (length(a) == 3) {
-        # The pharmsol DSL authoring surface requires `if (cond) then_expr else else_expr`
-        # with a parenthesized condition and bare (unbraced) branch expressions.
-        sprintf("if (%s) %s else %s", cond, then_code, a[[3]])
-      } else {
-        cli::cli_abort(c(
-          "x" = "Conditional expressions in the DSL must include an `else` branch.",
-          "i" = "Write {.code if (cond) a else b}."
-        ))
-      }
-    },
     {
       # Function call: look up in the DSL intrinsic map.
       if (!is.null(fmap[[op]])) {
@@ -206,10 +221,15 @@ dsl_join_terms <- function(terms) {
   if (length(terms) == 0) {
     return("0.0")
   }
+  # A conditional is only valid as a whole equation right-hand side, so it may
+  # appear only as a lone, positively-signed term (emitted bare). When summed
+  # with other terms (or negated) it must raise the R-level guard error instead
+  # of emitting DSL the backend will reject.
+  allow_if <- length(terms) == 1L && terms[[1]]$sign > 0
   pieces <- character(0)
   for (i in seq_along(terms)) {
     t <- terms[[i]]
-    es <- expr_to_dsl(t$expr)
+    es <- expr_to_dsl(t$expr, allow_if = allow_if)
     if (i == 1) {
       pieces <- if (t$sign < 0) sprintf("-(%s)", es) else es
     } else {
