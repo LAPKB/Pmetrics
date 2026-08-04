@@ -1,7 +1,7 @@
 Type: Package
 Package: Pmetrics
 Title: Pmetrics for Population Modeling and Simulation
-Version: 3.2.1
+Version: 3.2.2
 Authors@R: c(
     person("Michael", "Neely", , "mneely@usc.edu", role = c("aut", "cre")),
     person("Julián", "Otálvaro", , "juliandavid347@gmail.com", role = "aut"),
@@ -89,3 +89,4 @@ LazyData: true
 LazyDataCompression: xz
 Roxygen: list(markdown = TRUE)
 SystemRequirements: Cargo (>= 1.82) (Rust's package manager), rustc
+RoxygenNote: 7.3.3
