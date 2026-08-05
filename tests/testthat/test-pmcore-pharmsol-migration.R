@@ -74,6 +74,59 @@ test_that("Inline if/else expressions emit parenthesized, unbraced DSL condition
   )
 })
 
+test_that("Conditionals in unsupported positions raise a clear R-level error", {
+  # The DSL accepts a conditional only as a whole equation right-hand side or
+  # chained in the `else` branch. Other positions must fail with an actionable
+  # R error rather than a cryptic DSL parse error on generated code. Patterns
+  # match single tokens so they survive cli line-wrapping of the message.
+  expr_to_dsl <- getFromNamespace("expr_to_dsl", "Pmetrics")
+
+  # Nested inside an operator or function call.
+  testthat::expect_error(
+    expr_to_dsl(quote(2 * if (c) a else b)),
+    "right-hand"
+  )
+  testthat::expect_error(
+    expr_to_dsl(quote(exp(if (c) a else b))),
+    "right-hand"
+  )
+  # In the `then` branch (only the `else` branch may chain).
+  testthat::expect_error(
+    expr_to_dsl(quote(if (a) (if (b) x else y) else z)),
+    "right-hand"
+  )
+  # Missing `else` branch.
+  testthat::expect_error(
+    expr_to_dsl(quote(if (a) b)),
+    "include"
+  )
+})
+
+test_that("Conditionals embedded in derivative equations raise a clear error", {
+  # Regression: the additive-term path for `dx` equations must not bypass the
+  # conditional guard. An `if` summed with other terms is rejected, but a lone
+  # whole-RHS conditional (which the backend accepts) still emits.
+  dsl_eqn_block <- getFromNamespace("dsl_eqn_block", "Pmetrics")
+
+  testthat::expect_error(
+    dsl_eqn_block(function() {
+      dx[1] <- a + if (c) b else d
+    }),
+    "right-hand"
+  )
+  testthat::expect_error(
+    dsl_eqn_block(function() {
+      dx[1] <- a - if (c) b else d
+    }),
+    "right-hand"
+  )
+  # A whole-RHS conditional remains valid and is emitted bare.
+  whole_rhs <- dsl_eqn_block(function() {
+    dx[1] <- if (c) a else b
+  })
+  testthat::expect_equal(whole_rhs$dx, "dx(x1) = if (c) a else b")
+})
+
 test_that("Secondary if/else conditionals generate a parseable DSL model", {
   mod <- PM_model$new(
     list(
