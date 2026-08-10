@@ -1,7 +1,7 @@
 Type: Package
 Package: Pmetrics
 Title: Pmetrics for Population Modeling and Simulation
-Version: 3.2.2
+Version: 3.2.3
 Authors@R: c(
     person("Michael", "Neely", , "mneely@usc.edu", role = c("aut", "cre")),
     person("Julián", "Otálvaro", , "juliandavid347@gmail.com", role = "aut"),
@@ -82,7 +82,7 @@ VignetteBuilder:
     knitr
 Config/Needs/website: r-lib/pkgdown, quarto
 Config/rextendr/version: 0.5.0
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0
 Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true
