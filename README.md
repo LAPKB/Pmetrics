@@ -1,4 +1,8 @@
 
+<!-- Use this to render whenever README.Rmd has changed:
+&#10;rmarkdown::render("README.Rmd", output_options = list(html_preview = FALSE)) 
+&#10;-->
+
 <!-- badges: start -->
 
 [![R-universe
@@ -7,7 +11,7 @@ version](https://LAPKB.r-universe.dev/Pmetrics/badges/version)](https://LAPKB.r-
 
 <!-- badges: end -->
 
-# Pmetrics <a href="https://lapkb.github.io/Pmetrics/"><img src="man/figures/Pmetrics_logo.png" align="right" height="100" width = "100" alt="Pmetrics" /></a>
+# Pmetrics <a href="https://lapkb.github.io/Pmetrics/"><img src="man/figures/logo.png" align="right" height="100" alt="Pmetrics" /></a>
 
 Thank you for your interest in `Pmetrics`, created by the [Laboratory of
 Applied Pharmacokinetics and Bioinformatics](http://www.lapk.org).

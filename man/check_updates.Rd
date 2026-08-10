@@ -2,7 +2,7 @@
 % Please edit documentation in R/PMutilities.R
 \name{check_updates}
 \alias{check_updates}
-\title{Check for Pmetrics and R updates}
+\title{Check for Pmetrics, companion packages, and R updates}
 \usage{
 check_updates(verbose = interactive(), timeout = 2)
 }
@@ -13,10 +13,14 @@ check_updates(verbose = interactive(), timeout = 2)
 }
 \value{
 An invisible list with installed/latest versions and outdated flags.
+The \code{companions} element is a named list containing results for each
+installed companion package.
 }
 \description{
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Performs an on-demand check for newer Pmetrics and R releases.
-This function is intended for interactive use and avoids running network
-checks automatically during package attach.
+Performs an on-demand check for newer Pmetrics and R releases, plus releases
+of installed Pmetrics companion packages. Companion packages that are not
+installed are skipped.
+This function supports both on-demand checks and the scheduled check run
+when Pmetrics is attached in an interactive session.
 }

@@ -9,7 +9,7 @@
     cli::cli_li("For {.strong documentation}, use {.help PM_manual}.")
     cli::cli_li("View user {.strong options} with {.help setPMoptions}.")
     cli::cli_li("Model library loaded. View with {.help model_lib}.")
-    cli::cli_li("Check for Pmetrics and R updates with {.help check_updates}.")
+    cli::cli_li("Check for Pmetrics, companion packages, and R updates with {.help check_updates}.")
     cli::cli_end(ul)
     pm_maybe_notify_updates()
   }

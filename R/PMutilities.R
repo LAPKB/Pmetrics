@@ -1038,6 +1038,40 @@ pm_update_interval_days <- function() {
 }
 
 
+pm_companion_packages <- function() {
+  c(
+    "PmetricsLitSim",
+    "PmetricsModelLib",
+    "PmetricsExplorer",
+    "PmetricsPlot",
+    "PmetricsReports"
+  )
+}
+
+
+pm_companion_update_status <- function(package) {
+  if (!requireNamespace(package, quietly = TRUE)) {
+    return(NULL)
+  }
+
+  installed <- packageVersion(package)
+  latest <- tryCatch(
+    package_version(
+      jsonlite::fromJSON(
+        sprintf("https://lapkb.r-universe.dev/api/packages/%s", package)
+      )$Version
+    ),
+    error = function(e) NA
+  )
+
+  list(
+    installed = installed,
+    latest = latest,
+    outdated = !is.na(latest) && installed < latest
+  )
+}
+
+
 pm_notify_outdated <- function(result) {
   if (is.null(result)) {
     return(invisible(NULL))
@@ -1045,8 +1079,14 @@ pm_notify_outdated <- function(result) {
   
   pmetrics_outdated <- isTRUE(result$pmetrics_outdated)
   r_outdated <- isTRUE(result$r_outdated)
+  companions <- result$companions
+  companion_outdated <- if (is.null(companions)) {
+    logical()
+  } else {
+    vapply(companions, function(x) isTRUE(x$outdated), logical(1))
+  }
   
-  if (!pmetrics_outdated && !r_outdated) {
+  if (!pmetrics_outdated && !r_outdated && !any(companion_outdated)) {
     return(invisible(NULL))
   }
   
@@ -1054,6 +1094,13 @@ pm_notify_outdated <- function(result) {
   
   if (pmetrics_outdated) {
     cli::cli_li("{.red Update available:} Pmetrics {result$latest_pmetrics} (installed: {result$installed_pmetrics}).")
+  }
+
+  for (package in names(companion_outdated)[companion_outdated]) {
+    status <- companions[[package]]
+    cli::cli_li(
+      "{.red Update available:} {package} {status$latest} (installed: {status$installed})."
+    )
   }
   
   if (r_outdated) {
@@ -1091,15 +1138,19 @@ pm_maybe_notify_updates <- function() {
 }
 
 
-#' @title Check for Pmetrics and R updates
+#' @title Check for Pmetrics, companion packages, and R updates
 #' @description
 #' `r lifecycle::badge("stable")`
-#' Performs an on-demand check for newer Pmetrics and R releases.
-#' This function is intended for interactive use and avoids running network
-#' checks automatically during package attach.
+#' Performs an on-demand check for newer Pmetrics and R releases, plus releases
+#' of installed Pmetrics companion packages. Companion packages that are not
+#' installed are skipped.
+#' This function supports both on-demand checks and the scheduled check run
+#' when Pmetrics is attached in an interactive session.
 #' @param verbose Logical. If `TRUE`, emits a user-facing CLI summary.
 #' @param timeout Numeric scalar. Network timeout in seconds used for this check.
 #' @return An invisible list with installed/latest versions and outdated flags.
+#'   The `companions` element is a named list containing results for each
+#'   installed companion package.
 #' @export
 check_updates <- function(verbose = interactive(), timeout = 2) {
   timeout <- as.numeric(timeout)
@@ -1118,6 +1169,10 @@ check_updates <- function(verbose = interactive(), timeout = 2) {
     ),
     error = function(e) NA
   )
+
+  companions <- lapply(pm_companion_packages(), pm_companion_update_status)
+  names(companions) <- pm_companion_packages()
+  companions <- Filter(Negate(is.null), companions)
   
   current_r <- getRversion()
   latest_r_info <- tryCatch(latestR(), error = function(e) NULL)
@@ -1134,6 +1189,7 @@ check_updates <- function(verbose = interactive(), timeout = 2) {
     installed_pmetrics = installed_pmetrics,
     latest_pmetrics = latest_pmetrics,
     pmetrics_outdated = pmetrics_outdated,
+    companions = companions,
     current_r = current_r,
     latest_r = latest_r,
     r_outdated = r_outdated,
@@ -1151,6 +1207,21 @@ check_updates <- function(verbose = interactive(), timeout = 2) {
       cli::cli_li("{.red Warning:} Your Pmetrics version ({installed_pmetrics}) is older than the latest release ({latest_pmetrics}). Update instructions are at https://github.com/LAPKB/Pmetrics.")
     } else {
       cli::cli_li("You are using the latest Pmetrics version: {installed_pmetrics}.")
+    }
+
+    for (package in names(companions)) {
+      status <- companions[[package]]
+      if (is.na(status$latest)) {
+        cli::cli_li(
+          "Unable to check latest {package} version (network unavailable or endpoint unreachable)."
+        )
+      } else if (status$outdated) {
+        cli::cli_li(
+          "{.red Warning:} Your {package} version ({status$installed}) is older than the latest release ({status$latest})."
+        )
+      } else {
+        cli::cli_li("You are using the latest {package} version: {status$installed}.")
+      }
     }
     
     if (is.na(latest_r)) {
