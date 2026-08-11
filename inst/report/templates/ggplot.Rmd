@@ -20,7 +20,6 @@ library(Pmetrics)
 library(htmltools)
 ```
 
-
 ```{r setup-extra}
 res = params$res
 ```
@@ -30,7 +29,6 @@ res = params$res
 ```{r}
 did_converge = ifelse(res$NPdata$converge == 1, "converged", "did not converge")
 ```
-
 
 The model includes `r res$NPdata$nsub` subjects, and a total of `r  sum(res$NPdata$nobs, na.rm = TRUE)` observations.
 
@@ -50,12 +48,12 @@ metrics <- function(icen, outeq){
            `Root mean squared PE (%)` = percent_rmse,
            `Bias-adjusted mean squared PE` = bamspe,
            `Bias-adjusted mean weighted squared PE` = bamwspe
-    ) |> 
+    ) |>
     mutate(across(.cols = everything(),
                   .fns = function(x) {
                     round(x, digits = 3)
-                  })) |> 
-    t() |> 
+                  })) |>
+    t() |>
     DT::datatable(
       colnames = c("Metric", "Value"),
       options = list(
@@ -66,7 +64,7 @@ metrics <- function(icen, outeq){
         dom = "t",
         autoHideNavigation = TRUE
       )
-    )  
+    )
   return(pe)
 }
 
@@ -90,7 +88,6 @@ for(i in 1:res$NPdata$numeqt){
 
 ```
 
-
 ## Observed-predicted plot {.tabset .tabset-pills}
 
 Points should appear close to, and randomly distributed around, the (dashed) identity-line.
@@ -99,12 +96,12 @@ Points should appear close to, and randomly distributed around, the (dashed) ide
 
 op_plot <- function(icen, pred.type, outeq){
   subtitle <- switch(pred.type, pop = "Population", post = "Individual")
-  p <- res$op$data |> 
-    filter(icen == !!icen, pred.type == !!pred.type, outeq == !!outeq) |> 
+  p <- res$op$data |>
+    filter(icen == !!icen, pred.type == !!pred.type, outeq == !!outeq) |>
     ggplot(aes(x = pred, y = obs)) +
     geom_abline(slope = 1, intercept = 0, lty = "dashed") +
     geom_point(pch = 21, col = "black", fill = "red") +
-    theme_classic() + 
+    theme_classic() +
     labs(x = "Predicted", y = "Observed", subtitle = subtitle) +
     theme(aspect.ratio = 1, panel.grid.major = element_line(color = "gray90")) +
     scale_x_continuous(breaks = scales::breaks_pretty(n = 8)) +
@@ -137,7 +134,6 @@ for(i in 1:res$NPdata$numeqt){
 
 ```
 
-
 ## Posterior residuals by time {.tabset .tabset-pills}
 
 Residuals should be randomly distributed around zero, with no apparent trend.
@@ -146,7 +142,7 @@ For how to interpret these plots, please review our [website](https://lapkb.gith
 ```{r}
 
 resid_plot <- function(x, y, icen, outeq){
-  p <- res$op$data |> 
+  p <- res$op$data |>
     filter(icen == !!icen, outeq == !!outeq, pred.type == "post") |> # Posterior concentrations (not pop)
     ggplot(aes(x = {{x}}, y = {{y}})) +
     geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
@@ -182,7 +178,6 @@ for(i in 1:res$NPdata$numeqt){
 
 ```
 
-
 ## Posterior residuals by concentration {.tabset}
 
 Residuals should be randomly distributed around zero, with no apparent trend.
@@ -211,10 +206,10 @@ for(i in 1:res$NPdata$numeqt){
 
 ```
 
-
 ## Parameter values and distributions
 
 The model included the following primary parameters
+
 ```{r}
 par_lims = data.frame(
   name = head(names(res$final$popPoints), -1),
@@ -222,10 +217,10 @@ par_lims = data.frame(
   upper = res$final$ab[,2]
 )
 
-par_lims |> 
+par_lims |>
   rename(`Parameter` = name,
          `Lower limit` = lower,
-         `Upper limit` = upper) |> 
+         `Upper limit` = upper) |>
   DT::datatable(
     options = list(
       searching = FALSE,
@@ -239,12 +234,13 @@ par_lims |>
 ```
 
 #### Marginal plots
+
 Support points, height correspond to probability
 
 ```{r}
-res$final$popPoints |> 
-  pivot_longer(cols = -prob) |> 
-  left_join(par_lims, by = "name") |> 
+res$final$popPoints |>
+  pivot_longer(cols = -prob) |>
+  left_join(par_lims, by = "name") |>
   ggplot(aes(x = value, y = prob)) +
   geom_segment(aes(xend = value, yend = 0)) +
   geom_vline(aes(xintercept = lower), lty = "dashed", alpha = 0.5) +
@@ -253,8 +249,8 @@ res$final$popPoints |>
   labs(x = "Parameter value", y = "Density")
 ```
 
-
 #### Posterior parameter distributions
+
 Posterior parameter density estimates based on the mean and median icen.
 
 ```{r}
@@ -264,15 +260,15 @@ pmean = res$final$postMean |>
 pmedian = res$final$postMed |>
   mutate(type = "Median")
 
-pmean |> 
+pmean |>
   bind_rows(pmedian) |>
   pivot_longer(cols = -c(id, type)) |>
   left_join(par_lims, by = "name") |>
   ggplot(aes(x = value)) +
   geom_density(aes(col = type, fill = type), alpha = 0.5) +
-  geom_vline(aes(xintercept = lower), 
+  geom_vline(aes(xintercept = lower),
              lty = "dashed", alpha = 0.5) +
-  geom_vline(aes(xintercept = upper), 
+  geom_vline(aes(xintercept = upper),
              lty = "dashed", alpha = 0.5) +
   facet_wrap( ~ name, scales = "free") +
   labs(x = "Parameter value",
@@ -285,42 +281,35 @@ pmean |>
 #### Table of support points
 
 The following table lists the final support points, in order of decreasing probability
+
 ```{r}
-res$final$popPoints |> 
-  arrange(desc(prob)) |> 
+res$final$popPoints |>
+  arrange(desc(prob)) |>
   mutate(across(.cols = everything(), .fns = function(x) {
     round(x, digits = 4)
-  })) |> 
-  mutate(`Probability (cumulative sum)` = cumsum(prob)) |> 
-  rename(Probability = prob) |> 
+  })) |>
+  mutate(`Probability (cumulative sum)` = cumsum(prob)) |>
+  rename(Probability = prob) |>
   datatable(options = list(pageLength = 10, searching = FALSE))
 ```
 
-
-
 ## Cycle information
+
 ```{r}
-if (is.null(res$cycle$aic)) {
+if (is.null(res$cycle$objective) || all(is.na(res$cycle$objective$aic))) {
   ggplot() +
   annotate("text",
            x = 1,
            y = 1,
            size = 8,
-           label = "No cycles") + 
+           label = "No cycles") +
   theme_void()
 } else {
-  cycle_info = data.frame(
-  cycle = res$cycle$data$cycnum,
-  ll = res$cycle$data$ll,
-  AIC = res$cycle$data$aic,
-  BIC = res$cycle$data$bic,
-  gamlam = res$cycle$data$gamlam$value
-  
-)
+cycle_info = res$cycle$objective |>
+  rename(ll = neg2ll, AIC = aic, BIC = bic) |>
+  slice_tail(prop = 0.8)
 
-cycle_info = slice_tail(cycle_info, prop = 0.8)
-
-plot_ll = cycle_info |> 
+plot_ll = cycle_info |>
   ggplot(aes(x = cycle, y = ll)) +
   geom_line() +
   labs(subtitle = "-2 x log likelihood",
@@ -329,8 +318,8 @@ plot_ll = cycle_info |>
   theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
-plot_aic_bic = cycle_info |> 
-  pivot_longer(cols = c(AIC, BIC)) |> 
+plot_aic_bic = cycle_info |>
+  pivot_longer(cols = c(AIC, BIC)) |>
   ggplot(aes(x = cycle, y = value, col = name)) +
   geom_line() +
   labs(subtitle = "AIC/BIC",
@@ -339,48 +328,47 @@ plot_aic_bic = cycle_info |>
   theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
-plot_gamlam = cycle_info |> 
-  ggplot(aes(x = cycle, y = gamlam)) +
+plot_gamlam = res$cycle$gamlam |>
+  filter(cycle %in% cycle_info$cycle) |>
+  mutate(outeq = factor(outeq)) |>
+  ggplot(aes(x = cycle, y = value, col = outeq)) +
   geom_line() +
   labs(subtitle = "Gamma / Lambda",
-       x = "Cycle number", y = NULL) +
+       x = "Cycle number", y = NULL, col = "Outeq") +
   theme_classic() +
   theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
-plot_mean = res$cycle$data$mean |> 
-  data.frame() |> 
-  mutate(cycle = res$cycle$data$cycnum) |> 
-  slice_tail(prop = 0.8) |> 
-  pivot_longer(cols = -cycle) |> 
+plot_mean = res$cycle$mean |>
+  data.frame() |>
+  slice_tail(prop = 0.8) |>
+  pivot_longer(cols = -cycle) |>
   ggplot(aes(x = cycle, y = value, col = name)) +
-  geom_line() + 
+  geom_line() +
   labs(subtitle = "Normalized mean",
        x = "Cycle number", y = NULL, col = NULL) +
   theme_classic() +
   theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
-plot_sd = res$cycle$data$sd |> 
-  data.frame() |> 
-  mutate(cycle = res$cycle$data$cycnum) |> 
-  slice_tail(prop = 0.8) |> 
-  pivot_longer(cols = -cycle) |> 
+plot_sd = res$cycle$sd |>
+  data.frame() |>
+  slice_tail(prop = 0.8) |>
+  pivot_longer(cols = -cycle) |>
   ggplot(aes(x = cycle, y = value, col = name)) +
-  geom_line() + 
+  geom_line() +
   labs(subtitle = "Normalized standard deviation",
        x = "Cycle number", y = NULL, col = NULL) +
   theme_classic() +
   theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
-plot_median = res$cycle$data$median |> 
-  data.frame() |> 
-  mutate(cycle = res$cycle$data$cycnum) |> 
-  slice_tail(prop = 0.8) |> 
-  pivot_longer(cols = -cycle) |> 
+plot_median = res$cycle$median |>
+  data.frame() |>
+  slice_tail(prop = 0.8) |>
+  pivot_longer(cols = -cycle) |>
   ggplot(aes(x = cycle, y = value, col = name)) +
-  geom_line() + 
+  geom_line() +
   labs(subtitle = "Normalized median",
        x = "Cycle number", y = NULL, col = NULL) +
   theme_classic() +
@@ -399,8 +387,22 @@ plot_ll + plot_aic_bic + plot_gamlam + plot_mean + plot_sd + plot_median +
 }
 ```
 
+### Final cycle assay error
+
+```{r}
+res$cycle$gamlam |>
+  filter(cycle == max(cycle)) |>
+  transmute(
+    `Output equation` = outeq,
+    Parameter = ifelse(type == "Additive", "Lambda", "Gamma"),
+    Value = round(value, 4)
+  ) |>
+  DT::datatable(options = list(dom = "t", searching = FALSE))
+```
+
 <!-- THE FOLLOWING SECTION CONTAINS JAVASCRPT SUPPORT FUNCTIONS -->
-```{js}
+
+````{js}
 // This code ensures that click "Mean" tab changes all tabs to "Mean"
 // Original code from https://community.rstudio.com/t/rmarkdown-html-change-all-tabs-on-click/160943
 
@@ -439,5 +441,4 @@ this.value = 'Hide Output';
 });
 });
 $("input.hideshow").click()
-```
-
+````

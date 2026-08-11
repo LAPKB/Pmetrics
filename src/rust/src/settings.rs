@@ -102,14 +102,14 @@ pub(crate) fn settings(
             bail!("error_models[{}].outeq must be 1 or greater", i + 1);
         }
         let outeq = outeq_1based - 1;
-        let output = outputs.get(outeq).ok_or_else(|| {
-            anyhow!(
+        if outeq >= outputs.len() {
+            bail!(
                 "error_models[{}].outeq is {}, but the model has {} outputs",
                 i + 1,
                 outeq_1based,
                 outputs.len()
-            )
-        })?;
+            );
+        }
 
         let gamlam = get_field(&em, "initial")?.as_real().ok_or_else(|| {
             anyhow!(
@@ -164,7 +164,10 @@ pub(crate) fn settings(
             }
             err => bail!("Invalid Error type: {}", err),
         };
-        ems = ems.add(output.clone(), model)?;
+        // Add by dense output slot, not by output name: a name-keyed model is kept
+        // unbound by pharmsol, which leaves the collection pmcore iterates over empty,
+        // so gamma/lambda is never optimized nor written to cycles.csv.
+        ems = ems.add(outeq, model)?;
     }
 
     let prior = get_str(&settings, "prior")?;

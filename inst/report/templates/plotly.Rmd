@@ -17,8 +17,6 @@ library(Pmetrics)
 
 ```
 
-
-
 ```{r setup-extra, include = FALSE}
 res = params$res
 ```
@@ -54,7 +52,7 @@ After `r paste0(icyctot, " cycles, the model status was \"", res$cycle$data$stat
 
 Points should appear close to, and randomly distributed around, the (dashed) identity line.
 
-``` {r op-plot, message = TRUE}
+````{r op-plot, message = TRUE}
 
 template <- c(
   "#### Outeq {{outeq}} {.tabset .tabset-pills}\n",
@@ -97,11 +95,13 @@ if (!is.null(res$op$data) & nrow(res$op$data) > 0){
   p <- list("PM_op object not created.")
 }
 
-```
+````
+
 `r knitr::knit_child(text = unlist(p))`
 
 ::: {.tabset .tabset-pills}
-### Prediction metrics 
+
+### Prediction metrics
 
 `r if (!is.null(res$op$data)) cli::cli_bullets(c(">" = "Prediction metrics"))`
 
@@ -111,10 +111,10 @@ metrics <- function(icen, pred.type, outeq){
   pe <- res$op$summary(icen = icen,  pred.type = pred.type, outeq = outeq)$pe |>
     Pmetrics:::get_metric_info()
   if (stringr::str_detect(pe$metric_types[1], "%")){
-    pe$metric_vals <- pe$metric_vals |> mutate(across(everything(), ~paste0(.x,"%"))) 
+    pe$metric_vals <- pe$metric_vals |> mutate(across(everything(), ~paste0(.x,"%")))
   }
-  
-  pe$metric_vals |> 
+
+  pe$metric_vals |>
     DT::datatable(
       #colnames = c("Metric", "Value"),
       rownames = FALSE,
@@ -126,13 +126,13 @@ metrics <- function(icen, pred.type, outeq){
         dom = "t",
         autoHideNavigation = TRUE
       )
-    )  
+    )
   #return(pe)
 }
 
 ```
 
-```{r prediction-metrics, include = FALSE}
+````{r prediction-metrics, include = FALSE}
 
 template <- c(
   "#### Outeq {{outeq}} {.tabset .tabset-pills}\n",
@@ -173,7 +173,8 @@ if(!is.null(res$op$data)){
 }
 
 
-```
+````
+
 `r knitr::knit_child(text = unlist(p))`
 :::
 
@@ -185,16 +186,14 @@ if (!is.null(res$op$data)){
 }
 ```
 
-
 ### Prediction residuals {.tabset .tabset-pills}
 
 `r if (!is.null(res$op$data)) cli::cli_bullets(c(">" = "Residual plots"))`
 
-
 Residuals should be randomly distributed around zero, with no apparent trend.
 For how to interpret these plots, please review our [website](https://lapkb.github.io/Pmetrics). Weighted prediction errors are weighted by the observation standard deviation, i.e. the error polynomial.
 
-``` {r prediction-residuals, include = FALSE}
+````{r prediction-residuals, include = FALSE}
 
 template <- c(
   "#### Outeq {{outeq}} {.tabset .tabset-pills}\n",
@@ -238,16 +237,18 @@ p <- lapply(1:numeqt, function(i) {
   p <- list("PM_op object not created.")
 }
 
-```
+````
+
 `r knitr::knit_child(text = unlist(p), options = list(fig.width = 10))`
 
 ## Parameter values and distributions
 
 `r if (!is.null(res$final$popPoints)) cli::cli_bullets(c(">" = "Parameter summaries"))`
 
-
 ### Parameter summaries
+
 The model included the following primary parameters
+
 ```{r par_summaries}
 if(!is.null(res$final$data)){
   par_lims <- data.frame(
@@ -259,11 +260,11 @@ if(!is.null(res$final$data)){
     sd = t(res$final$popSD),
     cv = 100*t(res$final$popCV),
     shrink = 100*t(res$final$shrinkage)
-    
+
   ) |>
     dplyr::mutate(across(4:8,\(x) round(x, 3)))
 
-  par_lims |> 
+  par_lims |>
     dplyr::rename(`Parameter` = par,
                   `Lower limit` = min,
                   `Upper limit` = max,
@@ -271,7 +272,7 @@ if(!is.null(res$final$data)){
                   `Median` = med,
                   `SD` = sd,
                   `CV%` = cv,
-                  `%shrink` = shrink) |> 
+                  `%shrink` = shrink) |>
     DT::datatable(
       options = list(
         searching = FALSE,
@@ -293,7 +294,7 @@ if(!is.null(res$final$data)){
 
 Probability distributions, dashed lines are limits.
 
-``` {r marginal-plots, results = "asis"}
+```{r marginal-plots, results = "asis"}
 if (!is.null(res$final$data)){
   p <- res$final$plot(print = FALSE)
   p
@@ -341,12 +342,12 @@ The following table lists the final support points, in order of decreasing proba
 
 ```{r support-points-table}
 if (!is.null(res$final$popPoints) & np){
-  res$final$popPoints |> 
-    dplyr::arrange(desc(prob)) |> 
+  res$final$popPoints |>
+    dplyr::arrange(desc(prob)) |>
     dplyr::mutate(across(everything(), \(x) round2(x)
-    )) |> 
-    dplyr::mutate(`Cumulative Probability` = round2(cumsum(prob))) |> 
-    dplyr::rename(Probability = prob) |> 
+    )) |>
+    dplyr::mutate(`Cumulative Probability` = round2(cumsum(prob))) |>
+    dplyr::rename(Probability = prob) |>
     DT::datatable(options = list(pageLength = 10, searching = FALSE))
 }
 ```
@@ -355,13 +356,12 @@ if (!is.null(res$final$popPoints) & np){
 
 `r if (!is.null(res$final$data)) cli::cli_bullets(c(">" = "Covariance/correlation matrices"))`
 
-
 #### Correlation
 
 ```{r correlation, message = F}
 if (!is.null(res$final$data)){
   res$final$popCor |> tibble::as_tibble() |>
-  dplyr::mutate(across(everything(), \(x) round2(x))) |> 
+  dplyr::mutate(across(everything(), \(x) round2(x))) |>
   (\(x) DT::datatable(x, rownames = colnames(x), options = list(pageLength = 10, searching = FALSE)))() |>
   DT::formatStyle(0, fontWeight = "bold")
 } else {
@@ -374,14 +374,13 @@ if (!is.null(res$final$data)){
 ```{r covariance, message = F}
 if (!is.null(res$final$data)){
   res$final$popCov |> tibble::as_tibble() |>
-  dplyr::mutate(across(everything(), \(x) round2(x))) |> 
+  dplyr::mutate(across(everything(), \(x) round2(x))) |>
   (\(x) DT::datatable(x, rownames = colnames(x), options = list(pageLength = 10, searching = FALSE)))() |>
   DT::formatStyle(0, fontWeight = "bold")
 } else {
   knitr::asis_output("PM_final object not created.")
 }
 ```
-
 
 ## Cycle information
 
@@ -400,11 +399,28 @@ if (!is.null(res$cycle$data)){
 }
 ```
 
+### Final cycle assay error
+
+```{r cycle_gamlam}
+if (!is.null(res$cycle$gamlam) && nrow(res$cycle$gamlam) > 0) {
+  res$cycle$gamlam |>
+    dplyr::filter(cycle == max(cycle)) |>
+    dplyr::transmute(
+      `Output equation` = outeq,
+      Parameter = ifelse(type == "Additive", "Lambda", "Gamma"),
+      Value = round(value, 4)
+    ) |>
+    DT::datatable(options = list(dom = "t", searching = FALSE))
+} else {
+  knitr::asis_output("No gamma/lambda values were recorded for this run.")
+}
+```
+
 `r cli::cli_text("Done! Opening in browser...")`
 
-
 <!-- THE FOLLOWING SECTION CONTAINS JAVASCRPT SUPPORT FUNCTIONS -->
-```{js}
+
+````{js}
 // This code ensures that click "Mean" tab changes all tabs to "Mean"
 // Original code from https://community.rstudio.com/t/rmarkdown-html-change-all-tabs-on-click/160943
 
@@ -443,5 +459,4 @@ this.value = 'Hide Output';
 });
 });
 $("input.hideshow").click()
-```
-
+````
