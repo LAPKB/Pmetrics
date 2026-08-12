@@ -6,6 +6,8 @@
 "tests/testthat/test-analytical-indexing.R",35,"Analytical generation preserves 1-based indices"
 "tests/testthat/test-analytical-indexing.R",48,"Analytical fit runs one NPAG cycle with y[1] and one error model"
 "tests/testthat/test-analytical-indexing.R",66,"Analytical fit records gamma/lambda for the fitted error model"
+"tests/testthat/test-analytical-indexing.R",131,"Error models bind to the declared outeq regardless of R numeric type"
+"tests/testthat/test-analytical-indexing.R",156,"An output equation without an error model is rejected"
 "tests/testthat/test-book-examples.R",1,"Book tutorial setup objects are available in-package"
 "tests/testthat/test-book-examples.R",8,"Book data snippets adapted: PM_data from file and from object"
 "tests/testthat/test-book-examples.R",18,"Book model snippets adapted: PM_model construction and mapping"

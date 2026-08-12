@@ -1,5 +1,5 @@
 use anyhow::{anyhow, bail, Context, Result as AnyResult};
-use extendr_api::{Conversions, List, Robj};
+use extendr_api::{Conversions, List, Rinternals, Robj};
 use pmcore::prelude::*;
 use std::collections::HashMap;
 
@@ -46,9 +46,28 @@ fn get_str(map: &HashMap<&str, Robj>, key: &str) -> AnyResult<String> {
         .map(|s| s.to_string())
 }
 
+/// Helper: coerce a length-1 R numeric to f64, accepting doubles *and* integers.
+///
+/// `Robj::as_real` returns `None` for an integer vector, so reading a setting
+/// with it alone makes an ordinary R literal such as `2L` look absent.
+fn as_scalar_f64(value: &Robj) -> Option<f64> {
+    value
+        .as_real()
+        .or_else(|| value.as_integer().map(f64::from))
+}
+
+/// Helper: coerce an R numeric vector to `Vec<f64>`, accepting doubles and integers.
+fn as_f64_vec(value: &Robj) -> Option<Vec<f64>> {
+    value.as_real_vector().or_else(|| {
+        value
+            .as_integer_vector()
+            .map(|values| values.into_iter().map(f64::from).collect())
+    })
+}
+
 /// Helper: get a field as a real (f64), with an optional default if it cannot be coerced.
 fn get_real_or(map: &HashMap<&str, Robj>, key: &str, default: f64) -> AnyResult<f64> {
-    Ok(get_field(map, key)?.as_real().unwrap_or(default))
+    Ok(as_scalar_f64(get_field(map, key)?).unwrap_or(default))
 }
 
 pub(crate) fn settings(
@@ -91,16 +110,31 @@ pub(crate) fn settings(
         let em: HashMap<&str, Robj> = HashMap::try_from(&em_list)
             .map_err(|e| anyhow!("Failed to parse error_models[{}]: {}", i + 1, e))?;
 
-        // The output equation this error model applies to (1-based). Fall back to
-        // positional order if the field is absent, preserving old behaviour.
-        let outeq_1based = get_field(&em, "outeq")
-            .ok()
-            .and_then(|v| v.as_real())
-            .map(|v| v as usize)
-            .unwrap_or(i + 1);
-        if outeq_1based < 1 {
-            bail!("error_models[{}].outeq must be 1 or greater", i + 1);
-        }
+        // The output equation this error model applies to (1-based). Only an
+        // absent or NULL field falls back to positional order (error models
+        // created before `outeq` existed); a present-but-unreadable value must
+        // fail loudly, because silently falling back misbinds the models.
+        let outeq_1based = match em.get("outeq") {
+            None => i + 1,
+            Some(value) if value.is_null() => i + 1,
+            Some(value) => {
+                let raw = as_scalar_f64(value).ok_or_else(|| {
+                    anyhow!(
+                        "error_models[{}].outeq must be a single number, got a value \
+                         that is not a length-1 numeric",
+                        i + 1
+                    )
+                })?;
+                if raw.fract() != 0.0 || raw < 1.0 {
+                    bail!(
+                        "error_models[{}].outeq must be a whole number 1 or greater, got {}",
+                        i + 1,
+                        raw
+                    );
+                }
+                raw as usize
+            }
+        };
         let outeq = outeq_1based - 1;
         if outeq >= outputs.len() {
             bail!(
@@ -111,9 +145,9 @@ pub(crate) fn settings(
             );
         }
 
-        let gamlam = get_field(&em, "initial")?.as_real().ok_or_else(|| {
+        let gamlam = as_scalar_f64(get_field(&em, "initial")?).ok_or_else(|| {
             anyhow!(
-                "error_models for outeq {} initial is not a real number",
+                "error_models for outeq {} initial is not a single number",
                 outeq_1based
             )
         })?;
@@ -132,7 +166,7 @@ pub(crate) fn settings(
                 outeq_1based
             )
         })?;
-        let coeff = get_field(&em, "coeff")?.as_real_vector().ok_or_else(|| {
+        let coeff = as_f64_vec(get_field(&em, "coeff")?).ok_or_else(|| {
             anyhow!(
                 "error_models for outeq {} coeff is not a numeric vector",
                 outeq_1based
@@ -168,6 +202,18 @@ pub(crate) fn settings(
         // unbound by pharmsol, which leaves the collection pmcore iterates over empty,
         // so gamma/lambda is never optimized nor written to cycles.csv.
         ems = ems.add(outeq, model)?;
+    }
+
+    // Slots are only allocated up to the highest `outeq` seen, so a missing
+    // trailing error model would otherwise leave outputs silently unmodelled.
+    if ems.len() != outputs.len() {
+        bail!(
+            "the model declares {} output equation{}, but error models cover only {}; \
+             each output equation needs exactly one error model",
+            outputs.len(),
+            if outputs.len() == 1 { "" } else { "s" },
+            ems.len()
+        );
     }
 
     let prior = get_str(&settings, "prior")?;
