@@ -1,5 +1,5 @@
 use anyhow::{anyhow, bail, Context, Result as AnyResult};
-use extendr_api::{Conversions, List, Rinternals, Robj};
+use extendr_api::{Conversions, List, Robj};
 use pmcore::prelude::*;
 use std::collections::HashMap;
 
@@ -99,8 +99,8 @@ pub(crate) fn settings(
     };
 
     let error_models_raw = get_list(&settings, "error_models")?;
-    // Each error model declares the 1-based output equation (`outeq`) it applies
-    // to. The number selects an output by declaration order.
+    // Each error model names the output equation (`outeq`) it applies to, using
+    // the same label the model declares in its `outputs` list.
     let mut ems = AssayErrorModels::new();
 
     for (i, (_, em)) in error_models_raw.iter().enumerate() {
@@ -110,72 +110,58 @@ pub(crate) fn settings(
         let em: HashMap<&str, Robj> = HashMap::try_from(&em_list)
             .map_err(|e| anyhow!("Failed to parse error_models[{}]: {}", i + 1, e))?;
 
-        // The output equation this error model applies to (1-based). Only an
-        // absent or NULL field falls back to positional order (error models
-        // created before `outeq` existed); a present-but-unreadable value must
-        // fail loudly, because silently falling back misbinds the models.
-        let outeq_1based = match em.get("outeq") {
-            None => i + 1,
-            Some(value) if value.is_null() => i + 1,
-            Some(value) => {
-                let raw = as_scalar_f64(value).ok_or_else(|| {
-                    anyhow!(
-                        "error_models[{}].outeq must be a single number, got a value \
-                         that is not a length-1 numeric",
-                        i + 1
-                    )
-                })?;
-                if raw.fract() != 0.0 || raw < 1.0 {
-                    bail!(
-                        "error_models[{}].outeq must be a whole number 1 or greater, got {}",
-                        i + 1,
-                        raw
-                    );
-                }
-                raw as usize
-            }
-        };
-        let outeq = outeq_1based - 1;
-        if outeq >= outputs.len() {
-            bail!(
-                "error_models[{}].outeq is {}, but the model has {} outputs",
-                i + 1,
-                outeq_1based,
-                outputs.len()
-            );
-        }
+        // A present-but-unreadable label must fail loudly, because silently
+        // falling back to positional order misbinds the models.
+        let label = get_field(&em, "outeq")?
+            .as_str()
+            .ok_or_else(|| {
+                anyhow!(
+                    "error_models[{}].outeq must be a single output label, got a value \
+                     that is not a length-1 string",
+                    i + 1
+                )
+            })?
+            .to_string();
+        let outeq = outputs
+            .iter()
+            .position(|output| output.eq_ignore_ascii_case(&label))
+            .ok_or_else(|| {
+                anyhow!(
+                    "error_models[{}].outeq is '{}', but the model declares outputs {:?}",
+                    i + 1,
+                    label,
+                    outputs
+                )
+            })?;
 
         let gamlam = as_scalar_f64(get_field(&em, "initial")?).ok_or_else(|| {
             anyhow!(
                 "error_models for outeq {} initial is not a single number",
-                outeq_1based
+                label
             )
         })?;
         let type_vec = get_field(&em, "type")?.as_string_vector().ok_or_else(|| {
             anyhow!(
                 "error_models for outeq {} type is not a character vector",
-                outeq_1based
+                label
             )
         })?;
         let err_type = type_vec
             .first()
-            .ok_or_else(|| anyhow!("error_models for outeq {} type is empty", outeq_1based))?;
-        let fixed = get_field(&em, "fixed")?.as_logical().ok_or_else(|| {
-            anyhow!(
-                "error_models for outeq {} fixed is not logical",
-                outeq_1based
-            )
-        })?;
+            .ok_or_else(|| anyhow!("error_models for outeq {} type is empty", label))?;
+        let fixed = get_field(&em, "fixed")?
+            .as_logical()
+            .ok_or_else(|| anyhow!("error_models for outeq {} fixed is not logical", label))?;
         let coeff = as_f64_vec(get_field(&em, "coeff")?).ok_or_else(|| {
             anyhow!(
                 "error_models for outeq {} coeff is not a numeric vector",
-                outeq_1based
+                label
             )
         })?;
         if coeff.len() < 4 {
             bail!(
                 "error_models for outeq {} coeff must have at least 4 values, got {}",
-                outeq_1based,
+                label,
                 coeff.len()
             );
         }
@@ -198,7 +184,7 @@ pub(crate) fn settings(
             }
             err => bail!("Invalid Error type: {}", err),
         };
-        // Add by dense output slot, not by output name: a name-keyed model is kept
+        // Add by dense output slot rather than by label: a label-keyed model is kept
         // unbound by pharmsol, which leaves the collection pmcore iterates over empty,
         // so gamma/lambda is never optimized nor written to cycles.csv.
         ems = ems.add(outeq, model)?;

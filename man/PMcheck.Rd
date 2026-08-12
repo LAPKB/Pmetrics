@@ -42,14 +42,14 @@ The second object (\verb{$results}) is a vector of the row numbers that contain 
 \item missTIME Ensure that all rows have a TIME value.
 \item doseDur Make sure all dose records are complete, i.e. contain a duration.
 \item doseDose Make sure all dose records are complete, i.e. contain a dose.
-\item doseInput Make sure all dose records are complete, i.e. contain an input number.
+\item doseInput Make sure all dose records are complete, i.e. contain an input identifier.
 \item obsOut Make sure all observation records are complete, i.e. contain an output.
-\item obsOuteq Make sure all observation records are complete, i.e. contain and outeq number.
+\item obsOuteq Make sure all observation records are complete, i.e. contain an outeq identifier.
 \item T0 Make sure each subject's first time=0.
 \item covT0 Make sure that there is an non-missing entry for each covariate at time=0 for each subject.
 \item timeOrder Ensure that all times within a subject ID are monotonically increasing.
 \item contigID Ensure that all subject IDs are contiguous.
-\item nonNum Ensure that all columns except ID are numeric.
+\item nonNum Ensure that all columns except ID, CENS, INPUT, and OUTEQ are numeric.
 \item noObs Ensure that all subjects have at least one observation, which could be missing, i.e. -99.
 \item mal_NA Ensure that all NA values are ".", not ". ", " .", "..", or other malformations.
 }
