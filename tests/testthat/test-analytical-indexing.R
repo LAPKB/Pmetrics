@@ -62,3 +62,33 @@ test_that("Analytical fit runs one NPAG cycle with y[1] and one error model", {
   testthat::expect_s3_class(res, "PM_result")
   testthat::expect_true(file.exists(file.path(run_path, "1", "outputs", "PMout.Rdata")))
 })
+
+test_that("Analytical fit records gamma/lambda for the fitted error model", {
+  mod <- build_one_comp_iv_analytical_model(compile = FALSE)
+  dat <- make_one_comp_iv_fit_data()
+  run_path <- withr::local_tempdir()
+
+  res <- mod$fit(
+    data = dat,
+    path = run_path,
+    cycles = 1,
+    points = 20,
+    report = "none",
+    quiet = TRUE
+  )
+
+  cycles_file <- file.path(run_path, "1", "outputs", "cycles.csv")
+  testthat::expect_true(file.exists(cycles_file))
+
+  # The engine only writes gamlam columns when the error model is bound to an
+  # output slot, so a missing column means the model was silently dropped.
+  cycles_raw <- readr::read_csv(cycles_file, show_col_types = FALSE)
+  testthat::expect_true(any(startsWith(names(cycles_raw), "gamlam")))
+
+  gamlam <- res$cycle$gamlam
+  testthat::expect_true(tibble::is_tibble(gamlam))
+  testthat::expect_gt(nrow(gamlam), 0)
+  testthat::expect_true(all(c("cycle", "value", "outeq", "type") %in% names(gamlam)))
+  testthat::expect_equal(unique(gamlam$outeq), 1)
+  testthat::expect_true(all(is.finite(gamlam$value) & gamlam$value > 0))
+})

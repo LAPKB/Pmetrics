@@ -402,7 +402,7 @@ if (!is.null(res$cycle$data)){
 ### Final cycle assay error
 
 ```{r cycle_gamlam}
-if (!is.null(res$cycle$gamlam) && nrow(res$cycle$gamlam) > 0) {
+if (is.data.frame(res$cycle$gamlam) && nrow(res$cycle$gamlam) > 0) {
   res$cycle$gamlam |>
     dplyr::filter(cycle == max(cycle)) |>
     dplyr::transmute(
@@ -420,10 +420,8 @@ if (!is.null(res$cycle$gamlam) && nrow(res$cycle$gamlam) > 0) {
 
 <!-- THE FOLLOWING SECTION CONTAINS JAVASCRPT SUPPORT FUNCTIONS -->
 
-````{js}
-// This code ensures that click "Mean" tab changes all tabs to "Mean"
-// Original code from https://community.rstudio.com/t/rmarkdown-html-change-all-tabs-on-click/160943
-
+<!-- Disabled: makes clicking one tab (e.g. "Mean") switch every tab set to it. -->
+<!-- Original code from https://community.rstudio.com/t/rmarkdown-html-change-all-tabs-on-click/160943 -->
 
 <!-- // make sure html is fully loaded -->
 <!-- document.addEventListener("DOMContentLoaded", function() { -->
@@ -439,9 +437,6 @@ if (!is.null(res$cycle$gamlam) && nrow(res$cycle$gamlam) > 0) {
 <!-- } -->
 <!-- }) -->
 <!-- }); -->
-<!-- ``` -->
-
-
 
 ```{js}
 $("input.hideshow").each(function(index, button) {
@@ -459,4 +454,4 @@ this.value = 'Hide Output';
 });
 });
 $("input.hideshow").click()
-````
+```

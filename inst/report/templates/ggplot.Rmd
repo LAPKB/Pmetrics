@@ -390,22 +390,24 @@ plot_ll + plot_aic_bic + plot_gamlam + plot_mean + plot_sd + plot_median +
 ### Final cycle assay error
 
 ```{r}
-res$cycle$gamlam |>
-  filter(cycle == max(cycle)) |>
-  transmute(
-    `Output equation` = outeq,
-    Parameter = ifelse(type == "Additive", "Lambda", "Gamma"),
-    Value = round(value, 4)
-  ) |>
-  DT::datatable(options = list(dom = "t", searching = FALSE))
+if (is.data.frame(res$cycle$gamlam) && nrow(res$cycle$gamlam) > 0) {
+  res$cycle$gamlam |>
+    filter(cycle == max(cycle)) |>
+    transmute(
+      `Output equation` = outeq,
+      Parameter = ifelse(type == "Additive", "Lambda", "Gamma"),
+      Value = round(value, 4)
+    ) |>
+    DT::datatable(options = list(dom = "t", searching = FALSE))
+} else {
+  knitr::asis_output("No gamma/lambda values were recorded for this run.")
+}
 ```
 
 <!-- THE FOLLOWING SECTION CONTAINS JAVASCRPT SUPPORT FUNCTIONS -->
 
-````{js}
-// This code ensures that click "Mean" tab changes all tabs to "Mean"
-// Original code from https://community.rstudio.com/t/rmarkdown-html-change-all-tabs-on-click/160943
-
+<!-- Disabled: makes clicking one tab (e.g. "Mean") switch every tab set to it. -->
+<!-- Original code from https://community.rstudio.com/t/rmarkdown-html-change-all-tabs-on-click/160943 -->
 
 <!-- // make sure html is fully loaded -->
 <!-- document.addEventListener("DOMContentLoaded", function() { -->
@@ -421,9 +423,6 @@ res$cycle$gamlam |>
 <!-- } -->
 <!-- }) -->
 <!-- }); -->
-<!-- ``` -->
-
-
 
 ```{js}
 $("input.hideshow").each(function(index, button) {
@@ -441,4 +440,4 @@ this.value = 'Hide Output';
 });
 });
 $("input.hideshow").click()
-````
+```
