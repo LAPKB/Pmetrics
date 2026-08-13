@@ -2,6 +2,8 @@ Type: Package
 Package: Pmetrics
 Title: Pmetrics for Population Modeling and Simulation
 Version: 3.2.3
+Author: Michael Neely [aut, cre], Julián Otálvaro [aut], Markus Hovd [aut], Walter Yamada [ctb], Alan Schumitzky [ctb], Rong Chen [ctb], Michael van Guilder [ctb], David Bayard [ctb], Robert Leary [ctb]
+Maintainer: Michael Neely <mneely@usc.edu>
 Authors@R: c(
     person("Michael", "Neely", , "mneely@usc.edu", role = c("aut", "cre")),
     person("Julián", "Otálvaro", , "juliandavid347@gmail.com", role = "aut"),

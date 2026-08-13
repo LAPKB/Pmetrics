@@ -21,3 +21,4 @@
 ^dev$
 ^\.posit$
 ^temp$
+^vignettes/\.quarto$

@@ -5,18 +5,6 @@ test_that <- function(desc, code) {
 }
 
 cleanup_exa_tmp <- function() {
-  exa_tmp <- tryCatch(temporary_path(), error = function(...) NA_character_)
-
-  if (
-    is.character(exa_tmp) &&
-      length(exa_tmp) == 1 &&
-      !is.na(exa_tmp) &&
-      nzchar(exa_tmp) &&
-      dir.exists(exa_tmp)
-  ) {
-    unlink(exa_tmp, recursive = TRUE, force = TRUE)
-  }
-
   invisible(NULL)
 }
 
