@@ -5,6 +5,8 @@
 \title{Download the latest platform-specific R installer}
 \usage{
 downloadR(r_info = latestR(), destdir = path.expand("~/Downloads"))
+
+downloadR(r_info = latestR(), destdir = path.expand("~/Downloads"))
 }
 \arguments{
 \item{r_info}{Optional API response list. Defaults to \code{\link[=latestR]{latestR()}}.}
@@ -13,8 +15,14 @@ downloadR(r_info = latestR(), destdir = path.expand("~/Downloads"))
 }
 \value{
 The file path of the downloaded installer/tarball.
+
+The file path of the downloaded installer/tarball.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Downloads the latest R installer (or source tarball on Linux) for the current
+platform to the user's Downloads folder.
+
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Downloads the latest R installer (or source tarball on Linux) for the current
 platform to the user's Downloads folder.

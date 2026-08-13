@@ -23,3 +23,4 @@ Result of the fitting process.
 \description{
 Fits the given model to the data using the provided settings.
 }
+\keyword{internal}

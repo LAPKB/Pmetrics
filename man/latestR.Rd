@@ -5,11 +5,19 @@
 \title{Get latest platform-specific R release metadata}
 \usage{
 latestR()
+
+latestR()
 }
 \value{
 A list containing all fields returned by the API response.
+
+A list containing all fields returned by the API response.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
+Retrieves metadata for the latest R release available for the current
+platform from the r-hub rversions API.
+
 \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
 Retrieves metadata for the latest R release available for the current
 platform from the r-hub rversions API.

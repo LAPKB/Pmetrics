@@ -15,3 +15,4 @@ List of model parameters.
 \description{
 Retrieves the model parameters from the given model.
 }
+\keyword{internal}

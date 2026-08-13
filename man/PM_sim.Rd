@@ -152,7 +152,6 @@ Again, this can be useful as a check against the original covariance in \code{po
     \item \href{#method-PM_sim-initialize}{\code{PM_sim$new()}}
     \item \href{#method-PM_sim-save}{\code{PM_sim$save()}}
     \item \href{#method-PM_sim-plot}{\code{PM_sim$plot()}}
-    \item \href{#method-PM_sim-opt}{\code{PM_sim$opt()}}
     \item \href{#method-PM_sim-pta}{\code{PM_sim$pta()}}
     \item \href{#method-PM_sim-auc}{\code{PM_sim$auc()}}
     \item \href{#method-PM_sim-summary}{\code{PM_sim$summary()}}
@@ -193,7 +192,7 @@ or via the \verb{$sim} method for \link{PM_result} objects.
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{poppar}}{One of five things:
+      \item{\code{poppar}}{One of four things:
 \enumerate{
 \item A \link{PM_result} object containing the final population parameter
 distribution from a model run, a model object, and a data object.
@@ -203,22 +202,22 @@ The data object may also be replaced (and often is) by a different \link{PM_data
 object compatible with the model.
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{run1 <- PM_load(1) # load the PM_result object
-sim1 <- run1$sim(...) # replace model and data in run1 if desired;
+sim1 <- run1$sim(...) # replace model and data in run1 if desired; 
 #must be compatible with model and data in run1
 
 mod <- PM_model$new("model.txt") # or use a model object
-sim2 <- mod$sim(poppar = run1, data = "newdata.csv", ...)
+sim2 <- mod$sim(poppar = run1, data = "newdata.csv", ...) 
 # poppar and data necessary, model obtained from mod
 }\if{html}{\out{</div>}}
 \item Population prior parameters as a \link{PM_final} object found in
 \code{PM_result$final}.
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{run1 <- PM_load(1) # load the PM_result object
-sim1 <- PM_sim$new(poppar = run1$final, model = newmodel, data = newdata, ...)
+sim1 <- PM_sim$new(poppar = run1$final, model = newmodel, data = newdata, ...) 
 # model and data necessary
 
 mod <- PM_model$new("model.txt") # or use a model object
-sim2 <- mod$sim(poppar = run1$final, data = "newdata.csv", ...)
+sim2 <- mod$sim(poppar = run1$final, data = "newdata.csv", ...) 
 # poppar and data necessary, model obtained from mod
 }\if{html}{\out{</div>}}
 \item The name of a previously saved simulation via the \verb{$save} method. The
@@ -259,9 +258,9 @@ Examples:
 \item Single distribution:
 }
 
-\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar = list(wt = 1,
-              mean = list(ke = 0.5, v = 100),
-              cov = matrix(c(0.04, 2.4, 2.8, 400), nrow = 2))  # sd not required because cov specified
+\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar = list(wt = 1, 
+              mean = list(ke = 0.5, v = 100), 
+              cov = matrix(c(0.04, 2.4, 2.8, 400), nrow = 2))  # sd not required because cov specified 
 }\if{html}{\out{</div>}}
 \itemize{
 \item Multiple distributions:
@@ -271,17 +270,6 @@ Examples:
               mean = list(ke = c(2, 0.5, 1), v = c(50, 100, 200)), # 3 values for each parameter
               sd = list(ke = 0.2, v = 20), # overall sd, ignoring multiple distributions
               cor = matrix(c(1, 0.6, 0.7, 1), nrow = 2)) # sd required because cor specified
-}\if{html}{\out{</div>}}
-\item A data frame with one column for each parameter and one row for each parameter set
-to simulate. This is useful when you already have fixed parameter values, such as
-\code{NPex$final$popPoints}. Each row will generate one simulated profile, so \code{nsim} is
-ignored and the number of simulated profiles will equal the number of rows in the
-data frame. If a \verb{$prob} column is present, it will be ignored, since each row is
-treated as the parameters to be used for one simulation.
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{poppar <- as.data.frame(run1$final$popPoints) |>
-  dplyr::select(ke, v)
-sim1 <- PM_sim$new(poppar = poppar, model = run1$model, data = run1$data)
 }\if{html}{\out{</div>}}
 }}
       \item{\code{model}}{Name of a suitable \link{PM_model} object or a model file template
@@ -348,9 +336,7 @@ all subjects in the data file will be used, i.e. none excluded.
 Using both \code{include} and \code{exclude} criteria may result in conflicts.}
       \item{\code{nsim}}{The number of simulated profiles to create, per subject.  Default
 is 1000.  Entering 0 will result in one profile being simulated from each
-point in the non-parametric prior (for NPAG final objects only). If \code{poppar}
-is supplied as a data frame of parameter values, \code{nsim} is ignored and the
-number of simulated profiles will equal the number of rows in that data frame.}
+point in the non-parametric prior (for NPAG final objects only).}
       \item{\code{predInt}}{The interval in fractional hours for simulated predicted
 outputs at times other than those specified in the template \code{data}.
 The default is 0, which means there will be simulated outputs only at times
@@ -716,26 +702,6 @@ result.}
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-PM_sim-opt"></a>}}
-\if{latex}{\out{\hypertarget{method-PM_sim-opt}{}}}
-\subsection{\code{PM_sim$opt()}}{
-  \ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#stable}{\figure{lifecycle-stable.svg}{options: alt='[Stable]'}}}{\strong{[Stable]}}
-Calculate optimal sampling times
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{PM_sim$opt(...)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{...}}{Additional parameters, refer to \link{PM_opt}}
-    }
-    \if{html}{\out{</div>}}
-  }
-}
-
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PM_sim-pta"></a>}}
 \if{latex}{\out{\hypertarget{method-PM_sim-pta}{}}}
 \subsection{\code{PM_sim$pta()}}{
@@ -770,7 +736,7 @@ Calculates the AUC of the specified simulation
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{...}}{Arguments passed to \link{make_AUC}.}
+      \item{\code{...}}{Arguments passed to \link{makeAUC}.}
     }
     \if{html}{\out{</div>}}
   }

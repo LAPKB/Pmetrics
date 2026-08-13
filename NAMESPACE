@@ -4,7 +4,6 @@ S3method(plot,PM_cov)
 S3method(plot,PM_cycle)
 S3method(plot,PM_cycle_data)
 S3method(plot,PM_data)
-S3method(plot,PM_data_data)
 S3method(plot,PM_final)
 S3method(plot,PM_final_data)
 S3method(plot,PM_model)
@@ -98,11 +97,9 @@ export(add_smooth)
 export(additive)
 export(all_is_numeric)
 export(apps)
-export(check_updates)
 export(bd)
 export(bd_post)
-export(build_model)
-export(build_plot)
+export(check_updates)
 export(clear_build)
 export(cli_ask)
 export(cli_df)
@@ -110,7 +107,6 @@ export(click_plot)
 export(cor2cov)
 export(create_pmetrics_project)
 export(downloadR)
-export(dummy_compile)
 export(export_plotly)
 export(fit)
 export(getCov)
@@ -119,7 +115,6 @@ export(getFixedColNum)
 export(getPMoptions)
 export(getPalettes)
 export(interp)
-export(is_cargo_installed)
 export(latestR)
 export(lit_sim)
 export(makeAUC)
@@ -188,6 +183,7 @@ importFrom(dplyr,
   group_map,
   if_else,
   inner_join,
+  left_join,
   mutate,
   n,
   nest_by,
@@ -201,6 +197,7 @@ importFrom(dplyr,
   select,
   slice,
   slice_head,
+  slice_max,
   slice_tail,
   starts_with,
   summarize,

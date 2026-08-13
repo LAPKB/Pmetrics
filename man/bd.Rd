@@ -11,65 +11,66 @@ BestDose finds optimal dosing regimens to achieve target drug concentrations
 or AUC values using Bayesian optimization.
 }
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{past}}{PM_data object containing past patient data used in the optimization (if applicable)}
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{past}}{PM_data object containing past patient data used in the optimization (if applicable)}
 
-\item{\code{past_pred}}{PM_sim object containing model predictions for the past data}
+    \item{\code{past_pred}}{PM_sim object containing model predictions for the past data}
 
-\item{\code{future}}{PM_data object containing future data used in the optimization}
+    \item{\code{future}}{PM_data object containing future data used in the optimization}
 
-\item{\code{future_pred}}{PM_sim object containing model predictions for the future data}
+    \item{\code{future_pred}}{PM_sim object containing model predictions for the future data}
 
-\item{\code{result}}{List containing optimization results, including optimal doses, predictions, and objective function value}
+    \item{\code{result}}{List containing optimization results, including optimal doses, predictions, and objective function value}
 
-\item{\code{posterior}}{The \code{bd_post} object used to compute the posterior distribution (if applicable)}
+    \item{\code{posterior}}{The \code{bd_post} object used to compute the posterior distribution (if applicable)}
 
-\item{\code{prior_weight}}{The prior weight (lambda) used in the optimization (if applicable)}
+    \item{\code{prior_weight}}{The prior weight (lambda) used in the optimization (if applicable)}
 
-\item{\code{start}}{Start specification provided by user (numeric hours or datetime string)}
+    \item{\code{start}}{Start specification provided by user (numeric hours or datetime string)}
 
-\item{\code{start_offset}}{Resolved numeric offset (hours) used internally; NULL means use target times as-is}
+    \item{\code{start_offset}}{Resolved numeric offset (hours) used internally; NULL means use target times as-is}
 
-\item{\code{future_requested_doses}}{Numeric vector of originally requested future doses (0 = optimize, non-zero = fixed)}
+    \item{\code{future_requested_doses}}{Numeric vector of originally requested future doses (0 = optimize, non-zero = fixed)}
 
-\item{\code{future_target_info}}{List with target_type, target, and target_time from the original future specification}
-}
-\if{html}{\out{</div>}}
+    \item{\code{future_target_info}}{List with target_type, target, and target_time from the original future specification}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{doses}}{Optimal doses found by BestDose optimization}
+  \if{html}{\out{<div class="r6-active-bindings">}}
+  \describe{
+    \item{\code{doses}}{Optimal doses found by BestDose optimization}
 
-\item{\code{objf}}{Objective function value at the optimal doses}
+    \item{\code{objf}}{Objective function value at the optimal doses}
 
-\item{\code{method}}{Optimization method used}
+    \item{\code{method}}{Optimization method used}
 
-\item{\code{status}}{Status of the optimization run}
-}
-\if{html}{\out{</div>}}
+    \item{\code{status}}{Status of the optimization run}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-bd-new}{\code{bd$new()}}
-\item \href{#method-bd-print}{\code{bd$print()}}
-\item \href{#method-bd-save}{\code{bd$save()}}
-\item \href{#method-bd-plot}{\code{bd$plot()}}
-\item \href{#method-bd-report}{\code{bd$report()}}
-\item \href{#method-bd-clone}{\code{bd$clone()}}
-}
+  \itemize{
+    \item \href{#method-bd-initialize}{\code{bd$new()}}
+    \item \href{#method-bd-print}{\code{bd$print()}}
+    \item \href{#method-bd-save}{\code{bd$save()}}
+    \item \href{#method-bd-plot}{\code{bd$plot()}}
+    \item \href{#method-bd-report}{\code{bd$report()}}
+    \item \href{#method-bd-clone}{\code{bd$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-bd-new"></a>}}
-\if{latex}{\out{\hypertarget{method-bd-new}{}}}
-\subsection{Method \code{new()}}{
-Initialize a \code{bd} object by running a one-shot BestDose optimization.
+\if{html}{\out{<a id="method-bd-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-bd-initialize}{}}}
+\subsection{\code{bd$new()}}{
+  Initialize a \code{bd} object by running a one-shot BestDose optimization.
 Creates the posterior internally, then optimizes. For reusing the posterior
 across multiple optimizations, use \code{bd_post$new()} followed by \verb{$optimize()}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{bd$new(
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{bd$new(
   model = NULL,
   prior = NULL,
   past_data = NULL,
@@ -81,20 +82,17 @@ across multiple optimizations, use \code{bd_post$new()} followed by \verb{$optim
   settings = NULL,
   posterior = NULL,
   quiet = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{model}}{PM_model object or path to compiled model}
-
-\item{\code{prior}}{Prior parameter value distributions for the model, can be a \link{PM_result}, \link{PM_final}, or path to \code{theta.csv} file.}
-
-\item{\code{past_data}}{PM_data object or path to CSV file with past patient data (optional). Omitting this will plan a new regimen for the patient
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{model}}{PM_model object or path to compiled model}
+      \item{\code{prior}}{Prior parameter value distributions for the model, can be a \link{PM_result}, \link{PM_final}, or path to \code{theta.csv} file.}
+      \item{\code{past_data}}{PM_data object or path to CSV file with past patient data (optional). Omitting this will plan a new regimen for the patient
 based on the population prior without any individualization other than inclusion of any covariates which are in the model.}
-
-\item{\code{future}}{The future regimen to optimize. It can be one of three things:
+      \item{\code{future}}{The future regimen to optimize. It can be one of three things:
 \itemize{
 \item A list describing future dosing/target setup with elements:
 \itemize{
@@ -121,16 +119,13 @@ When \code{future} is supplied this way, concentration targets are assumed.
 \item A path to a CSV file containing the future regimen and target observations in the same format as described for the \code{PM_data} object above.
 When \code{future} is supplied this way, concentration targets are assumed.
 }}
-
-\item{\code{dose_range}}{List with 'min' and 'max' elements defining the dose search range (default: 0 to 1000)}
-
-\item{\code{prior_weight}}{Numeric between 0 and 1 indicating the balance between the prior and the posterior in the optimization (default: 0.5).
+      \item{\code{dose_range}}{List with 'min' and 'max' elements defining the dose search range (default: 0 to 1000)}
+      \item{\code{prior_weight}}{Numeric between 0 and 1 indicating the balance between the prior and the posterior in the optimization (default: 0.5).
 If 1, the model prior parameter
 value distribution will be used as the sole basis for optimization. If 0, only the Bayesian posterior parameter distribution will be used,
 which incorporates the patient history. Values between 0 and 1 will weight the contribution of the prior vs posterior parameter distributions in the optimization.
 Choose values closer to 1 when the patient history is sparse or not believed to be very informative, and values closer to 0 when the patient history is rich and believed to be highly informative.}
-
-\item{\code{start}}{Start time for the future regimen. Can be either:
+      \item{\code{start}}{Start time for the future regimen. Can be either:
 \itemize{
 \item \code{NULL}: use the supplied future/target times as-is, without appending them after past data.
 \item Numeric hours (default \code{0}): relative to the last event date/time in past data, or if no past data,
@@ -145,98 +140,105 @@ Accepted formats include:
 \item \verb{dd/mm/[YY]YY HH:MM[:SS]} or \verb{dd-mm-[YY]YY HH:MM[:SS]}
 }
 }}
-
-\item{\code{max_cycles}}{Maximum number of optimization cycles for computing the posterior (default: 500)}
-
-\item{\code{settings}}{List of additional settings for posterior computation (optional)}
-
-\item{\code{posterior}}{\code{bd_post} object to use instead of computing a new one (optional).
+      \item{\code{max_cycles}}{Maximum number of optimization cycles for computing the posterior (default: 500)}
+      \item{\code{settings}}{List of additional settings for posterior computation (optional)}
+      \item{\code{posterior}}{\code{bd_post} object to use instead of computing a new one (optional).
 When provided, \code{prior}, \code{model}, \code{past_data}, \code{max_cycles}, and \code{settings} are ignored, as they are already included in the \code{posterior} object.}
+      \item{\code{quiet}}{Logical indicating whether to suppress verbose simulation output (default: FALSE)}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A \code{bd} object containing the optimization results and associated information
+  }
+}
 
-\item{\code{quiet}}{Logical indicating whether to suppress verbose simulation output (default: FALSE)}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A \code{bd} object containing the optimization results and associated information
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-bd-print"></a>}}
 \if{latex}{\out{\hypertarget{method-bd-print}{}}}
-\subsection{Method \code{print()}}{
-Print summary of BestDose results
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{bd$print()}\if{html}{\out{</div>}}
+\subsection{\code{bd$print()}}{
+  Print summary of BestDose results
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{bd$print()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-bd-save"></a>}}
 \if{latex}{\out{\hypertarget{method-bd-save}{}}}
-\subsection{Method \code{save()}}{
-Save results to RDS file
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{bd$save(filename = "bestdose_result.rds")}\if{html}{\out{</div>}}
+\subsection{\code{bd$save()}}{
+  Save results to RDS file
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{bd$save(filename = "bestdose_result.rds")}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{filename}}{Path to save file. Default: "bestdose_result.rds"}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{filename}}{Path to save file. Default: "bestdose_result.rds"}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-bd-plot"></a>}}
 \if{latex}{\out{\hypertarget{method-bd-plot}{}}}
-\subsection{Method \code{plot()}}{
-Plot observed and predicted concentrations over time for both past and future data
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{bd$plot(...)}\if{html}{\out{</div>}}
+\subsection{\code{bd$plot()}}{
+  Plot observed and predicted concentrations over time for both past and future data
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{bd$plot(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Additional arguments passed to plot.bd function}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Additional arguments passed to plot.bd function}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-bd-report"></a>}}
 \if{latex}{\out{\hypertarget{method-bd-report}{}}}
-\subsection{Method \code{report()}}{
-Generate an HTML report for a BestDose result
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{bd$report(...)}\if{html}{\out{</div>}}
+\subsection{\code{bd$report()}}{
+  Generate an HTML report for a BestDose result
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{bd$report(...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{...}}{Parameters passed to the internal BestDose report generator.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{...}}{Parameters passed to the internal BestDose report generator.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-bd-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-bd-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{bd$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{bd$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{bd$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }
