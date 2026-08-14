@@ -1887,8 +1887,8 @@ PM_model <- R6::R6Class(
       extra_pri <- names(pri)[!pri_names %in% parameter_names]
       if (length(missing_pri) > 0 || length(extra_pri) > 0) {
         details <- c(
-          if (length(missing_pri) > 0) "i" <- "Missing pri: {paste(missing_pri, collapse = ', ')}.",
-          if (length(extra_pri) > 0) "i" <- "Unknown pri: {paste(extra_pri, collapse = ', ')}."
+          if (length(missing_pri) > 0) c("i" = "Missing pri: {paste(missing_pri, collapse = ', ')}."),
+          if (length(extra_pri) > 0) c("i" = "Unknown pri: {paste(extra_pri, collapse = ', ')}.")
         )
         cli::cli_abort(c("x" = "{.arg pri} does not match the DSL parameters.", details))
       }
