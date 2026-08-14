@@ -8,6 +8,7 @@ write_settings_json(
   path,
   param_ranges,
   error_models,
+  outputs,
   algorithm,
   cycles,
   idelta,
@@ -25,6 +26,9 @@ ranges, in parameter order.}
 
 \item{error_models}{A list of \code{PM_err} objects, each carrying \code{type},
 \code{initial}, \code{coeff}, \code{fixed}, and \code{outeq}.}
+
+\item{outputs}{Character vector of the model's output labels, in declaration
+order. Used to resolve each error model's output label to its output slot.}
 
 \item{algorithm}{The fitting algorithm (e.g. "NPAG").}
 

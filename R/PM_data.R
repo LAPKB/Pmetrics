@@ -73,13 +73,11 @@ PM_data <- R6::R6Class("PM_data",
     #' @param quiet Quietly validate. Default is `FALSE`.
     #' @param validate Check for errors. Default is `TRUE`. Strongly recommended.
     #' @param ... Other arguments (not currently used).
-    initialize = function(
-      data = NULL,
-      dt = NULL,
-      quiet = FALSE,
-      validate = TRUE,
-      ...
-    ) {
+    initialize = function(data = NULL,
+                          dt = NULL,
+                          quiet = FALSE,
+                          validate = TRUE,
+                          ...) {
       if (is.character(data)) { # filename
         self$data <- rlang::try_fetch(PMreadMatrix(data, quiet = TRUE),
           error = function(e) {
@@ -826,14 +824,14 @@ PMmatrixRelTime <- function(
 #'  * missTIME Ensure that all rows have a TIME value.
 #'  * doseDur Make sure all dose records are complete, i.e. contain a duration.
 #'  * doseDose Make sure all dose records are complete, i.e. contain a dose.
-#'  * doseInput Make sure all dose records are complete, i.e. contain an input number.
+#'  * doseInput Make sure all dose records are complete, i.e. contain an input identifier.
 #'  * obsOut Make sure all observation records are complete, i.e. contain an output.
-#'  * obsOuteq Make sure all observation records are complete, i.e. contain and outeq number.
+#'  * obsOuteq Make sure all observation records are complete, i.e. contain an outeq identifier.
 #'  * T0 Make sure each subject's first time=0.
 #'  * covT0 Make sure that there is an non-missing entry for each covariate at time=0 for each subject.
 #'  * timeOrder Ensure that all times within a subject ID are monotonically increasing.
 #'  * contigID Ensure that all subject IDs are contiguous.
-#'  * nonNum Ensure that all columns except ID are numeric.
+#'  * nonNum Ensure that all columns except ID, CENS, INPUT, and OUTEQ are numeric.
 #'  * noObs Ensure that all subjects have at least one observation, which could be missing, i.e. -99.
 #'  * mal_NA Ensure that all NA values are ".", not ". ", " .", "..", or other malformations.
 #'
@@ -1113,12 +1111,14 @@ errcheck <- function(data2, quiet, source) {
     attr(err, "error") <- -1
   }
 
-  # check that all non-missing columns other than ID and cens are numeric
+  # check that all non-missing columns other than ID, cens, and the
+  # input/output labels are numeric
 
   allMiss <- names(data2)[which(apply(data2, 2, function(x) all(is.na(x))))]
   nonNumeric <- names(data2)[which(sapply(data2, function(x) !is.numeric(x)))]
   if (length(nonNumeric) > 0) {
-    nonNumeric <- nonNumeric[!nonNumeric %in% allMiss] |> purrr::discard(~ .x %in% (c("id", "cens")))
+    nonNumeric <- nonNumeric[!nonNumeric %in% allMiss] |>
+      purrr::discard(~ .x %in% (c("id", "cens", "input", "outeq")))
   }
   if (length(nonNumeric) > 0) { # exclude id, cens columns
     err$nonNum$msg <- "FAIL - The following columns must be all numeric."

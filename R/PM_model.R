@@ -37,15 +37,16 @@
 #'   dsl,
 #'   pri,
 #'   err,
-#'   input_map = NULL,
 #'   solver = NULL,
 #'   quiet = FALSE
 #' )
 #' ```
 #'
-#' `dsl` is one character string containing the model source. `input_map` is an
-#' optional named integer vector that maps DSL route names to Pmetrics `INPUT`
-#' values. Routes named `input_1`, `input_2`, and so on are mapped automatically.
+#' `dsl` is one character string containing the model source. Route and output
+#' labels declared in the DSL are the labels Pmetrics expects in the data's
+#' `INPUT` and `OUTEQ` columns. Purely numeric identifiers in the data are
+#' canonicalised to the `input_n` / `outeq_n` form pharmsol requires, so
+#' `INPUT = 1` matches a route declared as `input_1`.
 #'
 #' **Some notes on the example at the end of this help page:**
 #'
@@ -109,9 +110,6 @@ PM_model <- R6::R6Class(
     #' @field dsl The model definition rendered as pharmsol DSL source, used by the
     #' Rust backend to JIT-compile the model at run time.
     dsl = NULL,
-    #' @field input_remap A list describing data label changes required by the
-    #' DSL model. Each element is a list with `kind`, `from`, and `to`.
-    input_remap = NULL,
     #' @description
     #' This is the method to create a new `PM_model` object.
     #'
@@ -399,7 +397,6 @@ PM_model <- R6::R6Class(
     #' This is ignored for analytical library models.
     #' @param ... Not currently used.
     #' @param .dsl Internal DSL source used by `PM_model$from_dsl()`.
-    #' @param .input_map Internal route mapping used by `PM_model$from_dsl()`.
     initialize = function(x = NULL,
                           pri = NULL,
                           cov = NULL,
@@ -412,12 +409,11 @@ PM_model <- R6::R6Class(
                           err = NULL,
                           solver = NULL,
                           ...,
-                          .dsl = NULL,
-                          .input_map = NULL) {
+                          .dsl = NULL) {
       if (!is.null(.dsl)) {
         extra_args <- list(...)
         quiet <- isTRUE(extra_args$quiet)
-        private$from_dsl(.dsl, pri, err, .input_map, solver, quiet)
+        private$from_dsl(.dsl, pri, err, solver, quiet)
         return(invisible(self))
       }
 
@@ -459,7 +455,6 @@ PM_model <- R6::R6Class(
             self$arg_list <- x$arg_list
             self$model_list <- x$model_list
             self$dsl <- x$dsl
-            self$input_remap <- x$input_remap
             return(invisible(self))
           }
 
@@ -477,7 +472,6 @@ PM_model <- R6::R6Class(
           })
           self$arg_list$x <- NULL
           self$dsl <- x$dsl
-          self$input_remap <- x$input_remap
         } else {
           cli::cli_abort(c(
             "x" = "Non supported input for {.arg x}: {typeof(x)}",
@@ -718,20 +712,19 @@ PM_model <- R6::R6Class(
       if (length(self$arg_list$err) != n_out) {
         msg <- c(msg, "There must be one error model for each output equation.")
       }
-      # Validate the output equation (`outeq`) each error model is declared for.
-      # Error models created before `outeq` existed default to positional order.
+      # Validate the output equation each error model is declared for. R-defined
+      # models declare outputs as `y[i]`, whose canonical labels are `outeq_i`.
       if (!is.null(self$arg_list$err) && length(self$arg_list$err) > 0) {
-        err_outeqs <- purrr::imap_dbl(self$arg_list$err, \(e, i) {
-          oq <- if (inherits(e, "PM_err")) suppressWarnings(as.numeric(e$outeq)) else NA_real_
-          if (length(oq) != 1 || is.na(oq)) i else oq
-        })
-        if (any(err_outeqs %% 1 != 0) || any(err_outeqs < 1)) {
-          msg <- c(msg, "Each error model {.arg outeq} must be a positive integer (the output equation it applies to).")
+        model_outputs <- pm_output_label(seq_len(n_out))
+        is_err <- vapply(self$arg_list$err, inherits, logical(1), "PM_err")
+        if (!all(is_err)) {
+          msg <- c(msg, "Each error model must be created with {.fn additive} or {.fn proportional}.")
         } else {
-          if (any(err_outeqs > n_out)) {
-            msg <- c(msg, "Error model {.arg outeq} values must be between 1 and the number of outputs ({n_out}).")
-          }
-          if (anyDuplicated(err_outeqs) > 0) {
+          err_outeqs <- pm_err_labels(self$arg_list$err)
+          if (any(!err_outeqs %in% model_outputs)) {
+            unknown <- setdiff(err_outeqs, model_outputs)
+            msg <- c(msg, "Error model {.arg outeq} {.val {unknown}} {?does/do} not match any model output ({.val {model_outputs}}).")
+          } else if (anyDuplicated(err_outeqs) > 0) {
             msg <- c(msg, "Each output equation may have only one error model; duplicate {.arg outeq} values were found.")
           }
         }
@@ -1084,20 +1077,21 @@ PM_model <- R6::R6Class(
 
       # bolus and infusions
       if (self$model_list$type == "ODE") { # only need to check these for ODE models
-        bolus <- unique(data$standard_data$input[data$standard_data$dur == 0]) |> purrr::discard(~ is.na(.x))
-        infusion <- unique(data$standard_data$input[data$standard_data$dur > 0]) |> purrr::discard(~ is.na(.x))
+        data_inputs <- pm_input_label(data$standard_data$input)
+        bolus <- unique(data_inputs[data$standard_data$dur == 0]) |> purrr::discard(~ is.na(.x))
+        infusion <- unique(data_inputs[data$standard_data$dur > 0]) |> purrr::discard(~ is.na(.x))
         if (length(bolus) > 0) {
           model_bolus <- if (isTRUE(self$model_list$from_dsl)) {
             self$model_list$route_inputs$bolus
           } else {
-            eqn_route_inputs(self$arg_list$eqn, "bolus")
+            pm_input_label(eqn_route_inputs(self$arg_list$eqn, "bolus"))
           }
           missing_bolus <- setdiff(bolus, model_bolus)
           if (length(missing_bolus) > 0) {
             if (isTRUE(self$model_list$from_dsl)) {
               msg <- c(msg, "Bolus input(s) {paste(missing_bolus, collapse = ', ')} {?is/are} missing from the model.")
             } else {
-              msg <- c(msg, "Bolus input(s) {paste(missing_bolus, collapse = ', ')} {?is/are} missing from the model equations. Use {.code b[{missing_bolus}]} or {.code bolus[{missing_bolus}]}, for example, to represent bolus inputs in the equations.")
+              msg <- c(msg, "Bolus input(s) {paste(missing_bolus, collapse = ', ')} {?is/are} missing from the model equations. Use {.code b[j]} or {.code bolus[j]}, for example, to represent bolus inputs in the equations.")
             }
             run_error <- run_error + 1
           }
@@ -1106,14 +1100,14 @@ PM_model <- R6::R6Class(
           model_infusion <- if (isTRUE(self$model_list$from_dsl)) {
             self$model_list$route_inputs$infusion
           } else {
-            eqn_route_inputs(self$arg_list$eqn, "infusion")
+            pm_input_label(eqn_route_inputs(self$arg_list$eqn, "infusion"))
           }
           missing_infusion <- setdiff(infusion, model_infusion)
           if (length(missing_infusion) > 0) {
             if (isTRUE(self$model_list$from_dsl)) {
               msg <- c(msg, "Infusion input(s) {paste(missing_infusion, collapse = ', ')} {?is/are} missing from the model.")
             } else {
-              msg <- c(msg, "Infusion input(s) {paste(missing_infusion, collapse = ', ')} {?is/are} missing from the model equations. Use {.code r[{missing_infusion}]} or {.code rateiv[{missing_infusion}]} , for example, to represent infusion inputs in the equations.")
+              msg <- c(msg, "Infusion input(s) {paste(missing_infusion, collapse = ', ')} {?is/are} missing from the model equations. Use {.code r[j]} or {.code rateiv[j]}, for example, to represent infusion inputs in the equations.")
             }
             run_error <- run_error + 1
           }
@@ -1397,11 +1391,10 @@ PM_model <- R6::R6Class(
       # Persist the DSL source alongside the run inputs for reproducibility.
       if (is.null(self$dsl)) self$compile(quiet = TRUE)
       writeLines(self$dsl, normalizePath(file.path(path_run, "inputs", "model.txt"), mustWork = FALSE))
-      # Apply any input remapping required by the DSL model (e.g. when an input
-      # drives both a bolus and an infusion route).
-      remap_input_csv(
-        normalizePath(file.path(path_run, "inputs", "gendata.csv"), mustWork = FALSE),
-        self$input_remap
+      # Rewrite the backend's copy of the data so INPUT/OUTEQ carry the same
+      # labels the DSL declares.
+      label_data_csv(
+        normalizePath(file.path(path_run, "inputs", "gendata.csv"), mustWork = FALSE)
       )
 
       # Get ranges and calculate points
@@ -1432,7 +1425,9 @@ PM_model <- R6::R6Class(
             params = list(
               ranges = ranges, # not important but needed for POSTPROB
               algorithm = algorithm,
-              error_models = lapply(self$model_list$err, function(x) x$flatten()),
+              error_models = lapply(seq_along(self$model_list$err), function(i) {
+                pm_err_flatten(self$model_list$err[[i]], i)
+              }),
               idelta = as.numeric(idelta),
               tad = as.numeric(tad),
               max_cycles = as.numeric(cycles), # will be hardcoded in Rust to 0 for POSTPROB
@@ -1478,6 +1473,7 @@ PM_model <- R6::R6Class(
             path = file.path(out_path, "settings.json"),
             param_ranges = ranges,
             error_models = self$model_list$err,
+            outputs = model_output_labels(self),
             algorithm = algorithm,
             cycles = cycles,
             idelta = idelta,
@@ -1629,8 +1625,8 @@ PM_model <- R6::R6Class(
           cli::cli_abort(c("x" = "Model must be prepared before simulating."))
         }
       }
-      # Apply any input remapping required by the DSL model.
-      remap_input_csv(temp_csv, self$input_remap)
+      # Label the backend's copy of the data to match the DSL.
+      label_data_csv(temp_csv)
       sim <- simulate_all(
         temp_csv,
         self$dsl,
@@ -1660,9 +1656,7 @@ PM_model <- R6::R6Class(
       if (!quiet) cli::cli_inform(c("i" = "Preparing model..."))
       tryCatch(
         {
-          rendered <- model_to_dsl(self)
-          self$dsl <- rendered$dsl
-          self$input_remap <- rendered$remap
+          self$dsl <- model_to_dsl(self)
         },
         error = function(e) {
           cli::cli_abort(
@@ -1699,10 +1693,13 @@ PM_model <- R6::R6Class(
 
       if (isTRUE(self$model_list$from_dsl)) {
         if (requireNamespace("clipr", quietly = TRUE) &&
-            isTRUE(tryCatch({
+          isTRUE(tryCatch(
+            {
               clipr::write_clip(self$dsl, allow_non_interactive = TRUE)
               TRUE
-            }, error = function(...) FALSE))) {
+            },
+            error = function(...) FALSE
+          ))) {
           cli::cli_inform(c("v" = "DSL copied to the clipboard."))
         } else {
           cli::cli_inform(c("i" = "Clipboard copy is unavailable. The DSL is printed below."))
@@ -1853,7 +1850,7 @@ PM_model <- R6::R6Class(
     } # end copy
   ), # end public list
   private = list(
-    from_dsl = function(dsl, pri, err, input_map, solver, quiet) {
+    from_dsl = function(dsl, pri, err, solver, quiet) {
       if (!is.character(dsl) || length(dsl) != 1 || is.na(dsl) || !nzchar(dsl)) {
         cli::cli_abort("{.arg dsl} must be one non-empty character string.")
       }
@@ -1890,8 +1887,8 @@ PM_model <- R6::R6Class(
       extra_pri <- names(pri)[!pri_names %in% parameter_names]
       if (length(missing_pri) > 0 || length(extra_pri) > 0) {
         details <- c(
-          if (length(missing_pri) > 0) "i" = "Missing pri: {paste(missing_pri, collapse = ', ')}.",
-          if (length(extra_pri) > 0) "i" = "Unknown pri: {paste(extra_pri, collapse = ', ')}."
+          if (length(missing_pri) > 0) c("i" = "Missing pri: {paste(missing_pri, collapse = ', ')}."),
+          if (length(extra_pri) > 0) c("i" = "Unknown pri: {paste(extra_pri, collapse = ', ')}.")
         )
         cli::cli_abort(c("x" = "{.arg pri} does not match the DSL parameters.", details))
       }
@@ -1906,7 +1903,7 @@ PM_model <- R6::R6Class(
           cli::cli_abort("When named, every value in {.arg err} must have a unique output name.")
         }
         output_names <- tolower(outputs)
-        normalized_err_names <- tolower(err_names)
+        normalized_err_names <- tolower(pm_output_label(err_names))
         missing_err <- outputs[!output_names %in% normalized_err_names]
         extra_err <- err_names[!normalized_err_names %in% output_names]
         if (length(missing_err) > 0 || length(extra_err) > 0) {
@@ -1914,82 +1911,19 @@ PM_model <- R6::R6Class(
         }
         err <- err[match(output_names, normalized_err_names)]
       } else {
-        err_outeqs <- vapply(err, function(model) suppressWarnings(as.numeric(model$outeq)), numeric(1))
-        if (length(err) != length(outputs) ||
-            any(is.na(err_outeqs)) ||
-            !setequal(err_outeqs, seq_along(outputs))) {
+        err_outeqs <- tolower(pm_err_labels(err))
+        if (length(err) != length(outputs) || !setequal(err_outeqs, tolower(outputs))) {
           cli::cli_abort("{.arg err} must define one error model for each DSL output.")
         }
-        err <- err[match(seq_along(outputs), err_outeqs)]
+        err <- err[match(tolower(outputs), err_outeqs)]
       }
-      for (i in seq_along(err)) err[[i]]$outeq <- i
+      for (i in seq_along(err)) err[[i]]$outeq <- outputs[[i]]
       names(err) <- outputs
 
       routes <- metadata$routes
       route_kinds <- metadata$route_kinds
       if (length(routes) > 0 && any(!route_kinds %in% c("bolus", "infusion"))) {
         cli::cli_abort("Each DSL route must be declared as bolus or infusion.")
-      }
-
-      if (length(routes) == 0) {
-        if (!is.null(input_map) && length(input_map) > 0) {
-          cli::cli_abort("{.arg input_map} was supplied, but the DSL has no routes.")
-        }
-        input_map <- numeric(0)
-      } else {
-        route_names <- tolower(routes)
-        inferred <- rep(NA_integer_, length(routes))
-        names(inferred) <- routes
-        numeric_routes <- grepl("^input_[1-9][0-9]*$", routes)
-        inferred[numeric_routes] <- as.integer(sub("^input_", "", routes[numeric_routes]))
-
-        if (!is.null(input_map)) {
-          if (!is.numeric(input_map) || is.null(names(input_map)) || any(names(input_map) == "")) {
-            cli::cli_abort("{.arg input_map} must be a named integer vector.")
-          }
-          map_names <- tolower(names(input_map))
-          if (anyDuplicated(map_names) || any(!map_names %in% route_names)) {
-            cli::cli_abort("Names in {.arg input_map} must match DSL routes.")
-          }
-          inferred[match(map_names, route_names)] <- input_map
-        }
-
-        input_map <- inferred
-        if (any(is.na(input_map))) {
-          missing_routes <- names(input_map)[is.na(input_map)]
-          cli::cli_abort(c(
-            "x" = "{.arg input_map} is required for named DSL routes: {paste(missing_routes, collapse = ', ')}.",
-            "i" = "Use a named integer vector such as c(iv = 1L)."
-          ))
-        }
-        if (any(!is.finite(input_map)) || any(input_map < 1) || any(input_map %% 1 != 0)) {
-          cli::cli_abort("Values in {.arg input_map} must be positive integers.")
-        }
-        input_map <- as.integer(input_map)
-        names(input_map) <- routes
-
-        for (kind_name in c("bolus", "infusion")) {
-          kind_inputs <- input_map[route_kinds == kind_name]
-          if (anyDuplicated(kind_inputs)) {
-            cli::cli_abort("Two {kind_name} routes cannot use the same Pmetrics input.")
-          }
-        }
-      }
-
-      remap <- list()
-      for (i in seq_along(routes)) {
-        if (!identical(routes[[i]], paste0("input_", input_map[[i]]))) {
-          remap[[length(remap) + 1L]] <- list(
-            kind = route_kinds[[i]],
-            from = input_map[[i]],
-            to = routes[[i]]
-          )
-        }
-      }
-      for (i in seq_along(outputs)) {
-        if (!identical(outputs[[i]], paste0("outeq_", i))) {
-          remap[[length(remap) + 1L]] <- list(kind = "output", from = i, to = outputs[[i]])
-        }
       }
 
       covariates <- metadata$covariates
@@ -2011,7 +1945,6 @@ PM_model <- R6::R6Class(
         out = NULL,
         err = err,
         solver = solver,
-        input_map = input_map,
         from_dsl = TRUE
       )
       self$model_list <- list(
@@ -2034,13 +1967,12 @@ PM_model <- R6::R6Class(
         routes = routes,
         route_kinds = route_kinds,
         route_inputs = list(
-          bolus = unname(input_map[route_kinds == "bolus"]),
-          infusion = unname(input_map[route_kinds == "infusion"])
+          bolus = routes[route_kinds == "bolus"],
+          infusion = routes[route_kinds == "infusion"]
         ),
         from_dsl = TRUE
       )
       self$dsl <- dsl
-      self$input_remap <- remap
 
       if (!quiet) cli::cli_inform(c("v" = "DSL model prepared."))
       invisible(self)
@@ -2223,7 +2155,6 @@ PM_model <- R6::R6Class(
 PM_model$from_dsl <- function(dsl,
                               pri,
                               err,
-                              input_map = NULL,
                               solver = NULL,
                               quiet = FALSE) {
   PM_model$new(
@@ -2231,8 +2162,7 @@ PM_model$from_dsl <- function(dsl,
     err = err,
     solver = solver,
     quiet = quiet,
-    .dsl = dsl,
-    .input_map = input_map
+    .dsl = dsl
   )
 }
 
@@ -2264,9 +2194,9 @@ validate_ode_solver <- function(solver) {
 #' @param initial Initial value for lambda
 #' @param coeff Vector of coefficients defining assay error polynomial
 #' @param fixed Estimate if `FALSE` (default).
-#' @param outeq The output equation number (1-based) this error model applies to.
-#' Defaults to `1`. This must match the output index used in the model's `out`
-#' block, e.g. `outeq = 2` corresponds to `Y[2]`.
+#' @param outeq The output equation this error model applies to, given either as
+#' the number used in the model's `out` block (e.g. `outeq = 2` for `Y[2]`) or as
+#' an output label declared in a DSL model. Defaults to `1`.
 #' @export
 additive <- function(initial, coeff, fixed = FALSE, outeq = 1) {
   PM_err$new(type = "additive", initial = initial, coeff = coeff, fixed = fixed, outeq = outeq)
@@ -2281,9 +2211,9 @@ additive <- function(initial, coeff, fixed = FALSE, outeq = 1) {
 #' @param initial Initial value for gamma
 #' @param coeff Vector of coefficients defining assay error polynomial
 #' @param fixed Estimate if `FALSE` (default).
-#' @param outeq The output equation number (1-based) this error model applies to.
-#' Defaults to `1`. This must match the output index used in the model's `out`
-#' block, e.g. `outeq = 2` corresponds to `Y[2]`.
+#' @param outeq The output equation this error model applies to, given either as
+#' the number used in the model's `out` block (e.g. `outeq = 2` for `Y[2]`) or as
+#' an output label declared in a DSL model. Defaults to `1`.
 #' @export
 proportional <- function(initial, coeff, fixed = FALSE, outeq = 1) {
   PM_err$new(type = "proportional", initial = initial, coeff = coeff, fixed = fixed, outeq = outeq)
@@ -2300,7 +2230,7 @@ PM_err <- R6::R6Class(
     coeff = NULL,
     #' @field fixed If `TRUE`, the error model is fixed and not estimated.
     fixed = NULL,
-    #' @field outeq The output equation number (1-based) the error model applies to.
+    #' @field outeq The output equation the error model applies to, as supplied.
     outeq = NULL,
     initialize = function(type, initial, coeff, fixed, outeq = 1) {
       self$type <- type
@@ -2311,16 +2241,43 @@ PM_err <- R6::R6Class(
     },
     print = function() {
       if (self$fixed) {
-        cli::cli_text("{.strong {tools::toTitleCase(self$type)}} (output {self$outeq}), with fixed value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
+        cli::cli_text("{.strong {tools::toTitleCase(self$type)}} (output {pm_err_label(self, 1)}), with fixed value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
       } else {
-        cli::cli_text("{.strong {tools::toTitleCase(self$type)}} (output {self$outeq}), with initial value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
+        cli::cli_text("{.strong {tools::toTitleCase(self$type)}} (output {pm_err_label(self, 1)}), with initial value of {.emph {self$initial}} and coefficients {.emph {paste(self$coeff, collapse = ', ')}}.")
       }
     },
     flatten = function() {
-      list(initial = self$initial, coeff = self$coeff, type = self$type, fixed = self$fixed, outeq = self$outeq)
+      pm_err_flatten(self, 1)
     }
   )
 )
+
+# Error models are stored inside serialized `PM_model` objects, so read them
+# through plain functions rather than R6 methods: objects saved by an older
+# class definition still carry the fields, but not any newer methods.
+
+# The canonical pharmsol output label an error model applies to. An error model
+# that does not name an output applies to the output at its position in `err`.
+pm_err_label <- function(e, position) {
+  oq <- e$outeq
+  if (length(oq) != 1 || is.na(oq) || !nzchar(as.character(oq))) {
+    oq <- position
+  }
+  pm_output_label(oq)
+}
+
+# The error model as the plain list the Rust backend expects.
+pm_err_flatten <- function(e, position) {
+  list(
+    initial = e$initial, coeff = e$coeff, type = e$type,
+    fixed = e$fixed, outeq = pm_err_label(e, position)
+  )
+}
+
+# Canonical output labels for a list of error models, in declaration order.
+pm_err_labels <- function(err) {
+  vapply(seq_along(err), function(i) pm_err_label(err[[i]], i), character(1))
+}
 
 #' @title Primary parameter values
 #' @description
