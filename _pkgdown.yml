@@ -55,6 +55,11 @@ reference:
   desc: Functions for project management and workflow
 - contents:
   - PM_tree
+- title: BestDose
+  desc: BestDose optimization objects
+- contents:
+  - bd
+  - bd_post
 - title: Helpers
   desc: Helper functions when creating R6 objects
 - contents:
@@ -141,6 +146,13 @@ reference:
   - check_updates
   - latestR
   - downloadR
+- title: Internal
+  desc: Internal and low-level functions
+- contents:
+  - simulate_all
+  - simulate_one
+  - fit
+  - model_parameters
 - title: Reference
   desc: Reference functions
 - contents:

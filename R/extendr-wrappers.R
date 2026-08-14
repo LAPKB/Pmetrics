@@ -55,5 +55,9 @@ model_metadata <- function(model_source, solver = NULL) .Call(wrap__model_metada
 #' @export
 setup_logs <- function() .Call(wrap__setup_logs)
 
+bestdose_prepare <- function(model_path, prior_path, past_data_path, params, kind) .Call(wrap__bestdose_prepare, model_path, prior_path, past_data_path, params, kind)
+
+bestdose_optimize <- function(handle, target_data_path, time_offset, dose_min, dose_max, bias_weight, target_type) .Call(wrap__bestdose_optimize, handle, target_data_path, time_offset, dose_min, dose_max, bias_weight, target_type)
+
 
 # nolint end

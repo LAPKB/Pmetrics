@@ -17,6 +17,7 @@ S3method(plot,PM_pta)
 S3method(plot,PM_sim)
 S3method(plot,PM_valid)
 S3method(plot,PMvalid)
+S3method(plot,bd)
 S3method(print,PM_compare)
 S3method(print,PMerr)
 S3method(print,PMnpc)
@@ -97,6 +98,8 @@ export(add_smooth)
 export(additive)
 export(all_is_numeric)
 export(apps)
+export(bd)
+export(bd_post)
 export(check_updates)
 export(clear_build)
 export(cli_ask)
@@ -181,6 +184,7 @@ importFrom(dplyr,
   group_map,
   if_else,
   inner_join,
+  left_join,
   mutate,
   n,
   nest_by,
@@ -194,6 +198,7 @@ importFrom(dplyr,
   select,
   slice,
   slice_head,
+  slice_max,
   slice_tail,
   starts_with,
   summarize,
