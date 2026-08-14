@@ -46,7 +46,7 @@
 }
 
 .valid_report_modes <- function() {
-  c("app", "plotly", "ggplot", "ggplot_rust", "none")
+  c("app", "plotly", "ggplot", "none")
 }
 
 .resolve_report_mode <- function(requested, warn = TRUE) {
@@ -94,7 +94,7 @@
 #'
 #' @param x A [PM_result] object obtained from [PM_load].
 #' @param template Report mode. One of `"app"`, `"plotly"`, `"ggplot"`,
-#'   `"ggplot_rust"`, or `"none"`. If omitted, uses the `report_template`
+#'   or `"none"`. If omitted, uses the `report_template`
 #'   Pmetrics option. An invalid value falls back to that saved default.
 #' @param path Output directory for HTML reports.
 #' @param show Controls whether the report should be opened automatically,
@@ -127,8 +127,7 @@ PM_report <- function(x, template, path, show = TRUE, quiet = TRUE) {
   render_html_report <- function(html_template) {
     template_file <- switch(html_template,
       plotly = system.file("report/templates/plotly.Rmd", package = "Pmetrics"),
-      ggplot = system.file("report/templates/ggplot.Rmd", package = "Pmetrics"),
-      ggplot_rust = system.file("report/templates/ggplot_rust.Rmd", package = "Pmetrics")
+      ggplot = system.file("report/templates/ggplot.Rmd", package = "Pmetrics")
     )
 
     if (is.null(template_file) || !file.exists(template_file)) {

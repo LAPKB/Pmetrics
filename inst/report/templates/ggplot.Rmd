@@ -21,41 +21,46 @@ library(htmltools)
 ```
 
 ```{r setup-extra}
-res = params$res
+res <- params$res
+```
+
+```{r preflight, include = FALSE}
+if (is.null(res$final$data) & is.null(res$op$data) & is.null(res$cycle$data)) {
+  knitr::asis_output("**Report not generated. Run did not complete.**")
+  knitr::knit_exit()
+}
+
+nsub <- nobs <- numeqt <- icyctot <- NULL # declare for CRAN check
+nsub <- res$final$nsub
+nobs <- if (is.null(res$op$data)) 0 else nrow(dplyr::distinct(res$op$data, id, time, outeq, block))
+numeqt <- if (is.null(res$op$data)) 1 else max(res$op$data$outeq, na.rm = TRUE)
+icyctot <- if (is.data.frame(res$cycle$objective) && nrow(res$cycle$objective) > 0) {
+  max(res$cycle$objective$cycle)
+} else {
+  0
+}
 ```
 
 ## Summary
 
-```{r}
-did_converge = ifelse(res$NPdata$converge == 1, "converged", "did not converge")
-```
+The model includes `r nsub` subjects, and a total of `r nobs` observations.
 
-The model includes `r res$NPdata$nsub` subjects, and a total of `r  sum(res$NPdata$nobs, na.rm = TRUE)` observations.
-
-After `r res$NPdata$icyctot`/`r res$NPdata$icycmax` cycles, the model `r did_converge`.
+After `r icyctot` cycles, the model status was "`r res$cycle$data$status`".
 
 ## Performance metrics {.tabset}
 
 ```{r}
-#summary function
-metrics <- function(icen, outeq){
+# summary function
+metrics <- function(icen, outeq) {
   pe <- res$op$summary(icen = icen, outeq = outeq)$pe |>
-    rename(`Mean PE` = mpe,
-           `Mean weighted PE` = mwpe,
-           `Mean square PE` = mspe,
-           `Mean weighted squared PE` = mwspe,
-           `Root mean squared PE` = rmse,
-           `Root mean squared PE (%)` = percent_rmse,
-           `Bias-adjusted mean squared PE` = bamspe,
-           `Bias-adjusted mean weighted squared PE` = bamwspe
-    ) |>
-    mutate(across(.cols = everything(),
-                  .fns = function(x) {
-                    round(x, digits = 3)
-                  })) |>
-    t() |>
+    Pmetrics:::get_metric_info()
+  if (stringr::str_detect(pe$metric_types$bias, "%")) {
+    pe$metric_vals <- pe$metric_vals |> mutate(across(everything(), ~ paste0(.x, "%")))
+  }
+
+  pe$metric_vals |>
     DT::datatable(
-      colnames = c("Metric", "Value"),
+      rownames = FALSE,
       options = list(
         searching = FALSE,
         pageLength = 10,
@@ -65,16 +70,12 @@ metrics <- function(icen, outeq){
         autoHideNavigation = TRUE
       )
     )
-  return(pe)
 }
-
-
 ```
 
 ```{r, results = "asis"}
-
-for(i in 1:res$NPdata$numeqt){
-  cat("### Outeq ",i,"{.tabset .tabset-pills}\n")
+for (i in 1:numeqt) {
+  cat("### Outeq ", i, "{.tabset .tabset-pills}\n")
   cat("\n")
   cat("#### Median\n")
   cat("\n")
@@ -85,7 +86,6 @@ for(i in 1:res$NPdata$numeqt){
   print(tagList(metrics("mean", i)))
   cat("\n")
 }
-
 ```
 
 ## Observed-predicted plot {.tabset .tabset-pills}
@@ -93,9 +93,11 @@ for(i in 1:res$NPdata$numeqt){
 Points should appear close to, and randomly distributed around, the (dashed) identity-line.
 
 ```{r}
-
-op_plot <- function(icen, pred.type, outeq){
-  subtitle <- switch(pred.type, pop = "Population", post = "Individual")
+op_plot <- function(icen, pred.type, outeq) {
+  subtitle <- switch(pred.type,
+    pop = "Population",
+    post = "Individual"
+  )
   p <- res$op$data |>
     filter(icen == !!icen, pred.type == !!pred.type, outeq == !!outeq) |>
     ggplot(aes(x = pred, y = obs)) +
@@ -108,18 +110,16 @@ op_plot <- function(icen, pred.type, outeq){
     scale_y_continuous(breaks = scales::breaks_pretty(n = 8))
   return(p)
 }
-
 ```
 
 ```{r, results = "asis"}
-
-for(i in 1:res$NPdata$numeqt){
+for (i in 1:numeqt) {
   p1 <- op_plot("median", "pop", i)
   p2 <- op_plot("median", "post", i)
   p3 <- op_plot("mean", "pop", i)
   p4 <- op_plot("mean", "post", i)
   cat("\n")
-  cat("### Outeq ",i,"{.tabset}\n")
+  cat("### Outeq ", i, "{.tabset}\n")
   cat("\n")
   cat("#### Median\n")
   cat("\n\n")
@@ -130,8 +130,6 @@ for(i in 1:res$NPdata$numeqt){
   print(p3 + p4)
   cat("\n\n")
 }
-
-
 ```
 
 ## Posterior residuals by time {.tabset .tabset-pills}
@@ -140,30 +138,27 @@ Residuals should be randomly distributed around zero, with no apparent trend.
 For how to interpret these plots, please review our [website](https://lapkb.github.io/Pmetrics). Weighted prediction errors are weighted by the observation standard deviation, i.e. the error polynomial.
 
 ```{r}
-
-resid_plot <- function(x, y, icen, outeq){
+resid_plot <- function(x, y, icen, outeq) {
   p <- res$op$data |>
     filter(icen == !!icen, outeq == !!outeq, pred.type == "post") |> # Posterior concentrations (not pop)
-    ggplot(aes(x = {{x}}, y = {{y}})) +
+    ggplot(aes(x = {{ x }}, y = {{ y }})) +
     geom_abline(slope = 0, intercept = 0, linetype = "dashed") +
     geom_smooth(method = "loess", se = FALSE, col = "black") +
     geom_point(pch = 21, col = "black", fill = "red") +
     theme_classic() +
-    labs(x = "Time", y = ifelse(deparse(substitute(y))=="d", "Prediction error", "Weighted Prediction Error"))
+    labs(x = "Time", y = ifelse(deparse(substitute(y)) == "d", "Prediction error", "Weighted Prediction Error"))
   return(p)
 }
-
 ```
 
 ```{r, results = "asis"}
-
-for(i in 1:res$NPdata$numeqt){
+for (i in 1:numeqt) {
   p1 <- resid_plot(time, d, "median", i)
   p2 <- resid_plot(time, wd, "median", i)
   p3 <- resid_plot(time, d, "mean", i)
   p4 <- resid_plot(time, wd, "mean", i)
   cat("\n")
-  cat("### Outeq ",i,"{.tabset}\n")
+  cat("### Outeq ", i, "{.tabset}\n")
   cat("\n")
   cat("#### Median\n")
   cat("\n\n")
@@ -174,8 +169,6 @@ for(i in 1:res$NPdata$numeqt){
   print(p3 / p4)
   cat("\n\n")
 }
-
-
 ```
 
 ## Posterior residuals by concentration {.tabset}
@@ -184,14 +177,13 @@ Residuals should be randomly distributed around zero, with no apparent trend.
 For how to interpret these plots, please review our [website](https://lapkb.github.io/Pmetrics). Weighted prediction errors are weighted by the observation standard deviation, i.e. the error polynomial.
 
 ```{r, results = "asis"}
-
-for(i in 1:res$NPdata$numeqt){
+for (i in 1:numeqt) {
   p1 <- resid_plot(obs, d, "median", i)
   p2 <- resid_plot(obs, wd, "median", i)
   p3 <- resid_plot(obs, d, "mean", i)
   p4 <- resid_plot(obs, wd, "mean", i)
   cat("\n")
-  cat("### Outeq ",i,"{.tabset}\n")
+  cat("### Outeq ", i, "{.tabset}\n")
   cat("\n")
   cat("#### Median\n")
   cat("\n\n")
@@ -202,8 +194,6 @@ for(i in 1:res$NPdata$numeqt){
   print(p3 / p4)
   cat("\n\n")
 }
-
-
 ```
 
 ## Parameter values and distributions
@@ -211,16 +201,18 @@ for(i in 1:res$NPdata$numeqt){
 The model included the following primary parameters
 
 ```{r}
-par_lims = data.frame(
-  name = head(names(res$final$popPoints), -1),
-  lower = res$final$ab[,1],
-  upper = res$final$ab[,2]
+par_lims <- data.frame(
+  name = res$final$ab$par,
+  lower = res$final$ab$min,
+  upper = res$final$ab$max
 )
 
 par_lims |>
-  rename(`Parameter` = name,
-         `Lower limit` = lower,
-         `Upper limit` = upper) |>
+  rename(
+    `Parameter` = name,
+    `Lower limit` = lower,
+    `Upper limit` = upper
+  ) |>
   DT::datatable(
     options = list(
       searching = FALSE,
@@ -254,10 +246,10 @@ res$final$popPoints |>
 Posterior parameter density estimates based on the mean and median icen.
 
 ```{r}
-pmean = res$final$postMean |>
+pmean <- res$final$postMean |>
   mutate(type = "Mean")
 
-pmedian = res$final$postMed |>
+pmedian <- res$final$postMed |>
   mutate(type = "Median")
 
 pmean |>
@@ -267,14 +259,18 @@ pmean |>
   ggplot(aes(x = value)) +
   geom_density(aes(col = type, fill = type), alpha = 0.5) +
   geom_vline(aes(xintercept = lower),
-             lty = "dashed", alpha = 0.5) +
+    lty = "dashed", alpha = 0.5
+  ) +
   geom_vline(aes(xintercept = upper),
-             lty = "dashed", alpha = 0.5) +
-  facet_wrap( ~ name, scales = "free") +
-  labs(x = "Parameter value",
-       y = "Density",
-       fill = NULL,
-       col = NULL) +
+    lty = "dashed", alpha = 0.5
+  ) +
+  facet_wrap(~name, scales = "free") +
+  labs(
+    x = "Parameter value",
+    y = "Density",
+    fill = NULL,
+    col = NULL
+  ) +
   theme(legend.position = "bottom")
 ```
 
@@ -290,7 +286,7 @@ res$final$popPoints |>
   })) |>
   mutate(`Probability (cumulative sum)` = cumsum(prob)) |>
   rename(Probability = prob) |>
-  datatable(options = list(pageLength = 10, searching = FALSE))
+  DT::datatable(options = list(pageLength = 10, searching = FALSE))
 ```
 
 ## Cycle information
@@ -298,84 +294,97 @@ res$final$popPoints |>
 ```{r}
 if (is.null(res$cycle$objective) || all(is.na(res$cycle$objective$aic))) {
   ggplot() +
-  annotate("text",
-           x = 1,
-           y = 1,
-           size = 8,
-           label = "No cycles") +
-  theme_void()
+    annotate("text",
+      x = 1,
+      y = 1,
+      size = 8,
+      label = "No cycles"
+    ) +
+    theme_void()
 } else {
-cycle_info = res$cycle$objective |>
-  rename(ll = neg2ll, AIC = aic, BIC = bic) |>
+cycle_info <- res$cycle$objective |>
+  dplyr::rename(ll = neg2ll, AIC = aic, BIC = bic) |>
   slice_tail(prop = 0.8)
 
-plot_ll = cycle_info |>
+plot_ll <- cycle_info |>
   ggplot(aes(x = cycle, y = ll)) +
   geom_line() +
-  labs(subtitle = "-2 x log likelihood",
-       x = "Cycle number", y = NULL) +
+  labs(
+    subtitle = "-2 x log likelihood",
+    x = "Cycle number", y = NULL
+  ) +
   theme_classic() +
   theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
-plot_aic_bic = cycle_info |>
+plot_aic_bic <- cycle_info |>
   pivot_longer(cols = c(AIC, BIC)) |>
   ggplot(aes(x = cycle, y = value, col = name)) +
   geom_line() +
-  labs(subtitle = "AIC/BIC",
-       x = "Cycle number", y = NULL, col = NULL) +
+  labs(
+    subtitle = "AIC/BIC",
+    x = "Cycle number", y = NULL, col = NULL
+  ) +
   theme_classic() +
   theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
-plot_gamlam = res$cycle$gamlam |>
+plot_gamlam <- res$cycle$gamlam |>
   filter(cycle %in% cycle_info$cycle) |>
   mutate(outeq = factor(outeq)) |>
   ggplot(aes(x = cycle, y = value, col = outeq)) +
   geom_line() +
-  labs(subtitle = "Gamma / Lambda",
-       x = "Cycle number", y = NULL, col = "Outeq") +
+  labs(
+    subtitle = "Gamma / Lambda",
+    x = "Cycle number", y = NULL, col = "Outeq"
+  ) +
   theme_classic() +
   theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
-plot_mean = res$cycle$mean |>
+plot_mean <- res$cycle$mean |>
   data.frame() |>
   slice_tail(prop = 0.8) |>
   pivot_longer(cols = -cycle) |>
   ggplot(aes(x = cycle, y = value, col = name)) +
   geom_line() +
-  labs(subtitle = "Normalized mean",
-       x = "Cycle number", y = NULL, col = NULL) +
+  labs(
+    subtitle = "Normalized mean",
+    x = "Cycle number", y = NULL, col = NULL
+  ) +
   theme_classic() +
   theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
-plot_sd = res$cycle$sd |>
+plot_sd <- res$cycle$sd |>
   data.frame() |>
   slice_tail(prop = 0.8) |>
   pivot_longer(cols = -cycle) |>
   ggplot(aes(x = cycle, y = value, col = name)) +
   geom_line() +
-  labs(subtitle = "Normalized standard deviation",
-       x = "Cycle number", y = NULL, col = NULL) +
+  labs(
+    subtitle = "Normalized standard deviation",
+    x = "Cycle number", y = NULL, col = NULL
+  ) +
   theme_classic() +
   theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
-plot_median = res$cycle$median |>
+plot_median <- res$cycle$median |>
   data.frame() |>
   slice_tail(prop = 0.8) |>
   pivot_longer(cols = -cycle) |>
   ggplot(aes(x = cycle, y = value, col = name)) +
   geom_line() +
-  labs(subtitle = "Normalized median",
-       x = "Cycle number", y = NULL, col = NULL) +
+  labs(
+    subtitle = "Normalized median",
+    x = "Cycle number", y = NULL, col = NULL
+  ) +
   theme_classic() +
   theme(panel.grid.major = element_line(color = "gray90")) +
   theme(legend.position = "bottom")
 
-plot_design = "
+plot_design <- "
 AB
 CD
 EF
