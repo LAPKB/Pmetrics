@@ -10,7 +10,7 @@ PM_report(x, template, path, show = TRUE, quiet = TRUE)
 \item{x}{A \link{PM_result} object obtained from \link{PM_load}.}
 
 \item{template}{Report mode. One of \code{"app"}, \code{"plotly"}, \code{"ggplot"},
-\code{"ggplot_rust"}, or \code{"none"}. If omitted, uses the \code{report_template}
+or \code{"none"}. If omitted, uses the \code{report_template}
 Pmetrics option. An invalid value falls back to that saved default.}
 
 \item{path}{Output directory for HTML reports.}

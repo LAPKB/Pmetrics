@@ -15,6 +15,8 @@
 #' ranges, in parameter order.
 #' @param error_models A list of `PM_err` objects, each carrying `type`,
 #' `initial`, `coeff`, `fixed`, and `outeq`.
+#' @param outputs Character vector of the model's output labels, in declaration
+#' order. Used to resolve each error model's output label to its output slot.
 #' @param algorithm The fitting algorithm (e.g. "NPAG").
 #' @param cycles Maximum number of cycles.
 #' @param idelta Prediction interval used when writing outputs.
@@ -24,7 +26,7 @@
 #' @param seed Random seed used to generate the Sobol grid.
 #' @return Invisibly returns the path written.
 #' @keywords internal
-write_settings_json <- function(path, param_ranges, error_models, algorithm,
+write_settings_json <- function(path, param_ranges, error_models, outputs, algorithm,
                                 cycles, idelta, tad, prior, points, seed) {
   # Parameter declarations, preserving order.
   parameters <- lapply(names(param_ranges), function(nm) {
@@ -34,17 +36,15 @@ write_settings_json <- function(path, param_ranges, error_models, algorithm,
 
   # Error models, keyed by output slot. A leading "None" placeholder mirrors the
   # convention used by the parsers (`decode_error_model_rows`), so the error
-  # model for output `outeq` occupies index `outeq` (1-based) in the array.
-  n_out <- length(error_models)
-  models <- vector("list", n_out + 1L)
+  # model for output slot `i` occupies index `i` (1-based) in the array.
+  outputs <- tolower(as.character(outputs))
+  models <- vector("list", length(outputs) + 1L)
   models[[1]] <- "None"
   for (i in seq_along(error_models)) {
     e <- error_models[[i]]
-    # Fall back to positional order if the error model does not carry a valid
-    # `outeq` (e.g. models created before `outeq` was introduced).
-    oq <- suppressWarnings(as.integer(e$outeq))
-    if (length(oq) != 1 || is.na(oq) || oq < 1) {
-      oq <- i
+    oq <- match(tolower(pm_err_label(e, i)), outputs)
+    if (is.na(oq)) {
+      cli::cli_abort("Error model output {.val {e$outeq}} does not match any model output.")
     }
     coeff <- as.numeric(e$coeff)
     length(coeff) <- 4 # pad with NA if shorter; then replace NA with 0
@@ -161,11 +161,11 @@ PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
   )
 
   config <- rlang::try_fetch(jsonlite::fromJSON(suppressWarnings(readLines(file.path(path, "settings.json"), warn = FALSE))),
-      error = function(e) {
-        cli::cli_warn(c("!" = "Unable to read {.file {file.path(path, 'settings.json')}}"))
-        return(NULL)
-      }
-    )
+    error = function(e) {
+      cli::cli_warn(c("!" = "Unable to read {.file {file.path(path, 'settings.json')}}"))
+      return(NULL)
+    }
+  )
 
   core <- list(
     data = fit_object$data,
@@ -181,7 +181,9 @@ PM_parse <- function(path = ".", fit = "fit.rds", write = TRUE) {
     config = config,
     sys = {
       info <- as.list(Sys.info())
-      info |> keep(names(info) %in% c("sysname", "machine")) |> paste(collapse = " ")
+      info |>
+        keep(names(info) %in% c("sysname", "machine")) |>
+        paste(collapse = " ")
     }
   )
 

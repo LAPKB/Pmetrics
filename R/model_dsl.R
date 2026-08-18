@@ -21,6 +21,12 @@
 #              `rateiv[j]`/`r[j]`-> `infusion(input_{j}) -> x{k}` (route)
 #   * Params / covariates keep their (lower-cased) names.
 #
+# pharmsol identifies routes and outputs by label and rejects bare numeric
+# labels, so a numeric Pmetrics identifier `n` becomes `input_n` / `outeq_n`
+# (see `pm_input_label()` / `pm_output_label()`). Identifiers are never
+# renumbered: the data's `INPUT`/`OUTEQ` values are canonicalised to the same
+# labels before the backend reads them.
+#
 # Infusions and boluses are declared as routes into the compartment in which they
 # appear in the derivative equations; the corresponding `rateiv[j]`/`b[j]` terms
 # are stripped from the derivative because the DSL runtime injects them
@@ -46,7 +52,7 @@ expr_to_dsl <- function(expr, allow_if = TRUE) {
   # as floating point, matching the Rust transpiler's behaviour.
   if (is.numeric(expr) && length(expr) == 1) {
     val <- expr
-    if (is.finite(val) && val == floor(val)) {
+    if (is.finite(val) && val == floor(val) && abs(val) <= .Machine$integer.max) {
       return(sprintf("%d.0", as.integer(val)))
     }
     return(as.character(val))
@@ -316,9 +322,9 @@ dsl_out_block <- function(fun) {
       if (tgt != "y") {
         cli::cli_abort("Unexpected indexed assignment to {.code {tgt}[{idx}]} in output block.")
       }
-      # Pmetrics data uses 1-based OUTEQ labels, so output `y[i]` maps to the
-      # DSL output label `outeq_{i}` (numeric label resolves to index i).
-      out_lines <- c(out_lines, sprintf("out(outeq_%d) = %s", idx, expr_to_dsl(rhs)))
+      # Pmetrics data uses numeric OUTEQ identifiers, so output `y[i]` maps to
+      # the canonical pharmsol output label for `i`.
+      out_lines <- c(out_lines, sprintf("out(%s) = %s", pm_output_label(idx), expr_to_dsl(rhs)))
     } else {
       name <- tolower(as.character(lhs))
       derived <- c(derived, sprintf("%s = %s", name, expr_to_dsl(rhs)))
@@ -365,7 +371,7 @@ dsl_route_property_block <- function(fun, target) {
       if (tgt != target) {
         cli::cli_abort("Unexpected indexed assignment to {.code {tgt}[{idx}]} in {target} block.")
       }
-      lines <- c(lines, sprintf("%s(input_%d) = %s", target, idx, expr_to_dsl(rhs)))
+      lines <- c(lines, sprintf("%s(%s) = %s", target, pm_input_label(idx), expr_to_dsl(rhs)))
     } else {
       derived <- c(derived, sprintf("%s = %s", tolower(as.character(lhs)), expr_to_dsl(rhs)))
     }
@@ -398,19 +404,14 @@ dsl_ini_block <- function(fun) {
   list(derived = derived, lines = lines)
 }
 
-# Finalize route usages into concrete DSL routes plus a data-remap table.
+# Finalize route usages into concrete DSL routes.
 #
-# Each usage is `list(kind, input, comp)` where `input` is the 1-based Pmetrics
-# data input number. The DSL requires a unique label per route, but the pharmsol
-# runtime keeps *separate* index spaces for bolus and infusion routes, so a
-# single data input can legitimately drive both a bolus and an infusion route.
-# To express that in the DSL we keep the bolus on the original `input_{n}` label
-# and give the infusion a fresh `input_{m}` label, recording a remap so the
-# data's infusion events (DUR > 0) on input `n` are rewritten to input `m` at
-# fit/simulation time.
+# Each usage is `list(kind, input, comp)` where `input` is the identifier used in
+# the model equations (`b[j]` / `rateiv[j]`). Route labels are unique *per kind*
+# in the pharmsol DSL, so the same label may declare both a bolus and an
+# infusion; no relabelling of the data is ever required.
 #
-# Returns `list(routes = <list of {kind, label, comp}>, remap = <list of
-# {kind, from, to}>)`.
+# Returns a list of `{kind, label, comp}` route declarations.
 dsl_finalize_routes <- function(routes) {
   by_input <- list()
   seen_inputs <- integer(0)
@@ -423,15 +424,10 @@ dsl_finalize_routes <- function(routes) {
     by_input[[key]][[length(by_input[[key]]) + 1L]] <- r
   }
 
-  inputs <- sort(unique(seen_inputs))
-  next_label <- if (length(inputs) > 0) max(inputs) + 1L else 1L
-
   final_routes <- list()
-  remap <- list()
 
-  for (inp in inputs) {
+  for (inp in sort(unique(seen_inputs))) {
     grp <- by_input[[as.character(inp)]]
-    has_bolus <- any(vapply(grp, function(r) identical(r$kind, "bolus"), logical(1)))
 
     for (kd in c("bolus", "infusion")) {
       comps <- unique(vapply(
@@ -445,28 +441,53 @@ dsl_finalize_routes <- function(routes) {
           "i" = "Each input may direct a bolus (or an infusion) into a single compartment."
         ))
       }
-      comp <- comps[[1]]
 
-      # Bolus keeps the original input label. When the same input is also used as
-      # an infusion, the infusion route receives a fresh label and the data is
-      # remapped accordingly.
-      label <- inp
-      if (identical(kd, "infusion") && has_bolus) {
-        label <- next_label
-        next_label <- next_label + 1L
-        remap[[length(remap) + 1L]] <- list(kind = "infusion", from = inp, to = label)
-      }
-
-      final_routes[[length(final_routes) + 1L]] <- list(kind = kd, label = label, comp = comp)
+      final_routes[[length(final_routes) + 1L]] <- list(
+        kind = kd, label = pm_input_label(inp), comp = comps[[1]]
+      )
     }
   }
 
-  list(routes = final_routes, remap = remap)
+  final_routes
 }
 
-# Rewrite Pmetrics data labels to match DSL route and output names.
-remap_input_csv <- function(path, remap) {
-  if (length(remap) == 0 || !file.exists(path)) {
+# ---------------------------------------------------------------------------
+# Input / output labels
+# ---------------------------------------------------------------------------
+# pharmsol identifies dose routes and output equations by *label*, and rejects
+# bare numeric labels in DSL source: a numeric identifier `n` must be written
+# `input_n` (route) or `outeq_n` (output). Pmetrics therefore canonicalises
+# purely numeric `INPUT`/`OUTEQ` identifiers to that form and passes every other
+# identifier through untouched. Identifiers are never renumbered.
+
+pm_label <- function(x, prefix) {
+  x <- as.character(x)
+  numeric_label <- !is.na(x) & grepl("^[[:space:]]*[0-9]+[[:space:]]*$", x)
+  x[numeric_label] <- paste0(prefix, trimws(x[numeric_label]))
+  x
+}
+
+# Canonical pharmsol route label for a Pmetrics `INPUT` identifier.
+pm_input_label <- function(x) pm_label(x, "input_")
+
+# Canonical pharmsol output label for a Pmetrics `OUTEQ` identifier.
+pm_output_label <- function(x) pm_label(x, "outeq_")
+
+# The model's output labels, in declaration order. DSL models declare them
+# explicitly; R-defined models declare outputs as `y[i]`.
+model_output_labels <- function(model) {
+  if (!is.null(model$model_list$outputs)) {
+    as.character(model$model_list$outputs)
+  } else {
+    pm_output_label(seq_len(model$model_list$n_out))
+  }
+}
+
+# Rewrite the `INPUT`/`OUTEQ` columns of a written Pmetrics data file to their
+# canonical pharmsol labels, so the data agrees with the labels declared in the
+# DSL. Only the file handed to the backend is touched; the user's data is not.
+label_data_csv <- function(path) {
+  if (!file.exists(path)) {
     return(invisible(path))
   }
 
@@ -476,42 +497,15 @@ remap_input_csv <- function(path, remap) {
     na.strings = character(0), stringsAsFactors = FALSE
   )
   cols <- toupper(names(df))
-  dur_col <- match("DUR", cols)
   input_col <- match("INPUT", cols)
   outeq_col <- match("OUTEQ", cols)
 
-  has_routes <- any(vapply(remap, function(x) x$kind %in% c("bolus", "infusion"), logical(1)))
-  has_outputs <- any(vapply(remap, function(x) identical(x$kind, "output"), logical(1)))
-  if (has_routes && (is.na(dur_col) || is.na(input_col))) {
-    cli::cli_abort("Unable to apply route mapping: {.field DUR}/{.field INPUT} columns not found.")
-  }
-  if (has_outputs && is.na(outeq_col)) {
-    cli::cli_abort("Unable to apply output mapping: {.field OUTEQ} column not found.")
-  }
-
-  if (has_routes) {
-    dur <- suppressWarnings(as.numeric(df[[dur_col]]))
-    input <- df[[input_col]]
-  }
-
-  for (m in remap) {
-    if (identical(m$kind, "infusion")) {
-      sel <- !is.na(dur) & dur > 0 & input == as.character(m$from)
-      df[[input_col]][sel] <- as.character(m$to)
-    } else if (identical(m$kind, "bolus")) {
-      sel <- (is.na(dur) | dur <= 0) & input == as.character(m$from)
-      df[[input_col]][sel] <- as.character(m$to)
-    } else if (identical(m$kind, "output")) {
-      sel <- df[[outeq_col]] == as.character(m$from)
-      df[[outeq_col]][sel] <- as.character(m$to)
-    }
-  }
+  if (!is.na(input_col)) df[[input_col]] <- pm_input_label(df[[input_col]])
+  if (!is.na(outeq_col)) df[[outeq_col]] <- pm_output_label(df[[outeq_col]])
 
   utils::write.csv(df, path, row.names = FALSE, quote = FALSE, na = ".")
   invisible(path)
 }
-
-# Map Pmetrics analytical library template names to DSL analytical structures.
 dsl_analytical_structure <- function(tem) {
   dplyr::case_when(
     tem == "one_comp_iv" ~ "one_compartment",
@@ -625,15 +619,11 @@ model_to_dsl <- function(model) {
   n_out <- get_max_assignment_index(arg_list$out, "y")
 
   states <- paste0("x", seq_len(n_states))
-  outputs <- paste0("outeq_", seq_len(n_out))
+  outputs <- pm_output_label(seq_len(n_out))
 
-  routes_result <- dsl_finalize_routes(eqn$routes)
-  routes <- routes_result$routes
-  # Pmetrics data uses 1-based INPUT labels. Bolus routes keep the data input
-  # label; infusion routes that share an input with a bolus receive a fresh
-  # label (see `dsl_finalize_routes`), captured in the remap table.
+  routes <- dsl_finalize_routes(eqn$routes)
   route_lines <- vapply(routes, function(r) {
-    sprintf("%s(input_%d) -> x%d", r$kind, r$label, r$comp)
+    sprintf("%s(%s) -> x%d", r$kind, r$label, r$comp)
   }, character(1))
 
   # Assemble the DSL text in an order that respects definite assignment:
@@ -658,7 +648,7 @@ model_to_dsl <- function(model) {
     out$out
   )
 
-  list(dsl = paste(lines, collapse = "\n"), remap = routes_result$remap)
+  paste(lines, collapse = "\n")
 }
 
 # Assemble DSL text for an analytical (library-structure) model.
@@ -694,15 +684,15 @@ dsl_analytical <- function(model, header, derived, parameters) {
   n_states <- dsl_analytical_state_count(structure)
   states <- paste0("x", seq_len(n_states))
   n_out <- get_max_assignment_index(arg_list$out, "y")
-  outputs <- paste0("outeq_", seq_len(n_out))
+  outputs <- pm_output_label(seq_len(n_out))
 
   # Declare the dose route. Absorption ("bolus") templates receive a bolus into
   # the depot (x1); IV templates receive an infusion into the central
   # compartment (x1).
   route_line <- if (stringr::str_detect(structure, "absorption")) {
-    "bolus(input_1) -> x1"
+    sprintf("bolus(%s) -> x1", pm_input_label(1))
   } else {
-    "infusion(input_1) -> x1"
+    sprintf("infusion(%s) -> x1", pm_input_label(1))
   }
 
   lines <- c(
@@ -718,9 +708,7 @@ dsl_analytical <- function(model, header, derived, parameters) {
     out$out
   )
 
-  # Analytical (library-structure) models declare no explicit routes, so there
-  # is nothing to remap.
-  list(dsl = paste(lines, collapse = "\n"), remap = list())
+  paste(lines, collapse = "\n")
 }
 
 # Number of states (compartments) for a DSL analytical structure.

@@ -46,9 +46,28 @@ fn get_str(map: &HashMap<&str, Robj>, key: &str) -> AnyResult<String> {
         .map(|s| s.to_string())
 }
 
+/// Helper: coerce a length-1 R numeric to f64, accepting doubles *and* integers.
+///
+/// `Robj::as_real` returns `None` for an integer vector, so reading a setting
+/// with it alone makes an ordinary R literal such as `2L` look absent.
+fn as_scalar_f64(value: &Robj) -> Option<f64> {
+    value
+        .as_real()
+        .or_else(|| value.as_integer().map(f64::from))
+}
+
+/// Helper: coerce an R numeric vector to `Vec<f64>`, accepting doubles and integers.
+fn as_f64_vec(value: &Robj) -> Option<Vec<f64>> {
+    value.as_real_vector().or_else(|| {
+        value
+            .as_integer_vector()
+            .map(|values| values.into_iter().map(f64::from).collect())
+    })
+}
+
 /// Helper: get a field as a real (f64), with an optional default if it cannot be coerced.
 fn get_real_or(map: &HashMap<&str, Robj>, key: &str, default: f64) -> AnyResult<f64> {
-    Ok(get_field(map, key)?.as_real().unwrap_or(default))
+    Ok(as_scalar_f64(get_field(map, key)?).unwrap_or(default))
 }
 
 pub(crate) fn settings(
@@ -80,8 +99,8 @@ pub(crate) fn settings(
     };
 
     let error_models_raw = get_list(&settings, "error_models")?;
-    // Each error model declares the 1-based output equation (`outeq`) it applies
-    // to. The number selects an output by declaration order.
+    // Each error model names the output equation (`outeq`) it applies to, using
+    // the same label the model declares in its `outputs` list.
     let mut ems = AssayErrorModels::new();
 
     for (i, (_, em)) in error_models_raw.iter().enumerate() {
@@ -91,57 +110,58 @@ pub(crate) fn settings(
         let em: HashMap<&str, Robj> = HashMap::try_from(&em_list)
             .map_err(|e| anyhow!("Failed to parse error_models[{}]: {}", i + 1, e))?;
 
-        // The output equation this error model applies to (1-based). Fall back to
-        // positional order if the field is absent, preserving old behaviour.
-        let outeq_1based = get_field(&em, "outeq")
-            .ok()
-            .and_then(|v| v.as_real())
-            .map(|v| v as usize)
-            .unwrap_or(i + 1);
-        if outeq_1based < 1 {
-            bail!("error_models[{}].outeq must be 1 or greater", i + 1);
-        }
-        let outeq = outeq_1based - 1;
-        let output = outputs.get(outeq).ok_or_else(|| {
-            anyhow!(
-                "error_models[{}].outeq is {}, but the model has {} outputs",
-                i + 1,
-                outeq_1based,
-                outputs.len()
-            )
-        })?;
+        // A present-but-unreadable label must fail loudly, because silently
+        // falling back to positional order misbinds the models.
+        let label = get_field(&em, "outeq")?
+            .as_str()
+            .ok_or_else(|| {
+                anyhow!(
+                    "error_models[{}].outeq must be a single output label, got a value \
+                     that is not a length-1 string",
+                    i + 1
+                )
+            })?
+            .to_string();
+        let outeq = outputs
+            .iter()
+            .position(|output| output.eq_ignore_ascii_case(&label))
+            .ok_or_else(|| {
+                anyhow!(
+                    "error_models[{}].outeq is '{}', but the model declares outputs {:?}",
+                    i + 1,
+                    label,
+                    outputs
+                )
+            })?;
 
-        let gamlam = get_field(&em, "initial")?.as_real().ok_or_else(|| {
+        let gamlam = as_scalar_f64(get_field(&em, "initial")?).ok_or_else(|| {
             anyhow!(
-                "error_models for outeq {} initial is not a real number",
-                outeq_1based
+                "error_models for outeq {} initial is not a single number",
+                label
             )
         })?;
         let type_vec = get_field(&em, "type")?.as_string_vector().ok_or_else(|| {
             anyhow!(
                 "error_models for outeq {} type is not a character vector",
-                outeq_1based
+                label
             )
         })?;
         let err_type = type_vec
             .first()
-            .ok_or_else(|| anyhow!("error_models for outeq {} type is empty", outeq_1based))?;
-        let fixed = get_field(&em, "fixed")?.as_logical().ok_or_else(|| {
-            anyhow!(
-                "error_models for outeq {} fixed is not logical",
-                outeq_1based
-            )
-        })?;
-        let coeff = get_field(&em, "coeff")?.as_real_vector().ok_or_else(|| {
+            .ok_or_else(|| anyhow!("error_models for outeq {} type is empty", label))?;
+        let fixed = get_field(&em, "fixed")?
+            .as_logical()
+            .ok_or_else(|| anyhow!("error_models for outeq {} fixed is not logical", label))?;
+        let coeff = as_f64_vec(get_field(&em, "coeff")?).ok_or_else(|| {
             anyhow!(
                 "error_models for outeq {} coeff is not a numeric vector",
-                outeq_1based
+                label
             )
         })?;
         if coeff.len() < 4 {
             bail!(
                 "error_models for outeq {} coeff must have at least 4 values, got {}",
-                outeq_1based,
+                label,
                 coeff.len()
             );
         }
@@ -164,7 +184,22 @@ pub(crate) fn settings(
             }
             err => bail!("Invalid Error type: {}", err),
         };
-        ems = ems.add(output.clone(), model)?;
+        // Add by dense output slot rather than by label: a label-keyed model is kept
+        // unbound by pharmsol, which leaves the collection pmcore iterates over empty,
+        // so gamma/lambda is never optimized nor written to cycles.csv.
+        ems = ems.add(outeq, model)?;
+    }
+
+    // Slots are only allocated up to the highest `outeq` seen, so a missing
+    // trailing error model would otherwise leave outputs silently unmodelled.
+    if ems.len() != outputs.len() {
+        bail!(
+            "the model declares {} output equation{}, but error models cover only {}; \
+             each output equation needs exactly one error model",
+            outputs.len(),
+            if outputs.len() == 1 { "" } else { "s" },
+            ems.len()
+        );
     }
 
     let prior = get_str(&settings, "prior")?;

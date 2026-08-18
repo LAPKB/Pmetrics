@@ -157,250 +157,280 @@ export(two_comp_iv)
 export(two_comp_iv_cl)
 export(zBMI)
 importFrom(R6,R6Class)
-importFrom(bslib,accordion)
-importFrom(bslib,accordion_panel)
-importFrom(bslib,card)
-importFrom(bslib,nav_panel)
-importFrom(bslib,navset_card_tab)
-importFrom(dplyr,across)
-importFrom(dplyr,all_of)
-importFrom(dplyr,arrange)
-importFrom(dplyr,as_tibble)
-importFrom(dplyr,bind_cols)
-importFrom(dplyr,bind_rows)
-importFrom(dplyr,case_match)
-importFrom(dplyr,case_when)
-importFrom(dplyr,distinct)
-importFrom(dplyr,everything)
-importFrom(dplyr,filter)
-importFrom(dplyr,group_by)
-importFrom(dplyr,group_map)
-importFrom(dplyr,if_else)
-importFrom(dplyr,inner_join)
-importFrom(dplyr,mutate)
-importFrom(dplyr,n)
-importFrom(dplyr,nest_by)
-importFrom(dplyr,pull)
-importFrom(dplyr,quo)
-importFrom(dplyr,reframe)
-importFrom(dplyr,relocate)
-importFrom(dplyr,rename)
-importFrom(dplyr,row_number)
-importFrom(dplyr,rowwise)
-importFrom(dplyr,select)
-importFrom(dplyr,slice)
-importFrom(dplyr,slice_head)
-importFrom(dplyr,slice_tail)
-importFrom(dplyr,starts_with)
-importFrom(dplyr,summarize)
-importFrom(dplyr,tibble)
-importFrom(dplyr,ungroup)
-importFrom(dplyr,where)
-importFrom(ggplot2,aes)
-importFrom(ggplot2,aes_string)
-importFrom(ggplot2,coord_fixed)
-importFrom(ggplot2,element_blank)
-importFrom(ggplot2,element_text)
-importFrom(ggplot2,facet_wrap)
-importFrom(ggplot2,geom_hline)
-importFrom(ggplot2,geom_label)
-importFrom(ggplot2,geom_line)
-importFrom(ggplot2,geom_point)
-importFrom(ggplot2,geom_polygon)
-importFrom(ggplot2,geom_rect)
-importFrom(ggplot2,geom_segment)
-importFrom(ggplot2,geom_smooth)
-importFrom(ggplot2,ggplot)
-importFrom(ggplot2,ggtitle)
-importFrom(ggplot2,labs)
-importFrom(ggplot2,scale_color_identity)
-importFrom(ggplot2,scale_fill_identity)
-importFrom(ggplot2,scale_x_continuous)
-importFrom(ggplot2,scale_x_log10)
-importFrom(ggplot2,scale_y_continuous)
-importFrom(ggplot2,scale_y_log10)
-importFrom(ggplot2,theme)
-importFrom(ggplot2,theme_bw)
-importFrom(ggplot2,theme_grey)
-importFrom(ggplot2,theme_void)
-importFrom(ggplot2,xlab)
-importFrom(ggplot2,xlim)
-importFrom(ggplot2,ylab)
-importFrom(ggplot2,ylim)
-importFrom(grDevices,col2rgb)
-importFrom(grDevices,dev.off)
-importFrom(grDevices,devAskNewPage)
-importFrom(grDevices,gray.colors)
-importFrom(grDevices,jpeg)
-importFrom(grDevices,pdf)
-importFrom(grDevices,png)
-importFrom(grDevices,postscript)
-importFrom(grDevices,rgb)
-importFrom(grDevices,setEPS)
-importFrom(graphics,abline)
-importFrom(graphics,arrows)
-importFrom(graphics,axTicks)
-importFrom(graphics,axis)
-importFrom(graphics,boxplot)
-importFrom(graphics,hist)
-importFrom(graphics,legend)
-importFrom(graphics,lines)
-importFrom(graphics,par)
-importFrom(graphics,plot)
-importFrom(graphics,points)
-importFrom(graphics,polygon)
-importFrom(graphics,rect)
-importFrom(graphics,rug)
-importFrom(graphics,segments)
-importFrom(graphics,text)
-importFrom(parallel,clusterExport)
-importFrom(parallel,makeCluster)
-importFrom(parallel,parLapply)
-importFrom(parallel,stopCluster)
-importFrom(plotly,add_annotations)
-importFrom(plotly,add_bars)
-importFrom(plotly,add_lines)
-importFrom(plotly,add_markers)
-importFrom(plotly,add_trace)
-importFrom(plotly,filter)
-importFrom(plotly,ggplotly)
-importFrom(plotly,layout)
-importFrom(plotly,mutate)
-importFrom(plotly,plot_ly)
-importFrom(plotly,plotly_build)
-importFrom(plotly,renderPlotly)
-importFrom(plotly,subplot)
+importFrom(bslib,
+  accordion,
+  accordion_panel,
+  card,
+  nav_panel,
+  navset_card_tab
+)
+importFrom(dplyr,
+  across,
+  all_of,
+  arrange,
+  as_tibble,
+  bind_cols,
+  bind_rows,
+  case_match,
+  case_when,
+  distinct,
+  everything,
+  filter,
+  group_by,
+  group_map,
+  if_else,
+  inner_join,
+  mutate,
+  n,
+  nest_by,
+  pull,
+  quo,
+  reframe,
+  relocate,
+  rename,
+  row_number,
+  rowwise,
+  select,
+  slice,
+  slice_head,
+  slice_tail,
+  starts_with,
+  summarize,
+  tibble,
+  ungroup,
+  where
+)
+importFrom(ggplot2,
+  aes,
+  aes_string,
+  coord_fixed,
+  element_blank,
+  element_text,
+  facet_wrap,
+  geom_hline,
+  geom_label,
+  geom_line,
+  geom_point,
+  geom_polygon,
+  geom_rect,
+  geom_segment,
+  geom_smooth,
+  ggplot,
+  ggtitle,
+  labs,
+  scale_color_identity,
+  scale_fill_identity,
+  scale_x_continuous,
+  scale_x_log10,
+  scale_y_continuous,
+  scale_y_log10,
+  theme,
+  theme_bw,
+  theme_grey,
+  theme_void,
+  xlab,
+  xlim,
+  ylab,
+  ylim
+)
+importFrom(grDevices,
+  col2rgb,
+  dev.off,
+  devAskNewPage,
+  gray.colors,
+  jpeg,
+  pdf,
+  png,
+  postscript,
+  rgb,
+  setEPS
+)
+importFrom(graphics,
+  abline,
+  arrows,
+  axTicks,
+  axis,
+  boxplot,
+  hist,
+  legend,
+  lines,
+  par,
+  plot,
+  points,
+  polygon,
+  rect,
+  rug,
+  segments,
+  text
+)
+importFrom(parallel,
+  clusterExport,
+  makeCluster,
+  parLapply,
+  stopCluster
+)
+importFrom(plotly,
+  add_annotations,
+  add_bars,
+  add_lines,
+  add_markers,
+  add_trace,
+  filter,
+  ggplotly,
+  layout,
+  mutate,
+  plot_ly,
+  plotly_build,
+  renderPlotly,
+  subplot
+)
 importFrom(progress,progress_bar)
-importFrom(purrr,keep)
-importFrom(purrr,list_rbind)
-importFrom(purrr,map)
-importFrom(purrr,map2)
-importFrom(purrr,map_chr)
-importFrom(purrr,map_df)
-importFrom(purrr,map_lgl)
-importFrom(purrr,pluck)
-importFrom(purrr,reduce)
-importFrom(readr,read_file)
-importFrom(readr,write_file)
-importFrom(rlang,":=")
-importFrom(rlang,.data)
-importFrom(rlang,set_names)
-importFrom(shiny,HTML)
-importFrom(shiny,actionButton)
-importFrom(shiny,br)
-importFrom(shiny,checkboxInput)
-importFrom(shiny,column)
-importFrom(shiny,conditionalPanel)
-importFrom(shiny,div)
-importFrom(shiny,fileInput)
-importFrom(shiny,fluidPage)
-importFrom(shiny,fluidRow)
-importFrom(shiny,h2)
-importFrom(shiny,h3)
-importFrom(shiny,h4)
-importFrom(shiny,h5)
-importFrom(shiny,helpText)
-importFrom(shiny,hr)
-importFrom(shiny,htmlOutput)
-importFrom(shiny,icon)
-importFrom(shiny,markdown)
-importFrom(shiny,modalDialog)
-importFrom(shiny,navlistPanel)
-importFrom(shiny,numericInput)
-importFrom(shiny,observeEvent)
-importFrom(shiny,plotOutput)
-importFrom(shiny,radioButtons)
-importFrom(shiny,reactive)
-importFrom(shiny,reactiveVal)
-importFrom(shiny,renderUI)
-importFrom(shiny,selectInput)
-importFrom(shiny,shinyApp)
-importFrom(shiny,showModal)
-importFrom(shiny,tabPanel)
-importFrom(shiny,tags)
-importFrom(shiny,textAreaInput)
-importFrom(shiny,textInput)
-importFrom(shiny,textOutput)
-importFrom(shiny,titlePanel)
-importFrom(shiny,uiOutput)
-importFrom(shiny,updateNumericInput)
-importFrom(shiny,updateSelectInput)
-importFrom(shiny,updateSelectizeInput)
-importFrom(shiny,updateTextAreaInput)
-importFrom(stats,aggregate)
-importFrom(stats,anova)
-importFrom(stats,approx)
-importFrom(stats,as.formula)
-importFrom(stats,binom.test)
-importFrom(stats,coef)
-importFrom(stats,complete.cases)
-importFrom(stats,confint)
-importFrom(stats,cor)
-importFrom(stats,cor.test)
-importFrom(stats,cov)
-importFrom(stats,cov.wt)
-importFrom(stats,cov2cor)
-importFrom(stats,density)
-importFrom(stats,dnorm)
-importFrom(stats,get_all_vars)
-importFrom(stats,glm)
-importFrom(stats,kmeans)
-importFrom(stats,kruskal.test)
-importFrom(stats,ks.test)
-importFrom(stats,lm)
-importFrom(stats,median)
-importFrom(stats,model.frame)
-importFrom(stats,pchisq)
-importFrom(stats,pnorm)
-importFrom(stats,predict)
-importFrom(stats,pt)
-importFrom(stats,qchisq)
-importFrom(stats,qnorm)
-importFrom(stats,qqline)
-importFrom(stats,qqnorm)
-importFrom(stats,qqplot)
-importFrom(stats,qt)
-importFrom(stats,quantile)
-importFrom(stats,rnorm)
-importFrom(stats,runif)
-importFrom(stats,sd)
-importFrom(stats,shapiro.test)
-importFrom(stats,step)
-importFrom(stats,t.test)
-importFrom(stats,terms)
-importFrom(stats,time)
-importFrom(stats,var)
-importFrom(stats,weighted.mean)
-importFrom(stats,wilcox.test)
-importFrom(stringr,regex)
-importFrom(stringr,str_glue)
-importFrom(stringr,str_replace)
-importFrom(tidyr,crossing)
-importFrom(tidyr,extract)
-importFrom(tidyr,fill)
-importFrom(tidyr,nest)
-importFrom(tidyr,pivot_longer)
-importFrom(tidyr,pivot_wider)
-importFrom(tidyr,separate)
-importFrom(tidyr,separate_wider_delim)
-importFrom(tidyr,unnest)
-importFrom(tidyr,unnest_longer)
-importFrom(utils,compareVersion)
-importFrom(utils,data)
-importFrom(utils,flush.console)
-importFrom(utils,getTxtProgressBar)
-importFrom(utils,glob2rx)
-importFrom(utils,head)
-importFrom(utils,install.packages)
-importFrom(utils,modifyList)
-importFrom(utils,news)
-importFrom(utils,packageVersion)
-importFrom(utils,read.table)
-importFrom(utils,setTxtProgressBar)
-importFrom(utils,str)
-importFrom(utils,tail)
-importFrom(utils,txtProgressBar)
-importFrom(utils,write.csv)
-importFrom(utils,write.table)
+importFrom(purrr,
+  keep,
+  list_rbind,
+  map,
+  map2,
+  map_chr,
+  map_df,
+  map_lgl,
+  pluck,
+  reduce
+)
+importFrom(readr,
+  read_file,
+  write_file
+)
+importFrom(rlang,
+  ":=",
+  .data,
+  set_names
+)
+importFrom(shiny,
+  HTML,
+  actionButton,
+  br,
+  checkboxInput,
+  column,
+  conditionalPanel,
+  div,
+  fileInput,
+  fluidPage,
+  fluidRow,
+  h2,
+  h3,
+  h4,
+  h5,
+  helpText,
+  hr,
+  htmlOutput,
+  icon,
+  markdown,
+  modalDialog,
+  navlistPanel,
+  numericInput,
+  observeEvent,
+  plotOutput,
+  radioButtons,
+  reactive,
+  reactiveVal,
+  renderUI,
+  selectInput,
+  shinyApp,
+  showModal,
+  tabPanel,
+  tags,
+  textAreaInput,
+  textInput,
+  textOutput,
+  titlePanel,
+  uiOutput,
+  updateNumericInput,
+  updateSelectInput,
+  updateSelectizeInput,
+  updateTextAreaInput
+)
+importFrom(stats,
+  aggregate,
+  anova,
+  approx,
+  as.formula,
+  binom.test,
+  coef,
+  complete.cases,
+  confint,
+  cor,
+  cor.test,
+  cov,
+  cov.wt,
+  cov2cor,
+  density,
+  dnorm,
+  get_all_vars,
+  glm,
+  kmeans,
+  kruskal.test,
+  ks.test,
+  lm,
+  median,
+  model.frame,
+  pchisq,
+  pnorm,
+  predict,
+  pt,
+  qchisq,
+  qnorm,
+  qqline,
+  qqnorm,
+  qqplot,
+  qt,
+  quantile,
+  rnorm,
+  runif,
+  sd,
+  shapiro.test,
+  step,
+  t.test,
+  terms,
+  time,
+  var,
+  weighted.mean,
+  wilcox.test
+)
+importFrom(stringr,
+  regex,
+  str_glue,
+  str_replace
+)
+importFrom(tidyr,
+  crossing,
+  extract,
+  fill,
+  nest,
+  pivot_longer,
+  pivot_wider,
+  separate,
+  separate_wider_delim,
+  unnest,
+  unnest_longer
+)
+importFrom(utils,
+  compareVersion,
+  data,
+  flush.console,
+  getTxtProgressBar,
+  glob2rx,
+  head,
+  install.packages,
+  modifyList,
+  news,
+  packageVersion,
+  read.table,
+  setTxtProgressBar,
+  str,
+  tail,
+  txtProgressBar,
+  write.csv,
+  write.table
+)
 importFrom(withr,with_dir)
 useDynLib(Pmetrics, .registration = TRUE)

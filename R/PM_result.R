@@ -397,8 +397,7 @@ PM_load <- function(run, path = ".", file = "PMout.Rdata") {
     if (inherits(rebuild$model, "PM_model") && is.null(rebuild$model$dsl)) {
       rendered <- tryCatch(model_to_dsl(rebuild$model), error = function(e) NULL)
       if (!is.null(rendered)) {
-        rebuild$model$dsl <- rendered$dsl
-        rebuild$model$input_remap <- rendered$remap
+        rebuild$model$dsl <- rendered
       }
     }
 

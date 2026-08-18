@@ -26,6 +26,24 @@ test_that("Model object creation", {
   expect_true(is.null(mod1$binary_path))
 })
 
+test_that("PM_model$new translates large scientific notation to DSL", {
+  mod <- PM_model$new(
+    pri = list(ke = ab(0.01, 0.5)),
+    eqn = function() {
+      a <- 1.0e+34
+      dx[1] <- -ke * x[1] + a
+    },
+    out = function() {
+      y[1] <- x[1]
+    },
+    err = list(additive(1, c(0.1, 0, 0, 0))),
+    compile = TRUE
+  )
+
+  expect_match(mod$dsl, "a = 1e+34", fixed = TRUE)
+  expect_false(grepl("NA.0", mod$dsl, fixed = TRUE))
+})
+
 test_that("Model can be reconstructed from an existing PM_model", {
   mod1 <- build_example_ode_model(compile = FALSE)
   mod2 <- PM_model$new(x = mod1, compile = FALSE)
