@@ -52,7 +52,7 @@ expr_to_dsl <- function(expr, allow_if = TRUE) {
   # as floating point, matching the Rust transpiler's behaviour.
   if (is.numeric(expr) && length(expr) == 1) {
     val <- expr
-    if (is.finite(val) && val == floor(val)) {
+    if (is.finite(val) && val == floor(val) && abs(val) <= .Machine$integer.max) {
       return(sprintf("%d.0", as.integer(val)))
     }
     return(as.character(val))
