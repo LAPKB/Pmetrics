@@ -1,125 +1,3 @@
-# This file contains internal Pmetrics utility functions
-# BUG FIX wmy.2017.04.12 The Femke error polynomial quandry.
-#
-# wmy.2017.04.12
-#
-# Symptoms:
-# For NPrun(...data=RunNo...) the RunNo/wrk/working_files are copied to the new
-# NPAG run. The working files include an error polynomial. NPAG
-# uses this error polynomial instead of the error function requested in the
-# model.txt file for the new optimization.
-#
-# Relevant observations:
-# 1) NPprep() reads the name of the model.txt file, just prior to
-# determining if data=RunNo or a new *.csv file.
-#
-# Solution: Immediately after determining that data=RunNo AND is.integer(RunNo) == T,
-# compare the #ERR block of /RunNo/input/model.txt to the model.txt for the current
-# run. If equivalent, no problem -- if different, then use the /RunNo/input/*.csv
-# as a "new" dataset and generate working files from it.  Soution reqs the following
-# two utility functions:
-# 1) compareTwoModelERRs <- function(mod1,mod2)
-# 2)
-
-#
-# This function compares two model.txt file #ERR blocks and returns T/F if
-# the same or different, respectively.
-#
-# Below is MN's code as of 12/3/18
-
-compareTwoModelERRs <- function(mod1, mod2) {
-  getAssErr <- function(model) {
-    blocks <- parseBlocks(model)
-    if (length(grep(";", blocks$primVar)) > 0) {
-      # using ';' as separator
-      sep <- ";"
-    } else {
-      if (length(grep(",", blocks$primVar)) > 0) {
-        # using ',' as separator
-        sep <- ","
-      } else {
-        return(F)
-      }
-    }
-    blocks$error <- tolower(gsub("[[:space:]]", "", blocks$error))
-    gamlam <- grep("^g|^l", blocks$error)
-    asserr <- gsub(sep, "  ", blocks$error[-gamlam])
-    return(asserr)
-  }
-  asserr1 <- getAssErr(mod1)
-  asserr2 <- getAssErr(mod2)
-  return(identical(asserr1, asserr2))
-}
-
-# This utility gets a block of information from a past run instr.inx file.
-#
-# TODO
-#  1) add parameter for pathToInstFile -- currently just assumes this is "../
-#    which should be fine b/c the only reason to use this utility is
-#    to compare old instructions to a new NPAG run instructions.  Therefore,
-#    the user should be calling this utility from a /.../Runs/new_run/ directory,
-#    and the old instructions will be in ../data/etc/instr.inx, where data is
-#    the interger identifier of the old run.
-#  2) Write error checking code for: if a file or directory exists,
-#    if an instr is a valid phrase, if old.data is an integer, REM* is the
-#    first line and is not preceded by a HEADER line, PAR(I) is treated as
-#    regex instead of as plain text,
-#
-getNPinstr <- function(old.data, instr) {
-  Ifile <- paste("../", old.data, "/etc/instr.inx", sep = "")
-  # The header lines for all instruction blocks in old.data (lines that begin w/a " ")
-  HLs <- grep(" ", readLines(Ifile))
-  lines <- readLines(Ifile)
-  FirstChar <- substring(lines, 1, 1)
-  HLs <- which(FirstChar == " ")
-  # The header line for the requested instruction block
-  dataHeaderLine <- (grep(instr, readLines(Ifile), ignore.case = T))
-  # The desired block is in instr.inx[dataHeaderLine:HLs[dataHeaderLine+1]]
-  instrBlockStart <- HLs[which(HLs == dataHeaderLine)] + 1
-  instrBlockStop <- HLs[which(HLs == dataHeaderLine) + 1] - 1
-  if ((instrBlockStop - instrBlockStart) > -1) {
-    read1 <- readLines(Ifile, n = instrBlockStop)
-    InstrBlock <- read1[instrBlockStart:instrBlockStop]
-  } else {
-    InstrBlock <- -99
-  }
-  return(InstrBlock)
-}
-# wmy ########### END of Femke Error Polynomial Quandry
-
-# make pretty log axes
-logAxis <- function(side, grid = F, ...) {
-  pow <- log10(axTicks(side))
-  pow[1] <- ceiling(pow[1])
-  pow[length(pow)] <- floor(pow[length(pow)])
-  pow <- round(pow, 0)
-  pow <- unique(pow)
-  ticksat1 <- 10^pow
-  ticksat2 <- as.vector(sapply(pow, function(p) (1:9) * 10^p))
-  labels <- formatC(ticksat1, digits = 5, format = "g")
-  for (i in 1:length(labels)) {
-    if (length(grep("e", labels[i])) > 0) labels[i] <- as.expression(substitute(10^x, list(x = log10(ticksat1[i]))))
-  }
-  axis(side, ticksat1, labels = labels, tcl = -0.5, lwd = 0, lwd.ticks = 1, ...)
-  axis(side, ticksat2, labels = NA, tcl = -0.25, lwd = 0, lwd.ticks = 1, ...)
-  
-  if (grid & (side == 1 | side == 3)) abline(v = ticksat2, col = "lightgray", lty = 1)
-  if (grid & (side == 2 | side == 4)) abline(h = ticksat2, col = "lightgray", lty = 1)
-}
-
-
-# sample from multivariate normal distribution, code modified from mvtnorm package
-rmnorm <- function(n, mean, sigma) {
-  sigma1 <- sigma
-  ev <- eigen(sigma, symmetric = TRUE)
-  retval <- ev$vectors %*% diag(sqrt(ev$values), length(ev$values)) %*%
-  t(ev$vectors)
-  retval <- matrix(rnorm(n * ncol(sigma)), nrow = n) %*% retval
-  retval <- sweep(retval, 2, mean, "+")
-  colnames(retval) <- names(mean)
-  retval
-}
-
 # density function for the multivariate normal distribution, code from mvtnorm package
 dmv_norm <- function(
   x, mean = rep(0, p), sigma = diag(p), log = FALSE,
@@ -167,20 +45,7 @@ dmv_norm <- function(
     }
   }
   
-  openHTML <- function(x) {
-    if (file.exists(x)) {
-      utils::browseURL(normalizePath(x, winslash = "/", mustWork = FALSE))
-    } else {
-      cli::cli_warn(c(
-        "!" = "HTML file not found: {.val {x}}.",
-        "i" = "Please check the path and try again."
-      ))
-    }
-  }
-  # parse NP_RF file only for final cycle information; used for bootstrapping
-  # indpts,ab,corden,nvar,nactve,iaddl,icyctot,par
-  
-  
+
   random_name <- function() {
     n <- 1
     a <- do.call(paste0, replicate(5, sample(LETTERS, n, TRUE), FALSE))
@@ -188,22 +53,7 @@ dmv_norm <- function(
   }
   
   
-  # check for numeric id and convert to number if necessary
-  checkID <- function(id) {
-    id <- gsub("^[[:blank:]]+", "", id)
-    id <- gsub("[[:blank:]]+$", "", id)
-    idNonNum <- suppressWarnings(any(is.na(as.numeric(id))))
-    if (!idNonNum) id <- as.numeric(id)
-    return(id)
-  }
-  
-  # extract pattern from strings
-  strparse <- function(pattern, x) {
-    match <- regexpr(pattern, x, ignore.case = T)
-    start <- match[1]
-    stop <- match[1] + attr(match, "match.length") - 1
-    return(substr(x, start, stop))
-  }
+
   
   
   # parse blocks in new model template
@@ -270,34 +120,9 @@ dmv_norm <- function(
     return(blocks)
   } # end parseBlocks
   
-  # check all blocks statements for more than maxwidth characters and insert line break if necessary
-  chunks <- function(x, maxwidth = 60) {
-    for (i in 1:length(x)) {
-      for (j in 1:length(x[[i]])) {
-        temp <- x[[i]][j]
-        if (nchar(temp) > maxwidth) {
-          numchunks <- floor(nchar(temp) / maxwidth)
-          if (nchar(temp) %% maxwidth > 0) numchunks <- numchunks + 1
-          splitchunks <- vector("character", numchunks)
-          chunkindex <- c(seq(0, numchunks * maxwidth, maxwidth), nchar(temp))
-          for (k in 1:numchunks) {
-            splitchunks[k] <- substr(temp, chunkindex[k] + 1, chunkindex[k + 1])
-          }
-          x[[i]][j] <- paste(splitchunks, collapse = "\n     &   ")
-        }
-      }
-    }
-    return(x)
-  } # end chunks
+
   
-  # change dX[digit] to XP(digit) and X[digit] to X(digit)
-  fortranize <- function(block) {
-    block <- purrr::map_chr(block, ~ gsub("dX\\[(\\d+)\\]", "XP\\(\\1\\)", .x, ignore.case = T, perl = T))
-    block <- purrr::map_chr(block, ~ gsub("BOLUS\\[\\d+\\]", "", .x, ignore.case = T, perl = T))
-    block <- purrr::map_chr(block, ~ gsub("\\[(\\d+)\\]", "\\(\\1\\)", .x, ignore.case = T, perl = T))
-    return(block)
-  }
-  
+
   
   # get the next line when building a file like instructions
   getNext <- function(build) {

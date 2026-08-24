@@ -134,7 +134,6 @@ reference:
   - PM_build
   - PM_help
   - PMcheck
-  - PMpatch
   - PMtest
   - PM_tutorial
   - setPMoptions
