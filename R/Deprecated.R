@@ -305,3 +305,17 @@ makeAUC <- function(...) {
 PMtest <- function(...) {
   lifecycle::deprecate_warn("3.0.0", "PMtest()", details = "Was related to old Fortran code, which is no longer used.")
 }
+
+
+#' @title Clear build files
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#'
+#' There are no build files to clear; models are compiled just-in-time at run time.
+#' @param ... Not used
+#' @author Michael Neely
+#' @keywords internal
+#' @export
+clear_build <- function(...) {
+  lifecycle::deprecate_warn("3.2.5", "clear_build()", details = "There are no build files to clear; models are compiled just-in-time at run time.")
+}
