@@ -20,3 +20,7 @@
 ^dev$
 ^\.posit$
 ^temp$
+^CHANGELOG\.md$
+^version\.txt$
+^release-please-config\.json$
+^\.release-please-manifest\.json$

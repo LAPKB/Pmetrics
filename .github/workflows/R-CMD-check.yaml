@@ -8,6 +8,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -90,3 +93,32 @@ jobs:
           error-on: '"error"'
           args: 'c("--no-manual", "--ignore-vignettes", "--as-cran")'
           build_args: 'c("--no-manual", "--no-build-vignettes")'
+
+  version-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Verify release-please can still bump DESCRIPTION
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # write.dcf() and desc::desc_set() silently drop comment lines, which
+          # would stop release-please bumping Version with no error anywhere.
+          for marker in '# x-release-please-start-version' '# x-release-please-end'; do
+            if ! grep -qxF "$marker" DESCRIPTION; then
+              echo "::error file=DESCRIPTION::Missing '$marker'. release-please can no longer update Version; restore the marker."
+              exit 1
+            fi
+          done
+
+          desc_version="$(sed -n 's/^Version:[[:space:]]*//p' DESCRIPTION | tr -d '[:space:]')"
+          manifest_version="$(jq -r '."."' .release-please-manifest.json)"
+
+          if [ "$desc_version" != "$manifest_version" ]; then
+            echo "::error::DESCRIPTION Version ($desc_version) != .release-please-manifest.json ($manifest_version). These must match; release-please updates both together."
+            exit 1
+          fi
+
+          echo "OK: markers present, version $desc_version in sync."
