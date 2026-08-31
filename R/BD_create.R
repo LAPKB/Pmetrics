@@ -75,88 +75,6 @@ deparseLines <- function(block) {
   )
 }
 
-#' @title Get the ODE from the model library
-#' @description
-#' `r lifecycle::badge("experimental")`
-#'
-#' @param model_name A character string for the name of the model in the model library
-#' @return A named list of the ODE equations, keyed `dx1`, `dx2`, ...
-
-getODEfromLib <- function(model_name) {
-  # get model library
-  model_lib <- model_lib(show = FALSE)
-  # extract the ODE from the model library
-  ode <- model_lib |>
-    dplyr::filter(Name == model_name) |>
-    dplyr::pull(ode) |>
-    tolower()
-
-  # get the ODE as a character vector, split by line breaks
-  vect_ode <- stringr::str_trim(unlist(stringr::str_split(ode, "\n")))
-  vect_ode <- vect_ode[stringr::str_detect(vect_ode, "(?i)^dx\\s*\\[[0-9]+\\]")]
-
-  ode_list <- as.list(vect_ode)
-  names(ode_list) <- bdKey(stringr::str_extract(
-    vect_ode,
-    "(?i)^dx\\s*\\[[0-9]+\\]"
-  ))
-
-  return(ode_list)
-}
-
-#' @title Extract an indexed block from a PM model
-#' @description One parser for every `keyword[N] = ...` block (`ini`, `fa`, `lag`, `y`), replacing
-#' the four copy-pasted extractors this file used to carry. Keys follow the BestDose convention
-#' (`ini1`, `fa1`, `lag2`, `y1`, ...).
-#'
-#' @param block A PM model block (function or expression), may be NULL
-#' @param keyword The block keyword: "ini", "fa", "lag" or "y"
-#' @return A named list of equation lines, or NULL when the block is absent or empty
-
-extractPMBlock <- function(block, keyword) {
-  if (is.null(block)) {
-    return(NULL)
-  }
-
-  # case insensitive, anchored so only the assignment line is captured, not a reference to it
-  pattern <- paste0("(?i)^", keyword, "\\s*\\[[0-9]+\\]")
-  bloc <- deparseLines(block)
-  bloc <- bloc[stringr::str_detect(bloc, pattern)]
-  if (length(bloc) == 0) {
-    return(NULL)
-  }
-
-  block_list <- as.list(bloc)
-  names(block_list) <- bdKey(stringr::str_extract(bloc, pattern))
-
-  return(block_list)
-}
-
-# ==================================================================____
-# model block
-# ==================================================================____
-
-#' @title Extract primary parameters from a PM model and format them for BestDose
-#' @param PMmodel A PM model object
-#' @return A named list of `{type, min, max}` priors
-
-extractPMPrimary <- function(PMmodel) {
-  priors <- PMmodel$pri
-  priors_list <- list()
-
-  for (param in names(priors)) {
-    prior <- priors[[param]]
-    # BestDose stores both prior flavours in min/max: "ab" = bounds, "msd" = mean/SD
-    priors_list[[param]] <- if (!is.null(prior$min)) {
-      list(type = "ab", min = prior$min, max = prior$max)
-    } else {
-      list(type = "msd", min = prior$mean, max = prior$sd)
-    }
-  }
-
-  return(priors_list)
-}
-
 #' @title Canonical BestDose covariate name
 #' @description model_check.rs rejects the aliases listed in its `COVARIATE_NAME_SYNONYMS`, so
 #' rename them here rather than shipping a file that fails validation on import.
@@ -188,6 +106,118 @@ bdCovariateName <- function(x) {
   x <- tolower(x)
   unname(ifelse(x %in% names(synonyms), synonyms[x], x))
 }
+
+# #' @title Get the ODE from the model library
+# #' @description
+# #' `r lifecycle::badge("experimental")`
+# #'
+# #' @param model_name A character string for the name of the model in the model library
+# #' @return A named list of the ODE equations, keyed `dx1`, `dx2`, ...
+
+# getODEfromLib <- function(model_name) {
+#   # find the model template in the library by name
+#   template <- purrr::detect(mod_list, \(x) x$name == model_name)
+#   if (is.null(template)) {
+#     cli::cli_abort("Model {.val {model_name}} not found in the model library.")
+#   }
+
+#   # deparse its ODE block, one line per statement, keeping only the dx[N] assignments
+#   vect_ode <- tolower(deparseLines(template$arg_list$eqn))
+#   vect_ode <- vect_ode[stringr::str_detect(vect_ode, "(?i)^dx\\s*\\[[0-9]+\\]")]
+
+#   ode_list <- as.list(vect_ode)
+#   names(ode_list) <- bdKey(stringr::str_extract(
+#     vect_ode,
+#     "(?i)^dx\\s*\\[[0-9]+\\]"
+#   ))
+
+#   return(ode_list)
+# }
+
+#' @title Extract an indexed block from a PM model
+#' @description One parser for every `keyword[N] = ...` block (`ini`, `fa`, `lag`, `y`), replacing
+#' the four copy-pasted extractors this file used to carry. Keys follow the BestDose convention
+#' (`ini1`, `fa1`, `lag2`, `y1`, ...).
+#'
+#' @param block A PM model block (function or expression), may be NULL
+#' @param keyword The block keyword: "ini", "fa", "lag" or "y"
+#' @return A named list of equation lines, or NULL when the block is absent or empty
+
+extractPMBlock <- function(block, keyword) {
+  if (is.null(block)) {
+    return(NULL)
+  }
+
+  # case insensitive, anchored so only the assignment line is captured, not a reference to it
+  pattern <- paste0("(?i)^", keyword, "\\s*\\[[0-9]+\\]")
+  bloc <- deparseLines(block)
+  bloc <- bloc[stringr::str_detect(bloc, pattern)]
+  if (length(bloc) == 0) {
+    return(NULL)
+  }
+
+  block_list <- as.list(bloc)
+  names(block_list) <- bdKey(stringr::str_extract(bloc, pattern))
+
+  # replace "<-" by "="
+  block_list <- lapply(block_list, function(x) {
+    stringr::str_replace(x, "<-", "=")
+  })
+
+  # input route replacte "rateiv[n]" or "R[n]" by "r[n]" and "Bolus[n]" or "b[n]" by "B[n]"
+  # this should only work on administration
+  block_list <- lapply(block_list, function(x) {
+    x <- stringr::str_replace_all(
+      x,
+      "(?i)rateiv\\s*\\[\\s*([0-9]+)\\s*\\]",
+      "r[\\1]"
+    )
+    x <- stringr::str_replace_all(
+      x,
+      "(?i)R\\s*\\[\\s*([0-9]+)\\s*\\]",
+      "r[\\1]"
+    )
+    x <- stringr::str_replace_all(
+      x,
+      "(?i)bolus\\s*\\[\\s*([0-9]+)\\s*\\]",
+      "B[\\1]"
+    )
+    x <- stringr::str_replace_all(
+      x,
+      "(?i)b\\s*\\[\\s*([0-9]+)\\s*\\]",
+      "B[\\1]"
+    )
+    x
+  })
+
+  return(block_list)
+}
+
+# ==================================================================____
+# model block
+# ==================================================================____
+
+#' @title Extract primary parameters from a PM model and format them for BestDose
+#' @param PMmodel A PM model object
+#' @return A named list of `{type, min, max}` priors
+
+extractPMPrimary <- function(PMmodel) {
+  priors <- PMmodel$pri
+  priors_list <- list()
+
+  for (param in names(priors)) {
+    prior <- priors[[param]]
+    # BestDose stores both prior flavours in min/max: "ab" = bounds, "msd" = mean/SD
+    priors_list[[param]] <- if (!is.null(prior$min)) {
+      list(type = "ab", min = prior$min, max = prior$max)
+    } else {
+      list(type = "msd", min = prior$mean, max = prior$sd)
+    }
+  }
+
+  return(priors_list)
+}
+
 
 #' @title Extract covariates from a PM model and format them for BestDose
 #' @param PMmodel A PM model object
@@ -246,39 +276,44 @@ extractPMSecondary <- function(PMmodel) {
   return(sec_list)
 }
 
-#' @title Extract the equations from a PM model and format them for BestDose
-#' @param PMmodel A PM model object
-#' @return A named list of ODEs, keyed `dx1`, `dx2`, ...
+# #' @title Extract the equations from a PM model and format them for BestDose
+# #' @param PMmodel A PM model object
+# #' @return A named list of ODEs, keyed `dx1`, `dx2`, ...
 
-extractPMequation <- function(PMmodel) {
-  # equation deparse
-  eqn <- deparseLines(PMmodel$eqn)
+# extractPMequation <- function(PMmodel) {
+#   # equation deparse
+#   eqn <- deparseLines(PMmodel$eqn)
 
-  # get library name
-  library_name <- model_lib(show = FALSE)$Name
+#   # get library name
+#   library_name <- model_lib(show = FALSE)$Name
 
-  # check if equation are from the library
-  if (any(stringr::str_remove_all(eqn, "\"") %in% library_name)) {
-    # extract the model name from the equation and remove NA values
-    model_name <- stringr::str_extract(
-      eqn,
-      paste0("(?i)(", paste(library_name, collapse = "|"), ")")
-    )
-    model_name <- model_name[!is.na(model_name)]
-    return(getODEfromLib(model_name))
-  }
+#   # check if equation are from the library
+#   if (any(stringr::str_remove_all(eqn, "\"") %in% library_name)) {
+#     # extract the model name from the equation and remove NA values
+#     model_name <- stringr::str_extract(
+#       eqn,
+#       paste0("(?i)(", paste(library_name, collapse = "|"), ")")
+#     )
+#     model_name <- model_name[!is.na(model_name)]
+#     return(getODEfromLib(model_name))
+#   }
 
-  # capture the derivative equations, one "dx[N] = ..." line per compartment
-  bloc <- eqn[stringr::str_detect(eqn, "(?i)^dx\\s*\\[[0-9]+\\]")]
+#   # capture the derivative equations, one "dx[N] = ..." line per compartment
+#   bloc <- eqn[stringr::str_detect(eqn, "(?i)^dx\\s*\\[[0-9]+\\]")]
 
-  eqn_bloc <- as.list(bloc)
-  names(eqn_bloc) <- bdKey(stringr::str_extract(
-    bloc,
-    "(?i)^dx\\s*\\[[0-9]+\\]"
-  ))
+#   eqn_bloc <- as.list(bloc)
+#   names(eqn_bloc) <- bdKey(stringr::str_extract(
+#     bloc,
+#     "(?i)^dx\\s*\\[[0-9]+\\]"
+#   ))
 
-  return(eqn_bloc)
-}
+#   # replace "<-" by "="
+#   eqn_bloc <- lapply(eqn_bloc, function(x) {
+#     stringr::str_replace(x, "<-", "=")
+#   })
+
+#   return(eqn_bloc)
+# }
 
 #' @title Extract the error model from a PM model and format it for BestDose
 #' @param PMmodel A PM model object
@@ -611,7 +646,7 @@ createBDmodel <- function(
     initial_conditions = extractPMBlock(PMmodel$ini, "ini"),
     fa = extractPMBlock(PMmodel$fa, "fa"),
     lag = extractPMBlock(PMmodel$lag, "lag"),
-    equation = extractPMequation(PMmodel),
+    equation = extractPMBlock(PMmodel$eqn, "dx"),
     out = extractPMBlock(PMmodel$out, "y"),
     error = extractPMError(PMmodel)
   ))
