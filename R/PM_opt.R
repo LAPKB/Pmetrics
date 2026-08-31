@@ -117,7 +117,9 @@ PM_opt <- R6::R6Class(
     #' To simulate outputs *only* at the output times in the template data (i.e. EVID=0 events), use `predInt = 0`.
     #' Note that the maximum number of predictions total is 594, so the interval must be sufficiently large to accommodate this for a given
     #' number of output equations and total time to simulate over.  If `predInt` is set so that this cap is exceeded, predictions will be truncated.
-    #' @param mmInt Specify the time intervals from which MMopt times can be selected.
+    #' @param mmInt Specify the time intervals from which MMopt times can be selected,
+    #' either as a list of start/stop vectors, e.g. `list(c(0, 4), c(8, 12))`, or as a
+    #' plain vector of start/stop pairs, e.g. `c(0, 4, 8, 12)`.
     #' These should only include simulated times specified by `predInt`.
     #' @param algorithm Optimal sampling algorithm. Currently not modifiable and
     #' the only option is "mm".
@@ -131,8 +133,11 @@ PM_opt <- R6::R6Class(
     #' `poppar$final$postPoints` needs to match the number of subjects in `data`.
     #' You can also pass `include` and `exclude` to limit the subjects used in
     #' `data`. This will work whether `usePost` is `TRUE` or `FALSE`.
+    #' When `poppar` is a list of weights, means and covariance there are no
+    #' discrete support points, so `nsim` must also be supplied to specify how
+    #' many candidate profiles to draw from that prior. For all other forms of
+    #' `poppar`, `nsim` is zero, i.e. one profile per support point.
     #' Note that the following arguments to [PM_sim]$new cannot be modified.
-    #' * `nsim` is zero
     #' * `outname` is "MMsim"
     #' * `combine` is `TRUE`
     initialize = function(
@@ -166,7 +171,7 @@ PM_opt <- R6::R6Class(
         outeq = outeq,
         ...
       ), error = function(e) {
-        cli::cli_abort(c("x" = e$message))
+        cli::cli_abort(c("x" = "Unable to calculate optimal sample times."), parent = e)
       })
 
       self$sampleTime <- res$sampleTime
@@ -208,9 +213,22 @@ PM_opt <- R6::R6Class(
       algorithm = "mm", ...
     ) {
       # get defaults for PM_sim$new() arguments
-      arglist <- list(...)
-      arglist <- modifyList(arglist, list(usePost = FALSE, quiet = TRUE))
+      arglist <- modifyList(list(usePost = FALSE), list(...))
+      arglist$quiet <- TRUE
 
+      # simulated parameter values become equally weighted support points;
+      # weights are per subject when the simulation used posteriors
+      equal_weight_points <- function(parValues) {
+        pp <- parValues |> select(-nsim)
+        if ("id" %in% names(pp)) {
+          pp |>
+            group_by(id) |>
+            mutate(prob = 1 / n()) |>
+            ungroup()
+        } else {
+          pp |> mutate(prob = 1 / n())
+        }
+      }
 
       # determine what kind of object poppar is
 
@@ -218,9 +236,7 @@ PM_opt <- R6::R6Class(
       if (inherits(poppar, "PM_sim")) {
         case <- 1
         simdata <- poppar
-        popPoints <- simdata$data$parValues |>
-          select(-nsim) |>
-          mutate(prob = 1 / n()) # extract the population points and assign equal probabilities
+        popPoints <- equal_weight_points(simdata$data$parValues)
         # model will be extracted from PM_sim; template data not required
 
         # CASE 2 - PM_sim_data, simulation already done
@@ -228,9 +244,7 @@ PM_opt <- R6::R6Class(
         case <- 2
         simdata <- list(data = poppar) # construct a pseudo PM_sim object with the data in the $data field
         class(simdata) <- c("PM_sim", "list")
-        popPoints <- simdata$data$parValues |>
-          select(-nsim) |>
-          mutate(prob = 1 / n()) # extract the population points and assign equal probabilities
+        popPoints <- equal_weight_points(simdata$data$parValues)
         # model will be extracted from the list; template data not required
 
 
@@ -259,6 +273,7 @@ PM_opt <- R6::R6Class(
 
         # CASE 4 - PM_final, will need to simulate
       } else if (all(c("NPAG", "PM_final") %in% class(poppar))) {
+        case <- 4
         popPoints <- if (arglist$usePost) {
           poppar$postPoints
         } else {
@@ -310,16 +325,32 @@ PM_opt <- R6::R6Class(
       }
 
       if (case > 2) { # do not need to simulate for case 1 or 2
+        # nsim = 0 simulates one profile per support point, which is what MMopt
+        # needs. Case 6 has no support points, so the user must supply nsim.
+        nsim <- if (is.null(arglist$nsim)) 0 else arglist$nsim
+        arglist$nsim <- NULL
+        if (case == 6 && nsim == 0) {
+          cli::cli_abort(c(
+            "x" = "When {.arg poppar} is a list of weights, means and covariance, {.arg nsim} must be specified.",
+            "i" = "{.arg nsim} is the number of candidate profiles to draw from the prior."
+          ))
+        }
 
         simdata <- do.call(PM_sim$new, (c(
           list(
             poppar = poppar,
             model = model,
-            data = data, nsim = 0,
+            data = data, nsim = nsim,
             predInt = predInt
           ),
           arglist # the other args
         )))
+      }
+
+      if (case > 4) {
+        # cases 5 and 6 carry no prior probabilities, so weight the simulated
+        # support points equally
+        popPoints <- equal_weight_points(simdata$data$parValues)
       }
 
       # get the assay error from the model
@@ -331,15 +362,30 @@ PM_opt <- R6::R6Class(
       # filter outputs by mmInt if needed
       if (!missing(mmInt) && !is.null(mmInt)) {
         if (!inherits(mmInt, "list")) {
-          mmInt <- list(mmInt)
-        } # mmInt was a single vector; make a list of 1
+          # mmInt was a plain vector of start/stop pairs; make it a list of intervals
+          if (length(mmInt) %% 2 != 0) {
+            cli::cli_abort(c(
+              "x" = "{.arg mmInt} must contain start/stop pairs.",
+              "i" = "For example, {.code list(c(0, 4), c(8, 12))}."
+            ))
+          }
+          mmInt <- split(mmInt, rep(seq_len(length(mmInt) / 2), each = 2))
+        }
 
         # filter obs by mmInt intervals
         obs <- purrr::map(mmInt, \(t) {
           dplyr::filter(obs, time >= t[1] & time <= t[2])
         }) |>
           dplyr::bind_rows() |>
+          dplyr::distinct() |> # intervals may overlap
           dplyr::arrange(id, time)
+
+        if (nrow(obs) == 0) {
+          cli::cli_abort(c(
+            "x" = "No simulated observations fall within {.arg mmInt}.",
+            "i" = "{.arg mmInt} must select times generated by {.arg predInt}."
+          ))
+        }
       } else {
         mmInt <- NULL
       }
@@ -379,27 +425,29 @@ PM_opt <- R6::R6Class(
           Cbar0[, , 1] <- matrix(1, nrow = nsubs, ncol = nsubs)
           diag(Cbar0[, , 1]) <- 0
         } else {
-          if (sum(unlist(weight)) != 1) {
-            stop("Relative weights do not sum to 1.\n")
+          if (!isTRUE(all.equal(sum(unlist(weight)), 1))) {
+            cli::cli_abort(c("x" = "Relative weights do not sum to 1."))
           } else {
+            # obs holds one simulated profile per candidate support point for a
+            # single subject, so summarize each profile by nsim, not by id
             if ("auc" %in% wtnames) {
-              auc <- make_AUC(obs)
+              auc <- make_AUC(obs, formula = out ~ time | nsim, outeq = outeq)
               sqdiff <- matrix(sapply(1:nsubs, function(x) (auc$tau[x] - auc$tau)^2), nrow = nsubs)
-              cbar <- cbar_make1(sqdiff)
+              cbar <- private$cbar_make1(sqdiff)
               Cbar0[, , 2] <- weight$auc * cbar / mean(cbar)
             }
 
             if ("max" %in% wtnames) {
-              maxi <- unlist(tapply(obs$out, obs$id, max))
+              maxi <- unlist(tapply(obs$out, obs$nsim, max))
               sqdiff <- matrix(sapply(1:nsubs, function(x) (maxi[x] - maxi)^2), nrow = nsubs)
-              cbar <- cbar_make1(sqdiff)
+              cbar <- private$cbar_make1(sqdiff)
               Cbar0[, , 3] <- weight$max * cbar / mean(cbar)
             }
 
             if ("min" %in% wtnames) {
-              mini <- unlist(tapply(obs$out, obs$id, min))
+              mini <- unlist(tapply(obs$out, obs$nsim, min))
               sqdiff <- matrix(sapply(1:nsubs, function(x) (mini[x] - mini)^2), nrow = nsubs)
-              cbar <- cbar_make1(sqdiff)
+              cbar <- private$cbar_make1(sqdiff)
               Cbar0[, , 4] <- weight$min * cbar / mean(cbar)
             }
             notWt <- which(!wtnames %in% c("auc", "min", "max", "none"))
@@ -426,12 +474,23 @@ PM_opt <- R6::R6Class(
 
       # transform into format for MMopt
 
+      # when simulating from posteriors each subject has their own support
+      # points, so select the ones belonging to the subject being processed
+      subj_points <- function(this_id) {
+        drop_cols <- intersect(c("id", "point"), names(popPoints))
+        if (!"id" %in% drop_cols) {
+          return(popPoints)
+        }
+        popPoints |>
+          filter(as.character(id) == this_id) |>
+          select(-all_of(drop_cols))
+      }
 
       split_sim <- split(obs, obs$id)
-      all_mm <- map(split_sim, \(x) {
+      all_mm <- purrr::imap(split_sim, \(x, this_id) {
         make_mm(
           obs = x |> arrange(nsim, time),
-          popPoints = popPoints,
+          popPoints = subj_points(this_id),
           cassay = cassay
         )
       })
@@ -449,7 +508,10 @@ PM_opt <- R6::R6Class(
         mutate(sample_idx = row_number()) |>
         pivot_wider(id_cols = c(id, bayesRisk), names_from = sample_idx, values_from = sampleTime, names_prefix = "time_")
 
-      mm_res <- mm_res[match(data$data$id, mm_res$id), ] |> distinct()
+      # restore the original subject order; `data` is absent when poppar was
+      # already simulated, so fall back to the order in the simulated output
+      id_order <- if (is.null(data)) unique(obs$id) else unique(data$data$id)
+      mm_res <- mm_res[stats::na.omit(match(as.character(id_order), as.character(mm_res$id))), ] |> distinct()
       if (nrow(mm_res) == 1) mm_res <- NULL # if only one subject, return NULL as it is the same as the sampleTime and bayesRisk
 
 

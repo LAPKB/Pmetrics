@@ -156,7 +156,9 @@ step value.  Outputs for times specified in the template file will also be simul
 To simulate outputs \emph{only} at the output times in the template data (i.e. EVID=0 events), use \code{predInt = 0}.
 Note that the maximum number of predictions total is 594, so the interval must be sufficiently large to accommodate this for a given
 number of output equations and total time to simulate over.  If \code{predInt} is set so that this cap is exceeded, predictions will be truncated.}
-      \item{\code{mmInt}}{Specify the time intervals from which MMopt times can be selected.
+      \item{\code{mmInt}}{Specify the time intervals from which MMopt times can be selected,
+either as a list of start/stop vectors, e.g. \code{list(c(0, 4), c(8, 12))}, or as a
+plain vector of start/stop pairs, e.g. \code{c(0, 4, 8, 12)}.
 These should only include simulated times specified by \code{predInt}.}
       \item{\code{algorithm}}{Optimal sampling algorithm. Currently not modifiable and
 the only option is "mm".}
@@ -167,9 +169,12 @@ In this case, the number of posterior distributions contained in
 \code{poppar$final$postPoints} needs to match the number of subjects in \code{data}.
 You can also pass \code{include} and \code{exclude} to limit the subjects used in
 \code{data}. This will work whether \code{usePost} is \code{TRUE} or \code{FALSE}.
+When \code{poppar} is a list of weights, means and covariance there are no
+discrete support points, so \code{nsim} must also be supplied to specify how
+many candidate profiles to draw from that prior. For all other forms of
+\code{poppar}, \code{nsim} is zero, i.e. one profile per support point.
 Note that the following arguments to \link{PM_sim}$new cannot be modified.
 \itemize{
-\item \code{nsim} is zero
 \item \code{outname} is "MMsim"
 \item \code{combine} is \code{TRUE}
 }}
