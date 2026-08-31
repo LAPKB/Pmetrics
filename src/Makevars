@@ -19,11 +19,10 @@ $(STATLIB):
 		export CARGO_HOME="$(CARGOHOME)"; \
 	fi && \
 		export PATH="$(PATH):$(HOME)/.cargo/bin" && \
+		export MACOSX_DEPLOYMENT_TARGET="$${MACOSX_DEPLOYMENT_TARGET:-26.0}" && \
 		cargo build --lib --release --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR)
-	if [ "$(NOT_CRAN)" != "true" ]; then \
-		if [ "$(CARGOHOME_IS_FALLBACK)" = "1" ]; then rm -Rf $(CARGOTMP); fi && \
-		rm -Rf $(LIBDIR)/build; \
-	fi
+	if [ "$(CARGOHOME_IS_FALLBACK)" = "1" ] && [ "$(NOT_CRAN)" != "true" ]; then rm -Rf $(CARGOTMP); fi
+	rm -Rf $(LIBDIR)/build
 
 C_clean:
 	rm -Rf $(SHLIB) $(STATLIB) $(OBJECTS)

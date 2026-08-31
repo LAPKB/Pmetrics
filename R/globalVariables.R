@@ -28,7 +28,9 @@ utils::globalVariables(
      str_split sym symbol theme_void time1 time2 title updateCheckboxInput
      val xend xlim yend ylim
 wt x y base_color base_symbol cov_group outeq_group req .
-  .target_first agecat" |>
+  .target_first agecat bin c0 c1 c2 c3 datetime delta_prob dur max_shift
+  post_prob post_weight posterior_mean prior_mean prior_prob prior_weight
+  total_variation value_high value_low value_mid weight x_value" |>
     stringr::str_replace_all("\n\\s+", " ") |>
     stringr::str_split(" ") |>
     unlist()

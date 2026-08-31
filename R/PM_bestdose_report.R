@@ -270,7 +270,7 @@ bd_fit_plot <- function(data, title) {
   ann_text <- NULL
   if (!is.null(fit) && !anyNA(stats::coef(fit))) {
     ann_text <- sprintf(
-      "R² = %.3f<br>Intercept = %.3f<br>Slope = %.3f",
+      "R\u00b2 = %.3f<br>Intercept = %.3f<br>Slope = %.3f",
       summary(fit)$r.squared,
       stats::coef(fit)[1],
       stats::coef(fit)[2]
@@ -1249,7 +1249,7 @@ bd_report_build <- function(x, outeq = 1) {
     posterior_table = posterior_table,
     parameter_shift_plot = bd_parameter_shift_heatmap(shift_data),
     parameter_shift_summary = if (!is.null(shift_data)) shift_data$summary else NULL,
-    model_summary = paste(capture.output(print(x$posterior$model_info$model)), collapse = "\n")
+    model_summary = paste(utils::capture.output(print(x$posterior$model_info$model)), collapse = "\n")
   )
 }
 
@@ -1264,7 +1264,7 @@ bd_report <- function(x, path, show = TRUE, quiet = TRUE, title = "BestDose Repo
   }
 
   out_path <- if (missing(path)) tempdir() else normalizePath(path, winslash = "/", mustWork = FALSE)
-  fs::dir_create(out_path)
+  dir.create(out_path, recursive = TRUE, showWarnings = FALSE)
 
   rmarkdown::render(
     input = template_file,
@@ -1277,7 +1277,7 @@ bd_report <- function(x, path, show = TRUE, quiet = TRUE, title = "BestDose Repo
   out_file <- file.path(out_path, "bestdose_report.html")
   if (file.exists(out_file)) {
     if (show) {
-      pander::openFileInOS(out_file)
+      utils::browseURL(out_file)
     }
     return(invisible(1))
   }
