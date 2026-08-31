@@ -2,9 +2,7 @@ use crate::settings::{settings, RunConfig};
 use crate::simulation::SimulationRow;
 
 use extendr_api::List;
-use pmcore::prelude::pharmsol::dsl::{
-    compile_module_source_to_runtime, CompiledRuntimeModel, RuntimeCompilationTarget,
-};
+use pmcore::prelude::pharmsol::dsl::{compile_module_source_to_runtime, CompiledRuntimeModel};
 use pmcore::prelude::{simulator::Prediction, *};
 
 use std::path::PathBuf;
@@ -15,9 +13,8 @@ use std::path::PathBuf;
 /// library with `cargo` and loading it at runtime. The model text is compiled
 /// in-process, so no Rust toolchain is required on the user's machine.
 pub(crate) fn compile_dsl(source: &str, solver: Option<&str>) -> Result<CompiledRuntimeModel> {
-    let model =
-        compile_module_source_to_runtime(source, None, RuntimeCompilationTarget::Jit, |_, _| {})
-            .map_err(|e| anyhow::anyhow!("Failed to compile model: {e}"))?;
+    let model = compile_module_source_to_runtime(source, None, |_, _| {})
+        .map_err(|e| anyhow::anyhow!("Failed to compile model: {e}"))?;
 
     let solver = match solver.map(|value| value.trim().to_ascii_uppercase()) {
         None => None,

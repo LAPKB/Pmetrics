@@ -8,7 +8,6 @@
 ^man-roxygen
 ^.*_test\.R$
 ^.*_old\.R$
-^inst/template/
 ^get-dependencies
 ^target/
 ^\.vscode$
