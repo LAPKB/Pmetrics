@@ -78,10 +78,19 @@ expr_to_dsl <- function(expr, allow_if = TRUE) {
     }
     idx <- as.integer(idx_raw)
     if (var %in% c("b", "bolus", "rateiv", "r")) {
-      cli::cli_abort(c(
+      # A bolus is a discrete state jump and an infusion rate is injected by the
+      # backend from the route declaration, so neither is a value the DSL can
+      # multiply; dose scaling goes through the bolus-only `fa` property.
+      msg <- c(
         "x" = "Bolus/infusion inputs may only be used as standalone additive terms in derivative equations.",
         "i" = "Write, for example, {.code dx[1] = -ke * x[1] + rateiv[1]}, not inside a product."
-      ))
+      )
+      if (var %in% c("b", "bolus")) {
+        msg <- c(msg,
+          "i" = "To scale a bolus dose up or down (e.g. bioavailability), use the {.arg fa} block: {.code fa = function() {{ fa[{idx}] = F }}}."
+        )
+      }
+      cli::cli_abort(msg)
     }
     return(sprintf("%s%d", var, idx))
   }
@@ -352,12 +361,48 @@ dsl_sec_block <- function(fun) {
   derived
 }
 
+# Collect the scalar assignments of a block as a named list of R expressions,
+# keyed by lower-cased variable name.
+dsl_scalar_defs <- function(fun) {
+  defs <- list()
+  if (is.null(fun)) {
+    return(defs)
+  }
+  for (e in dsl_body_stmts(fun)) {
+    if (dsl_is_assign(e) && is.symbol(e[[2]])) {
+      defs[[tolower(as.character(e[[2]]))]] <- e[[3]]
+    }
+  }
+  defs
+}
+
+# Substitute the definitions in `defs` into `expr`, recursively.
+dsl_inline_defs <- function(expr, defs, seen = character(0)) {
+  if (is.symbol(expr)) {
+    name <- tolower(as.character(expr))
+    if (is.null(defs[[name]])) {
+      return(expr)
+    }
+    if (name %in% seen) {
+      cli::cli_abort("Secondary equation {.code {name}} is defined in terms of itself.")
+    }
+    return(call("(", dsl_inline_defs(defs[[name]], defs, c(seen, name))))
+  }
+  if (is.call(expr) && length(expr) > 1) {
+    for (i in seq_along(expr)[-1]) {
+      expr[[i]] <- dsl_inline_defs(expr[[i]], defs, seen)
+    }
+  }
+  expr
+}
+
 # Emit route-property modifiers (`lag(...)` / `fa(...)`) from a lag/fa block.
 # `target` is the DSL property name ("lag" or "fa"); the R block assigns to
-# `lag[j]` / `fa[j]` where `j` is the 1-based input index.
-dsl_route_property_block <- function(fun, target) {
+# `lag[j]` / `fa[j]` where `j` is the 1-based input index. `defs` holds the
+# secondary equations, which pharmsol does not put in scope for route
+# properties, so they are inlined into the emitted expression instead.
+dsl_route_property_block <- function(fun, target, defs = list()) {
   exprs <- dsl_body_stmts(fun)
-  derived <- character(0)
   lines <- character(0)
   for (e in exprs) {
     if (!dsl_is_assign(e)) {
@@ -371,12 +416,16 @@ dsl_route_property_block <- function(fun, target) {
       if (tgt != target) {
         cli::cli_abort("Unexpected indexed assignment to {.code {tgt}[{idx}]} in {target} block.")
       }
-      lines <- c(lines, sprintf("%s(%s) = %s", target, pm_input_label(idx), expr_to_dsl(rhs)))
+      lines <- c(lines, sprintf(
+        "%s(%s) = %s", target, pm_input_label(idx),
+        expr_to_dsl(dsl_inline_defs(rhs, defs))
+      ))
     } else {
-      derived <- c(derived, sprintf("%s = %s", tolower(as.character(lhs)), expr_to_dsl(rhs)))
+      # Block-local helpers are only visible inside this block.
+      defs[[tolower(as.character(lhs))]] <- dsl_inline_defs(rhs, defs)
     }
   }
-  list(derived = derived, lines = lines)
+  lines
 }
 
 # Emit `init(...)` statements from an initial-conditions block.
@@ -595,18 +644,16 @@ model_to_dsl <- function(model) {
     init_lines <- ini$lines
   }
 
+  sec_defs <- dsl_scalar_defs(arg_list$sec)
+
   lag_lines <- character(0)
   if (!is.null(arg_list$lag)) {
-    lag <- dsl_route_property_block(arg_list$lag, "lag")
-    derived <- c(derived, lag$derived)
-    lag_lines <- lag$lines
+    lag_lines <- dsl_route_property_block(arg_list$lag, "lag", sec_defs)
   }
 
   fa_lines <- character(0)
   if (!is.null(arg_list$fa)) {
-    fa <- dsl_route_property_block(arg_list$fa, "fa")
-    derived <- c(derived, fa$derived)
-    fa_lines <- fa$lines
+    fa_lines <- dsl_route_property_block(arg_list$fa, "fa", sec_defs)
   }
 
   # Number of states and outputs.
