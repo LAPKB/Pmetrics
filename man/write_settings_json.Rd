@@ -52,8 +52,8 @@ Invisibly returns the path written.
 
 Writes a \code{settings.json} file describing a fit's configuration. The Rust
 backend writes the estimation artifacts (theta.csv, posterior.csv, pred.csv,
-covs.csv, cycles.csv, result.json) but not the configuration file that the
-Pmetrics output parsers (\link{PM_op}, \link{PM_final}, \link{PM_cycle}, etc.) expect. This
+covs.csv, cycles.csv) but not the configuration file that the Pmetrics
+output parsers (\link{PM_op}, \link{PM_final}, \link{PM_cycle}, etc.) expect. This
 helper reconstructs that file from the model and fit settings.
 }
 \keyword{internal}

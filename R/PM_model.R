@@ -1464,10 +1464,9 @@ PM_model <- R6::R6Class(
         )
 
         # The Rust backend writes the estimation artifacts (theta.csv,
-        # posterior.csv, pred.csv, covs.csv, cycles.csv, result.json). The
-        # Pmetrics output parsers additionally expect a `settings.json` file
-        # describing the run configuration, which we write here from the model
-        # and fit settings.
+        # posterior.csv, pred.csv, covs.csv, cycles.csv). The Pmetrics output
+        # parsers additionally expect a `settings.json` file describing the run
+        # configuration, which we write here from the model and fit settings.
         if (file.exists(file.path(out_path, "theta.csv"))) {
           write_settings_json(
             path = file.path(out_path, "settings.json"),
