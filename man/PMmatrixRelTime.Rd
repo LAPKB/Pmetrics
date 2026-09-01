@@ -39,7 +39,8 @@ or two digits, but time is in 24-hour format, and \emph{s} is required
 to avoid ambiguity.}
 
 \item{split}{If \emph{true}, \code{PMmatrixRelTime} will split every \code{id}
-into id.block, where block is defined by a dose reset, or evid=4,
+into pseudo-subject IDs suffixed by the observation occasion number. Occasions
+are delimited by dose reset events (\code{EVID = 4}),
 e.g. \code{id} 1.1, 1.2, 1.3, 2.1, 3.1, 3.2.}
 }
 \value{
@@ -57,7 +58,7 @@ any longer.
 \details{
 \code{PMmatrixRelTime} will convert absolute dates and times in a dataset
 into relative hours, suitable for Pmetrics analysis.  Additionally, the user has
-the option to split subjects into pseudosubjects every time a dose reset (evid=4)
+the option to split subjects into pseudosubjects every time a dose reset (\code{EVID = 4})
 is encountered.
 }
 \seealso{

@@ -93,7 +93,9 @@ PM_pta <- R6::R6Class(
     #' Ideally then, the simulated datset should contain sufficient observations within the interval specified by `start` and `end`.
     #' @param icen Can be either "median" for the predictions based on medians of `pred.type` parameter value
     #' distributions, or "mean".  Default is "median".
-    #' @param block Which block to plot, where a new block is defined by dose resets (evid = 4); default is 1.
+    #' @param occ Which observation occasion to use, where a new occasion is defined by dose resets (`EVID = 4`); default is 1.
+    #' The underlying occasion identifier remains stored in the `block` column.
+    #' @param block `r lifecycle::badge("deprecated")` Use `occ` instead.
     #' @param ... Not currently used
     #' @return A list of class *PM_pta_data*, included in the `data` field of the [PM_pta] object.
     #' The list contains each `target_type` as an element, followed by a final `intersection`
@@ -159,8 +161,20 @@ PM_pta <- R6::R6Class(
     #' }
 
     initialize = function(simdata, simlabels, target, target_type, success, outeq = 1,
-                          free_fraction = 1, start = 0, end = Inf, icen = "median", block = 1,
-                          ...) { # dots are for deprecated arguments
+                          free_fraction = 1, start = 0, end = Inf, icen = "median", occ = 1,
+                          ..., block = lifecycle::deprecated()) { # dots are for deprecated arguments
+
+      occ_supplied <- !missing(occ)
+      if (lifecycle::is_present(block)) {
+        if (occ_supplied) {
+          cli::cli_abort(c(
+            "x" = "Arguments {.arg occ} and deprecated {.arg block} were both supplied.",
+            "i" = "Supply only {.arg occ}."
+          ))
+        }
+        lifecycle::deprecate_warn("3.3.0", "PM_pta$new(block)", "PM_pta$new(occ)")
+        occ <- block
+      }
 
       # handle deprecated arguments
       extraArgs <- list(...)
@@ -241,13 +255,13 @@ PM_pta <- R6::R6Class(
         }
 
         if (dataType == 5) { # PM_post object
-          simdata <- simdata$data |> filter(icen == !!icen & block == !!block)
+          simdata <- simdata$data |> filter(.data$icen == .env$icen & .data$block %in% .env$occ)
           temp <- list(obs = data.frame(id = simdata$id, time = simdata$time, out = simdata$pred, outeq = simdata$outeq))
           simdata <- list(temp)
         }
 
         if (dataType == 6) { # PM_post_data object
-          simdata <- simdata |> filter(icen == !!icen & block == !!block)
+          simdata <- simdata |> filter(.data$icen == .env$icen & .data$block %in% .env$occ)
           temp <- list(obs = data.frame(id = simdata$id, time = simdata$time, out = simdata$pred, outeq = simdata$outeq))
           simdata <- list(temp)
         }
@@ -256,8 +270,8 @@ PM_pta <- R6::R6Class(
           if (dataType == 8) {
             simdata <- simdata$data
           }
-          simdata <- makePMmatrixBlock(simdata)
-          simdata <- simdata |> filter(evid == 0 & block == !!block)
+          simdata <- makePMdataOcc(simdata)
+          simdata <- simdata |> filter(.data$evid == 0 & .data$block %in% .env$occ)
           temp <- list(obs = data.frame(id = simdata$id, time = simdata$time, out = simdata$out, outeq = simdata$outeq))
           simdata <- list(temp)
         }
@@ -274,7 +288,7 @@ PM_pta <- R6::R6Class(
           start = start,
           end = end,
           icen = icen,
-          block = block, ...
+          occ = occ, ...
         )
         private$populate(pta)
       } else { # try simdata as a filename
@@ -313,7 +327,7 @@ PM_pta <- R6::R6Class(
   ), # end public
   private = list(
     make = function(simdata, simlabels, target, target_type, success, outeq = 1,
-                    free_fraction = 1, start = 0, end = Inf, icen = "median", block = 1) {
+                    free_fraction = 1, start = 0, end = Inf, icen = "median", occ = 1) {
       if (is.numeric(target) | inherits(target, "PMpta.targ")) {
         target <- list(target) # make a list
       }

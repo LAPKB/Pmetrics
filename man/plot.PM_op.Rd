@@ -12,7 +12,7 @@
   icen = "median",
   pred.type = "post",
   outeq = 1,
-  block,
+  occ,
   include,
   exclude,
   mult = 1,
@@ -26,7 +26,8 @@
   print = TRUE,
   xlim,
   ylim,
-  ...
+  ...,
+  block = lifecycle::deprecated()
 )
 }
 \arguments{
@@ -95,8 +96,8 @@ zero prediction error.}
 
 \item{outeq}{Which output equation to plot. Default is 1.}
 
-\item{block}{Which block to plot, where blocks are defined by dose reset events (EVID = 4) in the data.
-Default is missing, which results in all blocks included.}
+\item{occ}{Which observation occasion to use, where occasions are defined by dose reset events (\code{EVID = 4}) in the data. The underlying occasion identifier in Pmetrics data objects remains stored in the \code{block} column.
+Default is missing, which results in all occasions included.}
 
 \item{include}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)}
 
@@ -151,6 +152,8 @@ Example: \code{ylim = c(0,100)}}
 \item{...}{Other attributes which can be passed to the layout > xaxis/yaxis  in a plotly plot to further control formatting.  Note that \code{log}, \code{xlab}, \code{ylab}, \code{xlim}, and \code{ylim} are  all controlled by the layout object, but are provided throughout Pmetrics plotly function arguments as shortcuts that map to layout elements.  Therefore, the dots argument should be used to specify other aspects of the  x axis, y axis, or both. See \code{plotly::schema()} layout > layoutAttributes  > xaxis/yaxis for options. To add to single axis, name it as a list.  If attributes are specified without an enclosing xaxis or yaxis list,  they will be applied to both axes.
 
 Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black"))) #applies to x axis only}} \item{\code{NPex$data$plot(linecolor = "red", ticks = "inside") #applies to both axes}} }  .}
+
+\item{block}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{occ} instead.}
 }
 \value{
 Plots the object.

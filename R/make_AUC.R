@@ -26,7 +26,8 @@
 #' AUC calculated for the available data, not to exceed the specified interval.
 #' @param icen `r template("icen")` Only relevant for PMpost or PMpop objects.
 #' @param outeq `r template("outeq")`
-#' @param block `r template("block")`
+#' @param occ `r template("occ")`
+#' @param block `r lifecycle::badge("deprecated")` Use `occ` instead.
 #' @param method Default is "linear" for AUC trapezoidal calculation.  Any other value will result in
 #' linear up, log down.
 #' @param addZero Boolean to add a zero concentration at time 0. Default is \code{FALSE}.
@@ -54,10 +55,23 @@ make_AUC <- function(
   include = NULL, exclude = NULL,
   start = 0, end = Inf,
   icen = "median",
-  outeq = 1, block = 1,
+  outeq = 1, occ = 1,
   method = "linear",
-  addZero = FALSE
+  addZero = FALSE,
+  block = lifecycle::deprecated()
 ) {
+  occ_supplied <- !missing(occ)
+  if (lifecycle::is_present(block)) {
+    if (occ_supplied) {
+      cli::cli_abort(c(
+        "x" = "Arguments {.arg occ} and deprecated {.arg block} were both supplied.",
+        "i" = "Supply only {.arg occ}."
+      ))
+    }
+    lifecycle::deprecate_warn("3.3.0", "make_AUC(block)", "make_AUC(occ)")
+    occ <- block
+  }
+
   # handle objects
   if (is.null(data)) {
     cli::cli_abort("Please supply a data object to calculate AUC.")
@@ -84,10 +98,10 @@ make_AUC <- function(
       data |> mutate(out = pred), # PM_post_data
       data$data |> mutate(out = pred), # PM_post
       data |>
-        makePMmatrixBlock() |>
+        makePMdataOcc() |>
         filter(!is.na(out)), # PM_data_data
       data$standard_data |>
-        makePMmatrixBlock() |>
+        makePMdataOcc() |>
         filter(!is.na(out)) # PM_data
     )
     group <- "id"
@@ -113,7 +127,7 @@ make_AUC <- function(
   # create dummy variables if missing
   if (!group %in% names(data2)) data2[[group]] <- 1 # add id if missing
   if (!"outeq" %in% names(data2)) data2$outeq <- 1 # add outeq if missing
-  if (!"block" %in% names(data2)) data2$block <- 1 # add block if missing
+  if (!"block" %in% names(data2)) data2$block <- 1 # add stored occasion column if missing
   if (!"icen" %in% names(data2)) data2$icen <- "median" # add icen if missing
   if (is.null(include)) include <- unique(data2[[group]])
   if (is.null(exclude)) exclude <- NA
@@ -125,7 +139,7 @@ make_AUC <- function(
   data3 <- data2 |>
     dplyr::filter(
       outeq == !!outeq,
-      block == !!block,
+      .data$block %in% .env$occ,
       !!rlang::sym(group) %in% include,
       !(!!rlang::sym(group)) %in% exclude,
       time >= start & time <= end,
@@ -136,7 +150,7 @@ make_AUC <- function(
     dplyr::group_by(!!!group_syms)
 
   if (nrow(data3) < 2) {
-    cli::cli_warn(c("!" = "You have selected fewer than 2 rows in your data.", "i" = "Check the values of {.code include}, {.code exclude}, {.code outeq}, {.code block}, {.code start}, and {.code end}."))
+    cli::cli_warn(c("!" = "You have selected fewer than 2 rows in your data.", "i" = "Check the values of {.code include}, {.code exclude}, {.code outeq}, {.code occ}, {.code start}, and {.code end}."))
   }
 
 

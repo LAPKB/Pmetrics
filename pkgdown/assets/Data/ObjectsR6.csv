@@ -50,7 +50,7 @@
 ,\$shrinkage,Shrinkage values for each random population parameter
 ,\$summary,"Method: summarize the PM_final object with summary.PMfinal(), same function as for Legacy"
 "op (class: PM_op, R6)",\$auc,Method: make_AUC() to calculate area under time concentration curve
-,\$block,"Dosing block, usually 1 unless data file contains EVID=4 dose reset events, in which case each such reset within a given ID will increment the dosing block by 1 for that ID"
+,\$block,"Stored observation occasion number, usually 1; each EVID=4 dose reset event increments the occasion number within a subject"
 ,\$clone,Method: Create copy of PM_op object
 ,\$d,Difference between pred and obs
 ,\$data,"Data frame with all data fields, class: PM_op_data"

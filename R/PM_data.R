@@ -427,7 +427,7 @@ PM_data <- R6::R6Class("PM_data",
         cat(msg)
       }
 
-      # Assign a block number for each id, incremented at each evid == 4
+      # Assign an observation occasion number for each id, incremented at each evid == 4
       dataObj <- dataObj |>
         group_by(id) |>
         mutate(block = cumsum(evid == 4)) |>
@@ -572,7 +572,7 @@ PMreadMatrix <- function(
 #' @details
 #' \code{PMmatrixRelTime} will convert absolute dates and times in a dataset
 #' into relative hours, suitable for Pmetrics analysis.  Additionally, the user has
-#' the option to split subjects into pseudosubjects every time a dose reset (evid=4)
+#' the option to split subjects into pseudosubjects every time a dose reset (`EVID = 4`)
 #' is encountered.
 #'
 #' @param data The name of an R data object.
@@ -593,7 +593,8 @@ PMreadMatrix <- function(
 #'  or two digits, but time is in 24-hour format, and \emph{s} is required
 #'  to avoid ambiguity.
 #' @param split If \emph{true}, \code{PMmatrixRelTime} will split every \code{id}
-#'  into id.block, where block is defined by a dose reset, or evid=4,
+#'  into pseudo-subject IDs suffixed by the observation occasion number. Occasions
+#'  are delimited by dose reset events (`EVID = 4`),
 #'  e.g. \code{id} 1.1, 1.2, 1.3, 2.1, 3.1, 3.2.
 #' @return Returns a dataframe with columns *id, evid, relTime*.
 #'  If \code{split}=T all evid values that were previously 4 will be converted to 1.
@@ -720,7 +721,7 @@ PMmatrixRelTime <- function(
   }
 
   # calculate relative times
-  temp <- makePMmatrixBlock(temp) |>
+  temp <- makePMdataOcc(temp) |>
     dplyr::group_by(id, block) |>
     dplyr::mutate(relTime = (dt - dt[1]) / lubridate::dhours(1))
 
@@ -1084,7 +1085,7 @@ errcheck <- function(data2, quiet, source) {
     }
   }
 
-  # check that all times within a given ID block are monotonically increasing
+  # check that all times within a given observation occasion are monotonically increasing
   misorder <- NA
   for (i in 2:nrow(data2)) {
     time_diff <- suppressWarnings(tryCatch(data2$time[i] - data2$time[i - 1], error = function(e) NA))
@@ -1238,16 +1239,16 @@ errfix <- function(data2, err, quiet) {
     report <- c(report, paste("All covariates must have values for each subject's first event.  See errors.xlsx and fix manually."))
   }
 
-  # Reorder times - assume times are in correct block
+  # Reorder times within each observation occasion
   if (length(grep("FAIL", err$timeOrder$msg)) > 0) {
-    data2 <- makePMmatrixBlock(data2) |>
+    data2 <- makePMdataOcc(data2) |>
       dplyr::group_by(id, block) |>
       dplyr::arrange(time, .by_group = T) |>
       ungroup() |>
       select(-block)
 
     if (any(data2$evid == 4)) {
-      report <- c(report, paste("Your dataset has EVID=4 events. Times ordered within each event block."))
+      report <- c(report, paste("Your dataset has EVID=4 events. Times ordered within each observation occasion."))
     } else {
       report <- c(report, paste("Times for each subject have been ordered."))
     }
@@ -1621,7 +1622,8 @@ createInstructions <- function(wb) {
 #' In the case of multiple outputs, `group_colors` will be used to color the lines and markers.
 #' @param out_names Character vector of names to label the outputs if `legend = TRUE`. These can be combined with `group_names`.
 #' The number must match the number of outputs in `outeq`. If missing, the default is "Output 1", "Output 2", etc.
-#' @param block `r template("block")` Default is 1, but can be multiple if present in the data, as for `outeq`.
+#' @param occ `r template("occ")` Default is 1, but can be multiple if present in the data, as for `outeq`.
+#' @param block `r lifecycle::badge("deprecated")` Use `occ` instead.
 #' @param tad `r template("tad")`
 #' @param overlay Operator to overlay all time concentration profiles in a single plot.
 #' The default is `TRUE`. If `FALSE`, will trellisplot subjects one at a time. Can also be
@@ -1677,7 +1679,7 @@ plot.PM_data <- function(
   mult = 1,
   outeq = 1,
   out_names = NULL,
-  block = 1,
+  occ = 1,
   tad = FALSE,
   overlay = TRUE,
   legend,
@@ -1687,8 +1689,21 @@ plot.PM_data <- function(
   ylab = "Output",
   title = "",
   xlim, ylim,
-  print = TRUE, ...
+  print = TRUE, ...,
+  block = lifecycle::deprecated()
 ) {
+  occ_supplied <- !missing(occ)
+  if (lifecycle::is_present(block)) {
+    if (occ_supplied) {
+      cli::cli_abort(c(
+        "x" = "Arguments {.arg occ} and deprecated {.arg block} were both supplied.",
+        "i" = "Supply only {.arg occ}."
+      ))
+    }
+    lifecycle::deprecate_warn("3.3.0", "plot.PM_data(block)", "plot.PM_data(occ)")
+    occ <- block
+  }
+
   # Plot parameters ---------------------------------------------------------
 
   if (is.list(marker) && !is.null(marker$shape) && is.null(marker$symbol)) {
@@ -1825,8 +1840,8 @@ plot.PM_data <- function(
   # Data processing ---------------------------------------------------------
   dat <- x$clone() # make copy of x to work with
 
-  # make blocks
-  dat$standard_data <- makePMmatrixBlock(dat$standard_data)
+  # assign observation occasions (stored in the block column)
+  dat$standard_data <- makePMdataOcc(dat$standard_data)
 
   # time after dose
   if (tad) {
@@ -1836,10 +1851,10 @@ plot.PM_data <- function(
 
   # filter
   presub <- dat$standard_data |>
-    filter(outeq %in% !!outeq, block %in% !!block, evid == 0) |>
+    filter(.data$outeq %in% .env$outeq, .data$block %in% .env$occ, .data$evid == 0) |>
     includeExclude(include, exclude)
 
-  show_block_label <- dplyr::n_distinct(presub$block) > 1
+  show_occ_label <- dplyr::n_distinct(presub$block) > 1
 
 
   # ---- covariate group (drives COLOR) ------------------------------------
@@ -1890,7 +1905,7 @@ plot.PM_data <- function(
           parts <- parts[nchar(trimws(parts)) > 0]
           paste(parts, collapse = ", ")
         }, cov_group, outeq_group,
-        if (show_block_label) paste0("Block ", presub$block) else ""
+        if (show_occ_label) paste0("Occasion ", presub$block) else ""
       )
     }) |>
     ungroup()
@@ -1974,7 +1989,7 @@ plot.PM_data <- function(
     # filter and group by id
     if (!is.null(pred[[1]])) { # if pred not reset to null b/c of invalid pred[[1]]
       predsub <- pred[[1]] |>
-        filter(outeq %in% !!outeq, block %in% !!block, icen == !!icen) |>
+        filter(.data$outeq %in% .env$outeq, .data$block %in% .env$occ, .data$icen == .env$icen) |>
         mutate(cens = "none") |> # always none for predictions
         includeExclude(include, exclude) |>
         group_by(id)

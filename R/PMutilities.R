@@ -317,19 +317,21 @@ getOS <- function() {
 }
 
 
-# makePMmatrixBlock -------------------------------------------------------
+# makePMdataOcc -------------------------------------------------------
 
-makePMmatrixBlock <- function(mdata) {
-  # make event blocks, delimited by evid=4
-  mdata$block <- 1
-  if (any(mdata$evid == 4)) {
-    blocks <- tapply(mdata$time[mdata$evid == 1 | mdata$evid == 4], mdata$id[mdata$evid == 1 | mdata$evid == 4], function(x) sum(x == 0))
-    blocks <- blocks[rank(unique(mdata$id))] # sort blocks back into id order in mdata
-    blocks2 <- unlist(mapply(function(x) 1:x, blocks))
-    time0 <- c(which(mdata$time == 0 & mdata$evid != 0), nrow(mdata))
-    blocks3 <- rep(blocks2, times = diff(time0))
-    mdata$block <- c(blocks3, tail(blocks3, 1))
-  }
+makePMdataOcc <- function(mdata) {
+  # Assign observation occasions, delimited by EVID = 4 and stored in `block`.
+  mdata <- mdata |> mutate(block = 1L + cumsum(dplyr::coalesce(evid == 4, FALSE)))
+
+  # mdata$block <- 1
+  # if (any(mdata$evid == 4)) {
+  #   blocks <- tapply(mdata$time[mdata$evid == 1 | mdata$evid == 4], mdata$id[mdata$evid == 1 | mdata$evid == 4], function(x) sum(x == 0))
+  #   blocks <- blocks[rank(unique(mdata$id))] # sort blocks back into id order in mdata
+  #   blocks2 <- unlist(mapply(function(x) 1:x, blocks))
+  #   time0 <- c(which(mdata$time == 0 & mdata$evid != 0), nrow(mdata))
+  #   blocks3 <- rep(blocks2, times = diff(time0))
+  #   mdata$block <- c(blocks3, tail(blocks3, 1))
+  # }
   return(mdata)
 }
 

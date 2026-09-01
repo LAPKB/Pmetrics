@@ -304,6 +304,7 @@ importFrom(readr,
 importFrom(rlang,
   ":=",
   .data,
+  .env,
   set_names
 )
 importFrom(shiny,

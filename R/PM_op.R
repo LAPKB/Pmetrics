@@ -53,7 +53,8 @@ PM_op <- R6::R6Class(
     icen = NULL,
     #' @field outeq output equation number
     outeq = NULL,
-    #' @field block dosing block number for each subject, as defined by dose resets (evid=4).
+    #' @field block Stored observation occasion number for each subject; occasions are
+    #' delimited by dose reset events (`EVID = 4`).
     block = NULL,
     #' @field obsSD standard deviation of the observation based on the assay error polynomial
     obsSD = NULL,
@@ -257,7 +258,8 @@ PM_op <- R6::R6Class(
 #' @param icen `r template("icen")`
 #' @param pred.type Either 'post' for a posterior object or 'pop' for a population object.  Default is 'post'.
 #' @param outeq `r template("outeq")`
-#' @param block `r template("block")` Default is missing, which results in all blocks included.
+#' @param occ `r template("occ")` Default is missing, which results in all occasions included.
+#' @param block `r lifecycle::badge("deprecated")` Use `occ` instead.
 #' @param marker `r template("marker")` Default is
 #' `marker = list(color = orange, shape = "circle", size = 10, opacity = 0.5, line = list(color = black, width = 1))`.
 #' The color of any BLQ points is set to a color 90 degrees different on the color wheel from the
@@ -342,7 +344,7 @@ plot.PM_op <- function(
   line = list(lm = NULL, loess = NULL, ref = NULL),
   marker = TRUE,
   resid = FALSE,
-  icen = "median", pred.type = "post", outeq = 1, block,
+  icen = "median", pred.type = "post", outeq = 1, occ,
   include, exclude,
   mult = 1,
   legend,
@@ -352,8 +354,11 @@ plot.PM_op <- function(
   title,
   stats = TRUE,
   print = TRUE,
-  xlim, ylim, ...
+  xlim, ylim, ...,
+  block = lifecycle::deprecated()
 ) {
+  occ_supplied <- !missing(occ)
+
   if (inherits(x, "PM_op")) {
     x <- x$data
   }
@@ -361,8 +366,18 @@ plot.PM_op <- function(
   # include/exclude
   if (missing(include)) include <- unique(x$id)
   if (missing(exclude)) exclude <- NULL
-  if (missing(block)) {
-    block <- unique(x$block)
+  if (!occ_supplied) {
+    occ <- unique(x$block)
+  }
+  if (lifecycle::is_present(block)) {
+    if (occ_supplied) {
+      cli::cli_abort(c(
+        "x" = "Arguments {.arg occ} and deprecated {.arg block} were both supplied.",
+        "i" = "Supply only {.arg occ}."
+      ))
+    }
+    lifecycle::deprecate_warn("3.3.0", "plot.PM_op(block)", "plot.PM_op(occ)")
+    occ <- block
   }
 
   if (max(outeq) > max(x$outeq)) {
@@ -371,16 +386,16 @@ plot.PM_op <- function(
       "i" = "Choose {max(x$outeq)} or fewer for {.code outeq}."
     ))
   }
-  if (max(block) > max(x$block)) {
+  if (max(occ) > max(x$block)) {
     cli::cli_abort(c(
-      "x" = "{.cls PM_op} object does not have {block} blocks.",
-      "i" = "Choose {max(x$block)} or fewer for {.code block}."
+      "x" = "{.cls PM_op} object does not have occasion {occ}.",
+      "i" = "Choose {max(x$block)} or fewer for {.arg occ}."
     ))
   }
   sub1 <- x |>
     dplyr::filter(
       icen == !!icen, outeq %in% !!outeq, pred.type == !!pred.type,
-      block %in% !!block
+      .data$block %in% .env$occ
     ) |>
     includeExclude(include, exclude) |>
     dplyr::filter(!is.na(obs)) |>
@@ -388,7 +403,7 @@ plot.PM_op <- function(
     dplyr::arrange(id, time)
 
   if (nrow(sub1) == 0) {
-    cli::cli_abort(c("x" = "You have selected <0> rows in your {.cls PM_op} object.", "i" = "Check the values of {.code include}, {.code exclude}, {.code outeq}, and {.code block}."))
+    cli::cli_abort(c("x" = "You have selected <0> rows in your {.cls PM_op} object.", "i" = "Check the values of {.code include}, {.code exclude}, {.code outeq}, and {.code occ}."))
   }
 
 

@@ -45,7 +45,8 @@ PM_post <- R6::R6Class(
     #' * **icen** Prediction based on mean or median of Bayesian posterior parameter distribution
     #' * **outeq** Output equation number
     #' * **pred** Predicted output for each outeq
-    #' * **block** Observation blocks within subjects as defined by *EVID=4* dosing events
+    #' * **block** Stored observation occasion number within subjects; occasions are
+    #'   delimited by dose reset events (`EVID = 4`)
     data = NULL,
     #' @description
     #' Create new object populated with Bayesian posterior predicted data at
@@ -193,7 +194,8 @@ PM_post <- R6::R6Class(
 #' value distributions, or `"mean"`. Default is `"median"`.
 #' Only a single value is accepted; `outeq` is the sole grouping dimension.
 #' @param outeq `r template("outeq")` Default is 1, but can be multiple if present in the data, e.g. `1:2` or `c(1, 3)`.
-#' @param block `r template("block")` Default is 1, but can be multiple if present in the data, as for `outeq`.
+#' @param occ `r template("occ")` Default is 1, but can be multiple if present in the data, as for `outeq`.
+#' @param block `r lifecycle::badge("deprecated")` Use `occ` instead.
 #' @param overlay Operator to overlay all time prediction profiles in a single plot.
 #' The default is `TRUE`. If `FALSE`, will trellisplot subjects one at a time. Can also be
 #' specified as a vector with number of rows and columns, e.g. `c(3, 2)` for 3 rows and
@@ -235,7 +237,7 @@ plot.PM_post <- function(
   mult = 1,
   icen = "median",
   outeq = 1,
-  block = 1,
+  occ = 1,
   overlay = TRUE,
   legend = FALSE,
   log = FALSE,
@@ -244,8 +246,21 @@ plot.PM_post <- function(
   ylab = "Output",
   title = "",
   print = TRUE,
-  xlim, ylim, ...
+  xlim, ylim, ...,
+  block = lifecycle::deprecated()
 ) {
+  occ_supplied <- !missing(occ)
+  if (lifecycle::is_present(block)) {
+    if (occ_supplied) {
+      cli::cli_abort(c(
+        "x" = "Arguments {.arg occ} and deprecated {.arg block} were both supplied.",
+        "i" = "Supply only {.arg occ}."
+      ))
+    }
+    lifecycle::deprecate_warn("3.3.0", "plot.PM_post(block)", "plot.PM_post(occ)")
+    occ <- block
+  }
+
   # Plot parameters ---------------------------------------------------------
 
   x <- if (inherits(x, "PM_post")) {
@@ -343,7 +358,7 @@ plot.PM_post <- function(
 
   # filter — icen is a single-value filter only; outeq is the sole grouping dimension
   presub <- x |>
-    filter(outeq %in% !!outeq, block %in% !!block, icen == !!icen[1]) |>
+    filter(.data$outeq %in% .env$outeq, .data$block %in% .env$occ, .data$icen == .env$icen[1]) |>
     mutate(group = "") |>
     includeExclude(include, exclude)
 
