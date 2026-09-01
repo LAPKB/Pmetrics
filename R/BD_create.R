@@ -1,21 +1,4 @@
 # Export a Pmetrics fit as a BestDose model file (data/drug_model/<name>.json)
-#
-# Ground truth for the shape written here:
-#   src-tauri/src/model_file/model_schema.rs  (fields / types)
-#   src-tauri/src/model_file/model_check.rs   (what makes a file valid)
-#   docs/model_file_from_pmetrics.md          (field-by-field mapping)
-#
-# {
-#   "description":   { drug, route[], name, compartment{}, version, description,
-#                      reference, reference_url, covariates{} },
-#   "model":         { primary{}, covariates{}, secondary{}, initial_conditions,
-#                      fa, lag, equation{}, out{}, error{} },
-#   "support_point": [ { <primary param>: value, ..., "prob": value } ]
-# }
-#
-# Usage:
-#   bd <- createBDmodel(PM_result, drug_name = "amikacin", model_name = "Amikacin")
-#   saveBDmodel(bd, "Amikacin.json")
 
 # ==================================================================____
 # Helpers
@@ -107,32 +90,6 @@ bdCovariateName <- function(x) {
   unname(ifelse(x %in% names(synonyms), synonyms[x], x))
 }
 
-# #' @title Get the ODE from the model library
-# #' @description
-# #' `r lifecycle::badge("experimental")`
-# #'
-# #' @param model_name A character string for the name of the model in the model library
-# #' @return A named list of the ODE equations, keyed `dx1`, `dx2`, ...
-
-# getODEfromLib <- function(model_name) {
-#   # find the model template in the library by name
-#   template <- purrr::detect(mod_list, \(x) x$name == model_name)
-#   if (is.null(template)) {
-#     cli::cli_abort("Model {.val {model_name}} not found in the model library.")
-#   }
-
-#   # deparse its ODE block, one line per statement, keeping only the dx[N] assignments
-#   vect_ode <- tolower(deparseLines(template$arg_list$eqn))
-#   vect_ode <- vect_ode[stringr::str_detect(vect_ode, "(?i)^dx\\s*\\[[0-9]+\\]")]
-
-#   ode_list <- as.list(vect_ode)
-#   names(ode_list) <- bdKey(stringr::str_extract(
-#     vect_ode,
-#     "(?i)^dx\\s*\\[[0-9]+\\]"
-#   ))
-
-#   return(ode_list)
-# }
 
 #' @title Extract an indexed block from a PM model
 #' @description One parser for every `keyword[N] = ...` block (`ini`, `fa`, `lag`, `y`), replacing
@@ -275,45 +232,6 @@ extractPMSecondary <- function(PMmodel) {
 
   return(sec_list)
 }
-
-# #' @title Extract the equations from a PM model and format them for BestDose
-# #' @param PMmodel A PM model object
-# #' @return A named list of ODEs, keyed `dx1`, `dx2`, ...
-
-# extractPMequation <- function(PMmodel) {
-#   # equation deparse
-#   eqn <- deparseLines(PMmodel$eqn)
-
-#   # get library name
-#   library_name <- model_lib(show = FALSE)$Name
-
-#   # check if equation are from the library
-#   if (any(stringr::str_remove_all(eqn, "\"") %in% library_name)) {
-#     # extract the model name from the equation and remove NA values
-#     model_name <- stringr::str_extract(
-#       eqn,
-#       paste0("(?i)(", paste(library_name, collapse = "|"), ")")
-#     )
-#     model_name <- model_name[!is.na(model_name)]
-#     return(getODEfromLib(model_name))
-#   }
-
-#   # capture the derivative equations, one "dx[N] = ..." line per compartment
-#   bloc <- eqn[stringr::str_detect(eqn, "(?i)^dx\\s*\\[[0-9]+\\]")]
-
-#   eqn_bloc <- as.list(bloc)
-#   names(eqn_bloc) <- bdKey(stringr::str_extract(
-#     bloc,
-#     "(?i)^dx\\s*\\[[0-9]+\\]"
-#   ))
-
-#   # replace "<-" by "="
-#   eqn_bloc <- lapply(eqn_bloc, function(x) {
-#     stringr::str_replace(x, "<-", "=")
-#   })
-
-#   return(eqn_bloc)
-# }
 
 #' @title Extract the error model from a PM model and format it for BestDose
 #' @param PMmodel A PM model object
