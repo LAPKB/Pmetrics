@@ -93,8 +93,8 @@ pub(crate) fn settings(
         "npod" => NpodConfig::new().max_cycles(max_cycles).into(),
         // Posterior probabilities are computed by a single-pass Bayesian
         // reweighting of the (fixed) prior support points, which is exactly what
-        // the NCNPAG algorithm does.
-        "postprob" => NcnpagConfig::new().into(),
+        // the NPMAP algorithm does.
+        "postprob" | "npmap" => NpmapConfig::new().into(),
         _ => return Err(anyhow!("Algorithm {} not supported", algorithm)),
     };
 

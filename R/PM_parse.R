@@ -7,8 +7,8 @@
 #'
 #' Writes a `settings.json` file describing a fit's configuration. The Rust
 #' backend writes the estimation artifacts (theta.csv, posterior.csv, pred.csv,
-#' covs.csv, cycles.csv, result.json) but not the configuration file that the
-#' Pmetrics output parsers ([PM_op], [PM_final], [PM_cycle], etc.) expect. This
+#' covs.csv, cycles.csv) but not the configuration file that the Pmetrics
+#' output parsers ([PM_op], [PM_final], [PM_cycle], etc.) expect. This
 #' helper reconstructs that file from the model and fit settings.
 #' @param path Full path (including filename) to write the `settings.json` file.
 #' @param param_ranges A named list mapping parameter names to `c(min, max)`
