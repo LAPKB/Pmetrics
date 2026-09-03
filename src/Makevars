@@ -21,9 +21,9 @@ $(STATLIB):
 		export PATH="$(PATH):$(HOME)/.cargo/bin" && \
 		cargo build --lib --release --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR)
 	if [ "$(NOT_CRAN)" != "true" ]; then \
-		if [ "$(CARGOHOME_IS_FALLBACK)" = "1" ]; then rm -Rf $(CARGOTMP); fi && \
-		rm -Rf $(LIBDIR)/build; \
+		if [ "$(CARGOHOME_IS_FALLBACK)" = "1" ]; then rm -Rf $(CARGOTMP); fi; \
 	fi
+	rm -Rf $(LIBDIR)/build
 
 C_clean:
 	rm -Rf $(SHLIB) $(STATLIB) $(OBJECTS)

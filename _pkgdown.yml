@@ -131,6 +131,7 @@ reference:
 - title: Utility
   desc: Utility functions
 - contents:
+  - PM_upgrade
   - PM_build
   - PM_help
   - PMcheck

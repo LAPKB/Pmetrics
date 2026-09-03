@@ -14,7 +14,9 @@
 #' @details
 #' *PM_data* objects are passed to the `$fit` method of compiled [PM_model] objects to initiate a
 #' population analysis. The object is created by reading a delimited file in
-#' the current working directory. The data will be transformed into the standard
+#' the current working directory. The format of the file is detailed in the online
+#' [Pmetrics in R book](https://lapkb.github.io/PM_tutorial/data.html). 
+#' The data will be transformed into the standard
 #' format which is the same for all engines, with a report of any assumptions
 #' that were necessary to standardize the data. [PMcheck] is called
 #' on the standard data to evaluate for errors. If dates and times are converted
@@ -87,10 +89,10 @@ PM_data <- R6::R6Class("PM_data",
         )
         path <- dirname(data)
       } else if (inherits(data, "PM_data")) { # R6
-        self$data <- data$data
+        self$data <- PM_upgrade(data$data)
         path <- getwd()
       } else { # something else
-        self$data <- data
+        self$data <- PM_upgrade(data)
         path <- getwd()
       }
 
@@ -315,7 +317,7 @@ PM_data <- R6::R6Class("PM_data",
       dataNames <- names(dataObj)
       standardNames <- getFixedColNames()
 
-      covNames <- dataNames[!dataNames %in% standardNames]
+      covNames <- dataNames[!dataNames %in% c(standardNames, "occasion")]
       if ("date" %in% covNames) {
         covNames <- covNames[-which(covNames == "date")]
       }
@@ -427,23 +429,19 @@ PM_data <- R6::R6Class("PM_data",
         cat(msg)
       }
 
-      # Assign a block number for each id, incremented at each evid == 4
-      dataObj <- dataObj |>
-        group_by(id) |>
-        mutate(block = cumsum(evid == 4)) |>
-        group_by(id, block) |>
+      # Assign an observation occasion number for each id, incremented at each EVID = 4.
+      dataObj <- makePMdataOccasion(dataObj) |>
+        group_by(id, occasion) |>
         arrange(time, desc(evid), .by_group = TRUE) |>
         ungroup() |>
-        select(-block)
+        relocate(occasion, .after = last_col())
 
       if ("evid" %in% names(dataObj_orig)) {
-        dataObj_orig <- dataObj_orig |>
-          group_by(id) |>
-          mutate(block = cumsum(evid == 4)) |>
-          group_by(id, block) |>
+        dataObj_orig <- makePMdataOccasion(dataObj_orig) |>
+          group_by(id, occasion) |>
           arrange(time, desc(evid), .by_group = TRUE) |>
           ungroup() |>
-          select(-block)
+          select(-occasion)
       } else {
         dataObj_orig <- dataObj_orig |> arrange(id, time, out)
       }
@@ -572,7 +570,7 @@ PMreadMatrix <- function(
 #' @details
 #' \code{PMmatrixRelTime} will convert absolute dates and times in a dataset
 #' into relative hours, suitable for Pmetrics analysis.  Additionally, the user has
-#' the option to split subjects into pseudosubjects every time a dose reset (evid=4)
+#' the option to split subjects into pseudosubjects every time a dose reset (`EVID = 4`)
 #' is encountered.
 #'
 #' @param data The name of an R data object.
@@ -593,7 +591,8 @@ PMreadMatrix <- function(
 #'  or two digits, but time is in 24-hour format, and \emph{s} is required
 #'  to avoid ambiguity.
 #' @param split If \emph{true}, \code{PMmatrixRelTime} will split every \code{id}
-#'  into id.block, where block is defined by a dose reset, or evid=4,
+#'  into pseudo-subject IDs suffixed by the observation occasion number. Occasions
+#'  are delimited by dose reset events (`EVID = 4`),
 #'  e.g. \code{id} 1.1, 1.2, 1.3, 2.1, 3.1, 3.2.
 #' @return Returns a dataframe with columns *id, evid, relTime*.
 #'  If \code{split}=T all evid values that were previously 4 will be converted to 1.
@@ -720,8 +719,8 @@ PMmatrixRelTime <- function(
   }
 
   # calculate relative times
-  temp <- makePMmatrixBlock(temp) |>
-    dplyr::group_by(id, block) |>
+  temp <- makePMdataOccasion(temp) |>
+    dplyr::group_by(id, occasion) |>
     dplyr::mutate(relTime = (dt - dt[1]) / lubridate::dhours(1))
 
   temp$relTime <- round(temp$relTime, 2)
@@ -877,6 +876,23 @@ PMcheck <- function(data, path = ".", fix = FALSE, quiet = FALSE) {
   }
   if (is.null(legacy)) {
     legacy <- F
+  }
+
+  occasion_name <- names(data2)[tolower(names(data2)) == "occasion"]
+  if (length(occasion_name) > 0 && !source %in% c("PM_data", "list")) {
+    is_occasion_metadata <- identical(occasion_name, "occasion") &&
+      all(c("id", "evid") %in% names(data2)) &&
+      isTRUE(all.equal(
+        data2$occasion,
+        makePMdataOccasion(data2)$occasion,
+        check.attributes = FALSE
+      ))
+    if (!is_occasion_metadata) {
+      cli::cli_abort(c(
+        "x" = "{.field occasion} is a reserved Pmetrics data header and cannot be used as a covariate name.",
+        "i" = "Rename that covariate before calling {.fn PMcheck}."
+      ))
+    }
   }
 
 
@@ -1084,7 +1100,7 @@ errcheck <- function(data2, quiet, source) {
     }
   }
 
-  # check that all times within a given ID block are monotonically increasing
+  # check that all times within a given observation occasion are monotonically increasing
   misorder <- NA
   for (i in 2:nrow(data2)) {
     time_diff <- suppressWarnings(tryCatch(data2$time[i] - data2$time[i - 1], error = function(e) NA))
@@ -1238,16 +1254,16 @@ errfix <- function(data2, err, quiet) {
     report <- c(report, paste("All covariates must have values for each subject's first event.  See errors.xlsx and fix manually."))
   }
 
-  # Reorder times - assume times are in correct block
+  # Reorder times within each observation occasion
   if (length(grep("FAIL", err$timeOrder$msg)) > 0) {
-    data2 <- makePMmatrixBlock(data2) |>
-      dplyr::group_by(id, block) |>
+    data2 <- makePMdataOccasion(data2) |>
+      dplyr::group_by(id, occasion) |>
       dplyr::arrange(time, .by_group = T) |>
       ungroup() |>
-      select(-block)
+      select(-occasion)
 
     if (any(data2$evid == 4)) {
-      report <- c(report, paste("Your dataset has EVID=4 events. Times ordered within each event block."))
+      report <- c(report, paste("Your dataset has EVID=4 events. Times ordered within each observation occasion."))
     } else {
       report <- c(report, paste("Times for each subject have been ordered."))
     }
@@ -1628,7 +1644,8 @@ createInstructions <- function(wb) {
 #' In the case of multiple outputs, `group_colors` will be used to color the lines and markers.
 #' @param out_names Character vector of names to label the outputs if `legend = TRUE`. These can be combined with `group_names`.
 #' The number must match the number of outputs in `outeq`. If missing, the default is "Output 1", "Output 2", etc.
-#' @param block `r template("block")` Default is 1, but can be multiple if present in the data, as for `outeq`.
+#' @param occasion `r template("occasion")` Default is 1, but can be multiple if present in the data, as for `outeq`.
+#' @param block `r lifecycle::badge("deprecated")` Use `occasion` instead.
 #' @param tad `r template("tad")`
 #' @param overlay Operator to overlay all time concentration profiles in a single plot.
 #' The default is `TRUE`. If `FALSE`, will trellisplot subjects one at a time. Can also be
@@ -1684,7 +1701,7 @@ plot.PM_data <- function(
   mult = 1,
   outeq = 1,
   out_names = NULL,
-  block = 1,
+  occasion = 1,
   tad = FALSE,
   overlay = TRUE,
   legend,
@@ -1694,8 +1711,21 @@ plot.PM_data <- function(
   ylab = "Output",
   title = "",
   xlim, ylim,
-  print = TRUE, ...
+  print = TRUE, ...,
+  block = lifecycle::deprecated()
 ) {
+  occasion_supplied <- !missing(occasion)
+  if (lifecycle::is_present(block)) {
+    if (occasion_supplied) {
+      cli::cli_abort(c(
+        "x" = "Arguments {.arg occasion} and deprecated {.arg block} were both supplied.",
+        "i" = "Supply only {.arg occasion}."
+      ))
+    }
+    lifecycle::deprecate_warn("3.2.7", "plot.PM_data(block)", "plot.PM_data(occasion)")
+    occasion <- block
+  }
+
   # Plot parameters ---------------------------------------------------------
 
   if (is.list(marker) && !is.null(marker$shape) && is.null(marker$symbol)) {
@@ -1832,8 +1862,8 @@ plot.PM_data <- function(
   # Data processing ---------------------------------------------------------
   dat <- x$clone() # make copy of x to work with
 
-  # make blocks
-  dat$standard_data <- makePMmatrixBlock(dat$standard_data)
+  # Assign observation occasions, delimited by EVID = 4 events.
+  dat$standard_data <- makePMdataOccasion(dat$standard_data)
 
   # time after dose
   if (tad) {
@@ -1843,10 +1873,10 @@ plot.PM_data <- function(
 
   # filter
   presub <- dat$standard_data |>
-    filter(outeq %in% !!outeq, block %in% !!block, evid == 0) |>
+    filter(.data$outeq %in% .env$outeq, .data$occasion %in% .env$occasion, .data$evid == 0) |>
     includeExclude(include, exclude)
 
-  show_block_label <- dplyr::n_distinct(presub$block) > 1
+  show_occasion_label <- dplyr::n_distinct(presub$occasion) > 1
 
 
   # ---- covariate group (drives COLOR) ------------------------------------
@@ -1897,7 +1927,7 @@ plot.PM_data <- function(
           parts <- parts[nchar(trimws(parts)) > 0]
           paste(parts, collapse = ", ")
         }, cov_group, outeq_group,
-        if (show_block_label) paste0("Block ", presub$block) else ""
+        if (show_occasion_label) paste0("Occasion ", presub$occasion) else ""
       )
     }) |>
     ungroup()
@@ -1981,7 +2011,7 @@ plot.PM_data <- function(
     # filter and group by id
     if (!is.null(pred[[1]])) { # if pred not reset to null b/c of invalid pred[[1]]
       predsub <- pred[[1]] |>
-        filter(outeq %in% !!outeq, block %in% !!block, icen == !!icen) |>
+        filter(.data$outeq %in% .env$outeq, .data$occasion %in% .env$occasion, .data$icen == .env$icen) |>
         mutate(cens = "none") |> # always none for predictions
         includeExclude(include, exclude) |>
         group_by(id)
@@ -2509,6 +2539,11 @@ PMwriteMatrix <- function(
   data, filename, override = FALSE,
   version = "DEC_11", header = FALSE
 ) {
+  # Observation occasions are derived metadata and are not an engine covariate.
+  data <- PM_upgrade(data)
+  if ("occasion" %in% names(data)) {
+    data <- data |> dplyr::select(-occasion)
+  }
   if (!override) {
     err <- PMcheck(data, quiet = TRUE)
     if (length(grep("FAIL", err)) > 0) {
@@ -2518,11 +2553,6 @@ PMwriteMatrix <- function(
   } else {
     err <- NULL
   }
-  # remove the block column if added during run
-  if ("block" %in% names(data)) {
-    data <- data |> dplyr::select(-block)
-  }
-
   versionNum <- as.numeric(substr(version, 5, 7)) + switch(substr(version, 1, 3),
     JAN = 1,
     FEB = 2,

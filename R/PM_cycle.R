@@ -126,8 +126,9 @@ PM_cycle <- R6::R6Class(
           write.csv(raw, file.path(path, "cycles.csv"), row.names = FALSE)
         }
       } else if (inherits(data, "PM_cycle") & !is.null(data$data)) { # file not there, and already PM_cycle
-        class(data$data) <- c("PM_cycle_data", "list")
-        return(data$data)
+        upgraded_data <- PM_upgrade(data$data)
+        class(upgraded_data) <- c("PM_cycle_data", "list")
+        return(upgraded_data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate cycle information.",
@@ -153,8 +154,9 @@ PM_cycle <- R6::R6Class(
           ), show_col_types = FALSE
         ) |> filter(!is.na(obs))
       } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_op
-        class(data$data) <- c("PM_cycle_data", "list")
-        return(data$data)
+        upgraded_data <- PM_upgrade(data$data)
+        class(upgraded_data) <- c("PM_cycle_data", "list")
+        return(upgraded_data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate cycle information.",
@@ -167,8 +169,9 @@ PM_cycle <- R6::R6Class(
       if (file.exists(file.path(path, "settings.json"))) {
         config <- jsonlite::fromJSON(file.path(path, "settings.json"))
       } else if (inherits(data, "PM_cycle") & !is.null(data$data)) { # file not there, and already PM_op
-        class(data$data) <- c("PM_cycle_data", "list")
-        return(data$data)
+        upgraded_data <- PM_upgrade(data$data)
+        class(upgraded_data) <- c("PM_cycle_data", "list")
+        return(upgraded_data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate cycle information.",

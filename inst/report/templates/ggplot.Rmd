@@ -32,7 +32,7 @@ if (is.null(res$final$data) & is.null(res$op$data) & is.null(res$cycle$data)) {
 
 nsub <- nobs <- numeqt <- icyctot <- NULL # declare for CRAN check
 nsub <- res$final$nsub
-nobs <- if (is.null(res$op$data)) 0 else nrow(dplyr::distinct(res$op$data, id, time, outeq, block))
+nobs <- if (is.null(res$op$data)) 0 else nrow(dplyr::distinct(res$op$data, id, time, outeq, occasion))
 numeqt <- if (is.null(res$op$data)) 1 else max(res$op$data$outeq, na.rm = TRUE)
 icyctot <- if (is.data.frame(res$cycle$objective) && nrow(res$cycle$objective) > 0) {
   max(res$cycle$objective$cycle)

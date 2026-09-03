@@ -48,6 +48,7 @@ inst/rust/template/*
 
 # Example runs
 data-raw/Runs/
+data-raw/errors.xlsx
 inst/Examples/
 
 

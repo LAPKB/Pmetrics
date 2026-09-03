@@ -12,7 +12,9 @@ to process the data
 \details{
 \emph{PM_data} objects are passed to the \verb{$fit} method of compiled \link{PM_model} objects to initiate a
 population analysis. The object is created by reading a delimited file in
-the current working directory. The data will be transformed into the standard
+the current working directory. The format of the file is detailed in the online
+\href{https://lapkb.github.io/PM_tutorial/data.html}{Pmetrics in R book}.
+The data will be transformed into the standard
 format which is the same for all engines, with a report of any assumptions
 that were necessary to standardize the data. \link{PMcheck} is called
 on the standard data to evaluate for errors. If dates and times are converted

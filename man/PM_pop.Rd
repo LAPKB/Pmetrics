@@ -45,7 +45,8 @@ Michael Neely, Julian Otalvaro
 \item \strong{icen} Prediction based on mean or median of Bayesian posterior parameter distribution
 \item \strong{outeq} Output equation number
 \item \strong{pred} Predicted output for each outeq
-\item \strong{block} Observation blocks within subjects as defined by \emph{EVID=4} dosing events
+\item \strong{occasion} Observation occasion number within subjects; occasions are
+delimited by dose reset events (\code{EVID = 4})
 }}
   }
   \if{html}{\out{</div>}}
