@@ -1357,6 +1357,10 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
   row.names(errDF) <- 1:nrow(errDF)
   names(errDF) <- c("row", "column", "code")
   errors <- errDF[!is.na(errDF$row), ]
+  # errList mixes row numbers with column names (the non-numeric-column check),
+  # so errDF comes back all character; restore the indices that must be numeric.
+  errors$column <- suppressWarnings(as.numeric(errors$column))
+  errors$code <- as.numeric(errors$code)
   formattedCols <- names(dat)
 
   if (legacy) {
@@ -1391,7 +1395,9 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
   }
 
   # make second table to summarize errors
-  error_summary <- errors |> filter(!code %in% c(10, 13, 15)) # we will add these back
+  error_summary <- errors |>
+    filter(!code %in% c(10, 13, 15)) |> # we will add these back
+    mutate(row = as.numeric(row))
 
   # Highlight the cells with errors
   for (i in 1:nrow(errors)) {
@@ -1401,6 +1407,7 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
     # special highlighting - overwrite some values
     if (thisErr$code == 10) {
       # if covariate error
+      rowIndex <- as.numeric(rowIndex)
       covData <- getCov(dat)
       colIndex <- covData$covstart +
         which(is.na(dat[rowIndex, covData$covstart:covData$covend])) - 1
@@ -1472,7 +1479,7 @@ writeErrorFile <- function(dat, err, legacy, wb, sheet) {
       )
     } else {
       # add the highlighting and comments for other errors
-      rowIndex <- rowIndex + 1 + legacy_offset
+      rowIndex <- as.numeric(rowIndex) + 1 + legacy_offset
       comment <- openxlsx::createComment(errorsTable$comment[thisErr$code], author = "Pmetrics", visible = F)
       openxlsx::addStyle(wb, sheet, errStyle1, rowIndex, colIndex)
       openxlsx::writeComment(wb, sheet, xy = c(colIndex, rowIndex), comment = comment)
