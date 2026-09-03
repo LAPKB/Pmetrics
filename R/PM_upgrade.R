@@ -97,7 +97,7 @@ PM_upgrade <- function(x, warn = TRUE) {
   result <- upgrade_value(x)
   if (upgraded && isTRUE(warn)) {
     lifecycle::deprecate_warn(
-      "3.3.0",
+      "3.2.7",
       what = I("The `block` column in Pmetrics data"),
       with = I("the `occasion` column"),
       details = "The object was upgraded automatically in memory. Re-save it to make this change permanent."
