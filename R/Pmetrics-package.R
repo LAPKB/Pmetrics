@@ -30,6 +30,8 @@
 #' @importFrom parallel makeCluster stopCluster clusterExport parLapply
 #' @importFrom progress progress_bar
 #' @importFrom withr with_dir
+#' @importFrom DT datatable
+#' @importFrom magrittr not
 #'
 NULL
 

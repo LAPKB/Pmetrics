@@ -233,8 +233,9 @@ PM_final <- R6::R6Class(
       if (file.exists(file.path(path, "theta.csv"))) {
         theta <- readr::read_csv(file = file.path(path, "theta.csv"), show_col_types = FALSE)
       } else if (inherits(data, "PM_final") & !is.null(data$data)) { # file not there, and already PM_final
-        class(data$data) <- c("PM_final_data", "list")
-        return(data$data)
+        upgraded_data <- PM_upgrade(data$data)
+        class(upgraded_data) <- c("PM_final_data", "list")
+        return(upgraded_data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate final cycle information.",
@@ -246,8 +247,9 @@ PM_final <- R6::R6Class(
       if (file.exists(file.path(path, "posterior.csv"))) {
         post <- readr::read_csv(file = file.path(path, "posterior.csv"), show_col_types = FALSE)
       } else if (inherits(data, "PM_final") & !is.null(data$data)) { # file not there, and already PM_final
-        class(data$data) <- c("PM_final_data", "data.frame")
-        return(data$data)
+        upgraded_data <- PM_upgrade(data$data)
+        class(upgraded_data) <- c("PM_final_data", "list")
+        return(upgraded_data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate final cycle information.",
@@ -259,8 +261,9 @@ PM_final <- R6::R6Class(
       if (file.exists(file.path(path, "settings.json"))) {
         config <- jsonlite::fromJSON(file.path(path, "settings.json"))
       } else if (inherits(data, "PM_final")) { # file not there, and already PM_final
-        class(data$data) <- c("PM_final_data", "data.frame")
-        return(data$data)
+        upgraded_data <- PM_upgrade(data$data)
+        class(upgraded_data) <- c("PM_final_data", "list")
+        return(upgraded_data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate final cycle information.",

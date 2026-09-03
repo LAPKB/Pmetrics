@@ -93,9 +93,8 @@ PM_pta <- R6::R6Class(
     #' Ideally then, the simulated datset should contain sufficient observations within the interval specified by `start` and `end`.
     #' @param icen Can be either "median" for the predictions based on medians of `pred.type` parameter value
     #' distributions, or "mean".  Default is "median".
-    #' @param occ Which observation occasion to use, where a new occasion is defined by dose resets (`EVID = 4`); default is 1.
-    #' The underlying occasion identifier remains stored in the `block` column.
-    #' @param block `r lifecycle::badge("deprecated")` Use `occ` instead.
+    #' @param occasion Which observation occasion to use, where a new occasion is defined by dose resets (`EVID = 4`); default is 1.
+    #' @param block `r lifecycle::badge("deprecated")` Use `occasion` instead.
     #' @param ... Not currently used
     #' @return A list of class *PM_pta_data*, included in the `data` field of the [PM_pta] object.
     #' The list contains each `target_type` as an element, followed by a final `intersection`
@@ -161,19 +160,19 @@ PM_pta <- R6::R6Class(
     #' }
 
     initialize = function(simdata, simlabels, target, target_type, success, outeq = 1,
-                          free_fraction = 1, start = 0, end = Inf, icen = "median", occ = 1,
+                          free_fraction = 1, start = 0, end = Inf, icen = "median", occasion = 1,
                           ..., block = lifecycle::deprecated()) { # dots are for deprecated arguments
 
-      occ_supplied <- !missing(occ)
+      occasion_supplied <- !missing(occasion)
       if (lifecycle::is_present(block)) {
-        if (occ_supplied) {
+        if (occasion_supplied) {
           cli::cli_abort(c(
-            "x" = "Arguments {.arg occ} and deprecated {.arg block} were both supplied.",
-            "i" = "Supply only {.arg occ}."
+            "x" = "Arguments {.arg occasion} and deprecated {.arg block} were both supplied.",
+            "i" = "Supply only {.arg occasion}."
           ))
         }
-        lifecycle::deprecate_warn("3.3.0", "PM_pta$new(block)", "PM_pta$new(occ)")
-        occ <- block
+        lifecycle::deprecate_warn("3.3.0", "PM_pta$new(block)", "PM_pta$new(occasion)")
+        occasion <- block
       }
 
       # handle deprecated arguments
@@ -255,13 +254,13 @@ PM_pta <- R6::R6Class(
         }
 
         if (dataType == 5) { # PM_post object
-          simdata <- simdata$data |> filter(.data$icen == .env$icen & .data$block %in% .env$occ)
+          simdata <- PM_upgrade(simdata$data) |> filter(.data$icen == .env$icen & .data$occasion %in% .env$occasion)
           temp <- list(obs = data.frame(id = simdata$id, time = simdata$time, out = simdata$pred, outeq = simdata$outeq))
           simdata <- list(temp)
         }
 
         if (dataType == 6) { # PM_post_data object
-          simdata <- simdata |> filter(.data$icen == .env$icen & .data$block %in% .env$occ)
+          simdata <- PM_upgrade(simdata) |> filter(.data$icen == .env$icen & .data$occasion %in% .env$occasion)
           temp <- list(obs = data.frame(id = simdata$id, time = simdata$time, out = simdata$pred, outeq = simdata$outeq))
           simdata <- list(temp)
         }
@@ -270,8 +269,8 @@ PM_pta <- R6::R6Class(
           if (dataType == 8) {
             simdata <- simdata$data
           }
-          simdata <- makePMdataOcc(simdata)
-          simdata <- simdata |> filter(.data$evid == 0 & .data$block %in% .env$occ)
+          simdata <- makePMdataOccasion(simdata)
+          simdata <- simdata |> filter(.data$evid == 0 & .data$occasion %in% .env$occasion)
           temp <- list(obs = data.frame(id = simdata$id, time = simdata$time, out = simdata$out, outeq = simdata$outeq))
           simdata <- list(temp)
         }
@@ -288,11 +287,11 @@ PM_pta <- R6::R6Class(
           start = start,
           end = end,
           icen = icen,
-          occ = occ, ...
+          occasion = occasion, ...
         )
         private$populate(pta)
       } else { # try simdata as a filename
-        pta <- readRDS(simdata)
+        pta <- PM_upgrade(readRDS(simdata))
         private$populate(pta)
       }
     },
@@ -327,7 +326,7 @@ PM_pta <- R6::R6Class(
   ), # end public
   private = list(
     make = function(simdata, simlabels, target, target_type, success, outeq = 1,
-                    free_fraction = 1, start = 0, end = Inf, icen = "median", occ = 1) {
+                    free_fraction = 1, start = 0, end = Inf, icen = "median", occasion = 1) {
       if (is.numeric(target) | inherits(target, "PMpta.targ")) {
         target <- list(target) # make a list
       }

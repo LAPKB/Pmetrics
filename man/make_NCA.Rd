@@ -12,7 +12,7 @@ make_NCA(
   input = 1,
   icen = "median",
   outeq = 1,
-  occ = 1,
+  occasion = 1,
   start = 0,
   end = Inf,
   first = NA,
@@ -40,9 +40,8 @@ subject's Bayesian posterior parameter distribution.  Default is "median", but c
 
 \item{outeq}{The number of the output equation to analyze; default 1}
 
-\item{occ}{The number of the observation occasion within subjects,
-with each occasion delimited by \code{EVID = 4} in the data file; default 1.
-The underlying occasion identifier remains stored in the \code{block} column.}
+\item{occasion}{The number of the observation occasion within subjects,
+with each occasion delimited by \code{EVID = 4} in the data file; default 1.}
 
 \item{start}{The beginning of the time interval to look for doses and observations,
 e.g. 120.  It can be a vector to allow for individual start times per subject,
@@ -70,7 +69,7 @@ to signify maximum time for that subject.}
 \item{terminal}{Number of observations to use for terminal curve fitting (i.e. to estimate \emph{k}).
 Default is 3.}
 
-\item{block}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{occ} instead.}
+\item{block}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{occasion} instead.}
 }
 \value{
 A dataframe of class \emph{PMnca} with columns

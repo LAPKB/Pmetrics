@@ -1,7 +1,7 @@
 utils::globalVariables(
   ".groups A AGE Agemos B1 B2 B3 CHART HTML KNOT PERCENTILE SEX Sex dataEx
     actionButton ageyrs aic algebraic annotate arrow assignInNamespace
-    bic block occ bmi bolus browseURL browseVignettes cdc_bmi checkboxInput
+    bic block occasion bmi bolus browseURL browseVignettes cdc_bmi checkboxInput
     ci cmt code colorRampPalette column combn corr_age cyc cycle d dcBin
     div dose elim evid fileInput final fitted fluidPage fluidRow found from
     gamma_lambda ger_bmi getFromNamespace group h2 h3 h4 h5 hr ht

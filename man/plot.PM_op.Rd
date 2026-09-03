@@ -12,7 +12,7 @@
   icen = "median",
   pred.type = "post",
   outeq = 1,
-  occ,
+  occasion,
   include,
   exclude,
   mult = 1,
@@ -96,7 +96,7 @@ zero prediction error.}
 
 \item{outeq}{Which output equation to plot. Default is 1.}
 
-\item{occ}{Which observation occasion to use, where occasions are defined by dose reset events (\code{EVID = 4}) in the data. The underlying occasion identifier in Pmetrics data objects remains stored in the \code{block} column.
+\item{occasion}{Which observation occasion to use. Occasions are numbered within each subject and increment at dose reset events (\code{EVID = 4}).
 Default is missing, which results in all occasions included.}
 
 \item{include}{A vector of subject IDs to include in the plot, e.g. c(1:3,5,15)}
@@ -153,7 +153,7 @@ Example: \code{ylim = c(0,100)}}
 
 Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black"))) #applies to x axis only}} \item{\code{NPex$data$plot(linecolor = "red", ticks = "inside") #applies to both axes}} }  .}
 
-\item{block}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{occ} instead.}
+\item{block}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{occasion} instead.}
 }
 \value{
 Plots the object.

@@ -52,7 +52,7 @@ or individual predictions based on Bayesian posterior parameter value distributi
 
     \item{\code{outeq}}{output equation number}
 
-    \item{\code{block}}{Stored observation occasion number for each subject; occasions are
+    \item{\code{occasion}}{Observation occasion number for each subject; occasions are
 delimited by dose reset events (\code{EVID = 4}).}
 
     \item{\code{obsSD}}{standard deviation of the observation based on the assay error polynomial}

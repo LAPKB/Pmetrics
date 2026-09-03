@@ -45,7 +45,7 @@ Michael Neely, Julian Otalvaro
 \item \strong{icen} Prediction based on mean or median of Bayesian posterior parameter distribution
 \item \strong{outeq} Output equation number
 \item \strong{pred} Predicted output for each outeq
-\item \strong{block} Stored observation occasion number within subjects; occasions are
+\item \strong{occasion} Observation occasion number within subjects; occasions are
 delimited by dose reset events (\code{EVID = 4})
 }}
   }

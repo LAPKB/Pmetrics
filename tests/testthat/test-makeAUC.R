@@ -44,10 +44,10 @@ test_that("make_AUC works for NPex PM_result object components", {
   auc_post_data <- make_AUC(NPex$post$data)
   auc_pm_data <- make_AUC(NPex$data)
   
-  expect_equal(names(auc_op_obj), c("id", "outeq", "block", "tau"))
-  expect_equal(names(auc_pop_obj), c("id", "outeq", "block", "tau"))
-  expect_equal(names(auc_post_obj), c("id", "outeq", "block", "tau"))
-  expect_equal(names(auc_pm_data), c("id", "outeq", "block", "tau"))
+  expect_equal(names(auc_op_obj), c("id", "outeq", "occasion", "tau"))
+  expect_equal(names(auc_pop_obj), c("id", "outeq", "occasion", "tau"))
+  expect_equal(names(auc_post_obj), c("id", "outeq", "occasion", "tau"))
+  expect_equal(names(auc_pm_data), c("id", "outeq", "occasion", "tau"))
   expect_equal(auc_op_obj, auc_op_data)
   expect_equal(auc_pop_obj, auc_pop_data)
   expect_equal(auc_post_obj, auc_post_data)
@@ -77,7 +77,7 @@ test_that("make_AUC supports Theoph as external data with formula inputs", {
     time >= 120,
     time <= 132,
     outeq == 1,
-    block == 1,
+    occasion == 1,
     !is.na(obs)
   ) |>
   dplyr::mutate(out = obs) |>
@@ -102,7 +102,7 @@ testthat::test_that("make_AUC works with Theoph data and formula inputs", {
   dplyr::group_by(id) |>
   dplyr::summarise(tau = trap_auc_linear(dplyr::pick(time, out)), .groups = "drop")
   
-  expect_equal(names(auc_grouped), c("Subject", "outeq", "block", "tau"))
+  expect_equal(names(auc_grouped), c("Subject", "outeq", "occasion", "tau"))
   joined_grouped <- auc_grouped |>
   dplyr::rename(id = Subject, tau_calc = tau) |>
   dplyr::left_join(manual_grouped |> dplyr::rename(tau_manual = tau), by = "id")

@@ -13,7 +13,7 @@ make_AUC(
   end = Inf,
   icen = "median",
   outeq = 1,
-  occ = 1,
+  occasion = 1,
   method = "linear",
   addZero = FALSE,
   block = lifecycle::deprecated()
@@ -46,14 +46,14 @@ Only relevant for PMpost or PMpop objects.}
 
 \item{outeq}{Which output equation to plot. Default is 1.}
 
-\item{occ}{Which observation occasion to use, where occasions are defined by dose reset events (\code{EVID = 4}) in the data. The underlying occasion identifier in Pmetrics data objects remains stored in the \code{block} column.}
+\item{occasion}{Which observation occasion to use. Occasions are numbered within each subject and increment at dose reset events (\code{EVID = 4}).}
 
 \item{method}{Default is "linear" for AUC trapezoidal calculation.  Any other value will result in
 linear up, log down.}
 
 \item{addZero}{Boolean to add a zero concentration at time 0. Default is \code{FALSE}.}
 
-\item{block}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{occ} instead.}
+\item{block}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{occasion} instead.}
 }
 \value{
 A dataframe of class \emph{PMauc}, which has 2 columns:

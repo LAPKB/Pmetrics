@@ -25,10 +25,9 @@
 #' @param icen If `postPred` is `TRUE`, use predictions based on median or mean of each
 #' subject's Bayesian posterior parameter distribution.  Default is "median", but could be "mean".
 #' @param outeq The number of the output equation to analyze; default 1
-#' @param occ The number of the observation occasion within subjects,
+#' @param occasion The number of the observation occasion within subjects,
 #' with each occasion delimited by `EVID = 4` in the data file; default 1.
-#' The underlying occasion identifier remains stored in the `block` column.
-#' @param block `r lifecycle::badge("deprecated")` Use `occ` instead.
+#' @param block `r lifecycle::badge("deprecated")` Use `occasion` instead.
 #' @param start The beginning of the time interval to look for doses and observations,
 #' e.g. 120.  It can be a vector to allow for individual start times per subject,
 #' e.g. `c(120,120,144,168)`.  If the length of `start`
@@ -74,19 +73,19 @@
 #' @author Michael Neely
 #' @export
 
-make_NCA <- function(x, postPred = FALSE, include, exclude, input = 1, icen = "median", outeq = 1, occ = 1,
+make_NCA <- function(x, postPred = FALSE, include, exclude, input = 1, icen = "median", outeq = 1, occasion = 1,
                      start = 0, end = Inf, first = NA, last = NA, terminal = 3,
                      block = lifecycle::deprecated()) {
-  occ_supplied <- !missing(occ)
+  occasion_supplied <- !missing(occasion)
   if (lifecycle::is_present(block)) {
-    if (occ_supplied) {
+    if (occasion_supplied) {
       cli::cli_abort(c(
-        "x" = "Arguments {.arg occ} and deprecated {.arg block} were both supplied.",
-        "i" = "Supply only {.arg occ}."
+        "x" = "Arguments {.arg occasion} and deprecated {.arg block} were both supplied.",
+        "i" = "Supply only {.arg occasion}."
       ))
     }
-    lifecycle::deprecate_warn("3.3.0", "make_NCA(block)", "make_NCA(occ)")
-    occ <- block
+    lifecycle::deprecate_warn("3.3.0", "make_NCA(block)", "make_NCA(occasion)")
+    occasion <- block
   }
 
   # declare global variables
@@ -94,8 +93,8 @@ make_NCA <- function(x, postPred = FALSE, include, exclude, input = 1, icen = "m
 
   if (!"PM_result" %in% class(x)) stop("You must specify a PM_result object.")
 
-  mdata <- x$data$standard_data
-  post <- x$post$data
+  mdata <- PM_upgrade(x$data$standard_data)
+  post <- PM_upgrade(x$post$data)
 
   timeFilter <- function(idkeep, thisStartTime, thisEndTime) {
     dataSub <- mdata |> filter(id == idkeep & time >= thisStartTime & time <= thisEndTime)
@@ -163,7 +162,7 @@ make_NCA <- function(x, postPred = FALSE, include, exclude, input = 1, icen = "m
   }
 
   # function to convert mdata into data frame of of ID, time, conc, prev dose
-  conv_mdata <- function(mdata, input, outeq, occ, start, end, first, last) {
+  conv_mdata <- function(mdata, input, outeq, occasion, start, end, first, last) {
     # first, figure out time interval
     filterResults <- mdataFilter(mdata, start, end, first, last)
     mdata2 <- filterResults[[1]]
@@ -179,8 +178,8 @@ make_NCA <- function(x, postPred = FALSE, include, exclude, input = 1, icen = "m
       mdata2 <- mdata2[-otherOuteq, ]
     }
     mdata2 <- mdata2[!is.na(mdata2$id), ]
-    mdata2 <- makePMdataOcc(mdata2)
-    mdata2 <- mdata2[mdata2$block %in% occ, ]
+    mdata2 <- makePMdataOccasion(mdata2)
+    mdata2 <- mdata2[mdata2$occasion %in% occasion, ]
     mdata2 <- mdata2[order(mdata2$id, mdata2$time, -mdata2$evid), ]
 
     # then calculate time after dose and previous dose
@@ -208,7 +207,7 @@ make_NCA <- function(x, postPred = FALSE, include, exclude, input = 1, icen = "m
   }
 
   # function to convert post into data frame of of ID, time, conc, prev dose
-  conv_post <- function(post, mdata, include, exclude, input, outeq, occ, icen, start, end, first, last) {
+  conv_post <- function(post, mdata, include, exclude, input, outeq, occasion, icen, start, end, first, last) {
     # first, figure out time interval
 
     filterResults <- mdataFilter(mdata, start, end, first, last)
@@ -228,7 +227,7 @@ make_NCA <- function(x, postPred = FALSE, include, exclude, input = 1, icen = "m
     if (length(otherOuteq) > 0) {
       post2 <- post2[-otherOuteq, ]
     }
-    post2 <- post2[post2$block %in% occ, ]
+    post2 <- post2[post2$occasion %in% occasion, ]
     post2 <- post2[post2$icen == icen, ]
     # rename pred column to out
     names(post2)[5] <- "out"
@@ -246,8 +245,8 @@ make_NCA <- function(x, postPred = FALSE, include, exclude, input = 1, icen = "m
       mdata2 <- mdata2[-otherOuteq, ]
     }
     mdata2 <- mdata2[!is.na(mdata2$id), ]
-    mdata2 <- makePMdataOcc(mdata2)
-    mdata2 <- mdata2[mdata2$block %in% occ, ]
+    mdata2 <- makePMdataOccasion(mdata2)
+    mdata2 <- mdata2[mdata2$occasion %in% occasion, ]
     mdata3 <- mdata2[mdata2$evid == 1, c("id", "evid", "time", "out", "dose")]
     # combine
     post4 <- rbind(post3, mdata3)
@@ -282,7 +281,7 @@ make_NCA <- function(x, postPred = FALSE, include, exclude, input = 1, icen = "m
     if (!missing(exclude)) {
       mdata <- subset(mdata, !sub("[[:space:]]+", "", as.character(mdata$id)) %in% as.character(exclude))
     }
-    dataList <- conv_mdata(mdata, input = input, outeq = outeq, occ = occ, start = start, end = end, first = first, last = last)
+    dataList <- conv_mdata(mdata, input = input, outeq = outeq, occasion = occasion, start = start, end = end, first = first, last = last)
   }
   if (!is.null(post)) { # using NPAG
 
@@ -306,9 +305,9 @@ make_NCA <- function(x, postPred = FALSE, include, exclude, input = 1, icen = "m
         post <- subset(post, !sub("[[:space:]]+", "", as.character(post$id)) %in% as.character(missing_from_post))
         if (length(unique(mdata$id)) == 0) stop("No subjects left to analyze.", call. = FALSE)
       }
-      dataList <- conv_post(post = post, mdata = mdata, input = input, outeq = outeq, occ = occ, icen = icen, start = start, end = end, first = first, last = last)
+      dataList <- conv_post(post = post, mdata = mdata, input = input, outeq = outeq, occasion = occasion, icen = icen, start = start, end = end, first = first, last = last)
     } else {
-      dataList <- conv_mdata(mdata, input = input, outeq = outeq, occ = occ, start = start, end = end, first = first, last = last)
+      dataList <- conv_mdata(mdata, input = input, outeq = outeq, occasion = occasion, start = start, end = end, first = first, last = last)
     }
   }
 
@@ -344,9 +343,9 @@ make_NCA <- function(x, postPred = FALSE, include, exclude, input = 1, icen = "m
 
     NCA[i, 10] <- max(temp$out) # cmax
     NCA[i, 11] <- temp$tad[which(temp$out == NCA[i, 10])][1] # tmax
-    NCA[i, 2] <- as.numeric(make_AUC(temp, out ~ tad, icen = icen, outeq = outeq, occ = occ)[, 2]) # auc
+    NCA[i, 2] <- as.numeric(make_AUC(temp, out ~ tad, icen = icen, outeq = outeq, occasion = occasion)[, 2]) # auc
     temp2 <- data.frame(id = temp$id, tad = temp$tad, out = temp$tad * temp$out)
-    NCA[i, 3] <- as.numeric(make_AUC(temp2, out ~ tad, icen = icen, outeq = outeq, occ = occ)[, 2]) # aumc
+    NCA[i, 3] <- as.numeric(make_AUC(temp2, out ~ tad, icen = icen, outeq = outeq, occasion = occasion)[, 2]) # aumc
 
     if (nrow(temp) >= 5) {
       temp <- tail(temp, terminal)

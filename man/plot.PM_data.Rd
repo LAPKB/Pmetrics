@@ -15,7 +15,7 @@
   mult = 1,
   outeq = 1,
   out_names = NULL,
-  occ = 1,
+  occasion = 1,
   tad = FALSE,
   overlay = TRUE,
   legend,
@@ -115,7 +115,7 @@ In the case of multiple outputs, \code{group_colors} will be used to color the l
 \item{out_names}{Character vector of names to label the outputs if \code{legend = TRUE}. These can be combined with \code{group_names}.
 The number must match the number of outputs in \code{outeq}. If missing, the default is "Output 1", "Output 2", etc.}
 
-\item{occ}{Which observation occasion to use, where occasions are defined by dose reset events (\code{EVID = 4}) in the data. The underlying occasion identifier in Pmetrics data objects remains stored in the \code{block} column.
+\item{occasion}{Which observation occasion to use. Occasions are numbered within each subject and increment at dose reset events (\code{EVID = 4}).
 Default is 1, but can be multiple if present in the data, as for \code{outeq}.}
 
 \item{tad}{Boolean operator to use time after dose rather than time after start.  Default is \code{FALSE}.}
@@ -166,7 +166,7 @@ Example: \code{ylim = c(0,100)}}
 
 Examples:  \itemize{ \item{\code{NPex$data$plot(xaxis = list(tickcolor = "black", tickfont = list(family = "Arial", size = 14, color = "black"))) #applies to x axis only}} \item{\code{NPex$data$plot(linecolor = "red", ticks = "inside") #applies to both axes}} }  .}
 
-\item{block}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{occ} instead.}
+\item{block}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{occasion} instead.}
 }
 \value{
 Plots the object.

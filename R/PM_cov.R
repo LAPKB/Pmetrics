@@ -97,8 +97,9 @@ PM_cov <- R6::R6Class(
       if (file.exists(file.path(path, "posterior.csv"))) {
         posts <- readr::read_csv(file = file.path(path, "posterior.csv"), show_col_types = FALSE)
       } else if (inherits(data, "PM_cov") & !is.null(data$data)) { # file not there, and already PM_cov
-        class(data$data) <- c("PM_cov_data", "data.frame")
-        return(data$data)
+        upgraded_data <- PM_upgrade(data$data)
+        class(upgraded_data) <- c("PM_cov_data", "data.frame")
+        return(upgraded_data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate covariate-posterior information.",
@@ -110,8 +111,9 @@ PM_cov <- R6::R6Class(
       if (file.exists(file.path(path, "covs.csv"))) {
         covs <- readr::read_csv(file = file.path(path, "covs.csv"), show_col_types = FALSE)
       } else if (inherits(data, "PM_cov")) { # file not there, and already PM_cov
-        class(data$data) <- c("PM_cov_data", "data.frame")
-        return(data$data)
+        upgraded_data <- PM_upgrade(data$data)
+        class(upgraded_data) <- c("PM_cov_data", "data.frame")
+        return(upgraded_data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate covariate-posterior information.",
@@ -120,7 +122,9 @@ PM_cov <- R6::R6Class(
         return(NULL)
       }
 
-      covs <- covs |> mutate(block = block + 1)
+      covs <- covs |>
+        mutate(occasion = block + 1) |>
+        select(-block)
 
 
       post_mean <- posts |>
@@ -140,10 +144,10 @@ PM_cov <- R6::R6Class(
         dplyr::left_join(post_mean, covs, by = "id"),
         dplyr::left_join(post_med, covs, by = "id")
       ) |>
-        select(id, time, block, icen, everything())
+        select(id, time, occasion, icen, everything())
 
       class(res) <- c("PM_cov_data", "data.frame")
-      attr(res, "ncov") <- ncol(covs) - 3 # subtract id, time, block
+      attr(res, "ncov") <- ncol(covs) - 3 # subtract id, time, occasion
 
       return(res)
     }
@@ -564,7 +568,7 @@ summary.PM_cov <- function(object, icen = "median", ...) {
 
   sumCov <- data |>
     group_by(id) |>
-    dplyr::summarize(across(c(-time, -block), ~ purrr::exec(icen, x = .x, na.rm = TRUE))) |>
+    dplyr::summarize(across(c(-time, -occasion), ~ purrr::exec(icen, x = .x, na.rm = TRUE))) |>
     mutate(icen = !!icen)
 
   return(sumCov)

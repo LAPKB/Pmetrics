@@ -44,7 +44,7 @@ PM_pop <- R6::R6Class(
     #' * **icen** Prediction based on mean or median of Bayesian posterior parameter distribution
     #' * **outeq** Output equation number
     #' * **pred** Predicted output for each outeq
-    #' * **block** Stored observation occasion number within subjects; occasions are
+    #' * **occasion** Observation occasion number within subjects; occasions are
     #'   delimited by dose reset events (`EVID = 4`)
     data = NULL,
     #' @description
@@ -108,8 +108,9 @@ PM_pop <- R6::R6Class(
           ), show_col_types = FALSE
         )
       } else if (inherits(data, "PM_pop") & !is.null(data$data)) { # file not there, and already PM_pop
-        class(data$data) <- c("PM_pop_data", "data.frame")
-        return(data$data)
+        upgraded_data <- PM_upgrade(data$data)
+        class(upgraded_data) <- c("PM_pop_data", "data.frame")
+        return(upgraded_data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate pop pred information.",
@@ -130,9 +131,10 @@ PM_pop <- R6::R6Class(
           icen == "pop_median" ~ "median",
           icen == "pop_mean" ~ "mean"
         )) |>
-        mutate(block = block + 1) |>
+        mutate(occasion = block + 1) |>
+        select(-block) |>
         mutate(outeq = normalize_engine_index(outeq)) |>
-        relocate(id, time, icen, outeq, pred, block)
+        relocate(id, time, icen, outeq, pred, occasion)
 
       class(pop) <- c("PM_pop_data", "data.frame")
       return(pop)
@@ -191,8 +193,8 @@ PM_pop <- R6::R6Class(
 #' value distributions, or `"mean"`. Default is `"median"`.
 #' Only a single value is accepted; `outeq` is the sole grouping dimension.
 #' @param outeq `r template("outeq")` Default is 1, but can be multiple if present in the data, e.g. `1:2` or `c(1, 3)`.
-#' @param occ `r template("occ")` Default is 1, but can be multiple if present in the data, as for `outeq`.
-#' @param block `r lifecycle::badge("deprecated")` Use `occ` instead.
+#' @param occasion `r template("occasion")` Default is 1, but can be multiple if present in the data, as for `outeq`.
+#' @param block `r lifecycle::badge("deprecated")` Use `occasion` instead.
 #' @param overlay Operator to overlay all time prediction profiles in a single plot.
 #' The default is `TRUE`. If `FALSE`, will trellisplot subjects one at a time. Can also be
 #' specified as a vector with number of rows and columns, e.g. `c(3, 2)` for 3 rows and
@@ -234,7 +236,7 @@ plot.PM_pop <- function(
   mult = 1,
   icen = "median",
   outeq = 1,
-  occ = 1,
+  occasion = 1,
   overlay = TRUE,
   legend = FALSE,
   log = FALSE,
@@ -246,16 +248,16 @@ plot.PM_pop <- function(
   print = TRUE, ...,
   block = lifecycle::deprecated()
 ) {
-  occ_supplied <- !missing(occ)
+  occasion_supplied <- !missing(occasion)
   if (lifecycle::is_present(block)) {
-    if (occ_supplied) {
+    if (occasion_supplied) {
       cli::cli_abort(c(
-        "x" = "Arguments {.arg occ} and deprecated {.arg block} were both supplied.",
-        "i" = "Supply only {.arg occ}."
+        "x" = "Arguments {.arg occasion} and deprecated {.arg block} were both supplied.",
+        "i" = "Supply only {.arg occasion}."
       ))
     }
-    lifecycle::deprecate_warn("3.3.0", "plot.PM_pop(block)", "plot.PM_pop(occ)")
-    occ <- block
+    lifecycle::deprecate_warn("3.3.0", "plot.PM_pop(block)", "plot.PM_pop(occasion)")
+    occasion <- block
   }
 
   # Plot parameters ---------------------------------------------------------
@@ -263,6 +265,7 @@ plot.PM_pop <- function(
   x <- if (inherits(x, "PM_pop")) {
     x$data
   }
+  x <- PM_upgrade(x)
 
   user_color <- if (is.list(marker) && !is.null(marker$color)) marker$color else NULL
 
@@ -356,7 +359,7 @@ plot.PM_pop <- function(
 
   # filter — icen is a single-value filter only; outeq is the sole grouping dimension
   presub <- x |>
-    filter(.data$outeq %in% .env$outeq, .data$block %in% .env$occ, .data$icen == .env$icen[1]) |>
+    filter(.data$outeq %in% .env$outeq, .data$occasion %in% .env$occasion, .data$icen == .env$icen[1]) |>
     mutate(group = "") |>
     includeExclude(include, exclude)
 

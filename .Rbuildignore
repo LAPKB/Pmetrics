@@ -20,3 +20,5 @@
 ^dev$
 ^\.posit$
 ^temp$
+^codecov\.yml$
+^vignettes/\.quarto$
