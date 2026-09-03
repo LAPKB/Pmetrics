@@ -55,5 +55,13 @@ model_metadata <- function(model_source, solver = NULL) .Call(wrap__model_metada
 #' @export
 setup_logs <- function() .Call(wrap__setup_logs)
 
+bestdose_prepare <- function(...) {
+  cli::cli_abort("BestDose optimization is unavailable in this build of Pmetrics.")
+}
+
+bestdose_optimize <- function(...) {
+  cli::cli_abort("BestDose optimization is unavailable in this build of Pmetrics.")
+}
+
 
 # nolint end
