@@ -1722,7 +1722,7 @@ plot.PM_data <- function(
         "i" = "Supply only {.arg occasion}."
       ))
     }
-    lifecycle::deprecate_warn("3.3.0", "plot.PM_data(block)", "plot.PM_data(occasion)")
+    lifecycle::deprecate_warn("3.2.7", "plot.PM_data(block)", "plot.PM_data(occasion)")
     occasion <- block
   }
 

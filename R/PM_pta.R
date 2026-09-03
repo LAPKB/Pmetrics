@@ -171,7 +171,7 @@ PM_pta <- R6::R6Class(
             "i" = "Supply only {.arg occasion}."
           ))
         }
-        lifecycle::deprecate_warn("3.3.0", "PM_pta$new(block)", "PM_pta$new(occasion)")
+        lifecycle::deprecate_warn("3.2.7", "PM_pta$new(block)", "PM_pta$new(occasion)")
         occasion <- block
       }
 

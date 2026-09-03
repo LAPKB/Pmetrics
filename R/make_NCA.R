@@ -84,7 +84,7 @@ make_NCA <- function(x, postPred = FALSE, include, exclude, input = 1, icen = "m
         "i" = "Supply only {.arg occasion}."
       ))
     }
-    lifecycle::deprecate_warn("3.3.0", "make_NCA(block)", "make_NCA(occasion)")
+    lifecycle::deprecate_warn("3.2.7", "make_NCA(block)", "make_NCA(occasion)")
     occasion <- block
   }
 

@@ -68,7 +68,7 @@ make_AUC <- function(
         "i" = "Supply only {.arg occasion}."
       ))
     }
-    lifecycle::deprecate_warn("3.3.0", "make_AUC(block)", "make_AUC(occasion)")
+    lifecycle::deprecate_warn("3.2.7", "make_AUC(block)", "make_AUC(occasion)")
     occasion <- block
   }
 
