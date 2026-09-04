@@ -23,13 +23,15 @@
 #' @importFrom stats aggregate anova approx as.formula binom.test coef complete.cases confint cor cor.test cov cov.wt cov2cor density dnorm get_all_vars glm kmeans kruskal.test ks.test lm median model.frame pchisq pnorm predict pt qchisq qnorm qqline qqnorm qqplot qt quantile rnorm runif sd shapiro.test step t.test terms time var weighted.mean wilcox.test
 #' @importFrom utils compareVersion data flush.console glob2rx head install.packages modifyList news packageVersion read.table setTxtProgressBar str tail txtProgressBar write.csv write.table getTxtProgressBar
 #' @importFrom R6 R6Class
-#' @importFrom rlang .data set_names :=
+#' @importFrom rlang .data .env set_names :=
 #' @importFrom plotly filter mutate plot_ly add_markers add_lines layout ggplotly subplot add_annotations add_bars renderPlotly add_trace
 #' @importFrom shiny fluidPage titlePanel tags navlistPanel tabPanel fluidRow column h2 h3 h4 h5 fileInput selectInput numericInput radioButtons checkboxInput textInput uiOutput actionButton hr textAreaInput reactiveVal reactive observeEvent updateSelectizeInput updateTextAreaInput updateNumericInput updateSelectInput renderUI markdown plotOutput div HTML htmlOutput showModal modalDialog icon shinyApp textOutput helpText conditionalPanel br
 #' @importFrom bslib accordion accordion_panel card navset_card_tab nav_panel
 #' @importFrom parallel makeCluster stopCluster clusterExport parLapply
 #' @importFrom progress progress_bar
 #' @importFrom withr with_dir
+#' @importFrom DT datatable
+#' @importFrom magrittr not
 #'
 NULL
 

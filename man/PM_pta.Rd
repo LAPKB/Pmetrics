@@ -108,8 +108,9 @@ Michael Neely and Jan Strojil
   start = 0,
   end = Inf,
   icen = "median",
-  block = 1,
-  ...
+  occasion = 1,
+  ...,
+  block = lifecycle::deprecated()
 )}
     \if{html}{\out{</div>}}
   }
@@ -172,8 +173,9 @@ as necessary. Subjects with insufficient data (fewer than 5 simulated observatio
 Ideally then, the simulated datset should contain sufficient observations within the interval specified by \code{start} and \code{end}.}
       \item{\code{icen}}{Can be either "median" for the predictions based on medians of \code{pred.type} parameter value
 distributions, or "mean".  Default is "median".}
-      \item{\code{block}}{Which block to plot, where a new block is defined by dose resets (evid = 4); default is 1.}
+      \item{\code{occasion}}{Which observation occasion to use, where a new occasion is defined by dose resets (\code{EVID = 4}); default is 1.}
       \item{\code{...}}{Not currently used}
+      \item{\code{block}}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{occasion} instead.}
     }
     \if{html}{\out{</div>}}
   }

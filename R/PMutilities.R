@@ -317,19 +317,14 @@ getOS <- function() {
 }
 
 
-# makePMmatrixBlock -------------------------------------------------------
+# makePMdataOccasion --------------------------------------------------
 
-makePMmatrixBlock <- function(mdata) {
-  # make event blocks, delimited by evid=4
-  mdata$block <- 1
-  if (any(mdata$evid == 4)) {
-    blocks <- tapply(mdata$time[mdata$evid == 1 | mdata$evid == 4], mdata$id[mdata$evid == 1 | mdata$evid == 4], function(x) sum(x == 0))
-    blocks <- blocks[rank(unique(mdata$id))] # sort blocks back into id order in mdata
-    blocks2 <- unlist(mapply(function(x) 1:x, blocks))
-    time0 <- c(which(mdata$time == 0 & mdata$evid != 0), nrow(mdata))
-    blocks3 <- rep(blocks2, times = diff(time0))
-    mdata$block <- c(blocks3, tail(blocks3, 1))
-  }
+makePMdataOccasion <- function(mdata) {
+  # Assign observation occasions, delimited by EVID = 4 and stored in `occasion`.
+  mdata <- mdata |>
+    dplyr::group_by(id) |>
+    dplyr::mutate(occasion = 1L + cumsum(dplyr::coalesce(evid == 4, FALSE))) |>
+    dplyr::ungroup()
   return(mdata)
 }
 
@@ -365,11 +360,12 @@ getCov <- function(mdata) {
   }
   nfixed <- getFixedColNum()
   ncolData <- ncol(mdata)
-  ncov <- ncolData - nfixed
+  occasion_present <- "occasion" %in% names(mdata)
+  ncov <- ncolData - nfixed - as.integer(occasion_present)
   if (ncov > 0) {
-    covnames <- names(mdata)[(nfixed + 1):ncolData]
+    covnames <- setdiff(names(mdata)[(nfixed + 1):ncolData], "occasion")
     covstart <- nfixed + 1
-    covend <- ncolData
+    covend <- nfixed + ncov
   } else {
     covnames <- NA
     covstart <- NA

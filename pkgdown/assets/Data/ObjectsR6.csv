@@ -50,7 +50,7 @@
 ,\$shrinkage,Shrinkage values for each random population parameter
 ,\$summary,"Method: summarize the PM_final object with summary.PMfinal(), same function as for Legacy"
 "op (class: PM_op, R6)",\$auc,Method: make_AUC() to calculate area under time concentration curve
-,\$block,"Dosing block, usually 1 unless data file contains EVID=4 dose reset events, in which case each such reset within a given ID will increment the dosing block by 1 for that ID"
+,\$occasion,"Stored observation occasion number, usually 1; each EVID=4 dose reset event increments the occasion number within a subject"
 ,\$clone,Method: Create copy of PM_op object
 ,\$d,Difference between pred and obs
 ,\$data,"Data frame with all data fields, class: PM_op_data"
@@ -69,7 +69,7 @@
 ,\$wd,"\$d, weighted by the \$obsSD"
 ,\$wds,"\$ds, weighted by the \$obsSD"
 "pop (class: PM_pop, R6)",\$auc,Method: make_AUC() to calculate area under time concentration curve
-"post (class: PM_post, R6)",\$block,Same as for PMop objects above
+"post (class: PM_post, R6)",\$occasion,Same as for PMop objects above
 NPAG only,\$clone,Method: Create copy of PM_pop or PM_post object
 ,\$data,"Data frame with all data fields, class: PM_pop_data or PM_post_data"
 ,\$icen,Median (default) or mean of the parameter distributions used to calculate the predicted values.
@@ -95,7 +95,7 @@ valid\$timeBinMedian (class: data frame),\$bin,Time bin number
 ,\$time,Median time for each bin
 valid\$tadBinMedian (class: data frame),\$bin,Time after dose bin number 
 ,\$time,Median time after dose for each bin
-valid\$opDF (class: data frame),"\$id, \$time, \$obs, \$pred, \$icen, \$outeq, \$block, \$obsSD, \$ds, \$wd, \$wds",See op above.
+valid\$opDF (class: data frame),"\$id, \$time, \$obs, \$pred, \$icen, \$outeq, \$occasion, \$obsSD, \$ds, \$wd, \$wds",See op above.
 ,\$tad,Time after dose
 ,\$PRED_bin,Median prediction for each bin
 ,\$pcObs,Prediction corrected observation (based on bin)

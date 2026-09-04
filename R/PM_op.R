@@ -53,8 +53,9 @@ PM_op <- R6::R6Class(
     icen = NULL,
     #' @field outeq output equation number
     outeq = NULL,
-    #' @field block dosing block number for each subject, as defined by dose resets (evid=4).
-    block = NULL,
+    #' @field occasion Observation occasion number for each subject; occasions are
+    #' delimited by dose reset events (`EVID = 4`).
+    occasion = NULL,
     #' @field obsSD standard deviation of the observation based on the assay error polynomial
     obsSD = NULL,
     #' @field d prediction error, `pred` - `obs`
@@ -87,7 +88,7 @@ PM_op <- R6::R6Class(
         self$pred.type <- op$pred.type
         self$icen <- op$icen
         self$outeq <- op$outeq
-        self$block <- op$block
+        self$occasion <- op$occasion
         self$obsSD <- op$obsSD
         self$d <- op$d
         self$ds <- op$ds
@@ -148,11 +149,12 @@ PM_op <- R6::R6Class(
           op_raw <- op_raw |> mutate(cens = "none") # if cens column missing, assume all observed
         }
       } else if (inherits(data, "PM_op") & !is.null(data$data)) { # file not there, and already PM_op
-        if (!"cens" %in% names(data$data)) {
-          data$data <- data$data |> mutate(cens = "none") # if cens column missing, assume all observed
+        upgraded_data <- PM_upgrade(data$data)
+        if (!"cens" %in% names(upgraded_data)) {
+          upgraded_data <- upgraded_data |> mutate(cens = "none") # if cens column missing, assume all observed
         }
-        class(data$data) <- c("PM_op_data", "data.frame")
-        return(data$data)
+        class(upgraded_data) <- c("PM_op_data", "data.frame")
+        return(upgraded_data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate obs-pred information.",
@@ -165,8 +167,9 @@ PM_op <- R6::R6Class(
       if (file.exists(file.path(path, "settings.json"))) {
         config <- jsonlite::fromJSON(file.path(path, "settings.json"))
       } else if (inherits(data, "PM_op")) { # file not there, and already PM_op
-        class(data$data) <- c("PM_op_data", "data.frame")
-        return(data$data)
+        upgraded_data <- PM_upgrade(data$data)
+        class(upgraded_data) <- c("PM_op_data", "data.frame")
+        return(upgraded_data)
       } else {
         cli::cli_warn(c(
           "!" = "Unable to generate obs-pred information.",
@@ -212,7 +215,8 @@ PM_op <- R6::R6Class(
         select(-name) |>
         dplyr::rename(pred = value) |>
         dplyr::mutate(outeq = normalize_engine_index(outeq)) |>
-        dplyr::mutate(block = block + 1) |>
+        dplyr::mutate(occasion = block + 1) |>
+        dplyr::select(-block) |>
         # dplyr::mutate(obs = dplyr::na_if(obs, -99)) |> # obsolete
         dplyr::rowwise() |>
         mutate(d = pred - obs) |>
@@ -257,7 +261,8 @@ PM_op <- R6::R6Class(
 #' @param icen `r template("icen")`
 #' @param pred.type Either 'post' for a posterior object or 'pop' for a population object.  Default is 'post'.
 #' @param outeq `r template("outeq")`
-#' @param block `r template("block")` Default is missing, which results in all blocks included.
+#' @param occasion `r template("occasion")` Default is missing, which results in all occasions included.
+#' @param block `r lifecycle::badge("deprecated")` Use `occasion` instead.
 #' @param marker `r template("marker")` Default is
 #' `marker = list(color = orange, shape = "circle", size = 10, opacity = 0.5, line = list(color = black, width = 1))`.
 #' The color of any BLQ points is set to a color 90 degrees different on the color wheel from the
@@ -342,7 +347,7 @@ plot.PM_op <- function(
   line = list(lm = NULL, loess = NULL, ref = NULL),
   marker = TRUE,
   resid = FALSE,
-  icen = "median", pred.type = "post", outeq = 1, block,
+  icen = "median", pred.type = "post", outeq = 1, occasion,
   include, exclude,
   mult = 1,
   legend,
@@ -352,17 +357,31 @@ plot.PM_op <- function(
   title,
   stats = TRUE,
   print = TRUE,
-  xlim, ylim, ...
+  xlim, ylim, ...,
+  block = lifecycle::deprecated()
 ) {
+  occasion_supplied <- !missing(occasion)
+
   if (inherits(x, "PM_op")) {
     x <- x$data
   }
+  x <- PM_upgrade(x)
 
   # include/exclude
   if (missing(include)) include <- unique(x$id)
   if (missing(exclude)) exclude <- NULL
-  if (missing(block)) {
-    block <- unique(x$block)
+  if (!occasion_supplied) {
+    occasion <- unique(x$occasion)
+  }
+  if (lifecycle::is_present(block)) {
+    if (occasion_supplied) {
+      cli::cli_abort(c(
+        "x" = "Arguments {.arg occasion} and deprecated {.arg block} were both supplied.",
+        "i" = "Supply only {.arg occasion}."
+      ))
+    }
+    lifecycle::deprecate_warn("3.2.7", "plot.PM_op(block)", "plot.PM_op(occasion)")
+    occasion <- block
   }
 
   if (max(outeq) > max(x$outeq)) {
@@ -371,16 +390,16 @@ plot.PM_op <- function(
       "i" = "Choose {max(x$outeq)} or fewer for {.code outeq}."
     ))
   }
-  if (max(block) > max(x$block)) {
+  if (max(occasion) > max(x$occasion)) {
     cli::cli_abort(c(
-      "x" = "{.cls PM_op} object does not have {block} blocks.",
-      "i" = "Choose {max(x$block)} or fewer for {.code block}."
+      "x" = "{.cls PM_op} object does not have occasion {occasion}.",
+      "i" = "Choose {max(x$occasion)} or fewer for {.arg occasion}."
     ))
   }
   sub1 <- x |>
     dplyr::filter(
       icen == !!icen, outeq %in% !!outeq, pred.type == !!pred.type,
-      block %in% !!block
+      .data$occasion %in% .env$occasion
     ) |>
     includeExclude(include, exclude) |>
     dplyr::filter(!is.na(obs)) |>
@@ -388,7 +407,7 @@ plot.PM_op <- function(
     dplyr::arrange(id, time)
 
   if (nrow(sub1) == 0) {
-    cli::cli_abort(c("x" = "You have selected <0> rows in your {.cls PM_op} object.", "i" = "Check the values of {.code include}, {.code exclude}, {.code outeq}, and {.code block}."))
+    cli::cli_abort(c("x" = "You have selected <0> rows in your {.cls PM_op} object.", "i" = "Check the values of {.code include}, {.code exclude}, {.code outeq}, and {.code occasion}."))
   }
 
 

@@ -1,7 +1,13 @@
+# Regenerates everything in data/. Run from the repository root against an
+# installed build of the current source, e.g. R CMD INSTALL . && Rscript data-raw/data-raw.R
 library(readr)
 library(Pmetrics)
 
-wd <- ("data-raw")
+wd <- "data-raw"
+stopifnot(dir.exists(wd), dir.exists("data"))
+
+runs_dir <- file.path(wd, "Runs")
+unlink(runs_dir, recursive = TRUE, force = TRUE)
 
 # BMI data -------------------------------------------------------------
 
@@ -71,21 +77,21 @@ usethis::use_data(modEx, overwrite = TRUE)
 
 # data
 dataEx <- PM_data$new(file.path(wd, "ex.csv"))
-usethis::use_data(dataEx, overwrite = T)
+usethis::use_data(dataEx, overwrite = TRUE)
 
 
 # bad data
-badData <- PM_data$new("bad.csv")
-usethis::use_data(badData, overwrite = T)
+badData <- PM_data$new(file.path(wd, "bad.csv"))
+usethis::use_data(badData, overwrite = TRUE)
 
 # do the run
 
 # NPAG
-run1 <- modEx$fit(data = dataEx, path = file.path(wd, "Runs"), run = 1, overwrite = TRUE, report = "none")
+run1 <- modEx$fit(data = dataEx, path = runs_dir, run = 1, overwrite = TRUE, report = "none")
 
-NPex <- PM_load(path = file.path(wd, "Runs"), run = 1)
+NPex <- PM_load(path = runs_dir, run = 1)
 # NPex$validate(limits = NA)
-usethis::use_data(NPex, overwrite = T)
+usethis::use_data(NPex, overwrite = TRUE)
 
 # IT2B
 # fitEx$run(run = 2, engine = "IT2B", overwrite = TRUE, intern = TRUE)
@@ -101,3 +107,5 @@ simEx <- NPex$sim(
   predInt = c(120, 144, 0.5), seed = rep(-17, 4)
 )
 usethis::use_data(simEx, overwrite = TRUE)
+
+unlink(runs_dir, recursive = TRUE, force = TRUE)

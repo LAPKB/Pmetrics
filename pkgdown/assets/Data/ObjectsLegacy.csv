@@ -1,5 +1,5 @@
 ﻿Objects,Variables,Comments
-"op (class: PMop, list)",\$block,"Dosing block, usually 1 unless data file contains EVID=4 dose reset events, in which case each such reset within a given ID will increment the dosing block by 1 for that ID"
+"op (class: PMop, list)",\$occasion,"Stored observation occasion number, usually 1; each EVID=4 dose reset event increments the occasion number within a subject"
 ,\$d,Difference between pred and obs
 ,\$ds,Squared difference between pred and obs
 ,\$icen,Median (default) or mean of the parameter distributions used to calculate the predicted values.
@@ -52,7 +52,7 @@
 NPAG only,\$icen,Median (default) or mean of the parameter distributions used to calculate the predicted values.
 ,\$pred,Population prior (PMpop) or Bayesian posterior (PMpost) predictions for each output equation
 ,\$outeq,Output equation for each prediction
-,\$block,Same as for PMop objects above
+,\$occasion,Same as for PMop objects above
 "NPdata (class: NPAG, list) ITdata (class: IT2B, list",,Raw data used to make the above objects.  Please use ?NPparse or ?ITparse in R for discussion of the data contained in these objects
 "mdata (class: PMmatrix, data.frame)",See Pmetrics Input Files.,Your original raw data file.
 "valid (class: PMvalid, list)","Use the command str(valid.x) in R, where x is the run number",This is a list containing the information to perform graphical and numerical analysis of prediction checks and normalized prediction distribution errors.  It is a method of internal model validation.
@@ -70,7 +70,7 @@ valid\$timeBinMedian (class: data frame),\$bin,Time bin number
 ,\$time,Median time for each bin
 valid\$tadBinMedian (class: data frame),\$bin,Time after dose bin number 
 ,\$time,Median time after dose for each bin
-valid\$opDF (class: data frame),"\$id, \$time, \$obs, \$pred, \$icen, \$outeq, \$block, \$obsSD, \$ds, \$wd, \$wds",See op above.
+valid\$opDF (class: data frame),"\$id, \$time, \$obs, \$pred, \$icen, \$outeq, \$occasion, \$obsSD, \$ds, \$wd, \$wds",See op above.
 ,\$tad,Time after dose
 ,\$PRED_bin,Median prediction for each bin
 ,\$pcObs,Prediction corrected observation (based on bin)

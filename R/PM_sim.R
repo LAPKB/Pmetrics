@@ -1762,7 +1762,7 @@ PM_sim <- R6::R6Class(
             filter(!!filter_exprs)
             # Keep the rest
             remaining_data <- template |>
-            filter(magrittr::not(!!filter_exprs))
+            filter(not(!!filter_exprs))
           } else {
             filter_status <- ""
             filtered_data <- template
