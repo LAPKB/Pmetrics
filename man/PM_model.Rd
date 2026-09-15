@@ -318,6 +318,14 @@ For example,
 \}
 }\if{html}{\out{</div>}}
 }
+\item \strong{Expressions} are ordinary R arithmetic. Conditions may appear anywhere,
+not only as a whole equation: \code{2 * if (wt > 70) v1 else v2} and
+\code{if (a > 0) (if (b > 0) 1 else 2) else 3} both work. \code{ifelse(cond, a, b)},
+\code{pmin}, \code{pmax}, and \code{max}/\code{min} with any number of arguments are accepted;
+\code{log(x, base)}, \code{trunc}, \code{sign} and \code{round(x, digits)} follow R's rules
+(including R's round-half-to-even). Functions R provides but the DSL does
+not - such as \code{pnorm}, \code{log1p} or \code{gamma} - are reported when the model is
+defined, naming the call and the supported alternatives.
 \item \strong{Additional equations} in R code can be defined in this block, which are similar to
 the \code{sec} block, but will only be available within the \code{eqn} block as opposed
 to global availability when defined in \code{sec}. They can be added to either
@@ -343,6 +351,24 @@ but will only be available within the \code{lag} block.}
       \item{\code{fa}}{A function defining the bioavailability (fraction absorbed) equations,
 similar to \code{lag}. The \code{lag} and \code{fa} blocks also apply to analytical bolus
 models; they are not valid for analytical infusion-only models.
+
+Effect functions for combination drug action are also available, anywhere an
+expression is allowed. They compute an effect from supplied coefficients and
+do not fit those coefficients:
+
+\itemize{
+  \item \code{estimate_effect_2(u, v, alpha, h1, h2)} for two sites, and
+  \item \code{estimate_effect_3(a, b, c, alpha12, alpha13, alpha23, alpha123, h1, h2, h3)}
+for three.
+}
+
+\code{u} and \code{v} are normalised exposures (concentration divided by the site's
+\code{e50}), \code{alpha} is the interaction coefficient and \code{h1}/\code{h2} are the Hill
+exponents. The interaction term is computed internally as
+\eqn{w = \alpha \cdot u \cdot v}; the retired six-argument \code{get_e2(a, b, w, h1,
+h2, alpha_s)} call must be rewritten as \code{estimate_effect_2(a, b, alpha_s, h1,
+h2)}. These functions are evaluated at run time, on every derivative or
+output evaluation, and cannot be used in the \code{pri} block.
 
 Example:
 
