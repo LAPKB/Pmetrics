@@ -228,13 +228,13 @@ PM_pta <- R6::R6Class(
             simdata <- simdata$data
           } else { # just one sim
 
-            simdata$data$obs <- simdata$data$obs |> mutate(id = dplyr::dense_rank(id)) # ensure numeric
+            simdata$data$obs <- simdata$data$obs |> mutate(id = pm_id_rank(id)) # ensure numeric
             simdata <- split(simdata$data$obs, as.factor(simdata$data$obs$id))
           }
         }
 
         if (dataType == 1) { # PM_sim_data object
-          simdata$obs <- simdata$obs |> mutate(id = dplyr::dense_rank(id)) # ensure numeric
+          simdata$obs <- simdata$obs |> mutate(id = pm_id_rank(id)) # ensure numeric
           simdata <- split(simdata, as.factor(simdata$id)) # split by id
         }
 

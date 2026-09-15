@@ -430,20 +430,24 @@ PM_data <- R6::R6Class("PM_data",
       }
 
       # Assign an observation occasion number for each id, incremented at each EVID = 4.
+      # `group_by(id)` orders text ids as text, putting subject 10 before subject
+      # 2; the final arrange restores the order the ids were written in.
       dataObj <- makePMdataOccasion(dataObj) |>
         group_by(id, occasion) |>
         arrange(time, desc(evid), .by_group = TRUE) |>
         ungroup() |>
-        relocate(occasion, .after = last_col())
+        relocate(occasion, .after = last_col()) |>
+        arrange(pm_id_rank(id), occasion, time)
 
       if ("evid" %in% names(dataObj_orig)) {
         dataObj_orig <- makePMdataOccasion(dataObj_orig) |>
           group_by(id, occasion) |>
           arrange(time, desc(evid), .by_group = TRUE) |>
           ungroup() |>
+          arrange(pm_id_rank(id), occasion, time) |>
           select(-occasion)
       } else {
-        dataObj_orig <- dataObj_orig |> arrange(id, time, out)
+        dataObj_orig <- dataObj_orig |> arrange(pm_id_rank(id), time, out)
       }
 
 
@@ -1868,7 +1872,7 @@ plot.PM_data <- function(
   # time after dose
   if (tad) {
     dat$standard_data$time <- calcTAD(dat$standard_data)
-    dat$standard_data <- dat$standard_data |> arrange(id, time)
+    dat$standard_data <- dat$standard_data |> arrange(pm_id_rank(id), time)
   }
 
   # filter
