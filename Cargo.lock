@@ -1435,9 +1435,9 @@ dependencies = [
 
 [[package]]
 name = "pharmsol"
-version = "0.29.0"
+version = "0.29.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d956a0a3ae74b4a02c16cd3dff3153a7b958f3f8c48b397f469df6151c1fc339"
+checksum = "dfae22a3e9cfc7642c4bc306827090e5341c7cff48be57e47d890c5de9700c8b"
 dependencies = [
  "ahash",
  "argmin",
@@ -1466,9 +1466,9 @@ dependencies = [
 
 [[package]]
 name = "pharmsol-dsl"
-version = "0.29.0"
+version = "0.29.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80ff36016934559d648d3d3dcdf99003c2f314ff7a00e97d8bc471c609e0db0f"
+checksum = "fab86f195b2ded3a73c1e52f9d96ab150162637cc4a54cf95a616b7f856a192a"
 dependencies = [
  "serde",
  "serde_json",
@@ -1477,9 +1477,9 @@ dependencies = [
 
 [[package]]
 name = "pharmsol-macros"
-version = "0.29.0"
+version = "0.29.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "44344f94af37484c5f09f75af566b23baf9643f06076aa27ef741f5e657b47ba"
+checksum = "16bded859c1bfaf2ecd34b05cba1074d89c931e86565546c12eb81aea05e9a77"
 dependencies = [
  "pharmsol-dsl",
  "proc-macro-crate",
@@ -1508,9 +1508,9 @@ dependencies = [
 
 [[package]]
 name = "pmcore"
-version = "0.28.0"
+version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "732c974a86e0970239056ed726e0a7269856a957d3095c024461813cd65bd4da"
+checksum = "941b66ea8169eb15284e24ac63b51da18b81c5abb501d396ce28b0750a49b390"
 dependencies = [
  "anyhow",
  "argmin",

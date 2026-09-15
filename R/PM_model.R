@@ -252,17 +252,20 @@ PM_model <- R6::R6Class(
     #'   - `dx[i]` for the change in amount with respect to time (i.e., \eqn{dx/dt}),
     #' where `i` is the compartment number,
     #'   - `x[i]` for the compartment amount, where `i` is the compartment number.
-    #'   - `rateiv[j]` for the infusion rate of input `j`, where `j` is the input number
-    #' in the data corresponding to doses for that input.
-    #'   - Bolus doses are indicated by `DUR = 0` for dose events in the
-    #' data. Currently only one bolus input is allowed, which goes into compartment 1
-    #' and is not modifiable. It does not appear in the differential equations.
+    #'   - `rateiv[j]` or `R[j]` for the infusion rate of input `j`, where `j` is
+    #' the input number in the data. An infusion may be a standalone additive term
+    #' or one exact product with a scale, such as `R[1] * iv_scale`. The scale is
+    #' evaluated continuously in the differential equation.
+    #'   - `B[j]` or `bolus[j]` for a bolus input. A bolus may be a standalone
+    #' additive term or one exact product with a scale, such as `B[1] * v`.
+    #' The scale is applied to the bolus dose and does not affect an infusion with
+    #' the same input number.
     #'
     #'     For example,
     #'     ```
     #'     eqn = function() {
-    #'      dx[1] = -ka * x[1]
-    #'      dx[2] = rateiv[1] + ka * x[1] - ke * x[2]
+    #'      dx[1] = B[1] * fa1 - ka * x[1]
+    #'      dx[2] = rateiv[1] * iv_scale + ka * x[1] - ke * x[2]
     #'     }
     #'     ```
     #' * **Additional equations** in R code can be defined in this block, which are similar to
@@ -286,7 +289,8 @@ PM_model <- R6::R6Class(
     #' As for `eqn`, additional equations in R code can be defined in this block,
     #' but will only be available within the `lag` block.
     #' @param fa A function defining the bioavailability (fraction absorbed) equations,
-    #' similar to `lag`.
+    #' similar to `lag`. The `lag` and `fa` blocks also apply to analytical bolus
+    #' models; they are not valid for analytical infusion-only models.
     #'
     #' Example:
     #' ```
@@ -308,7 +312,8 @@ PM_model <- R6::R6Class(
     #' This sets the initial amount of drug in compartment 2 to the value
     #' of a covariate `init2` multiplied by the volume of the compartment,
     #' `V`, assuming `V` is either a primary parameter or defined in the
-    #' `sec` block.
+    #' `sec` block. Initial conditions are evaluated before the first event of
+    #' every occasion, including occasions started by an `EVID = 4` row.
     #'
     #' As for `eqn`, additional equations in R code can be defined in this block,
     #' but will only be available within the `ini` block.
@@ -471,7 +476,10 @@ PM_model <- R6::R6Class(
             }
           })
           self$arg_list$x <- NULL
-          self$dsl <- x$dsl
+          # `dsl` is rendered from `arg_list`, so it is never inherited. A
+          # PM_model saved before a DSL change would otherwise replay stale
+          # source instead of rendering the model it defines.
+          self$dsl <- NULL
         } else {
           cli::cli_abort(c(
             "x" = "Non supported input for {.arg x}: {typeof(x)}",

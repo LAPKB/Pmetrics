@@ -301,17 +301,20 @@ Use the following notation in equations:
 \item \code{dx[i]} for the change in amount with respect to time (i.e., \eqn{dx/dt}),
 where \code{i} is the compartment number,
 \item \code{x[i]} for the compartment amount, where \code{i} is the compartment number.
-\item \code{rateiv[j]} for the infusion rate of input \code{j}, where \code{j} is the input number
-in the data corresponding to doses for that input.
-\item Bolus doses are indicated by \code{DUR = 0} for dose events in the
-data. Currently only one bolus input is allowed, which goes into compartment 1
-and is not modifiable. It does not appear in the differential equations.
+\item \code{rateiv[j]} or \code{R[j]} for the infusion rate of input \code{j}, where \code{j} is
+the input number in the data. An infusion may be a standalone additive term
+or one exact product with a scale, such as \code{R[1] * iv_scale}. The scale is
+evaluated continuously in the differential equation.
+\item \code{B[j]} or \code{bolus[j]} for a bolus input. A bolus may be a standalone
+additive term or one exact product with a scale, such as \code{B[1] * v}.
+The scale is applied to the bolus dose and does not affect an infusion with
+the same input number.
 
 For example,
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{eqn = function() \{
- dx[1] = -ka * x[1]
- dx[2] = rateiv[1] + ka * x[1] - ke * x[2]
+ dx[1] = B[1] * fa1 - ka * x[1]
+ dx[2] = rateiv[1] * iv_scale + ka * x[1] - ke * x[2]
 \}
 }\if{html}{\out{</div>}}
 }
@@ -338,7 +341,8 @@ this code could be used to model delayed absorption if an antacid is present.
 As for \code{eqn}, additional equations in R code can be defined in this block,
 but will only be available within the \code{lag} block.}
       \item{\code{fa}}{A function defining the bioavailability (fraction absorbed) equations,
-similar to \code{lag}.
+similar to \code{lag}. The \code{lag} and \code{fa} blocks also apply to analytical bolus
+models; they are not valid for analytical infusion-only models.
 
 Example:
 
@@ -362,7 +366,8 @@ Example:
 This sets the initial amount of drug in compartment 2 to the value
 of a covariate \code{init2} multiplied by the volume of the compartment,
 \code{V}, assuming \code{V} is either a primary parameter or defined in the
-\code{sec} block.
+\code{sec} block. Initial conditions are evaluated before the first event of
+every occasion, including occasions started by an \code{EVID = 4} row.
 
 As for \code{eqn}, additional equations in R code can be defined in this block,
 but will only be available within the \code{ini} block.}

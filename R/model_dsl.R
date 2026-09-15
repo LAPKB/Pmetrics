@@ -17,8 +17,8 @@
 # Naming conventions used by the emitter:
 #   * States   `x[i]`            -> `x{i}`          (declared in `states = ...`)
 #   * Outputs  `Y[i]` / `y[i]`   -> `outeq_{i}`     (declared in `outputs = ...`)
-#   * Inputs   `b[j]`/`bolus[j]` -> `bolus(input_{j}) -> x{k}`    (route)
-#              `rateiv[j]`/`r[j]`-> `infusion(input_{j}) -> x{k}` (route)
+#   * ODE inputs `b[j]`/`bolus[j]` -> `bolus(input_{j})`       (RHS term)
+#                `rateiv[j]`/`r[j]`-> `infusion(input_{j})`    (RHS term)
 #   * Params / covariates keep their (lower-cased) names.
 #
 # pharmsol identifies routes and outputs by label and rejects bare numeric
@@ -27,10 +27,9 @@
 # renumbered: the data's `INPUT`/`OUTEQ` values are canonicalised to the same
 # labels before the backend reads them.
 #
-# Infusions and boluses are declared as routes into the compartment in which they
-# appear in the derivative equations; the corresponding `rateiv[j]`/`b[j]` terms
-# are stripped from the derivative because the DSL runtime injects them
-# automatically from the route declaration.
+# ODE inputs and scales remain on the derivative RHS. The DSL infers their routes
+# and lowers them into the existing simulator machinery. Analytical models keep
+# explicit route declarations and route properties.
 # ---------------------------------------------------------------------------
 
 # The set of DSL intrinsic functions and how R names map to them. R names that
@@ -77,10 +76,16 @@ expr_to_dsl <- function(expr, allow_if = TRUE) {
       ))
     }
     idx <- as.integer(idx_raw)
-    if (var %in% c("b", "bolus", "rateiv", "r")) {
+    if (var %in% c("b", "bolus")) {
       cli::cli_abort(c(
-        "x" = "Bolus/infusion inputs may only be used as standalone additive terms in derivative equations.",
-        "i" = "Write, for example, {.code dx[1] = -ke * x[1] + rateiv[1]}, not inside a product."
+        "x" = "Bolus inputs may only be standalone additive terms or one exact product with a scale.",
+        "i" = "Use {.code B[1]}, {.code B[1] * scale}, or {.code scale * B[1]}."
+      ))
+    }
+    if (var %in% c("rateiv", "r")) {
+      cli::cli_abort(c(
+        "x" = "Infusion inputs may only be standalone additive terms or one exact product with a scale.",
+        "i" = "Use {.code R[1]}, {.code R[1] * scale}, or {.code scale * R[1]}."
       ))
     }
     return(sprintf("%s%d", var, idx))
@@ -200,6 +205,36 @@ dsl_route_of <- function(expr) {
   NULL
 }
 
+# Recognize one exact linear route product, with the route on either side.
+dsl_scaled_route_of <- function(expr) {
+  if (!is.call(expr) || !identical(expr[[1]], as.name("*")) || length(expr) != 3) {
+    return(NULL)
+  }
+
+  left <- dsl_route_of(expr[[2]])
+  right <- dsl_route_of(expr[[3]])
+  if (is.null(left) == is.null(right)) {
+    return(NULL)
+  }
+
+  route <- if (!is.null(left)) left else right
+  route$scale <- if (!is.null(left)) expr[[3]] else expr[[2]]
+  if (route$kind == "bolus") {
+    uses_state_or_input <- function(value) {
+      if (!is.call(value)) return(FALSE)
+      if (identical(value[[1]], as.name("["))) {
+        name <- tolower(as.character(value[[2]]))
+        if (name %in% c("x", "dx", "b", "bolus", "r", "rateiv")) return(TRUE)
+      }
+      any(vapply(as.list(value)[-1], uses_state_or_input, logical(1)))
+    }
+    if (uses_state_or_input(route$scale)) {
+      cli::cli_abort("A bolus scale cannot depend directly on state or dose inputs.")
+    }
+  }
+  route
+}
+
 # Return the sorted, unique data input indices referenced by bolus (`b[]` /
 # `bolus[]`) or infusion (`rateiv[]` / `r[]`) terms in a model equation function.
 # Used to validate that the model represents every dose input present in the data.
@@ -235,7 +270,7 @@ dsl_join_terms <- function(terms) {
   pieces <- character(0)
   for (i in seq_along(terms)) {
     t <- terms[[i]]
-    es <- expr_to_dsl(t$expr, allow_if = allow_if)
+    es <- if (!is.null(t$dsl)) t$dsl else expr_to_dsl(t$expr, allow_if = allow_if)
     if (i == 1) {
       pieces <- if (t$sign < 0) sprintf("-(%s)", es) else es
     } else {
@@ -245,7 +280,7 @@ dsl_join_terms <- function(terms) {
   pieces
 }
 
-# Convert a derivative RHS into (routes, stripped DSL expression) for the given
+# Convert a derivative RHS into (routes, explicit-input DSL expression) for the given
 # destination compartment index `comp`.
 dsl_extract_routes <- function(rhs, comp) {
   terms <- dsl_flatten_add(rhs)
@@ -253,6 +288,9 @@ dsl_extract_routes <- function(rhs, comp) {
   kept <- list()
   for (t in terms) {
     route <- dsl_route_of(t$expr)
+    if (is.null(route)) {
+      route <- dsl_scaled_route_of(t$expr)
+    }
     if (!is.null(route)) {
       if (t$sign < 0) {
         cli::cli_abort(c(
@@ -262,6 +300,11 @@ dsl_extract_routes <- function(rhs, comp) {
       }
       route$comp <- comp
       routes[[length(routes) + 1]] <- route
+      input <- sprintf("%s(%s)", route$kind, pm_input_label(route$input))
+      if (!is.null(route$scale)) {
+        input <- sprintf("%s * (%s)", input, expr_to_dsl(route$scale, allow_if = FALSE))
+      }
+      kept[[length(kept) + 1]] <- list(sign = t$sign, dsl = input)
     } else {
       kept[[length(kept) + 1]] <- t
     }
@@ -356,9 +399,11 @@ dsl_sec_block <- function(fun) {
 # `target` is the DSL property name ("lag" or "fa"); the R block assigns to
 # `lag[j]` / `fa[j]` where `j` is the 1-based input index.
 dsl_route_property_block <- function(fun, target) {
-  exprs <- dsl_body_stmts(fun)
+  exprs <- if (is.null(fun)) list() else dsl_body_stmts(fun)
   derived <- character(0)
   lines <- character(0)
+  values <- list()
+  seen_inputs <- character(0)
   for (e in exprs) {
     if (!dsl_is_assign(e)) {
       cli::cli_abort("Only assignments are supported in the {target} block for the DSL backend.")
@@ -371,12 +416,19 @@ dsl_route_property_block <- function(fun, target) {
       if (tgt != target) {
         cli::cli_abort("Unexpected indexed assignment to {.code {tgt}[{idx}]} in {target} block.")
       }
-      lines <- c(lines, sprintf("%s(%s) = %s", target, pm_input_label(idx), expr_to_dsl(rhs)))
+      key <- as.character(idx)
+      if (key %in% seen_inputs) {
+        cli::cli_abort("The {target} block assigns input {idx} more than once.")
+      }
+      seen_inputs <- c(seen_inputs, key)
+      values[[key]] <- expr_to_dsl(rhs)
+      lines <- c(lines, sprintf("%s(%s) = %s", target, pm_input_label(idx), values[[key]]))
     } else {
       derived <- c(derived, sprintf("%s = %s", tolower(as.character(lhs)), expr_to_dsl(rhs)))
     }
   }
-  list(derived = derived, lines = lines)
+
+  list(derived = derived, lines = lines, values = values)
 }
 
 # Emit `init(...)` statements from an initial-conditions block.
@@ -406,12 +458,12 @@ dsl_ini_block <- function(fun) {
 
 # Finalize route usages into concrete DSL routes.
 #
-# Each usage is `list(kind, input, comp)` where `input` is the identifier used in
-# the model equations (`b[j]` / `rateiv[j]`). Route labels are unique *per kind*
+# Each usage is `list(kind, input, comp, scale)` where `scale` is present for an
+# exact route-input product. Route labels are unique *per kind*
 # in the pharmsol DSL, so the same label may declare both a bolus and an
 # infusion; no relabelling of the data is ever required.
 #
-# Returns a list of `{kind, label, comp}` route declarations.
+# Returns a list of `{kind, input, label, comp, scale}` route declarations.
 dsl_finalize_routes <- function(routes) {
   by_input <- list()
   seen_inputs <- integer(0)
@@ -430,10 +482,8 @@ dsl_finalize_routes <- function(routes) {
     grp <- by_input[[as.character(inp)]]
 
     for (kd in c("bolus", "infusion")) {
-      comps <- unique(vapply(
-        Filter(function(r) identical(r$kind, kd), grp),
-        function(r) as.integer(r$comp), integer(1)
-      ))
+      kind_routes <- Filter(function(r) identical(r$kind, kd), grp)
+      comps <- unique(vapply(kind_routes, function(r) as.integer(r$comp), integer(1)))
       if (length(comps) == 0) next
       if (length(comps) > 1) {
         cli::cli_abort(c(
@@ -442,8 +492,17 @@ dsl_finalize_routes <- function(routes) {
         ))
       }
 
+      scaled <- Filter(function(r) !is.null(r$scale), kind_routes)
+      if ((kd == "bolus" || length(scaled) > 0) && length(kind_routes) > 1) {
+        cli::cli_abort(c(
+          "x" = "The {kd} input {inp} is used more than once.",
+          "i" = "Use one input term with a combined scale."
+        ))
+      }
+      scale <- if (length(scaled) == 1) scaled[[1]]$scale else NULL
+
       final_routes[[length(final_routes) + 1L]] <- list(
-        kind = kd, label = pm_input_label(inp), comp = comps[[1]]
+        kind = kd, input = inp, label = pm_input_label(inp), comp = comps[[1]], scale = scale
       )
     }
   }
@@ -584,6 +643,7 @@ model_to_dsl <- function(model) {
   # ---- ODE model ----
   eqn <- dsl_eqn_block(arg_list$eqn)
   derived <- c(derived, eqn$derived)
+  routes <- dsl_finalize_routes(eqn$routes)
 
   out <- dsl_out_block(arg_list$out)
   derived <- c(derived, out$derived)
@@ -602,11 +662,19 @@ model_to_dsl <- function(model) {
     lag_lines <- lag$lines
   }
 
-  fa_lines <- character(0)
+  # Keep the established R fa block, but express its effect on the ODE RHS.
   if (!is.null(arg_list$fa)) {
     fa <- dsl_route_property_block(arg_list$fa, "fa")
     derived <- c(derived, fa$derived)
-    fa_lines <- fa$lines
+    bolus_inputs <- vapply(Filter(function(r) r$kind == "bolus", routes),
+      function(r) as.character(r$input), character(1))
+    for (key in names(fa$values)) {
+      if (!key %in% bolus_inputs) {
+        cli::cli_abort("The fa block references input {key}, which has no bolus term.")
+      }
+      input <- sprintf("bolus(%s)", pm_input_label(key))
+      eqn$dx <- gsub(input, sprintf("%s * (%s)", input, fa$values[[key]]), eqn$dx, fixed = TRUE)
+    }
   }
 
   # Number of states and outputs.
@@ -621,26 +689,17 @@ model_to_dsl <- function(model) {
   states <- paste0("x", seq_len(n_states))
   outputs <- pm_output_label(seq_len(n_out))
 
-  routes <- dsl_finalize_routes(eqn$routes)
-  route_lines <- vapply(routes, function(r) {
-    sprintf("%s(%s) -> x%d", r$kind, r$label, r$comp)
-  }, character(1))
-
-  # Assemble the DSL text in an order that respects definite assignment:
-  # declarations, routes, derived values, route properties, initial conditions,
-  # derivatives, and finally outputs.
+  # Inputs remain explicit in the derivatives; the DSL infers their routes.
+  # Derived values precede lag, initial conditions, and derivatives.
   lines <- c(
     header,
     sprintf("states = %s", paste(states, collapse = ", ")),
     sprintf("outputs = %s", paste(outputs, collapse = ", ")),
     "",
-    route_lines,
-    if (length(route_lines) > 0) "" else NULL,
     derived,
     if (length(derived) > 0) "" else NULL,
     lag_lines,
-    fa_lines,
-    if (length(lag_lines) > 0 || length(fa_lines) > 0) "" else NULL,
+    if (length(lag_lines) > 0) "" else NULL,
     init_lines,
     if (length(init_lines) > 0) "" else NULL,
     eqn$dx,
@@ -670,6 +729,24 @@ dsl_analytical <- function(model, header, derived, parameters) {
   out <- dsl_out_block(arg_list$out)
   derived <- c(derived, out$derived)
 
+  has_absorption <- stringr::str_detect(structure, "absorption")
+  if (!has_absorption && (!is.null(arg_list$lag) || !is.null(arg_list$fa))) {
+    cli::cli_abort("The `lag` and `fa` blocks can only be used with analytical bolus models.")
+  }
+
+  lag_lines <- character(0)
+  fa_lines <- character(0)
+  if (has_absorption && !is.null(arg_list$lag)) {
+    lag <- dsl_route_property_block(arg_list$lag, "lag")
+    derived <- c(derived, lag$derived)
+    lag_lines <- lag$lines
+  }
+  if (has_absorption && !is.null(arg_list$fa)) {
+    fa <- dsl_route_property_block(arg_list$fa, "fa")
+    derived <- c(derived, fa$derived)
+    fa_lines <- fa$lines
+  }
+
   # The DSL analytical structures require specific derived-parameter names (e.g.
   # `kcp`, `kpc`, `vc`). The Pmetrics model-library templates use their own
   # parameter names, so emit derived aliases mapping the library names to the
@@ -689,7 +766,7 @@ dsl_analytical <- function(model, header, derived, parameters) {
   # Declare the dose route. Absorption ("bolus") templates receive a bolus into
   # the depot (x1); IV templates receive an infusion into the central
   # compartment (x1).
-  route_line <- if (stringr::str_detect(structure, "absorption")) {
+  route_line <- if (has_absorption) {
     sprintf("bolus(%s) -> x1", pm_input_label(1))
   } else {
     sprintf("infusion(%s) -> x1", pm_input_label(1))
@@ -705,6 +782,9 @@ dsl_analytical <- function(model, header, derived, parameters) {
     "",
     derived,
     if (length(derived) > 0) "" else NULL,
+    lag_lines,
+    fa_lines,
+    if (length(lag_lines) > 0 || length(fa_lines) > 0) "" else NULL,
     out$out
   )
 

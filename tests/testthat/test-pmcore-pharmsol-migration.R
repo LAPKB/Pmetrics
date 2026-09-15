@@ -23,13 +23,14 @@ build_passthrough_ode_model <- function(solver = NULL) {
   )
 }
 
-test_that("ODE generation produces a DSL model with 1-based indices and an infusion route", {
+test_that("ODE generation produces 1-based labels and an explicit infusion term", {
   mod <- build_passthrough_ode_model("TSIT45")
   mod$compile(quiet = TRUE)
   dsl <- mod$dsl
 
   testthat::expect_match(dsl, "kind = ode")
-  testthat::expect_match(dsl, "infusion\\(input_1\\) -> x1")
+  testthat::expect_match(dsl, "infusion(input_1)", fixed = TRUE)
+  testthat::expect_false(grepl("->", dsl, fixed = TRUE))
   testthat::expect_match(dsl, "dx\\(x1\\)")
   testthat::expect_match(dsl, "out\\(outeq_1\\)")
   # Outputs are 1-based to match the Pmetrics data OUTEQ column.
