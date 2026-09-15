@@ -81,13 +81,14 @@ test_that("Conditionals nested in expressions are hoisted into helpers", {
   expr_to_dsl <- getFromNamespace("expr_to_dsl", "Pmetrics")
   dsl_ctx <- getFromNamespace("dsl_ctx", "Pmetrics")
   dsl_take_hoists <- getFromNamespace("dsl_take_hoists", "Pmetrics")
+  dsl_text <- getFromNamespace("dsl_text", "Pmetrics")
 
   ctx <- dsl_ctx()
   testthat::expect_equal(expr_to_dsl(quote(2 * if (c) a else b), ctx), "2.0 * _pmt1")
-  testthat::expect_equal(dsl_take_hoists(ctx), "_pmt1 = if (c) a else b")
+  testthat::expect_equal(dsl_text(dsl_take_hoists(ctx)), "_pmt1 = if (c) a else b")
   ctx <- dsl_ctx()
   testthat::expect_equal(expr_to_dsl(quote(exp(if (c) a else b)), ctx), "exp(_pmt1)")
-  testthat::expect_equal(dsl_take_hoists(ctx), "_pmt1 = if (c) a else b")
+  testthat::expect_equal(dsl_text(dsl_take_hoists(ctx)), "_pmt1 = if (c) a else b")
 
   # A nested conditional in the `then` branch is hoisted as well. The
   # parentheses are the ones the caller wrote around the inner conditional.
@@ -96,7 +97,7 @@ test_that("Conditionals nested in expressions are hoisted into helpers", {
     expr_to_dsl(quote(if (a) (if (b) x else y) else z), ctx),
     "if (a) (_pmt1) else z"
   )
-  testthat::expect_equal(dsl_take_hoists(ctx), "_pmt1 = if (b) x else y")
+  testthat::expect_equal(dsl_text(dsl_take_hoists(ctx)), "_pmt1 = if (b) x else y")
 
   # A missing `else` branch is still an error.
   testthat::expect_error(
@@ -110,6 +111,7 @@ test_that("Conditionals summed into derivative equations are hoisted", {
   # than emit DSL the backend rejects.
   dsl_eqn_block <- getFromNamespace("dsl_eqn_block", "Pmetrics")
   dsl_ctx <- getFromNamespace("dsl_ctx", "Pmetrics")
+  dsl_text <- getFromNamespace("dsl_text", "Pmetrics")
 
   summed <- dsl_eqn_block(
     function() {
@@ -117,8 +119,8 @@ test_that("Conditionals summed into derivative equations are hoisted", {
     },
     dsl_ctx()
   )
-  testthat::expect_equal(summed$dx, "dx(x1) = a + (_pmt1)")
-  testthat::expect_equal(summed$derived, "_pmt1 = if (c) b else d")
+  testthat::expect_equal(dsl_text(summed$dx), "dx(x1) = a + (_pmt1)")
+  testthat::expect_equal(dsl_text(summed$derived), "_pmt1 = if (c) b else d")
 
   # A whole-RHS conditional remains valid and is emitted bare.
   whole_rhs <- dsl_eqn_block(
@@ -127,7 +129,7 @@ test_that("Conditionals summed into derivative equations are hoisted", {
     },
     dsl_ctx()
   )
-  testthat::expect_equal(whole_rhs$dx, "dx(x1) = if (c) a else b")
+  testthat::expect_equal(dsl_text(whole_rhs$dx), "dx(x1) = if (c) a else b")
 })
 
 test_that("Secondary if/else conditionals generate a parseable DSL model", {
