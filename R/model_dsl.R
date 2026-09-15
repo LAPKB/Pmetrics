@@ -76,10 +76,36 @@ dsl_legacy_functions <- function() {
   )
 }
 
+# The name of the function a call invokes, or NULL when the head is not a plain
+# symbol. `base::exp(x)` is a call whose *head* is another call, and
+# `as.character()` on that head returns several elements, so comparing it to a
+# string raised a base R error instead of a model diagnostic.
+dsl_call_head <- function(expr) {
+  if (!is.call(expr)) {
+    return(NULL)
+  }
+  head <- expr[[1]]
+  if (is.symbol(head)) as.character(head) else NULL
+}
+
 # One-line rendering of an R expression, used to quote the user's own code in
 # diagnostics instead of generated DSL text.
 dsl_expr_label <- function(expr) {
   paste(deparse(expr, width.cutoff = 500L), collapse = " ")
+}
+
+# The numeric value of a literal, or NULL when the expression is not one. A
+# negative literal is a call to `-` in R's parse tree, so `round(x, -1)` is
+# recognised here rather than being rejected as a non-literal.
+dsl_literal_number <- function(expr) {
+  if (is.numeric(expr) && length(expr) == 1 && is.finite(expr)) {
+    return(as.numeric(expr))
+  }
+  if (is.call(expr) && length(expr) == 2L && identical(expr[[1]], as.name("-")) &&
+    is.numeric(expr[[2]]) && length(expr[[2]]) == 1 && is.finite(expr[[2]])) {
+    return(-as.numeric(expr[[2]]))
+  }
+  NULL
 }
 
 # Abort with a message that names the unsupported call and what to write
@@ -178,29 +204,55 @@ dsl_hoist <- function(ctx, expr, allow_if = TRUE) {
   dsl_hoist_code(ctx, expr_to_dsl(expr, ctx, allow_if = allow_if))
 }
 
-# Consume the helpers accumulated while rendering one statement. Returns the
-# helper lines, in the order they must be emitted.
-dsl_take_hoists <- function(ctx) {
+# Consume the helpers accumulated while rendering one statement, labelled with
+# the statement they belong to.
+dsl_take_hoists <- function(ctx, src = NA_character_) {
   hoists <- ctx$hoist
   ctx$hoist <- list()
-  vapply(hoists, function(h) sprintf("%s = %s", h$name, h$code), character(1))
+  dsl_lines(
+    vapply(hoists, function(h) sprintf("%s = %s", h$name, h$code), character(1)),
+    rep(src, length(hoists))
+  )
 }
 
 # ---------------------------------------------------------------------------
-# Provenance
+# Emitted lines and provenance
 # ---------------------------------------------------------------------------
-# Every emitted line records the R statement it came from, so a backend
-# diagnostic that points at generated text can be reported against the user's
-# own model instead.
+# Generated source is carried as a small value type that keeps every line and
+# the R statement it came from together, so they cannot drift apart. Emitters
+# concatenate parts with `dsl_c()` instead of `c()`; plain strings are accepted
+# and count as having no origin (headers, separators, generated declarations).
 
-dsl_with_src <- function(lines, src) {
-  attr(lines, "src") <- src
-  lines
+dsl_lines <- function(text = character(0), src = NA_character_) {
+  text <- as.character(text)
+  src <- if (length(src) == 1L) rep(as.character(src), length(text)) else as.character(src)
+  if (length(src) != length(text)) {
+    cli::cli_abort(
+      "internal error: {length(text)} generated line{?s} but {length(src)} source label{?s}",
+      call = NULL
+    )
+  }
+  structure(list(text = text, src = src), class = "dsl_lines")
 }
 
-dsl_src <- function(lines, default = NA_character_) {
-  src <- attr(lines, "src")
-  if (is.null(src)) rep(default, length(lines)) else src
+dsl_text <- function(x) {
+  if (inherits(x, "dsl_lines")) x$text else as.character(x)
+}
+
+dsl_src <- function(x) {
+  if (inherits(x, "dsl_lines")) x$src else rep(NA_character_, length(dsl_text(x)))
+}
+
+dsl_c <- function(...) {
+  parts <- list(...)
+  parts <- parts[!vapply(parts, is.null, logical(1))]
+  if (length(parts) == 0L) {
+    return(dsl_lines())
+  }
+  dsl_lines(
+    unlist(lapply(parts, dsl_text), use.names = FALSE),
+    unlist(lapply(parts, dsl_src), use.names = FALSE)
+  )
 }
 
 # Human-readable origin of a statement, used in diagnostics.
@@ -220,8 +272,8 @@ dsl_expr_has_route <- function(expr) {
 # the input out of the derivative where it would silently stop being a dose.
 dsl_check_conditional_routes <- function(expr) {
   if (is.call(expr)) {
-    head <- as.character(expr[[1]])
-    if (head %in% c("if", "ifelse") && dsl_expr_has_route(expr)) {
+    head <- dsl_call_head(expr)
+    if (!is.null(head) && head %in% c("if", "ifelse") && dsl_expr_has_route(expr)) {
       cli::cli_abort(
         c(
           "x" = "A dose input cannot be inside a conditional: {.code {dsl_expr_label(expr)}}.",
@@ -304,7 +356,13 @@ expr_to_dsl <- function(expr, ctx = NULL, allow_if = TRUE) {
     dsl_unsupported(expr, "This token cannot be used in a model expression:")
   }
 
-  op <- as.character(expr[[1]])
+  op <- dsl_call_head(expr)
+  if (is.null(op)) {
+    dsl_unsupported(
+      expr, "This call cannot be translated:",
+      "Use a plain function such as exp(x), and write arithmetic with operators."
+    )
+  }
 
   # Indexing: x[i] -> x{i}. Only literal, positive integer indices are allowed.
   if (op == "[") {
@@ -317,6 +375,18 @@ expr_to_dsl <- function(expr, ctx = NULL, allow_if = TRUE) {
       ))
     }
     idx <- as.integer(idx_raw)
+    # Indexing anything else used to be rewritten into a different identifier
+    # (`p1[1]` became `p11`), which then failed as an unknown name.
+    if (!var %in% c("x", "b", "bolus", "rateiv", "r")) {
+      cli::cli_abort(
+        c(
+          "x" = "{.code {var}[{idx}]} cannot be used as a value here.",
+          "i" = "Inside an expression, only {.code x[i]} (a state) and {.code b[i]}/{.code bolus[i]}, {.code r[i]}/{.code rateiv[i]} (dose inputs) can be indexed.",
+          "i" = "Assign to {.code lag[i]}, {.code fa[i]}, {.code dx[i]} or {.code y[i]} with a statement of its own."
+        ),
+        call = NULL
+      )
+    }
     if (var %in% c("b", "bolus")) {
       cli::cli_abort(c(
         "x" = "Bolus inputs may only be standalone additive terms or one exact product with a scale.",
@@ -432,9 +502,8 @@ expr_to_dsl <- function(expr, ctx = NULL, allow_if = TRUE) {
     if (length(a) == 1) {
       return(dsl_round_helpers(ctx, a[[1]], 0L))
     }
-    digits <- if (length(args) >= 2) args[[2]] else NULL
-    if (!(is.numeric(digits) && length(digits) == 1 && is.finite(digits) &&
-      digits == floor(digits) && abs(digits) <= 15)) {
+    digits <- if (length(args) >= 2) dsl_literal_number(args[[2]]) else NULL
+    if (is.null(digits) || digits != floor(digits) || abs(digits) > 15) {
       dsl_unsupported(
         expr, "round needs a whole number of digits between -15 and 15:",
         "Write the number of digits literally, for example round(x, 2)."
@@ -489,7 +558,7 @@ expr_to_dsl <- function(expr, ctx = NULL, allow_if = TRUE) {
 # Return the top-level statements of a model block function body.
 dsl_body_stmts <- function(fun) {
   b <- body(fun)
-  if (is.call(b) && as.character(b[[1]]) == "{") {
+  if (identical(dsl_call_head(b), "{")) {
     as.list(b[-1])
   } else {
     list(b)
@@ -522,7 +591,7 @@ dsl_flatten_add <- function(expr, sign = 1) {
 # If `expr` is a route reference (`b[j]`, `bolus[j]`, `rateiv[j]`, `r[j]`),
 # return `list(kind = "bolus"|"infusion", input = j)`, else NULL.
 dsl_route_of <- function(expr) {
-  if (is.call(expr) && as.character(expr[[1]]) == "[") {
+  if (identical(dsl_call_head(expr), "[")) {
     v <- tolower(as.character(expr[[2]]))
     idx <- expr[[3]]
     if (v %in% c("b", "bolus", "rateiv", "r") && is.numeric(idx) && length(idx) == 1) {
@@ -634,7 +703,7 @@ dsl_join_terms <- function(terms, ctx) {
 
 # Convert a derivative RHS into (routes, explicit-input DSL expression) for the given
 # destination compartment index `comp`.
-dsl_extract_routes <- function(rhs, comp, ctx) {
+dsl_extract_routes <- function(rhs, comp, ctx, fa_values = NULL) {
   dsl_check_conditional_routes(rhs)
   terms <- dsl_flatten_add(rhs)
   routes <- list()
@@ -654,6 +723,15 @@ dsl_extract_routes <- function(rhs, comp, ctx) {
       route$comp <- comp
       routes[[length(routes) + 1]] <- route
       input <- sprintf("%s(%s)", route$kind, pm_input_label(route$input))
+      # The fa block scales the bolus dose. Applying it while the term is
+      # rendered keeps generated text produced in a single pass; patching it
+      # into the finished text afterwards depended on the term appearing once.
+      if (route$kind == "bolus" && !is.null(fa_values)) {
+        factor <- fa_values[[as.character(route$input)]]
+        if (!is.null(factor)) {
+          input <- sprintf("%s * (%s)", input, factor)
+        }
+      }
       if (!is.null(route$scale)) {
         input <- sprintf("%s * (%s)", input, expr_to_dsl(route$scale, ctx, allow_if = FALSE))
       }
@@ -666,72 +744,69 @@ dsl_extract_routes <- function(rhs, comp, ctx) {
 }
 
 # Emit the ODE equation block: returns routes, derived assignments, and dx lines.
-dsl_eqn_block <- function(fun, ctx) {
+dsl_eqn_block <- function(fun, ctx, fa_values = NULL) {
   exprs <- dsl_body_stmts(fun)
   routes <- list()
-  derived <- character(0)
-  derived_src <- character(0)
-  dx_lines <- character(0)
-  dx_src <- character(0)
+  derived <- dsl_lines()
+  dx_lines <- dsl_lines()
 
   for (e in exprs) {
+    if (identical(dsl_call_head(e), "if")) {
+      derived <- dsl_c(derived, dsl_if_statement(e, ctx, "equation block"))
+      next
+    }
     if (!dsl_is_assign(e)) {
       dsl_unsupported(
         e, "Only assignments are supported here:",
-        "Control flow such as for loops is not available. Write the assignment for each case instead."
+        "Loops are not part of the model language; write the assignment for each case instead."
       )
     }
     label <- dsl_statement_label("equation block", e)
     lhs <- e[[2]]
     rhs <- e[[3]]
-    if (is.call(lhs) && as.character(lhs[[1]]) == "[") {
+    if (identical(dsl_call_head(lhs), "[")) {
       tgt <- tolower(as.character(lhs[[2]]))
       idx <- as.integer(lhs[[3]])
       if (tgt != "dx") {
         dsl_unsupported(e, sprintf("Unexpected assignment to %s[%s] in the equation block:", tgt, idx))
       }
-      res <- dsl_extract_routes(rhs, idx, ctx)
+      res <- dsl_extract_routes(rhs, idx, ctx, fa_values)
       routes <- c(routes, res$routes)
-      hoisted <- dsl_take_hoists(ctx)
-      derived <- c(derived, hoisted)
-      derived_src <- c(derived_src, rep(label, length(hoisted)))
-      dx_lines <- c(dx_lines, sprintf("dx(x%d) = %s", idx, res$expr))
-      dx_src <- c(dx_src, label)
+      derived <- dsl_c(derived, dsl_take_hoists(ctx, label))
+      dx_lines <- dsl_c(dx_lines, dsl_lines(sprintf("dx(x%d) = %s", idx, res$expr), label))
     } else {
       # Scalar (secondary/derived) assignment.
       name <- tolower(as.character(lhs))
       code <- expr_to_dsl(rhs, ctx, allow_if = TRUE)
-      hoisted <- dsl_take_hoists(ctx)
-      derived <- c(derived, hoisted, sprintf("%s = %s", name, code))
-      derived_src <- c(derived_src, rep(label, length(hoisted) + 1L))
+      derived <- dsl_c(
+        derived,
+        dsl_take_hoists(ctx, label),
+        dsl_lines(sprintf("%s = %s", name, code), label)
+      )
     }
   }
 
-  list(
-    routes = routes,
-    derived = derived,
-    derived_src = derived_src,
-    dx = dx_lines,
-    dx_src = dx_src
-  )
+  list(routes = routes, derived = derived, dx = dx_lines)
 }
 
 # Emit the output block: returns derived assignments and out() lines.
 dsl_out_block <- function(fun, ctx) {
   exprs <- dsl_body_stmts(fun)
-  derived <- character(0)
-  derived_src <- character(0)
-  out_lines <- character(0)
-  out_src <- character(0)
+  derived <- dsl_lines()
+  out_lines <- dsl_lines()
 
   for (e in exprs) {
+    if (identical(dsl_call_head(e), "if")) {
+      derived <- dsl_c(derived, dsl_if_statement(e, ctx, "output block"))
+      next
+    }
     if (!dsl_is_assign(e)) {
       dsl_unsupported(e, "Only assignments are supported in the output block:")
     }
     label <- dsl_statement_label("output block", e)
     lhs <- e[[2]]
     rhs <- e[[3]]
-    if (is.call(lhs) && as.character(lhs[[1]]) == "[") {
+    if (identical(dsl_call_head(lhs), "[")) {
       tgt <- tolower(as.character(lhs[[2]]))
       idx <- as.integer(lhs[[3]])
       if (tgt != "y") {
@@ -740,36 +815,101 @@ dsl_out_block <- function(fun, ctx) {
       # Pmetrics data uses numeric OUTEQ identifiers, so output `y[i]` maps to
       # the canonical pharmsol output label for `i`.
       code <- expr_to_dsl(rhs, ctx, allow_if = TRUE)
-      hoisted <- dsl_take_hoists(ctx)
-      derived <- c(derived, hoisted)
-      derived_src <- c(derived_src, rep(label, length(hoisted)))
-      out_lines <- c(out_lines, sprintf("out(%s) = %s", pm_output_label(idx), code))
-      out_src <- c(out_src, label)
+      derived <- dsl_c(derived, dsl_take_hoists(ctx, label))
+      out_lines <- dsl_c(
+        out_lines,
+        dsl_lines(sprintf("out(%s) = %s", pm_output_label(idx), code), label)
+      )
     } else {
       name <- tolower(as.character(lhs))
       code <- expr_to_dsl(rhs, ctx, allow_if = TRUE)
-      hoisted <- dsl_take_hoists(ctx)
-      derived <- c(derived, hoisted, sprintf("%s = %s", name, code))
-      derived_src <- c(derived_src, rep(label, length(hoisted) + 1L))
+      derived <- dsl_c(
+        derived,
+        dsl_take_hoists(ctx, label),
+        dsl_lines(sprintf("%s = %s", name, code), label)
+      )
     }
   }
 
-  list(
-    derived = derived,
-    derived_src = derived_src,
-    out = out_lines,
-    out_src = out_src
-  )
+  list(derived = derived, out = out_lines)
+}
+
+# Translate a braced R `if` statement.
+#
+# R users write a conditional block to choose between alternative values, and
+# the DSL accepts a plain-assignment `if` statement, so the block is passed
+# through. A branch that assigns something other than a derived scalar (a
+# derivative, an output, an initial condition) cannot live inside an `if`
+# statement, and the message says what to write instead.
+dsl_if_statement <- function(expr, ctx, block_label) {
+  args <- as.list(expr[-1])
+  if (length(args) < 2L || length(args) > 3L) {
+    dsl_unsupported(
+      expr, "A conditional needs a condition and a body:",
+      "Write if (cond) { ... } else { ... }."
+    )
+  }
+  label <- dsl_statement_label(block_label, expr)
+  condition <- expr_to_dsl(args[[1]], ctx, allow_if = FALSE)
+
+  branch_lines <- function(branch) {
+    stmts <- if (identical(dsl_call_head(branch), "{")) as.list(branch[-1]) else list(branch)
+    out <- dsl_lines()
+    for (s in stmts) {
+      if (!dsl_is_assign(s)) {
+        dsl_unsupported(
+          s, sprintf("Only assignments are supported inside a conditional in the %s:", block_label),
+          "Write the assignment for each case instead of using a loop."
+        )
+      }
+      lhs <- s[[2]]
+      if (!is.symbol(lhs)) {
+        dsl_unsupported(
+          s, sprintf("A conditional in the %s here can only choose between scalar values:", block_label),
+          "Make the equation itself conditional, for example dx[1] <- if (cond) a else b."
+        )
+      }
+      stmt_label <- dsl_statement_label(block_label, s)
+      code <- expr_to_dsl(s[[3]], ctx, allow_if = TRUE)
+      out <- dsl_c(
+        out,
+        dsl_take_hoists(ctx, stmt_label),
+        dsl_lines(sprintf("%s = %s", tolower(as.character(lhs)), code), stmt_label)
+      )
+    }
+    out
+  }
+
+  then_lines <- branch_lines(args[[2]])
+  else_lines <- if (length(args) == 3L) branch_lines(args[[3]]) else dsl_lines()
+
+  indent <- function(x) ifelse(nzchar(x), paste0("  ", x), x)
+  body <- dsl_c(dsl_lines(sprintf("if (%s) {", condition), label))
+  body <- dsl_c(body, dsl_lines(indent(dsl_text(then_lines)), dsl_src(then_lines)))
+  if (length(dsl_text(else_lines)) > 0L) {
+    body <- dsl_c(
+      body,
+      dsl_lines("} else {", label),
+      dsl_lines(indent(dsl_text(else_lines)), dsl_src(else_lines))
+    )
+  }
+  dsl_c(body, dsl_lines("}", label))
 }
 
 # Emit `derive` assignments from a secondary-equation block.
 dsl_sec_block <- function(fun, ctx) {
   exprs <- dsl_body_stmts(fun)
-  derived <- character(0)
-  derived_src <- character(0)
+  derived <- dsl_lines()
   for (e in exprs) {
+    if (identical(dsl_call_head(e), "if")) {
+      derived <- dsl_c(derived, dsl_if_statement(e, ctx, "secondary block"))
+      next
+    }
     if (!dsl_is_assign(e)) {
-      dsl_unsupported(e, "Only assignments are supported in the secondary block:")
+      dsl_unsupported(
+        e, "Only assignments are supported in the secondary block:",
+        "Loops are not part of the model language; write one assignment per value."
+      )
     }
     lhs <- e[[2]]
     rhs <- e[[3]]
@@ -778,11 +918,13 @@ dsl_sec_block <- function(fun, ctx) {
     }
     label <- dsl_statement_label("secondary block", e)
     code <- expr_to_dsl(rhs, ctx, allow_if = TRUE)
-    hoisted <- dsl_take_hoists(ctx)
-    derived <- c(derived, hoisted, sprintf("%s = %s", tolower(as.character(lhs)), code))
-    derived_src <- c(derived_src, rep(label, length(hoisted) + 1L))
+    derived <- dsl_c(
+      derived,
+      dsl_take_hoists(ctx, label),
+      dsl_lines(sprintf("%s = %s", tolower(as.character(lhs)), code), label)
+    )
   }
-  list(lines = derived, src = derived_src)
+  derived
 }
 
 # Emit route-property modifiers (`lag(...)` / `fa(...)`) from a lag/fa block.
@@ -790,10 +932,8 @@ dsl_sec_block <- function(fun, ctx) {
 # `lag[j]` / `fa[j]` where `j` is the 1-based input index.
 dsl_route_property_block <- function(fun, target, ctx) {
   exprs <- if (is.null(fun)) list() else dsl_body_stmts(fun)
-  derived <- character(0)
-  derived_src <- character(0)
-  lines <- character(0)
-  line_src <- character(0)
+  derived <- dsl_lines()
+  lines <- dsl_lines()
   values <- list()
   seen_inputs <- character(0)
   for (e in exprs) {
@@ -803,7 +943,7 @@ dsl_route_property_block <- function(fun, target, ctx) {
     label <- dsl_statement_label(paste(target, "block"), e)
     lhs <- e[[2]]
     rhs <- e[[3]]
-    if (is.call(lhs) && as.character(lhs[[1]]) == "[") {
+    if (identical(dsl_call_head(lhs), "[")) {
       tgt <- tolower(as.character(lhs[[2]]))
       idx <- as.integer(lhs[[3]])
       if (tgt != target) {
@@ -817,69 +957,61 @@ dsl_route_property_block <- function(fun, target, ctx) {
       # A route property cannot take a conditional directly, so any conditional
       # is hoisted into an event-safe derived value first.
       values[[key]] <- expr_to_dsl(rhs, ctx, allow_if = FALSE)
-      hoisted <- dsl_take_hoists(ctx)
-      derived <- c(derived, hoisted)
-      derived_src <- c(derived_src, rep(label, length(hoisted)))
-      lines <- c(lines, sprintf("%s(%s) = %s", target, pm_input_label(idx), values[[key]]))
-      line_src <- c(line_src, label)
+      derived <- dsl_c(derived, dsl_take_hoists(ctx, label))
+      lines <- dsl_c(
+        lines,
+        dsl_lines(sprintf("%s(%s) = %s", target, pm_input_label(idx), values[[key]]), label)
+      )
     } else {
       name <- tolower(as.character(lhs))
       code <- expr_to_dsl(rhs, ctx, allow_if = TRUE)
-      hoisted <- dsl_take_hoists(ctx)
-      derived <- c(derived, hoisted, sprintf("%s = %s", name, code))
-      derived_src <- c(derived_src, rep(label, length(hoisted) + 1L))
+      derived <- dsl_c(
+        derived,
+        dsl_take_hoists(ctx, label),
+        dsl_lines(sprintf("%s = %s", name, code), label)
+      )
     }
   }
 
-  list(
-    derived = derived,
-    derived_src = derived_src,
-    lines = lines,
-    line_src = line_src,
-    values = values
-  )
+  list(derived = derived, lines = lines, values = values)
 }
 
 # Emit `init(...)` statements from an initial-conditions block.
 dsl_ini_block <- function(fun, ctx) {
   exprs <- dsl_body_stmts(fun)
-  derived <- character(0)
-  derived_src <- character(0)
-  lines <- character(0)
-  line_src <- character(0)
+  derived <- dsl_lines()
+  lines <- dsl_lines()
   for (e in exprs) {
+    if (identical(dsl_call_head(e), "if")) {
+      derived <- dsl_c(derived, dsl_if_statement(e, ctx, "initial-conditions block"))
+      next
+    }
     if (!dsl_is_assign(e)) {
       cli::cli_abort("Only assignments are supported in the initial-conditions block for the DSL backend.")
     }
     label <- dsl_statement_label("initial-conditions block", e)
     lhs <- e[[2]]
     rhs <- e[[3]]
-    if (is.call(lhs) && as.character(lhs[[1]]) == "[") {
+    if (identical(dsl_call_head(lhs), "[")) {
       tgt <- tolower(as.character(lhs[[2]]))
       idx <- as.integer(lhs[[3]])
       if (tgt != "x") {
         cli::cli_abort("Unexpected indexed assignment to {.code {tgt}[{idx}]} in initial-conditions block.")
       }
       code <- expr_to_dsl(rhs, ctx, allow_if = TRUE)
-      hoisted <- dsl_take_hoists(ctx)
-      derived <- c(derived, hoisted)
-      derived_src <- c(derived_src, rep(label, length(hoisted)))
-      lines <- c(lines, sprintf("init(x%d) = %s", idx, code))
-      line_src <- c(line_src, label)
+      derived <- dsl_c(derived, dsl_take_hoists(ctx, label))
+      lines <- dsl_c(lines, dsl_lines(sprintf("init(x%d) = %s", idx, code), label))
     } else {
       name <- tolower(as.character(lhs))
       code <- expr_to_dsl(rhs, ctx, allow_if = TRUE)
-      hoisted <- dsl_take_hoists(ctx)
-      derived <- c(derived, hoisted, sprintf("%s = %s", name, code))
-      derived_src <- c(derived_src, rep(label, length(hoisted) + 1L))
+      derived <- dsl_c(
+        derived,
+        dsl_take_hoists(ctx, label),
+        dsl_lines(sprintf("%s = %s", name, code), label)
+      )
     }
   }
-  list(
-    derived = derived,
-    derived_src = derived_src,
-    lines = lines,
-    line_src = line_src
-  )
+  list(derived = derived, lines = lines)
 }
 
 # Finalize route usages into concrete DSL routes.
@@ -1078,61 +1210,55 @@ dsl_render <- function(model) {
   }
 
   # Derived (secondary) equations shared across blocks.
-  derived <- character(0)
-  derived_src <- character(0)
+  derived <- dsl_lines()
   if (!is.null(arg_list$sec)) {
-    sec <- dsl_sec_block(arg_list$sec, ctx)
-    derived <- c(derived, sec$lines)
-    derived_src <- c(derived_src, sec$src)
+    derived <- dsl_c(derived, dsl_sec_block(arg_list$sec, ctx))
   }
 
   if (type == "Analytical") {
-    return(dsl_analytical(model, header, derived, derived_src, parameters, ctx))
+    return(dsl_analytical(model, header, derived, parameters, ctx))
   }
 
   # ---- ODE model ----
-  eqn <- dsl_eqn_block(arg_list$eqn, ctx)
-  derived <- c(derived, eqn$derived)
-  derived_src <- c(derived_src, eqn$derived_src)
+  # The fa block is read first because its values multiply the bolus terms
+  # while the derivatives are rendered, rather than being patched into the
+  # generated text afterwards.
+  fa_values <- NULL
+  if (!is.null(arg_list$fa)) {
+    fa <- dsl_route_property_block(arg_list$fa, "fa", ctx)
+    derived <- dsl_c(derived, fa$derived)
+    fa_values <- fa$values
+  }
+
+  eqn <- dsl_eqn_block(arg_list$eqn, ctx, fa_values)
+  derived <- dsl_c(derived, eqn$derived)
   routes <- dsl_finalize_routes(eqn$routes)
 
   out <- dsl_out_block(arg_list$out, ctx)
-  derived <- c(derived, out$derived)
-  derived_src <- c(derived_src, out$derived_src)
+  derived <- dsl_c(derived, out$derived)
 
-  init_lines <- character(0)
-  init_src <- character(0)
+  init_lines <- dsl_lines()
   if (!is.null(arg_list$ini)) {
     ini <- dsl_ini_block(arg_list$ini, ctx)
-    derived <- c(derived, ini$derived)
-    derived_src <- c(derived_src, ini$derived_src)
+    derived <- dsl_c(derived, ini$derived)
     init_lines <- ini$lines
-    init_src <- ini$line_src
   }
 
-  lag_lines <- character(0)
-  lag_src <- character(0)
+  lag_lines <- dsl_lines()
   if (!is.null(arg_list$lag)) {
     lag <- dsl_route_property_block(arg_list$lag, "lag", ctx)
-    derived <- c(derived, lag$derived)
-    derived_src <- c(derived_src, lag$derived_src)
+    derived <- dsl_c(derived, lag$derived)
     lag_lines <- lag$lines
-    lag_src <- lag$line_src
   }
 
-  # Keep the established R fa block, but express its effect on the ODE RHS.
-  if (!is.null(arg_list$fa)) {
-    fa <- dsl_route_property_block(arg_list$fa, "fa", ctx)
-    derived <- c(derived, fa$derived)
-    derived_src <- c(derived_src, fa$derived_src)
+  # Every fa value must multiply a declared bolus term.
+  if (!is.null(fa_values)) {
     bolus_inputs <- vapply(Filter(function(r) r$kind == "bolus", routes),
       function(r) as.character(r$input), character(1))
-    for (key in names(fa$values)) {
+    for (key in names(fa_values)) {
       if (!key %in% bolus_inputs) {
         cli::cli_abort("The fa block references input {key}, which has no bolus term.")
       }
-      input <- sprintf("bolus(%s)", pm_input_label(key))
-      eqn$dx <- gsub(input, sprintf("%s * (%s)", input, fa$values[[key]]), eqn$dx, fixed = TRUE)
     }
   }
 
@@ -1150,31 +1276,33 @@ dsl_render <- function(model) {
 
   # Inputs remain explicit in the derivatives; the DSL infers their routes.
   # Derived values precede lag, initial conditions, and derivatives.
-  lines <- character(0)
-  srcs <- character(0)
-  push <- function(part, src = NA_character_) {
-    lines <<- c(lines, part)
-    srcs <<- c(srcs, if (length(src) == 1L) rep(src, length(part)) else src)
-  }
-  push(header, "header")
-  push(sprintf("states = %s", paste(states, collapse = ", ")))
-  push(sprintf("outputs = %s", paste(outputs, collapse = ", ")))
-  push("")
-  push(derived, derived_src)
-  if (length(derived) > 0) push("")
-  push(lag_lines, lag_src)
-  if (length(lag_lines) > 0) push("")
-  push(init_lines, init_src)
-  if (length(init_lines) > 0) push("")
-  push(eqn$dx, eqn$dx_src)
-  push("")
-  push(out$out, out$out_src)
+  body <- dsl_c(
+    dsl_lines(header, "header"),
+    dsl_lines(sprintf("states = %s", paste(states, collapse = ", "))),
+    dsl_lines(sprintf("outputs = %s", paste(outputs, collapse = ", "))),
+    dsl_lines(""),
+    derived,
+    if (length(dsl_text(derived)) > 0) dsl_lines("") else NULL,
+    lag_lines,
+    if (length(dsl_text(lag_lines)) > 0) dsl_lines("") else NULL,
+    init_lines,
+    if (length(dsl_text(init_lines)) > 0) dsl_lines("") else NULL,
+    eqn$dx,
+    dsl_lines(""),
+    out$out
+  )
 
-  list(text = paste(lines, collapse = "\n"), lines = lines, src = srcs)
+  dsl_render_result(body)
+}
+
+# The shared return shape of a render: text plus the origin of each line.
+dsl_render_result <- function(body) {
+  lines <- dsl_text(body)
+  list(text = paste(lines, collapse = "\n"), lines = lines, src = dsl_src(body))
 }
 
 # Assemble DSL text for an analytical (library-structure) model.
-dsl_analytical <- function(model, header, derived, derived_src, parameters, ctx) {
+dsl_analytical <- function(model, header, derived, parameters, ctx) {
   arg_list <- model$arg_list
   template <- model$arg_list$tem
   if (is.null(template)) {
@@ -1190,31 +1318,24 @@ dsl_analytical <- function(model, header, derived, derived_src, parameters, ctx)
   }
 
   out <- dsl_out_block(arg_list$out, ctx)
-  derived <- c(derived, out$derived)
-  derived_src <- c(derived_src, out$derived_src)
+  derived <- dsl_c(derived, out$derived)
 
   has_absorption <- stringr::str_detect(structure, "absorption")
   if (!has_absorption && (!is.null(arg_list$lag) || !is.null(arg_list$fa))) {
     cli::cli_abort("The `lag` and `fa` blocks can only be used with analytical bolus models.")
   }
 
-  lag_lines <- character(0)
-  lag_src <- character(0)
-  fa_lines <- character(0)
-  fa_src <- character(0)
+  lag_lines <- dsl_lines()
+  fa_lines <- dsl_lines()
   if (has_absorption && !is.null(arg_list$lag)) {
     lag <- dsl_route_property_block(arg_list$lag, "lag", ctx)
-    derived <- c(derived, lag$derived)
-    derived_src <- c(derived_src, lag$derived_src)
+    derived <- dsl_c(derived, lag$derived)
     lag_lines <- lag$lines
-    lag_src <- lag$line_src
   }
   if (has_absorption && !is.null(arg_list$fa)) {
     fa <- dsl_route_property_block(arg_list$fa, "fa", ctx)
-    derived <- c(derived, fa$derived)
-    derived_src <- c(derived_src, fa$derived_src)
+    derived <- dsl_c(derived, fa$derived)
     fa_lines <- fa$lines
-    fa_src <- fa$line_src
   }
 
   # The DSL analytical structures require specific derived-parameter names (e.g.
@@ -1224,8 +1345,7 @@ dsl_analytical <- function(model, header, derived, derived_src, parameters, ctx)
   param_aliases <- dsl_analytical_param_map(structure)
   if (length(param_aliases) > 0) {
     alias_lines <- paste0(names(param_aliases), " = ", unname(param_aliases))
-    derived <- c(alias_lines, derived)
-    derived_src <- c(rep(NA_character_, length(alias_lines)), derived_src)
+    derived <- dsl_c(dsl_lines(alias_lines), derived)
   }
 
   # Determine the number of compartments the structure requires.
@@ -1243,27 +1363,23 @@ dsl_analytical <- function(model, header, derived, derived_src, parameters, ctx)
     sprintf("infusion(%s) -> x1", pm_input_label(1))
   }
 
-  lines <- character(0)
-  srcs <- character(0)
-  push <- function(part, src = NA_character_) {
-    lines <<- c(lines, part)
-    srcs <<- c(srcs, if (length(src) == 1L) rep(src, length(part)) else src)
-  }
-  push(header, "header")
-  push(sprintf("structure = %s", structure))
-  push(sprintf("states = %s", paste(states, collapse = ", ")))
-  push(sprintf("outputs = %s", paste(outputs, collapse = ", ")))
-  push("")
-  push(route_line)
-  push("")
-  push(derived, derived_src)
-  if (length(derived) > 0) push("")
-  push(lag_lines, lag_src)
-  push(fa_lines, fa_src)
-  if (length(lag_lines) > 0 || length(fa_lines) > 0) push("")
-  push(out$out, out$out_src)
+  body <- dsl_c(
+    dsl_lines(header, "header"),
+    dsl_lines(sprintf("structure = %s", structure)),
+    dsl_lines(sprintf("states = %s", paste(states, collapse = ", "))),
+    dsl_lines(sprintf("outputs = %s", paste(outputs, collapse = ", "))),
+    dsl_lines(""),
+    dsl_lines(route_line),
+    dsl_lines(""),
+    derived,
+    if (length(dsl_text(derived)) > 0) dsl_lines("") else NULL,
+    lag_lines,
+    fa_lines,
+    if (length(dsl_text(lag_lines)) > 0 || length(dsl_text(fa_lines)) > 0) dsl_lines("") else NULL,
+    out$out
+  )
 
-  list(text = paste(lines, collapse = "\n"), lines = lines, src = srcs)
+  dsl_render_result(body)
 }
 
 # Number of states (compartments) for a DSL analytical structure.
