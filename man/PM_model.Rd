@@ -355,19 +355,16 @@ models; they are not valid for analytical infusion-only models.
 Effect functions for combination drug action are also available, anywhere an
 expression is allowed. They compute an effect from supplied coefficients and
 do not fit those coefficients:
-
 \itemize{
-  \item \code{estimate_effect_2(u, v, alpha, h1, h2)} for two sites, and
-  \item \code{estimate_effect_3(a, b, c, alpha12, alpha13, alpha23, alpha123, h1, h2, h3)}
+\item \code{estimate_effect_2(u, v, alpha, h1, h2)} for two sites, and
+\item \code{estimate_effect_3(a, b, c, alpha12, alpha13, alpha23, alpha123, h1, h2, h3)}
 for three.
 }
 
 \code{u} and \code{v} are normalised exposures (concentration divided by the site's
 \code{e50}), \code{alpha} is the interaction coefficient and \code{h1}/\code{h2} are the Hill
 exponents. The interaction term is computed internally as
-\eqn{w = \alpha \cdot u \cdot v}; the retired six-argument \code{get_e2(a, b, w, h1,
-h2, alpha_s)} call must be rewritten as \code{estimate_effect_2(a, b, alpha_s, h1,
-h2)}. These functions are evaluated at run time, on every derivative or
+\eqn{w = \alpha \cdot u \cdot v}; the retired six-argument \code{get_e2(a, b, w, h1, h2, alpha_s)} call must be rewritten as \code{estimate_effect_2(a, b, alpha_s, h1, h2)}. These functions are evaluated at run time, on every derivative or
 output evaluation, and cannot be used in the \code{pri} block.
 
 Example:
