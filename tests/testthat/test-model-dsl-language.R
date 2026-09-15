@@ -442,3 +442,39 @@ testthat::test_that("a conditional block around an equation says what to write i
     testthat::expect_match(conditionMessage(err), case[[3]], info = where)
   }
 })
+
+testthat::test_that("a diagnostic names the file and line when R kept them", {
+  # The model's blocks are defined here, so R keeps their source references when
+  # the file was sourced with keep.source = TRUE. A plain `Rscript` run does not,
+  # and the diagnostic is still complete without them.
+  mod <- PM_model$new(
+    pri = list(p1 = ab(0, 1), p2 = ab(0, 1), p3 = ab(0, 1)),
+    ini = function() {
+      x[1] <- 3.5
+      x[2] <- 0.0
+    },
+    eqn = function() {
+      dx[1] <- 0.0
+      dx[2] <- b[1]
+    },
+    out = function() {
+      y[1] <- undeclared_name * p1
+    },
+    err = list(additive(1, c(0, 0.1, 0, 0))), compile = FALSE
+  )
+
+  if (is.null(attr(body(mod$arg_list$out), "srcref"))) {
+    testthat::skip("source references are not kept in this environment")
+  }
+
+  err <- tryCatch(
+    {
+      mod$compile(quiet = TRUE)
+      NULL
+    },
+    error = function(e) e
+  )
+  testthat::expect_true(inherits(err, "rlang_error"))
+  testthat::expect_match(conditionMessage(err), "unknown identifier")
+  testthat::expect_match(conditionMessage(err), "test-model-dsl-language\\.R:[0-9]+")
+})

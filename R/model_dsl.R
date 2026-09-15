@@ -255,9 +255,32 @@ dsl_c <- function(...) {
   )
 }
 
-# Human-readable origin of a statement, used in diagnostics.
-dsl_statement_label <- function(block, expr) {
-  sprintf("%s: %s", block, dsl_expr_label(expr))
+# Human-readable origin of a statement, used in diagnostics. `where` is the
+# "(file:line)" suffix when R kept source references for the model.
+dsl_statement_label <- function(block, expr, where = "") {
+  sprintf("%s%s: %s", block, where, dsl_expr_label(expr))
+}
+
+# "(file.R:12)" for a source reference, or "" when R did not keep one. A plain
+# `Rscript` run has keep.source = FALSE, so models defined there have no line
+# information; the diagnostic is still complete without it.
+dsl_source_where <- function(ref, srcfile = NULL) {
+  if (is.null(ref)) {
+    return("")
+  }
+  file <- attr(ref, "srcfile")
+  if (is.null(file)) {
+    file <- srcfile
+  }
+  line <- suppressWarnings(as.integer(ref[[1L]]))
+  if (is.null(file) || length(line) != 1L || is.na(line)) {
+    return("")
+  }
+  name <- tryCatch(file$filename, error = function(e) NULL)
+  if (is.null(name) || length(name) != 1L || !nzchar(name) || identical(name, "<text>")) {
+    return("")
+  }
+  sprintf(" (%s:%d)", basename(name), line)
 }
 
 # Does this expression reference a dose input anywhere?
@@ -558,11 +581,22 @@ expr_to_dsl <- function(expr, ctx = NULL, allow_if = TRUE) {
 # Return the top-level statements of a model block function body.
 dsl_body_stmts <- function(fun) {
   b <- body(fun)
+  refs <- attr(b, "srcref")
+  srcfile <- attr(b, "srcfile")
   if (identical(dsl_call_head(b), "{")) {
-    as.list(b[-1])
+    stmts <- as.list(b[-1])
+    # The source references of a braced body include the brace itself.
+    refs <- if (length(refs) >= length(stmts) + 1L) refs[seq_along(stmts) + 1L] else NULL
   } else {
-    list(b)
+    stmts <- list(b)
+    refs <- if (length(refs) >= 1L) refs[1] else NULL
   }
+  lapply(seq_along(stmts), function(i) {
+    list(
+      expr = stmts[[i]],
+      where = if (is.null(refs)) "" else dsl_source_where(refs[[i]], srcfile)
+    )
+  })
 }
 
 # Is `expr` an assignment (`<-` or `=`)?
@@ -750,7 +784,9 @@ dsl_eqn_block <- function(fun, ctx, fa_values = NULL) {
   derived <- dsl_lines()
   dx_lines <- dsl_lines()
 
-  for (e in exprs) {
+  for (stmt in exprs) {
+    e <- stmt$expr
+    where <- stmt$where
     if (identical(dsl_call_head(e), "if")) {
       derived <- dsl_c(derived, dsl_if_statement(e, ctx, "equation block"))
       next
@@ -761,7 +797,7 @@ dsl_eqn_block <- function(fun, ctx, fa_values = NULL) {
         "Loops are not part of the model language; write the assignment for each case instead."
       )
     }
-    label <- dsl_statement_label("equation block", e)
+    label <- dsl_statement_label("equation block", e, where)
     lhs <- e[[2]]
     rhs <- e[[3]]
     if (identical(dsl_call_head(lhs), "[")) {
@@ -795,7 +831,9 @@ dsl_out_block <- function(fun, ctx) {
   derived <- dsl_lines()
   out_lines <- dsl_lines()
 
-  for (e in exprs) {
+  for (stmt in exprs) {
+    e <- stmt$expr
+    where <- stmt$where
     if (identical(dsl_call_head(e), "if")) {
       derived <- dsl_c(derived, dsl_if_statement(e, ctx, "output block"))
       next
@@ -803,7 +841,7 @@ dsl_out_block <- function(fun, ctx) {
     if (!dsl_is_assign(e)) {
       dsl_unsupported(e, "Only assignments are supported in the output block:")
     }
-    label <- dsl_statement_label("output block", e)
+    label <- dsl_statement_label("output block", e, where)
     lhs <- e[[2]]
     rhs <- e[[3]]
     if (identical(dsl_call_head(lhs), "[")) {
@@ -900,7 +938,9 @@ dsl_if_statement <- function(expr, ctx, block_label) {
 dsl_sec_block <- function(fun, ctx) {
   exprs <- dsl_body_stmts(fun)
   derived <- dsl_lines()
-  for (e in exprs) {
+  for (stmt in exprs) {
+    e <- stmt$expr
+    where <- stmt$where
     if (identical(dsl_call_head(e), "if")) {
       derived <- dsl_c(derived, dsl_if_statement(e, ctx, "secondary block"))
       next
@@ -916,7 +956,7 @@ dsl_sec_block <- function(fun, ctx) {
     if (!is.symbol(lhs)) {
       dsl_unsupported(e, "Secondary equations must assign to a scalar variable:")
     }
-    label <- dsl_statement_label("secondary block", e)
+    label <- dsl_statement_label("secondary block", e, where)
     code <- expr_to_dsl(rhs, ctx, allow_if = TRUE)
     derived <- dsl_c(
       derived,
@@ -936,11 +976,13 @@ dsl_route_property_block <- function(fun, target, ctx) {
   lines <- dsl_lines()
   values <- list()
   seen_inputs <- character(0)
-  for (e in exprs) {
+  for (stmt in exprs) {
+    e <- stmt$expr
+    where <- stmt$where
     if (!dsl_is_assign(e)) {
       cli::cli_abort("Only assignments are supported in the {target} block for the DSL backend.")
     }
-    label <- dsl_statement_label(paste(target, "block"), e)
+    label <- dsl_statement_label(paste(target, "block"), e, where)
     lhs <- e[[2]]
     rhs <- e[[3]]
     if (identical(dsl_call_head(lhs), "[")) {
@@ -981,7 +1023,9 @@ dsl_ini_block <- function(fun, ctx) {
   exprs <- dsl_body_stmts(fun)
   derived <- dsl_lines()
   lines <- dsl_lines()
-  for (e in exprs) {
+  for (stmt in exprs) {
+    e <- stmt$expr
+    where <- stmt$where
     if (identical(dsl_call_head(e), "if")) {
       derived <- dsl_c(derived, dsl_if_statement(e, ctx, "initial-conditions block"))
       next
@@ -989,7 +1033,7 @@ dsl_ini_block <- function(fun, ctx) {
     if (!dsl_is_assign(e)) {
       cli::cli_abort("Only assignments are supported in the initial-conditions block for the DSL backend.")
     }
-    label <- dsl_statement_label("initial-conditions block", e)
+    label <- dsl_statement_label("initial-conditions block", e, where)
     lhs <- e[[2]]
     rhs <- e[[3]]
     if (identical(dsl_call_head(lhs), "[")) {
