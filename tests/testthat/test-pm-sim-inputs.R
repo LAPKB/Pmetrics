@@ -220,3 +220,94 @@ test_that("PM_sim handles data.frame poppar and ignores nsim", {
   expect_equal(nrow(sim_points$data$parValues), nrow(pop_points_df))
   expect_equal(max(sim_points$data$parValues$nsim), nrow(pop_points_df))
 })
+
+# Each template must be simulated from its own posterior, matched by id rather
+# than by position. With `nsim = 1` the posterior mean is drawn exactly, so the
+# simulated parameters show which posterior a subject was given.
+
+posterior_params <- function(sim, id, pars) {
+  p <- sim$data$parValues
+  unlist(p[p$id == id, pars])
+}
+
+posterior_mean <- function(poppar, id, pars) {
+  m <- poppar$postMean
+  unlist(m[m$id == id, pars])
+}
+
+sim_from_posteriors <- function(poppar, data, include) {
+  suppressMessages(
+    PM_sim$new(
+      poppar = poppar, data = data, model = NPex$model,
+      include = include, nsim = 1, usePost = TRUE, quiet = TRUE
+    )
+  )
+}
+
+test_that("posteriors are paired by id, not by position", {
+  match_posteriors <- getFromNamespace("match_posteriors", "Pmetrics")
+
+  # posterior ids 10, 20 with the templates ordered 20, 10
+  expect_equal(match_posteriors(c(20, 10), c(10, 20)), c(2, 1))
+  # ids that are not 1..n, in the same order
+  expect_equal(match_posteriors(c(10, 30), 10 * (1:3)), c(1, 3))
+
+  expect_error(match_posteriors(c(1, 2), c(1, 1, 2)), "duplicate")
+  expect_error(match_posteriors(c(1, 5), c(1, 2)), "No posterior mean")
+})
+
+test_that("each subject uses its own posterior when they are stored out of order", {
+  pars <- names(NPex$final$popMean)
+  reversed <- NPex$final$clone(deep = TRUE)
+  n <- nrow(reversed$data$postMean)
+  reversed$data$postMean <- reversed$data$postMean[n:1, ]
+  reversed$data$postCov <- reversed$data$postCov[n:1]
+
+  # the posteriors must differ, or the comparison below would prove nothing
+  expect_false(isTRUE(all.equal(
+    posterior_mean(reversed, 1, pars),
+    posterior_mean(reversed, 3, pars)
+  )))
+
+  sim <- sim_from_posteriors(reversed, NPex$data, include = c(1, 3))
+
+  for (id in c(1, 3)) {
+    expect_equal(
+      posterior_params(sim, id, pars),
+      posterior_mean(reversed, id, pars),
+      info = sprintf("subject %s should use its own posterior", id)
+    )
+  }
+
+  # with no names on postCov the position is the only key available, and the two
+  # structures are aligned because both were reversed
+  unnamed <- reversed$clone(deep = TRUE)
+  names(unnamed$data$postCov) <- NULL
+  sim_unnamed <- sim_from_posteriors(unnamed, NPex$data, include = c(1, 3))
+  expect_equal(
+    posterior_params(sim_unnamed, 3, pars),
+    posterior_mean(unnamed, 3, pars)
+  )
+})
+
+test_that("subjects whose ids are not 1..n are paired by id", {
+  pars <- names(NPex$final$popMean)
+
+  relabelled <- NPex$data$standard_data
+  relabelled$id <- 10 * relabelled$id
+  data_10k <- PM_data$new(as.data.frame(relabelled), quiet = TRUE)
+
+  tenths <- NPex$final$clone(deep = TRUE)
+  tenths$data$postMean$id <- 10 * tenths$data$postMean$id
+  names(tenths$data$postCov) <- 10 * as.numeric(names(tenths$data$postCov))
+
+  sim <- sim_from_posteriors(tenths, data_10k, include = c(10, 30))
+
+  for (id in c(10, 30)) {
+    expect_equal(
+      posterior_params(sim, id, pars),
+      posterior_mean(tenths, id, pars),
+      info = sprintf("subject %s should use its own posterior", id)
+    )
+  }
+})
