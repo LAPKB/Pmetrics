@@ -298,7 +298,17 @@ PM_pta <- R6::R6Class(
         )
         private$populate(pta)
       } else { # try simdata as a filename
-        pta <- backfill_pta_id(PM_upgrade(readRDS(simdata)))
+        # `$save()` writes the whole `PM_pta` object, so unwrap the result list
+        # before populating. `PM_upgrade()` handles both shapes: it walks the
+        # data frames of a bare `PM_pta_data` list, and for an R6 object it
+        # upgrades the list held in `$data`. It is applied once, to the object
+        # as loaded, so nothing is upgraded twice.
+        loaded <- PM_upgrade(readRDS(simdata))
+        pta <- if (inherits(loaded, "PM_pta")) {
+          backfill_pta_id(loaded$data)
+        } else {
+          backfill_pta_id(loaded)
+        }
         private$populate(pta)
       }
     },

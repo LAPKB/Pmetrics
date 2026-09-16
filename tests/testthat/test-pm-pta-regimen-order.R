@@ -86,6 +86,19 @@ single_pdi <- function(fx, id) {
 
 pdi_fingerprint <- function(x) paste(round(unlist(x), 8), collapse = "|")
 
+# The result tibbles inside a `PM_pta_data` list, skipping the `NA` intersect
+# placeholder. `$data` only exists when a single target type was requested, so
+# the elements are used directly rather than going through that name.
+pta_tables <- function(pta_data) Filter(is.data.frame, pta_data)
+
+# A two-target-type PTA, so the `intersect` element is exercised too.
+pta_from <- function(simdata) {
+  suppressMessages(PM_pta$new(
+    simdata = simdata, target = list(5, 10), target_type = c("min", "max"),
+    success = c(1, 1), start = 120, end = 144
+  ))
+}
+
 testthat::test_that("simulated regimens follow numeric id order, not text order", {
   for (shape in c("numeric", "character")) {
     fx <- pta_fixture(shape = shape)
@@ -341,7 +354,7 @@ testthat::test_that("results saved before the id column still summarise and plot
       legacy$data[[i]] <- x[, setdiff(names(x), "id"), drop = FALSE]
     }
   }
-  testthat::expect_false("id" %in% names(legacy$data$data))
+  testthat::expect_false(any(vapply(pta_tables(legacy$data), \(x) "id" %in% names(x), logical(1))))
 
   summary <- suppressMessages(legacy$summary())
   testthat::expect_equal(summary$id, as.character(summary$reg_num))
@@ -349,4 +362,45 @@ testthat::test_that("results saved before the id column still summarise and plot
   single <- suppressMessages(legacy$summary(at = 1))
   testthat::expect_equal(single$id, as.character(single$reg_num))
   testthat::expect_no_error(suppressMessages(legacy$plot(print = FALSE)))
+})
+
+testthat::test_that("a saved PTA round-trips through PM_pta$new()", {
+  pta <- pta_from(simEx)
+  file <- withr::local_tempfile(fileext = ".rds")
+  pta$save(file)
+
+  loaded <- pta_from(file)
+
+  # the result list is populated, not the whole saved object
+  testthat::expect_s3_class(loaded$data, "PM_pta_data")
+  # one table per target type, plus the intersect
+  testthat::expect_length(pta_tables(loaded$data), 3)
+  testthat::expect_true(all(vapply(pta_tables(loaded$data), \(x) "id" %in% names(x), logical(1))))
+  testthat::expect_true("id" %in% names(loaded$data$intersect))
+  testthat::expect_no_error(suppressMessages(loaded$summary()))
+  testthat::expect_no_error(suppressMessages(loaded$plot(print = FALSE)))
+})
+
+testthat::test_that("a saved object without ids is backfilled when loaded from a file", {
+  legacy <- pta_from(simEx)$clone(deep = TRUE)
+  for (i in seq_along(legacy$data)) {
+    x <- legacy$data[[i]]
+    if (is.data.frame(x)) {
+      legacy$data[[i]] <- x[, setdiff(names(x), "id"), drop = FALSE]
+    }
+  }
+  # the saved object really did lack the id column
+  testthat::expect_false(any(vapply(pta_tables(legacy$data), \(x) "id" %in% names(x), logical(1))))
+
+  file <- withr::local_tempfile(fileext = ".rds")
+  legacy$save(file)
+
+  loaded <- pta_from(file)
+
+  testthat::expect_s3_class(loaded$data, "PM_pta_data")
+  testthat::expect_true(all(vapply(pta_tables(loaded$data), \(x) "id" %in% names(x), logical(1))))
+  # the identifiers those rows were keyed on are the regimen numbers
+  summary <- suppressMessages(loaded$summary())
+  testthat::expect_equal(summary$id, as.character(summary$reg_num))
+  testthat::expect_no_error(suppressMessages(loaded$plot(print = FALSE)))
 })
