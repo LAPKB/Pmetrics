@@ -299,6 +299,36 @@ PM_result <- R6::R6Class(
     #' @param ... Additional arguments passed to the underlying `fit` method of the model. See the documentation for `fit` for details on supported parameters.
     continue = function(...) {
       self$model$fit(data = self$data, prior = self$final$popPoints, ...)
+    },
+    
+    #' @description
+    #' `r lifecycle::badge("experimental")`
+    #' export the model in a JSON file format that can be used in the BestDose. 
+    #' This is an experimental feature and may change in future versions.
+    #' 
+    #' @details
+    #' This feature is useful if the user want to use this specific model to perform MIPD.
+    #' The file will contains most of the features and covariates, but the user will have to specify
+    #' some additional information after importing this file.
+    #' 
+    #' @param drug_name Name of the drug to use in the exported JSON file. Default is "Drug".
+    #' @param dir_path Optional path to save the JSON file. If not provided, the file will be saved in the current working directory with the name "{drug_name}.json".
+    
+    export_bestdose = function(drug_name = "Drug", dir_path = NULL) {
+      # create model using functions in BD_create.R
+      model_file <- createBDmodel(self, drug_name = drug_name)
+      path = ifelse(is.null(dir_path), paste0(drug_name, ".json"), paste0(dir_path, "/", drug_name, ".json"))
+      
+      # #export to JSON
+      jsonlite::write_json(
+        model_file,
+        path,
+        auto_unbox = TRUE,
+        dataframe = "rows",
+        null = "null",
+        pretty = TRUE
+      )
+
     }
   ) # end public
 ) # end PM_result
