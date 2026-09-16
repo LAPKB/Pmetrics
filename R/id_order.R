@@ -21,7 +21,9 @@ pm_id_rank <- function(id) {
   ordered <- if (all(!is.na(numeric_ids))) {
     unique_ids[order(numeric_ids)]
   } else {
-    sort(unique_ids, na.last = TRUE)
+    # method = "radix" sorts in the C locale, the byte order dplyr's arrange()
+    # and dense_rank() use, so the order does not follow the session collation.
+    sort(unique_ids, na.last = TRUE, method = "radix")
   }
 
   match(id, ordered)

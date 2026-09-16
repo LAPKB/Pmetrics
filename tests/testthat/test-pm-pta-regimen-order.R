@@ -71,10 +71,11 @@ pta_fixture <- function(n_ids = 12, nsim = 4,
   )
 }
 
-pta_pdi <- function(sim, mic = 2, ...) {
+pta_pdi <- function(sim, mic = 2, target_type = "time", success = 0.5,
+                    start = 0, end = Inf, ...) {
   suppressMessages(PM_pta$new(
-    simdata = sim, target = mic, target_type = "time", success = 0.5,
-    outeq = 1, free_fraction = 1, start = 0, end = Inf, ...
+    simdata = sim, target = mic, target_type = target_type, success = success,
+    outeq = 1, free_fraction = 1, start = start, end = end, ...
   ))$data$data
 }
 
@@ -254,6 +255,74 @@ testthat::test_that("a regimen whose id is not recoverable keeps a generic label
   testthat::expect_true(all(is.na(rows$id)))
   # A missing label would break the legend, which is built from the labels.
   testthat::expect_no_error(suppressMessages(pta$plot(print = FALSE)))
+})
+
+testthat::test_that("start and end are honoured per regimen", {
+  fx <- pta_fixture(shape = "numeric", n_ids = 4)
+  starts <- c(0, 24, 48, 72)
+  ends <- c(96, 120, 144, 168)
+
+  # "min" is the minimum concentration within the window, so it depends on the
+  # window: a regimen given the wrong start or end gets a different PDI.
+  rows <- pta_pdi(fx$sim_all, mic = 2, target_type = "min", success = 1,
+                  start = starts, end = ends)
+
+  testthat::expect_equal(rows$start, starts[rows$reg_num])
+  testthat::expect_equal(rows$end, ends[rows$reg_num])
+
+  # Guard against a vacuous pass: the windows must give distinguishable results.
+  testthat::expect_gte(length(unique(vapply(rows$pdi, pdi_fingerprint, character(1)))), 3)
+
+  for (i in seq_len(nrow(rows))) {
+    one <- pta_pdi(fx$sim_for(rows$id[i]), mic = 2, target_type = "min", success = 1,
+                   start = starts[rows$reg_num[i]], end = ends[rows$reg_num[i]])
+    testthat::expect_equal(
+      round(unlist(rows$pdi[[i]]), 8),
+      round(unlist(one$pdi[[1]]), 8),
+      info = sprintf("row %d (id %s) should use start %s, end %s",
+                     i, rows$id[i], starts[rows$reg_num[i]], ends[rows$reg_num[i]])
+    )
+  }
+})
+
+testthat::test_that("a numeric target_type overrides start and end for every regimen", {
+  fx <- pta_fixture(shape = "numeric", n_ids = 4)
+  rows <- pta_pdi(fx$sim_all, mic = 2, target_type = 144, success = 0.5,
+                  start = c(0, 24, 48, 72))
+
+  # A numeric target_type is a specific time, and start and end both become it.
+  testthat::expect_equal(unique(rows$start), 144)
+  testthat::expect_equal(unique(rows$end), 144)
+  testthat::expect_equal(unique(rows$type), "specific")
+})
+
+testthat::test_that("id ranking uses byte order, not the session collation", {
+  pm_id_rank <- getFromNamespace("pm_id_rank", "Pmetrics")
+
+  # Byte order of these is A2 < B < a < a1, because uppercase letters come
+  # first. A collation that orders lowercase before uppercase gives a different
+  # answer, so the ranks are pinned to byte order rather than to whatever the
+  # session happens to use.
+  ids <- c("a", "B", "a1", "A2")
+  byte_order_ranks <- c(3, 2, 4, 1)
+  testthat::expect_equal(pm_id_rank(ids), byte_order_ranks)
+  testthat::expect_equal(order(pm_id_rank(ids)), order(ids, method = "radix"))
+
+  # The ranks must not change when the collation does. testthat pins
+  # LC_COLLATE to C, which is byte order, so a collation is set explicitly here
+  # to make the difference observable; skip if the locale is not installed, as
+  # on a minimal Linux runner.
+  original <- Sys.getlocale("LC_COLLATE")
+  if (!identical(Sys.setlocale("LC_COLLATE", "en_US.UTF-8"), "")) {
+    ranks <- pm_id_rank(ids)
+    Sys.setlocale("LC_COLLATE", original)
+    testthat::expect_equal(ranks, byte_order_ranks)
+  }
+
+  # ids that are numbers keep numeric order, and missing ids sort last
+  testthat::expect_equal(pm_id_rank(c("10", "2", "1")), c(3, 2, 1))
+  testthat::expect_equal(pm_id_rank(c("b", NA, "a")), c(2, 3, 1))
+  testthat::expect_equal(pm_id_rank(character(0)), integer(0))
 })
 
 testthat::test_that("results saved before the id column still summarise and plot", {

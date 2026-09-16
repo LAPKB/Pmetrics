@@ -172,11 +172,13 @@ For example \code{success = 0.4} or \code{success = c(0.4, 100)}. The length mus
       \item{\code{free_fraction}}{Proportion of free, active drug, expressed as a numeric value >=0 and <=1.  Default is 1, i.e.,
 100\% free drug or 0\% protein binding.}
       \item{\code{start}}{Specify the time to begin PTA calculations. Default is a vector with the first observation time for subjects
-in each element of \code{simdata}, e.g. dose regimen. If specified as a vector, values will be recycled as necessary.}
+in each element of \code{simdata}, e.g. dose regimen. If specified as a vector, one value per regimen is used, recycled as
+necessary, so each regimen keeps its own start. A numerical \code{target_type} overrides \code{start} for that target with its own absolute value.}
       \item{\code{end}}{Specify the time to end PTA calculations so that PTA is calculated
 from \code{start} to \code{end}.  Default for end is the maximum observation
-time for subjects in each element of \code{simdata}, e.g. dose regimen.  If specified as a vector, values will be recycled
-as necessary. Subjects with insufficient data (fewer than 5 simulated observations) for a specified interval will trigger a warning.
+time for subjects in each element of \code{simdata}, e.g. dose regimen.  If specified as a vector, one value per regimen is used,
+recycled as necessary, so each regimen keeps its own end, and a numerical \code{target_type} overrides it as for \code{start}.
+Subjects with insufficient data (fewer than 5 simulated observations) for a specified interval will trigger a warning.
 Ideally then, the simulated datset should contain sufficient observations within the interval specified by \code{start} and \code{end}.}
       \item{\code{icen}}{Can be either "median" for the predictions based on medians of \code{pred.type} parameter value
 distributions, or "mean".  Default is "median".}

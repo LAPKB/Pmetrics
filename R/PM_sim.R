@@ -1029,6 +1029,18 @@ PM_sim <- R6::R6Class(
             if (length(postToUse) > 0 && length(postToUse) != nsub) {
               cli::cli_abort(c("x" = "You have {length(postToUse)} posteriors and {nsub} selected subjects in the data file.  These must be equal."))
             }
+            # Pair each template with its own posterior by id rather than by
+            # position, so a posterior file that lists its ids in a different
+            # order than the data still attaches the right posterior to each
+            # subject. `NPex$postMean` is empty, so this cannot be exercised from
+            # the shipped data.
+            postToUse <- postToUse[match(toInclude, postToUse)]
+            if (anyNA(postToUse)) {
+              cli::cli_abort(c(
+                "x" = "No posterior mean was found for subject{?s} {.val {toInclude[is.na(postToUse)]}}.",
+                "i" = "Simulating from posteriors needs one posterior for every included subject."
+              ))
+            }
           }
         } else {
           postToUse <- NULL

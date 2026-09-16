@@ -92,11 +92,13 @@ PM_pta <- R6::R6Class(
     #' @param free_fraction Proportion of free, active drug, expressed as a numeric value >=0 and <=1.  Default is 1, i.e.,
     #' 100% free drug or 0% protein binding.
     #' @param start Specify the time to begin PTA calculations. Default is a vector with the first observation time for subjects
-    #' in each element of `simdata`, e.g. dose regimen. If specified as a vector, values will be recycled as necessary.
+    #' in each element of `simdata`, e.g. dose regimen. If specified as a vector, one value per regimen is used, recycled as
+    #' necessary, so each regimen keeps its own start. A numerical `target_type` overrides `start` for that target with its own absolute value.
     #' @param end Specify the time to end PTA calculations so that PTA is calculated
     #' from `start` to `end`.  Default for end is the maximum observation
-    #' time for subjects in each element of `simdata`, e.g. dose regimen.  If specified as a vector, values will be recycled
-    #' as necessary. Subjects with insufficient data (fewer than 5 simulated observations) for a specified interval will trigger a warning.
+    #' time for subjects in each element of `simdata`, e.g. dose regimen.  If specified as a vector, one value per regimen is used,
+    #' recycled as necessary, so each regimen keeps its own end, and a numerical `target_type` overrides it as for `start`.
+    #' Subjects with insufficient data (fewer than 5 simulated observations) for a specified interval will trigger a warning.
     #' Ideally then, the simulated datset should contain sufficient observations within the interval specified by `start` and `end`.
     #' @param icen Can be either "median" for the predictions based on medians of `pred.type` parameter value
     #' distributions, or "mean".  Default is "median".
@@ -363,13 +365,9 @@ PM_pta <- R6::R6Class(
         simTarg <- FALSE
       }
 
-      # fill in start and end times for each regimen
-      if (length(start) < n_reg) {
-        start <- rep(start, n_reg)[1:n_reg]
-      }
-      if (length(end) < n_reg) {
-        end <- rep(end, n_reg)[1:n_reg]
-      }
+      # start and end are per regimen, and a vector is recycled as necessary.
+      reg_start <- rep_len(start, n_reg)
+      reg_end <- rep_len(end, n_reg)
 
       # check for valid arguments
       target_type <- stringr::str_replace_all(target_type, "peak", "max")
@@ -386,21 +384,9 @@ PM_pta <- R6::R6Class(
         ))
       }
 
-      # adjust start and end for any specific times
-      start <- unlist(map(1:n_type, \(x) {
-        if (suppressWarnings(!is.na(as.numeric(target_type[x])))) {
-          abs(as.numeric(target_type[x]))
-        } else {
-          start[x]
-        }
-      }))
-      end <- unlist(map(1:n_type, \(x) {
-        if (suppressWarnings(!is.na(as.numeric(target_type[x])))) {
-          abs(as.numeric(target_type[x]))
-        } else {
-          end[x]
-        }
-      }))
+      # A numeric `target_type` is a specific time, and both start and end become
+      # that time. It is applied to each (regimen, target) row below, so the
+      # regimen's own start and end are kept for every other target type.
 
 
       # check to make sure secondary targets are only length 1
@@ -488,11 +474,18 @@ PM_pta <- R6::R6Class(
       on.exit(pb$terminate(), add = TRUE)
 
       ###### MAKE THE PTA OBJECT
-      master_pta <- purrr::map(1:n_reg, \(x){
-        purrr::map(1:n_type, \(y) tidyr::expand_grid(
-          reg_num = x,
-          id = reg_ids[x],
-          target = if (simTarg) { # simulated targets
+      # One row per regimen and target, carrying the regimen's own data, id,
+      # start and end rather than an index into them. `expand_grid()` keeps the
+      # order of its inputs - unlike `crossing()`, which sorts - so the rows stay
+      # regimen-major and then follow the order of the target types and values,
+      # which is the order results have always been reported in.
+      regimens <- tibble::tibble(reg_num = seq_along(simdata), id = reg_ids, sims = simdata)
+
+      # A regimen's targets are the same for every regimen, except that sampled
+      # targets draw one target per simulated subject of that regimen.
+      targets_for <- function(x) {
+        purrr::map(seq_len(n_type), \(y) {
+          this_target <- if (simTarg) { # simulated targets
             if (y == 1) {
               list(
                 tidyr::tibble(
@@ -505,50 +498,70 @@ PM_pta <- R6::R6Class(
                 )
               )
             } else {
-              target[y]
+              list(target[[y]])
             }
           } else {
-            target[[y]]
-          }, # discrete targets
-          this_type = y,
-          type = target_type[[y]],
-          success_ratio = success[[y]],
-          start = start[y],
-          end = end[y]
-          # sim_data = list(simdata[[x]])
-        )) |> # end inner map
-          purrr::list_rbind()
-      }) |> # end outer map
-        purrr::list_rbind() |>
-        mutate(type = stringr::str_replace_all(type, "\\d+", "specific")) |>
-        rowwise() |>
-        mutate(pdi = list(do.call(
-          paste0("pta_", stringr::str_replace_all(type, "-", "")), # call the appropriate pta function below
-          list( # arguments to the pta function
-            sims = simdata[[reg_num]],
-            # sims = sim_data,
-            .target = target,
-            .simTarg = simTarg,
-            .start = start,
-            .end = end,
-            .pb = pb
-          )
-        ))) |>
-        mutate(success = list(purrr::map_dbl(pdi, \(x) {
-          if (stringr::str_detect(type, "-")) {
-            x <= success_ratio # will return NA is x is NA
-          } else {
-            x >= success_ratio
+            target[[y]] # discrete targets keep their own type
           }
-        }))) |>
-        mutate(prop_success = sum(success) / length(success)) |>
-        mutate(label = sim_labels[reg_num]) |>
+          # a numeric target type is a specific time, and both start and end
+          # become that time; otherwise the regimen's own values are used
+          specific <- suppressWarnings(as.numeric(target_type[y]))
+          tibble::tibble(
+            target = this_target,
+            type = target_type[[y]],
+            success_ratio = success[[y]],
+            this_type = y,
+            start = if (is.na(specific)) reg_start[x] else abs(specific),
+            end = if (is.na(specific)) reg_end[x] else abs(specific)
+          )
+        }) |> purrr::list_rbind()
+      }
+
+      grid <- purrr::map(seq_len(n_reg), \(x) {
+        tidyr::expand_grid(regimens[x, ], targets_for(x))
+      }) |>
+        purrr::list_rbind() |>
+        mutate(type = stringr::str_replace_all(type, "\\d+", "specific"))
+
+      # choose the pta function by name rather than rebuilding its name
+      pta_helpers <- list(
+        time = pta_time, auc = pta_auc, max = pta_max,
+        min = pta_min, specific = pta_specific
+      )
+
+      # the helper lookup is a named list, so drop the names it would pass on
+      grid$pdi <- unname(purrr::pmap(
+        list(
+          pta_helpers[stringr::str_replace_all(grid$type, "-", "")],
+          grid$sims, grid$target, grid$start, grid$end
+        ),
+        \(pta_fn, sims, .target, .start, .end) {
+          pta_fn(sims, .target, simTarg, .start, .end, pb)
+        }
+      ))
+
+      grid$success <- unname(purrr::pmap(
+        list(grid$pdi, grid$type, grid$success_ratio),
+        \(pdi, type, success_ratio) {
+          if (stringr::str_detect(type, "-")) {
+            as.numeric(pdi <= success_ratio) # will return NA if pdi is NA
+          } else {
+            as.numeric(pdi >= success_ratio)
+          }
+        }
+      ))
+
+      master_pta <- grid |>
+        dplyr::select(-sims) |>
+        mutate(
+          prop_success = purrr::map_dbl(success, \(x) sum(x) / length(x)),
+          label = sim_labels[reg_num]
+        ) |>
         dplyr::relocate(
           reg_num, id, label, target, type,
           success_ratio, prop_success, success, pdi,
           start, end
-        ) |>
-        ungroup() # remove rowwise
+        )
 
 
       # add intersection if multiple target types
