@@ -1639,7 +1639,7 @@ PM_sim <- R6::R6Class(
           )
         
         sim_res <- sim_res |>
-        arrange(.id, comp, nsim, time, outeq) |>
+        arrange(pm_id_rank(.id), comp, nsim, time, outeq) |>
         select(-.id)
         
         obs <- sim_res |> filter(comp == min(comp, na.rm = TRUE)) |> # obs are duplicated in every compartment
@@ -1854,8 +1854,9 @@ PM_sim <- R6::R6Class(
         }
         
         # first, add temporary index to ensure id order remains the same
+        # (natural id order: "2" follows "1", not "10")
         dat2 <- template |>
-        mutate(.id = dplyr::dense_rank(id))
+        mutate(.id = pm_id_rank(id))
         
         # second, add predInt if necessary
         if (!is.na(predTimes[1])) {
@@ -1877,7 +1878,7 @@ PM_sim <- R6::R6Class(
           }) |>
           bind_rows()
           new_dat <- bind_rows(dat2, dat3) |>
-          arrange(.id, time, outeq) |>
+          arrange(pm_id_rank(.id), time, outeq) |>
           select(-.id)
         } else { # predInt was not specified
           new_dat <- template # the original data without .id
