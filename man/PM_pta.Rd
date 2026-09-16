@@ -20,6 +20,12 @@ and creates the PTA. It is described here.
 
 Both methods require the prior creation of a simulation of
 appropriate regimens.
+
+Every result is labeled with the \code{id} of the regimen it was calculated from,
+so results can be associated with the requested regimens without depending on
+the order in which the regimens were simulated. \code{reg_num} and the \code{simlabels}
+annotation are positional: they follow the order of the regimens in
+\code{simdata}, which for a \link{PM_sim} is the order of the ids in the data.
 }
 \examples{
 
@@ -193,7 +199,8 @@ or \code{NA} if only one \code{target_type} was specified.
 The individual elements are tibbles with all possible combinations
 of \code{target}s and simulated regimens for a given \code{target_type}. The tibbles have the following columns:
 \itemize{
-\item \strong{reg_num} The simulation number in \code{simdata}.
+\item \strong{reg_num} The position of the simulation in \code{simdata}, i.e. the order in which its id first appears.
+\item \strong{id} The identifier of the simulated regimen, as it appears in the \code{id} column of the simulation.
 \item \strong{label} Annotation of the simulation, supplied by the \code{simlabels} argument.
 \item \strong{target} is the specified \code{target} for the results row. If a distribution created by \link{makePTAtarget},
 this will be a tibble with  the simulated targets
