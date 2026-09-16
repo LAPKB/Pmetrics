@@ -301,20 +301,31 @@ Use the following notation in equations:
 \item \code{dx[i]} for the change in amount with respect to time (i.e., \eqn{dx/dt}),
 where \code{i} is the compartment number,
 \item \code{x[i]} for the compartment amount, where \code{i} is the compartment number.
-\item \code{rateiv[j]} for the infusion rate of input \code{j}, where \code{j} is the input number
-in the data corresponding to doses for that input.
-\item Bolus doses are indicated by \code{DUR = 0} for dose events in the
-data. Currently only one bolus input is allowed, which goes into compartment 1
-and is not modifiable. It does not appear in the differential equations.
+\item \code{rateiv[j]} or \code{R[j]} for the infusion rate of input \code{j}, where \code{j} is
+the input number in the data. An infusion may be a standalone additive term
+or one exact product with a scale, such as \code{R[1] * iv_scale}. The scale is
+evaluated continuously in the differential equation.
+\item \code{B[j]} or \code{bolus[j]} for a bolus input. A bolus may be a standalone
+additive term or one exact product with a scale, such as \code{B[1] * v}.
+The scale is applied to the bolus dose and does not affect an infusion with
+the same input number.
 
 For example,
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{eqn = function() \{
- dx[1] = -ka * x[1]
- dx[2] = rateiv[1] + ka * x[1] - ke * x[2]
+ dx[1] = B[1] * fa1 - ka * x[1]
+ dx[2] = rateiv[1] * iv_scale + ka * x[1] - ke * x[2]
 \}
 }\if{html}{\out{</div>}}
 }
+\item \strong{Expressions} are ordinary R arithmetic. Conditions may appear anywhere,
+not only as a whole equation: \code{2 * if (wt > 70) v1 else v2} and
+\code{if (a > 0) (if (b > 0) 1 else 2) else 3} both work. \code{ifelse(cond, a, b)},
+\code{pmin}, \code{pmax}, and \code{max}/\code{min} with any number of arguments are accepted;
+\code{log(x, base)}, \code{trunc}, \code{sign} and \code{round(x, digits)} follow R's rules
+(including R's round-half-to-even). Functions R provides but the DSL does
+not - such as \code{pnorm}, \code{log1p} or \code{gamma} - are reported when the model is
+defined, naming the call and the supported alternatives.
 \item \strong{Additional equations} in R code can be defined in this block, which are similar to
 the \code{sec} block, but will only be available within the \code{eqn} block as opposed
 to global availability when defined in \code{sec}. They can be added to either
@@ -338,7 +349,23 @@ this code could be used to model delayed absorption if an antacid is present.
 As for \code{eqn}, additional equations in R code can be defined in this block,
 but will only be available within the \code{lag} block.}
       \item{\code{fa}}{A function defining the bioavailability (fraction absorbed) equations,
-similar to \code{lag}.
+similar to \code{lag}. The \code{lag} and \code{fa} blocks also apply to analytical bolus
+models; they are not valid for analytical infusion-only models.
+
+Effect functions for combination drug action are also available, anywhere an
+expression is allowed. They compute an effect from supplied coefficients and
+do not fit those coefficients:
+\itemize{
+\item \code{estimate_effect_2(u, v, alpha, h1, h2)} for two sites, and
+\item \code{estimate_effect_3(a, b, c, alpha12, alpha13, alpha23, alpha123, h1, h2, h3)}
+for three.
+}
+
+\code{u} and \code{v} are normalised exposures (concentration divided by the site's
+\code{e50}), \code{alpha} is the interaction coefficient and \code{h1}/\code{h2} are the Hill
+exponents. The interaction term is computed internally as
+\eqn{w = \alpha \cdot u \cdot v}; the retired six-argument \code{get_e2(a, b, w, h1, h2, alpha_s)} call must be rewritten as \code{estimate_effect_2(a, b, alpha_s, h1, h2)}. These functions are evaluated at run time, on every derivative or
+output evaluation, and cannot be used in the \code{pri} block.
 
 Example:
 
@@ -362,7 +389,8 @@ Example:
 This sets the initial amount of drug in compartment 2 to the value
 of a covariate \code{init2} multiplied by the volume of the compartment,
 \code{V}, assuming \code{V} is either a primary parameter or defined in the
-\code{sec} block.
+\code{sec} block. Initial conditions are evaluated before the first event of
+every occasion, including occasions started by an \code{EVID = 4} row.
 
 As for \code{eqn}, additional equations in R code can be defined in this block,
 but will only be available within the \code{ini} block.}

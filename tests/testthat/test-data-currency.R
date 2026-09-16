@@ -97,6 +97,13 @@ test_that("shipped example objects expose the current R6 members", {
 })
 
 test_that("shipped example objects embed the current R6 method bodies", {
+    # covr::package_coverage() instruments every R6 method body in place
+    # (covr:::traverse_R6), so the live generator can never match the
+    # uninstrumented bodies frozen in data/*.rda. The member-set test above
+    # is unaffected because instrumentation preserves method names, and this
+    # check still runs for real under R CMD check.
+    skip_on_covr()
+
     objects <- shipped_r6_objects()
 
     problems <- character()
