@@ -20,6 +20,11 @@ PmetricsGit.Rproj
 .Rd2pdf*/
 po/*~
 
+# Test-run artifacts
+Rplots.pdf
+test.png
+testthat-problems.rds
+
 # Vignettes/docs rendered locally
 vignettes/*.html
 vignettes/*.pdf
