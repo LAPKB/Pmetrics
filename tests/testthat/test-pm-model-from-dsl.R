@@ -4,8 +4,7 @@ kind = ode
 params = k, v
 states = central
 outputs = cp
-infusion(input_1) -> central
-dx(central) = rate(input_1) - k * central
+dx(central) = infusion(input_1) - k * central
 out(cp) = central / v ~ continuous()
 "
 
@@ -36,9 +35,7 @@ kind = ode
 params = k
 states = central
 outputs = cp
-bolus(oral) -> central
-infusion(iv) -> central
-dx(central) = -k * central
+dx(central) = bolus(oral) + infusion(iv) - k * central
 out(cp) = central ~ continuous()
 "
 

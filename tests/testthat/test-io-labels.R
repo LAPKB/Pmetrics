@@ -60,8 +60,9 @@ testthat::test_that("An input driving both a bolus and an infusion keeps one lab
     )
     mod$compile(quiet = TRUE)
 
-    testthat::expect_match(mod$dsl, "bolus(input_1) -> x1", fixed = TRUE)
-    testthat::expect_match(mod$dsl, "infusion(input_1) -> x1", fixed = TRUE)
+    testthat::expect_match(mod$dsl, "bolus(input_1)", fixed = TRUE)
+    testthat::expect_match(mod$dsl, "infusion(input_1)", fixed = TRUE)
+    testthat::expect_false(grepl("->", mod$dsl, fixed = TRUE))
     testthat::expect_false(grepl("input_2", mod$dsl, fixed = TRUE))
     # The shared label must be accepted by the pharmsol backend.
     testthat::expect_no_error(model_parameters(mod$dsl))

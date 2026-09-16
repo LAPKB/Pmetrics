@@ -252,19 +252,30 @@ PM_model <- R6::R6Class(
     #'   - `dx[i]` for the change in amount with respect to time (i.e., \eqn{dx/dt}),
     #' where `i` is the compartment number,
     #'   - `x[i]` for the compartment amount, where `i` is the compartment number.
-    #'   - `rateiv[j]` for the infusion rate of input `j`, where `j` is the input number
-    #' in the data corresponding to doses for that input.
-    #'   - Bolus doses are indicated by `DUR = 0` for dose events in the
-    #' data. Currently only one bolus input is allowed, which goes into compartment 1
-    #' and is not modifiable. It does not appear in the differential equations.
+    #'   - `rateiv[j]` or `R[j]` for the infusion rate of input `j`, where `j` is
+    #' the input number in the data. An infusion may be a standalone additive term
+    #' or one exact product with a scale, such as `R[1] * iv_scale`. The scale is
+    #' evaluated continuously in the differential equation.
+    #'   - `B[j]` or `bolus[j]` for a bolus input. A bolus may be a standalone
+    #' additive term or one exact product with a scale, such as `B[1] * v`.
+    #' The scale is applied to the bolus dose and does not affect an infusion with
+    #' the same input number.
     #'
     #'     For example,
     #'     ```
     #'     eqn = function() {
-    #'      dx[1] = -ka * x[1]
-    #'      dx[2] = rateiv[1] + ka * x[1] - ke * x[2]
+    #'      dx[1] = B[1] * fa1 - ka * x[1]
+    #'      dx[2] = rateiv[1] * iv_scale + ka * x[1] - ke * x[2]
     #'     }
     #'     ```
+    #' * **Expressions** are ordinary R arithmetic. Conditions may appear anywhere,
+    #' not only as a whole equation: `2 * if (wt > 70) v1 else v2` and
+    #' `if (a > 0) (if (b > 0) 1 else 2) else 3` both work. `ifelse(cond, a, b)`,
+    #' `pmin`, `pmax`, and `max`/`min` with any number of arguments are accepted;
+    #' `log(x, base)`, `trunc`, `sign` and `round(x, digits)` follow R's rules
+    #' (including R's round-half-to-even). Functions R provides but the DSL does
+    #' not - such as `pnorm`, `log1p` or `gamma` - are reported when the model is
+    #' defined, naming the call and the supported alternatives.
     #' * **Additional equations** in R code can be defined in this block, which are similar to
     #' the `sec` block, but will only be available within the `eqn` block as opposed
     #' to global availability when defined in `sec`. They can be added to either
@@ -286,7 +297,24 @@ PM_model <- R6::R6Class(
     #' As for `eqn`, additional equations in R code can be defined in this block,
     #' but will only be available within the `lag` block.
     #' @param fa A function defining the bioavailability (fraction absorbed) equations,
-    #' similar to `lag`.
+    #' similar to `lag`. The `lag` and `fa` blocks also apply to analytical bolus
+    #' models; they are not valid for analytical infusion-only models.
+    #'
+    #' Effect functions for combination drug action are also available, anywhere an
+    #' expression is allowed. They compute an effect from supplied coefficients and
+    #' do not fit those coefficients:
+    #'
+    #'   - `estimate_effect_2(u, v, alpha, h1, h2)` for two sites, and
+    #'   - `estimate_effect_3(a, b, c, alpha12, alpha13, alpha23, alpha123, h1, h2, h3)`
+    #' for three.
+    #'
+    #' `u` and `v` are normalised exposures (concentration divided by the site's
+    #' `e50`), `alpha` is the interaction coefficient and `h1`/`h2` are the Hill
+    #' exponents. The interaction term is computed internally as
+    #' \eqn{w = \alpha \cdot u \cdot v}; the retired six-argument `get_e2(a, b, w, h1,
+    #' h2, alpha_s)` call must be rewritten as `estimate_effect_2(a, b, alpha_s, h1,
+    #' h2)`. These functions are evaluated at run time, on every derivative or
+    #' output evaluation, and cannot be used in the `pri` block.
     #'
     #' Example:
     #' ```
@@ -308,7 +336,8 @@ PM_model <- R6::R6Class(
     #' This sets the initial amount of drug in compartment 2 to the value
     #' of a covariate `init2` multiplied by the volume of the compartment,
     #' `V`, assuming `V` is either a primary parameter or defined in the
-    #' `sec` block.
+    #' `sec` block. Initial conditions are evaluated before the first event of
+    #' every occasion, including occasions started by an `EVID = 4` row.
     #'
     #' As for `eqn`, additional equations in R code can be defined in this block,
     #' but will only be available within the `ini` block.
@@ -471,7 +500,10 @@ PM_model <- R6::R6Class(
             }
           })
           self$arg_list$x <- NULL
-          self$dsl <- x$dsl
+          # `dsl` is rendered from `arg_list`, so it is never inherited. A
+          # PM_model saved before a DSL change would otherwise replay stale
+          # source instead of rendering the model it defines.
+          self$dsl <- NULL
         } else {
           cli::cli_abort(c(
             "x" = "Non supported input for {.arg x}: {typeof(x)}",
@@ -1447,20 +1479,10 @@ PM_model <- R6::R6Class(
               fit_call()
             }
           },
-          error = function(e) {
-            msg_txt <- conditionMessage(e)
-            # The DSL is generated from the model definition, so the backend's
-            # line numbers refer to generated text, not the user's R script.
-            if (grepl("compile model|parse DSL|DSL[0-9]{4}", msg_txt, ignore.case = TRUE)) {
-              hint <- paste(
-                "The model source is generated from your model definition;",
-                "any reported line numbers refer to that generated text, not your R script.",
-                "Check the secondary, output, and derivative equations for unsupported constructs."
-              )
-              stop(paste0(msg_txt, "\n\n", hint), call. = FALSE)
-            }
-            stop(e)
-          }
+          # The model was already validated when it was compiled, so any DSL
+          # diagnostic here is reported as it comes from the backend, with the
+          # R statement that produced it already named.
+          error = function(e) stop(e)
         )
 
         # The Rust backend writes the estimation artifacts (theta.csv,
@@ -1653,16 +1675,18 @@ PM_model <- R6::R6Class(
       }
 
       if (!quiet) cli::cli_inform(c("i" = "Preparing model..."))
-      tryCatch(
-        {
-          self$dsl <- model_to_dsl(self)
-        },
+      rendered <- tryCatch(
+        model_to_dsl_traced(self),
         error = function(e) {
           cli::cli_abort(
             c("x" = "Model preparation failed: {conditionMessage(e)}", "i" = "Please check the model definition and try again.")
           )
         }
       )
+      self$dsl <- rendered$text
+      # Validate as soon as the model is rendered, so a model that cannot be
+      # compiled fails where it is defined instead of at the start of a run.
+      private$validate_dsl(rendered)
 
       return(invisible(self))
     }, # end compile method
@@ -1849,6 +1873,18 @@ PM_model <- R6::R6Class(
     } # end copy
   ), # end public list
   private = list(
+    # Ask the backend to parse and analyze the rendered source. Diagnostics are
+    # reported against the R statement that produced the offending line.
+    validate_dsl = function(rendered) {
+      tryCatch(
+        model_metadata(rendered$text, self$model_list$solver),
+        error = function(e) {
+          cli::cli_abort(dsl_error_bullets(conditionMessage(e), rendered))
+        }
+      )
+      invisible(NULL)
+    },
+
     from_dsl = function(dsl, pri, err, solver, quiet) {
       if (!is.character(dsl) || length(dsl) != 1 || is.na(dsl) || !nzchar(dsl)) {
         cli::cli_abort("{.arg dsl} must be one non-empty character string.")
