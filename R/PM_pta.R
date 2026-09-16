@@ -25,9 +25,10 @@
 #'
 #' Every result is labeled with the `id` of the regimen it was calculated from,
 #' so results can be associated with the requested regimens without depending on
-#' the order in which the regimens were simulated. `reg_num` and the `simlabels`
-#' annotation are positional: they follow the order of the regimens in
-#' `simdata`, which for a [PM_sim] is the order of the ids in the data.
+#' the order in which the regimens were simulated. By default that id is also the
+#' `label`. `reg_num` is positional: it is the order in which the id first appears
+#' in `simdata`, which for a [PM_sim] is the order of the ids in the data, and
+#' explicit `simlabels` are assigned in that order.
 #'
 #' @author Julian Otalvaro and Michael Neely
 #' @export
@@ -55,7 +56,7 @@ PM_pta <- R6::R6Class(
     #' * `NPex$data$standard_data` *PM_data_data*
     #' * `"simout.txt"` matches files with wildcard ability, see [PM_sim]
     #'
-    #' @param simlabels Optional character vector of labels for each simulation.  Default is `c('Regimen 1', 'Regimen 2',...)`.
+    #' @param simlabels Optional character vector of labels for each simulation.  Default is the `id` of each regimen, falling back to `c('Regimen 1', 'Regimen 2',...)` for a regimen whose id is not recoverable. Labels are assigned in the order of `reg_num`, so the first label is for the first regimen.
     #' @param target One of several options.
     #'
     #' * A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. `c(0.25, 0.5, 1, 2, 4, 8, 16, 32)`.
@@ -110,7 +111,7 @@ PM_pta <- R6::R6Class(
     #' of `target`s and simulated regimens for a given `target_type`. The tibbles have the following columns:
     #' * **reg_num** The position of the simulation in `simdata`, i.e. the order in which its id first appears.
     #' * **id** The identifier of the simulated regimen, as it appears in the `id` column of the simulation.
-    #' * **label** Annotation of the simulation, supplied by the `simlabels` argument.
+    #' * **label** Annotation of the simulation, supplied by the `simlabels` argument, or the regimen `id` by default.
     #' * **target** is the specified `target` for the results row. If a distribution created by [makePTAtarget],
     #' this will be a tibble with  the simulated targets
     #' * **type** is the specified `target_type` for the results row
@@ -459,7 +460,12 @@ PM_pta <- R6::R6Class(
 
 
       # Check the simulation labels
-      sim_labels <- paste("Regimen", 1:n_reg)
+      # The default label is the regimen id, so a result is labeled with the
+      # regimen it belongs to. A regimen whose id could not be recovered keeps
+      # the generic text, since a missing label would break plotting.
+      sim_labels <- reg_ids
+      missing_ids <- is.na(sim_labels)
+      sim_labels[missing_ids] <- paste("Regimen", 1:n_reg)[missing_ids]
 
       if (length(simlabels) > 0) { # replace generic labels with user labels
         n_reglabels <- length(simlabels)
@@ -912,7 +918,8 @@ makePTAtarget <- function(x) {
 #' @param grid `r template("grid")`
 #' @param legend `r template("legend")` Default will be the labeled regimen names as an argument
 #' when creating a [PM_pta] object,
-#' or if missing, "Regimen 1, Regimen 2,...Regimen n", where *n* is the number of
+#' or if missing, the `id` of each regimen, or "Regimen 1, Regimen 2,...Regimen n"
+#' for a regimen whose id is not recoverable, where *n* is the number of
 #' regimens in the PM_pta object.
 #' @param ci Confidence interval around curves on `type = "pdi"` plot, on scale of 0 to 1. Default is 0.9.
 #' @param xlab `r template("xlab")`  Default is "Target" when targets are discrete,

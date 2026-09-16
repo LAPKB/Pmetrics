@@ -23,9 +23,10 @@ appropriate regimens.
 
 Every result is labeled with the \code{id} of the regimen it was calculated from,
 so results can be associated with the requested regimens without depending on
-the order in which the regimens were simulated. \code{reg_num} and the \code{simlabels}
-annotation are positional: they follow the order of the regimens in
-\code{simdata}, which for a \link{PM_sim} is the order of the ids in the data.
+the order in which the regimens were simulated. By default that id is also the
+\code{label}. \code{reg_num} is positional: it is the order in which the id first appears
+in \code{simdata}, which for a \link{PM_sim} is the order of the ids in the data, and
+explicit \code{simlabels} are assigned in that order.
 }
 \examples{
 
@@ -134,7 +135,7 @@ Michael Neely and Jan Strojil
 \item \code{NPex$data$standard_data} \emph{PM_data_data}
 \item \code{"simout.txt"} matches files with wildcard ability, see \link{PM_sim}
 }}
-      \item{\code{simlabels}}{Optional character vector of labels for each simulation.  Default is \code{c('Regimen 1', 'Regimen 2',...)}.}
+      \item{\code{simlabels}}{Optional character vector of labels for each simulation.  Default is the \code{id} of each regimen, falling back to \code{c('Regimen 1', 'Regimen 2',...)} for a regimen whose id is not recoverable. Labels are assigned in the order of \code{reg_num}, so the first label is for the first regimen.}
       \item{\code{target}}{One of several options.
 \itemize{
 \item A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. \code{c(0.25, 0.5, 1, 2, 4, 8, 16, 32)}.
@@ -201,7 +202,7 @@ of \code{target}s and simulated regimens for a given \code{target_type}. The tib
 \itemize{
 \item \strong{reg_num} The position of the simulation in \code{simdata}, i.e. the order in which its id first appears.
 \item \strong{id} The identifier of the simulated regimen, as it appears in the \code{id} column of the simulation.
-\item \strong{label} Annotation of the simulation, supplied by the \code{simlabels} argument.
+\item \strong{label} Annotation of the simulation, supplied by the \code{simlabels} argument, or the regimen \code{id} by default.
 \item \strong{target} is the specified \code{target} for the results row. If a distribution created by \link{makePTAtarget},
 this will be a tibble with  the simulated targets
 \item \strong{type} is the specified \code{target_type} for the results row

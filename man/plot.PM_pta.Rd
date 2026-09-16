@@ -114,7 +114,8 @@ The default value is 12.
 Examples: \itemize{ \item{\code{legend = T}} \item{\code{legend = list(orientation = "h", font = list(color = "blue"))}} }
 Default will be the labeled regimen names as an argument
 when creating a \link{PM_pta} object,
-or if missing, "Regimen 1, Regimen 2,...Regimen n", where \emph{n} is the number of
+or if missing, the \code{id} of each regimen, or "Regimen 1, Regimen 2,...Regimen n"
+for a regimen whose id is not recoverable, where \emph{n} is the number of
 regimens in the PM_pta object.}
 
 \item{log}{Boolean operator to plot the x axis in log base 10. This argument maps to

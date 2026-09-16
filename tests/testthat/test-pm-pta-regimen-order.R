@@ -71,10 +71,10 @@ pta_fixture <- function(n_ids = 12, nsim = 4,
   )
 }
 
-pta_pdi <- function(sim, mic = 2) {
+pta_pdi <- function(sim, mic = 2, ...) {
   suppressMessages(PM_pta$new(
     simdata = sim, target = mic, target_type = "time", success = 0.5,
-    outeq = 1, free_fraction = 1, start = 0, end = Inf
+    outeq = 1, free_fraction = 1, start = 0, end = Inf, ...
   ))$data$data
 }
 
@@ -196,17 +196,79 @@ testthat::test_that("a user-supplied list of regimens is associated by its id", 
   }
 })
 
+testthat::test_that("a PTA without simlabels is labeled with the regimen id", {
+  for (shape in c("numeric", "character", "prefixed")) {
+    fx <- pta_fixture(shape = shape)
+    rows <- pta_pdi(fx$sim_all)
+
+    testthat::expect_equal(rows$label, as.character(rows$id), info = shape)
+    testthat::expect_equal(rows$label, as.character(fx$data_ids), info = shape)
+    # Guard against a vacuous pass: the previous default was the generic text.
+    testthat::expect_false(any(rows$label == paste("Regimen", rows$reg_num)), info = shape)
+
+    summary <- suppressMessages(PM_pta$new(
+      simdata = fx$sim_all, target = 2, target_type = "time", success = 0.5,
+      outeq = 1, free_fraction = 1, start = 0, end = Inf
+    )$summary())
+    testthat::expect_equal(summary$label, summary$id, info = shape)
+  }
+})
+
+testthat::test_that("id-based default labels plot", {
+  # 4 regimens, since the default color palette holds at most 9.
+  fx <- pta_fixture(shape = "prefixed", n_ids = 4)
+  pta <- suppressMessages(PM_pta$new(
+    simdata = fx$sim_all, target = c(1, 2), target_type = "time", success = 0.5,
+    outeq = 1, free_fraction = 1, start = 0, end = Inf
+  ))
+
+  testthat::expect_no_error(suppressMessages(pta$plot(print = FALSE)))
+})
+
+testthat::test_that("supplied simlabels stay positional, in reg_num order", {
+  fx <- pta_fixture(shape = "prefixed")
+  labels <- paste0("L", seq_along(fx$ids))
+  rows <- pta_pdi(fx$sim_all, simlabels = labels)
+
+  testthat::expect_equal(rows$label, labels[rows$reg_num])
+  # The label is the supplied one, while the id still identifies the regimen.
+  testthat::expect_equal(rows$id, as.character(fx$data_ids)[rows$reg_num])
+})
+
+testthat::test_that("a regimen whose id is not recoverable keeps a generic label", {
+  # 4 regimens, since the default color palette holds at most 9.
+  fx <- pta_fixture(shape = "numeric", n_ids = 4)
+  obs <- fx$sim_all$data$obs
+  # Drop the id from each regimen, as an unnamed list of objects without ids.
+  regimens <- unname(lapply(split(obs, as.factor(obs$id)), function(x) {
+    x[, setdiff(names(x), "id"), drop = FALSE]
+  }))
+  # "min" is used rather than "time" because the latter arranges by id.
+  pta <- suppressMessages(PM_pta$new(
+    simdata = regimens, target = 2, target_type = "min", success = 1,
+    outeq = 1, free_fraction = 1, start = 0, end = Inf
+  ))
+  rows <- pta$data$data
+
+  testthat::expect_equal(rows$label, paste("Regimen", seq_along(regimens)))
+  testthat::expect_true(all(is.na(rows$id)))
+  # A missing label would break the legend, which is built from the labels.
+  testthat::expect_no_error(suppressMessages(pta$plot(print = FALSE)))
+})
+
 testthat::test_that("results saved before the id column still summarise and plot", {
   pta <- suppressMessages(PM_pta$new(
     simdata = simEx, target = list(5, 10), target_type = c("min", "max"),
     success = c(1, 1), start = 120, end = 144
   ))
   # Emulate a PTA made before results carried the regimen id. Its identifiers
-  # were replaced by a rank, so the regimen number is the only one left.
+  # were replaced by a rank and its labels were the generic text, so the regimen
+  # number is the only identifier left.
   legacy <- pta$clone(deep = TRUE)
   for (i in seq_along(legacy$data)) {
     x <- legacy$data[[i]]
-    if (is.data.frame(x) && "id" %in% names(x)) {
+    if (is.data.frame(x)) {
+      x$label <- paste("Regimen", x$reg_num)
       legacy$data[[i]] <- x[, setdiff(names(x), "id"), drop = FALSE]
     }
   }
@@ -214,6 +276,7 @@ testthat::test_that("results saved before the id column still summarise and plot
 
   summary <- suppressMessages(legacy$summary())
   testthat::expect_equal(summary$id, as.character(summary$reg_num))
+  testthat::expect_equal(summary$label, paste("Regimen", summary$reg_num))
   single <- suppressMessages(legacy$summary(at = 1))
   testthat::expect_equal(single$id, as.character(single$reg_num))
   testthat::expect_no_error(suppressMessages(legacy$plot(print = FALSE)))
