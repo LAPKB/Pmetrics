@@ -1019,19 +1019,20 @@ PM_sim <- R6::R6Class(
               "i" = "Please remake your model."
             ))
           } else {
-            postToUse <- unique(poppar$postMean$id) # get the id for each posterior mean
             if (split) {
               split <- FALSE
               cli::cli_inform(c("i" = "{.arg split} set to {.val FALSE} for simulations from posteriors."))
             }
-            # now, filter by included IDs
-            postToUse <- postToUse[postToUse %in% toInclude] # subset the posteriors if applicable
-            if (length(postToUse) > 0 && length(postToUse) != nsub) {
-              cli::cli_abort(c("x" = "You have {length(postToUse)} posteriors and {nsub} selected subjects in the data file.  These must be equal."))
-            }
+            # Pair each template with its own posterior by id rather than by
+            # position, so posteriors listed in a different order than the data
+            # still attach to the right subject. Positions are kept, because
+            # `getSimPrior()` indexes the posterior mean and covariance with
+            # them; ids and positions only coincide when the posteriors happen to
+            # be numbered 1..n in the order they are stored.
+            post_pos <- match_posteriors(toInclude, poppar$postMean$id)
           }
         } else {
-          postToUse <- NULL
+          post_pos <- NULL
         }
         
         
@@ -1402,7 +1403,7 @@ PM_sim <- R6::R6Class(
           mod <- model
         }
         
-        if (length(postToUse) > 0) {
+        if (length(post_pos) > 0) {
           # simulating from posteriors, each posterior matched to a subject
           # need to set theta as the posterior mean or median for each subject
           ans <- NULL
@@ -1413,7 +1414,7 @@ PM_sim <- R6::R6Class(
               i = i,
               poppar = poppar,
               split = split,
-              postToUse = postToUse[i],
+              post_pos = post_pos[i],
               limits = limits,
               seed = seed[1],
               nsim = nsim,
@@ -1459,7 +1460,7 @@ PM_sim <- R6::R6Class(
           
           class(ret) <- c("PM_sim_data", "list")
           self$data <- ret
-        } else { # postToUse is false
+        } else { # not simulating from posteriors
           
           # set theta as nsim rows drawn from prior
           if (!useTheta) {
@@ -1467,7 +1468,7 @@ PM_sim <- R6::R6Class(
               i = 1,
               poppar = poppar,
               split = split,
-              postToUse = NULL,
+              post_pos = NULL,
               limits = limits,
               seed = seed[1],
               nsim = nsim,
@@ -1537,7 +1538,7 @@ PM_sim <- R6::R6Class(
       }, # end of SIMrun
       
       # get prior density
-      getSimPrior = function(i, poppar, split, postToUse, limits, seed, nsim, toInclude, msg = NULL) {
+      getSimPrior = function(i, poppar, split, post_pos, limits, seed, nsim, toInclude, msg = NULL) {
         # get prior density
         
         
@@ -1568,15 +1569,15 @@ PM_sim <- R6::R6Class(
             ndist <- nrow(popPoints)
             pop_cov <- poppar$popCov / ndist
           } else { # not split
-            if (is.null(postToUse)) { # not simulating from posteriors
+            if (is.null(post_pos)) { # not simulating from posteriors
               pop_weight <- 1
               pop_mean <- poppar$popMean
               pop_cov <- poppar$popCov
               ndist <- 1
             } else { # simulating from posteriors
               pop_weight <- 1
-              pop_mean <- poppar$postMean[postToUse, ] |> select(-id)
-              pop_cov <- poppar$postCov[[postToUse]]
+              pop_mean <- poppar$postMean[post_pos, ] |> select(-id)
+              pop_cov <- posterior_cov(poppar$postCov, post_pos, toInclude[i])
               ndist <- 1
             }
           }
@@ -1599,7 +1600,7 @@ PM_sim <- R6::R6Class(
         if (length(pop_cov) == 1 && pop_cov == 1) {
           return(invisible(NULL)) # quietly abort simulation
         } else if (length(pop_cov) == 1 && pop_cov == -1) {
-          msg <- if (!is.null(postToUse)) {
+          msg <- if (!is.null(post_pos)) {
             glue::glue("Unable to fix covariance for template {.code id = {toInclude[i]}}.")
           } else {
             "Unable to make population covariance positive definite."
@@ -1639,7 +1640,7 @@ PM_sim <- R6::R6Class(
           )
         
         sim_res <- sim_res |>
-        arrange(.id, comp, nsim, time, outeq) |>
+        arrange(pm_id_rank(.id), comp, nsim, time, outeq) |>
         select(-.id)
         
         obs <- sim_res |> filter(comp == min(comp, na.rm = TRUE)) |> # obs are duplicated in every compartment
@@ -1854,8 +1855,9 @@ PM_sim <- R6::R6Class(
         }
         
         # first, add temporary index to ensure id order remains the same
+        # (natural id order: "2" follows "1", not "10")
         dat2 <- template |>
-        mutate(.id = dplyr::dense_rank(id))
+        mutate(.id = pm_id_rank(id))
         
         # second, add predInt if necessary
         if (!is.na(predTimes[1])) {
@@ -1877,7 +1879,7 @@ PM_sim <- R6::R6Class(
           }) |>
           bind_rows()
           new_dat <- bind_rows(dat2, dat3) |>
-          arrange(.id, time, outeq) |>
+          arrange(pm_id_rank(.id), time, outeq) |>
           select(-.id)
         } else { # predInt was not specified
           new_dat <- template # the original data without .id
@@ -2712,4 +2714,46 @@ generate_multimodal_samples <- function(num_samples, weights, means, cov_matrix,
     total_cov = total_cov,
     total_nsim = total_nsim
   ))
+}
+
+# POSTERIOR PAIRING -------------------------------------------------------
+
+# Pair each template with its own posterior.
+#
+# Returns the position of each template's posterior within `post_ids`, which is
+# the row of `postMean` and the entry of `postCov` belonging to that subject.
+# Positions are returned rather than ids because `getSimPrior()` indexes both
+# structures with the result, and ids coincide with positions only when the
+# posteriors happen to be numbered 1..n in the order they are stored.
+match_posteriors <- function(toInclude, post_ids) {
+  if (anyDuplicated(post_ids)) {
+    cli::cli_abort(c(
+      "x" = "Posterior means contain duplicate subject ids.",
+      "i" = "Each subject needs exactly one posterior."
+    ))
+  }
+
+  post_pos <- match(toInclude, post_ids)
+  if (anyNA(post_pos)) {
+    cli::cli_abort(c(
+      "x" = "No posterior mean was found for subject{?s} {.val {toInclude[is.na(post_pos)]}}.",
+      "i" = "Simulating from posteriors needs one posterior for every included subject."
+    ))
+  }
+
+  post_pos
+}
+
+# The posterior covariance matrix for one subject.
+#
+# `postCov` is built by splitting the posterior on id, so it carries the ids as
+# names, while `postMean` is ordered by a dplyr group. Those two orderings agree
+# for ids that are numbers but need not for other ids, so the name is used when
+# it is available and the position is the fallback for an object without names.
+posterior_cov <- function(postCov, post_pos, id) {
+  key <- as.character(id)
+  if (!is.null(names(postCov)) && key %in% names(postCov)) {
+    return(postCov[[key]])
+  }
+  postCov[[post_pos]]
 }

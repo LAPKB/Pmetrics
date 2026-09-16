@@ -23,6 +23,13 @@
 #' Both methods require the prior creation of a simulation of
 #' appropriate regimens.
 #'
+#' Every result is labeled with the `id` of the regimen it was calculated from,
+#' so results can be associated with the requested regimens without depending on
+#' the order in which the regimens were simulated. By default that id is also the
+#' `label`. `reg_num` is positional: it is the order in which the id first appears
+#' in `simdata`, which for a [PM_sim] is the order of the ids in the data, and
+#' explicit `simlabels` are assigned in that order.
+#'
 #' @author Julian Otalvaro and Michael Neely
 #' @export
 PM_pta <- R6::R6Class(
@@ -49,7 +56,7 @@ PM_pta <- R6::R6Class(
     #' * `NPex$data$standard_data` *PM_data_data*
     #' * `"simout.txt"` matches files with wildcard ability, see [PM_sim]
     #'
-    #' @param simlabels Optional character vector of labels for each simulation.  Default is `c('Regimen 1', 'Regimen 2',...)`.
+    #' @param simlabels Optional character vector of labels for each simulation.  Default is the `id` of each regimen, falling back to `c('Regimen 1', 'Regimen 2',...)` for a regimen whose id is not recoverable. Labels are assigned in the order of `reg_num`, so the first label is for the first regimen.
     #' @param target One of several options.
     #'
     #' * A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. `c(0.25, 0.5, 1, 2, 4, 8, 16, 32)`.
@@ -85,11 +92,13 @@ PM_pta <- R6::R6Class(
     #' @param free_fraction Proportion of free, active drug, expressed as a numeric value >=0 and <=1.  Default is 1, i.e.,
     #' 100% free drug or 0% protein binding.
     #' @param start Specify the time to begin PTA calculations. Default is a vector with the first observation time for subjects
-    #' in each element of `simdata`, e.g. dose regimen. If specified as a vector, values will be recycled as necessary.
+    #' in each element of `simdata`, e.g. dose regimen. If specified as a vector, one value per regimen is used, recycled as
+    #' necessary, so each regimen keeps its own start. A numerical `target_type` overrides `start` for that target with its own absolute value.
     #' @param end Specify the time to end PTA calculations so that PTA is calculated
     #' from `start` to `end`.  Default for end is the maximum observation
-    #' time for subjects in each element of `simdata`, e.g. dose regimen.  If specified as a vector, values will be recycled
-    #' as necessary. Subjects with insufficient data (fewer than 5 simulated observations) for a specified interval will trigger a warning.
+    #' time for subjects in each element of `simdata`, e.g. dose regimen.  If specified as a vector, one value per regimen is used,
+    #' recycled as necessary, so each regimen keeps its own end, and a numerical `target_type` overrides it as for `start`.
+    #' Subjects with insufficient data (fewer than 5 simulated observations) for a specified interval will trigger a warning.
     #' Ideally then, the simulated datset should contain sufficient observations within the interval specified by `start` and `end`.
     #' @param icen Can be either "median" for the predictions based on medians of `pred.type` parameter value
     #' distributions, or "mean".  Default is "median".
@@ -102,8 +111,9 @@ PM_pta <- R6::R6Class(
     #' or `NA` if only one `target_type` was specified.
     #' The individual elements are tibbles with all possible combinations
     #' of `target`s and simulated regimens for a given `target_type`. The tibbles have the following columns:
-    #' * **reg_num** The simulation number in `simdata`.
-    #' * **label** Annotation of the simulation, supplied by the `simlabels` argument.
+    #' * **reg_num** The position of the simulation in `simdata`, i.e. the order in which its id first appears.
+    #' * **id** The identifier of the simulated regimen, as it appears in the `id` column of the simulation.
+    #' * **label** Annotation of the simulation, supplied by the `simlabels` argument, or the regimen `id` by default.
     #' * **target** is the specified `target` for the results row. If a distribution created by [makePTAtarget],
     #' this will be a tibble with  the simulated targets
     #' * **type** is the specified `target_type` for the results row
@@ -227,15 +237,12 @@ PM_pta <- R6::R6Class(
           if (inherits(simdata$data, "PM_simlist")) { # multiple sims
             simdata <- simdata$data
           } else { # just one sim
-
-            simdata$data$obs <- simdata$data$obs |> mutate(id = dplyr::dense_rank(id)) # ensure numeric
-            simdata <- split(simdata$data$obs, as.factor(simdata$data$obs$id))
+            simdata <- split_by_regimen(simdata$data$obs) # split by id
           }
         }
 
         if (dataType == 1) { # PM_sim_data object
-          simdata$obs <- simdata$obs |> mutate(id = dplyr::dense_rank(id)) # ensure numeric
-          simdata <- split(simdata, as.factor(simdata$id)) # split by id
+          simdata <- split_by_regimen(simdata$obs) # split by id
         }
 
         if (dataType == 2) { # PM_simlist
@@ -291,7 +298,17 @@ PM_pta <- R6::R6Class(
         )
         private$populate(pta)
       } else { # try simdata as a filename
-        pta <- PM_upgrade(readRDS(simdata))
+        # `$save()` writes the whole `PM_pta` object, so unwrap the result list
+        # before populating. `PM_upgrade()` handles both shapes: it walks the
+        # data frames of a bare `PM_pta_data` list, and for an R6 object it
+        # upgrades the list held in `$data`. It is applied once, to the object
+        # as loaded, so nothing is upgraded twice.
+        loaded <- PM_upgrade(readRDS(simdata))
+        pta <- if (inherits(loaded, "PM_pta")) {
+          backfill_pta_id(loaded$data)
+        } else {
+          backfill_pta_id(loaded)
+        }
         private$populate(pta)
       }
     },
@@ -333,6 +350,18 @@ PM_pta <- R6::R6Class(
 
       # define some global variables
       n_reg <- length(simdata) # number of regimens
+      # The identifier of each regimen travels with its simulated observations,
+      # so a result can be associated with the regimen it was calculated from
+      # regardless of the order the simulations were returned in. `reg_num`
+      # remains the position of the regimen in `simdata`, i.e. the order in
+      # which its id first appears, and is what `start` and `end` are recycled
+      # by; `id` is the identifier itself and is authoritative.
+      reg_ids <- purrr::map_chr(simdata, regimen_id)
+      if (anyNA(reg_ids) && length(names(simdata)) == n_reg) {
+        # a user-supplied list may name its elements with the regimen ids
+        reg_ids[is.na(reg_ids)] <- names(simdata)[is.na(reg_ids)]
+      }
+      reg_ids <- unname(reg_ids)
       n_sim <- sapply(simdata, function(x) length(unique(x$nsim))) # number of sims per regimen
       n_type <- length(target_type)
       n_success <- length(success)
@@ -346,13 +375,9 @@ PM_pta <- R6::R6Class(
         simTarg <- FALSE
       }
 
-      # fill in start and end times for each regimen
-      if (length(start) < n_reg) {
-        start <- rep(start, n_reg)[1:n_reg]
-      }
-      if (length(end) < n_reg) {
-        end <- rep(end, n_reg)[1:n_reg]
-      }
+      # start and end are per regimen, and a vector is recycled as necessary.
+      reg_start <- rep_len(start, n_reg)
+      reg_end <- rep_len(end, n_reg)
 
       # check for valid arguments
       target_type <- stringr::str_replace_all(target_type, "peak", "max")
@@ -369,21 +394,9 @@ PM_pta <- R6::R6Class(
         ))
       }
 
-      # adjust start and end for any specific times
-      start <- unlist(map(1:n_type, \(x) {
-        if (suppressWarnings(!is.na(as.numeric(target_type[x])))) {
-          abs(as.numeric(target_type[x]))
-        } else {
-          start[x]
-        }
-      }))
-      end <- unlist(map(1:n_type, \(x) {
-        if (suppressWarnings(!is.na(as.numeric(target_type[x])))) {
-          abs(as.numeric(target_type[x]))
-        } else {
-          end[x]
-        }
-      }))
+      # A numeric `target_type` is a specific time, and both start and end become
+      # that time. It is applied to each (regimen, target) row below, so the
+      # regimen's own start and end are kept for every other target type.
 
 
       # check to make sure secondary targets are only length 1
@@ -443,7 +456,12 @@ PM_pta <- R6::R6Class(
 
 
       # Check the simulation labels
-      sim_labels <- paste("Regimen", 1:n_reg)
+      # The default label is the regimen id, so a result is labeled with the
+      # regimen it belongs to. A regimen whose id could not be recovered keeps
+      # the generic text, since a missing label would break plotting.
+      sim_labels <- reg_ids
+      missing_ids <- is.na(sim_labels)
+      sim_labels[missing_ids] <- paste("Regimen", 1:n_reg)[missing_ids]
 
       if (length(simlabels) > 0) { # replace generic labels with user labels
         n_reglabels <- length(simlabels)
@@ -466,10 +484,18 @@ PM_pta <- R6::R6Class(
       on.exit(pb$terminate(), add = TRUE)
 
       ###### MAKE THE PTA OBJECT
-      master_pta <- purrr::map(1:n_reg, \(x){
-        purrr::map(1:n_type, \(y) tidyr::expand_grid(
-          reg_num = x,
-          target = if (simTarg) { # simulated targets
+      # One row per regimen and target, carrying the regimen's own data, id,
+      # start and end rather than an index into them. `expand_grid()` keeps the
+      # order of its inputs - unlike `crossing()`, which sorts - so the rows stay
+      # regimen-major and then follow the order of the target types and values,
+      # which is the order results have always been reported in.
+      regimens <- tibble::tibble(reg_num = seq_along(simdata), id = reg_ids, sims = simdata)
+
+      # A regimen's targets are the same for every regimen, except that sampled
+      # targets draw one target per simulated subject of that regimen.
+      targets_for <- function(x) {
+        purrr::map(seq_len(n_type), \(y) {
+          this_target <- if (simTarg) { # simulated targets
             if (y == 1) {
               list(
                 tidyr::tibble(
@@ -482,50 +508,70 @@ PM_pta <- R6::R6Class(
                 )
               )
             } else {
-              target[y]
+              list(target[[y]])
             }
           } else {
-            target[[y]]
-          }, # discrete targets
-          this_type = y,
-          type = target_type[[y]],
-          success_ratio = success[[y]],
-          start = start[y],
-          end = end[y]
-          # sim_data = list(simdata[[x]])
-        )) |> # end inner map
-          purrr::list_rbind()
-      }) |> # end outer map
-        purrr::list_rbind() |>
-        mutate(type = stringr::str_replace_all(type, "\\d+", "specific")) |>
-        rowwise() |>
-        mutate(pdi = list(do.call(
-          paste0("pta_", stringr::str_replace_all(type, "-", "")), # call the appropriate pta function below
-          list( # arguments to the pta function
-            sims = simdata[[reg_num]],
-            # sims = sim_data,
-            .target = target,
-            .simTarg = simTarg,
-            .start = start,
-            .end = end,
-            .pb = pb
-          )
-        ))) |>
-        mutate(success = list(purrr::map_dbl(pdi, \(x) {
-          if (stringr::str_detect(type, "-")) {
-            x <= success_ratio # will return NA is x is NA
-          } else {
-            x >= success_ratio
+            target[[y]] # discrete targets keep their own type
           }
-        }))) |>
-        mutate(prop_success = sum(success) / length(success)) |>
-        mutate(label = sim_labels[reg_num]) |>
+          # a numeric target type is a specific time, and both start and end
+          # become that time; otherwise the regimen's own values are used
+          specific <- suppressWarnings(as.numeric(target_type[y]))
+          tibble::tibble(
+            target = this_target,
+            type = target_type[[y]],
+            success_ratio = success[[y]],
+            this_type = y,
+            start = if (is.na(specific)) reg_start[x] else abs(specific),
+            end = if (is.na(specific)) reg_end[x] else abs(specific)
+          )
+        }) |> purrr::list_rbind()
+      }
+
+      grid <- purrr::map(seq_len(n_reg), \(x) {
+        tidyr::expand_grid(regimens[x, ], targets_for(x))
+      }) |>
+        purrr::list_rbind() |>
+        mutate(type = stringr::str_replace_all(type, "\\d+", "specific"))
+
+      # choose the pta function by name rather than rebuilding its name
+      pta_helpers <- list(
+        time = pta_time, auc = pta_auc, max = pta_max,
+        min = pta_min, specific = pta_specific
+      )
+
+      # the helper lookup is a named list, so drop the names it would pass on
+      grid$pdi <- unname(purrr::pmap(
+        list(
+          pta_helpers[stringr::str_replace_all(grid$type, "-", "")],
+          grid$sims, grid$target, grid$start, grid$end
+        ),
+        \(pta_fn, sims, .target, .start, .end) {
+          pta_fn(sims, .target, simTarg, .start, .end, pb)
+        }
+      ))
+
+      grid$success <- unname(purrr::pmap(
+        list(grid$pdi, grid$type, grid$success_ratio),
+        \(pdi, type, success_ratio) {
+          if (stringr::str_detect(type, "-")) {
+            as.numeric(pdi <= success_ratio) # will return NA if pdi is NA
+          } else {
+            as.numeric(pdi >= success_ratio)
+          }
+        }
+      ))
+
+      master_pta <- grid |>
+        dplyr::select(-sims) |>
+        mutate(
+          prop_success = purrr::map_dbl(success, \(x) sum(x) / length(x)),
+          label = sim_labels[reg_num]
+        ) |>
         dplyr::relocate(
-          reg_num, label, target, type,
+          reg_num, id, label, target, type,
           success_ratio, prop_success, success, pdi,
           start, end
-        ) |>
-        ungroup() # remove rowwise
+        )
 
 
       # add intersection if multiple target types
@@ -538,7 +584,7 @@ PM_pta <- R6::R6Class(
           x
         })
         names(master_pta) <- NULL
-        master_pta$intersect <- master_pta[[1]] |> select(reg_num, target, success_1 = success, label) # get primary success
+        master_pta$intersect <- master_pta[[1]] |> select(reg_num, id, target, success_1 = success, label) # get primary success
         for (i in 2:n_type) { # add additional success
           master_pta$intersect[[paste0("success_", i)]] <- master_pta[[i]]$success[match(master_pta[[1]]$reg_num, master_pta[[i]]$reg_num)]
         }
@@ -554,7 +600,7 @@ PM_pta <- R6::R6Class(
           mutate(success_ratio = paste0("(", success, ")", collapse = "")) |>
           mutate(success = list(total_success)) |>
           select(
-            reg_num, label, target, type,
+            reg_num, id, label, target, type,
             success_ratio, prop_success, success
           ) |>
           ungroup()
@@ -585,6 +631,50 @@ PM_pta$load <- function(file_name = "PMpta.rds") {
 
 
 # ACCESSORY INTERNAL FUNCTIONS --------------------------------------------
+
+# Split simulated observations into one element per regimen.
+#
+# `split()` sorts the levels it is given, and for text ids that is byte order
+# ("10" before "2"), which silently reorders the regimens. Building the levels
+# from the order the ids first appear keeps the regimens in the order they were
+# simulated. The id itself - not a rank - becomes the name of the element, so
+# each result can be traced back to the regimen that produced it.
+split_by_regimen <- function(obs) {
+  ids <- as.character(obs$id)
+  split(obs, factor(ids, levels = unique(ids)))
+}
+
+# The identifier of one regimen in `simdata`, i.e. the first id of the
+# observations it contains. `split_by_regimen()` names each element with its id,
+# while user-supplied lists carry the id in the element itself.
+regimen_id <- function(x) {
+  ids <- unique(as.character(x[["id"]]))
+  if (length(ids) == 0) NA_character_ else unname(ids[1])
+}
+
+# PTA results saved before every row carried an `id` column cannot recover the
+# regimen identifiers - they were replaced by a rank when the object was made -
+# so the regimen number, which is what those rows were keyed on, is the best
+# identifier available. Accepts a `PM_pta_data` list or a single result tibble.
+backfill_pta_id <- function(pta) {
+  add_id <- function(x) {
+    if (is.data.frame(x) && "reg_num" %in% names(x) && !"id" %in% names(x)) {
+      x$id <- as.character(x$reg_num)
+      x <- dplyr::relocate(x, id, .after = reg_num)
+    }
+    x
+  }
+
+  if (inherits(pta, "PM_pta_data")) {
+    # the elements are not always named, e.g. one unnamed tibble per target type
+    for (i in seq_along(pta)) {
+      pta[[i]] <- add_id(pta[[i]])
+    }
+    return(pta)
+  }
+
+  add_id(pta)
+}
 
 pta_auc <- function(sims, .target, .simTarg, .start, .end, .pb) {
   .pb$tick()
@@ -851,7 +941,8 @@ makePTAtarget <- function(x) {
 #' @param grid `r template("grid")`
 #' @param legend `r template("legend")` Default will be the labeled regimen names as an argument
 #' when creating a [PM_pta] object,
-#' or if missing, "Regimen 1, Regimen 2,...Regimen n", where *n* is the number of
+#' or if missing, the `id` of each regimen, or "Regimen 1, Regimen 2,...Regimen n"
+#' for a regimen whose id is not recoverable, where *n* is the number of
 #' regimens in the PM_pta object.
 #' @param ci Confidence interval around curves on `type = "pdi"` plot, on scale of 0 to 1. Default is 0.9.
 #' @param xlab `r template("xlab")`  Default is "Target" when targets are discrete,
@@ -1209,9 +1300,10 @@ plot.PM_pta <- function(
 #' intersection of all the PTAs.
 #' @param ci Width of the interval for pharmacodynamic index reporting.  Default is 0.95, i.e. 2.5th to 97.5th percentile.
 #' @param ... Not used.
-#' @return A tibble with the following columns (only the first five if `at = "intersect"`):
+#' @return A tibble with the following columns (only the first six if `at = "intersect"`):
 #'
 #' * **reg_num** is the number of the simulation regimen
+#' * **id** is the identifier of the simulation regimen
 #' * **label** is the simulation label, for reference
 #' * **target** is the target for the row, if targets are discrete, not used for simulated targets
 #' * **type** is the target type for the row, e.g. "auc", "time", "-min", etc.
@@ -1234,7 +1326,7 @@ plot.PM_pta <- function(
 #' @export
 
 summary.PM_pta <- function(object, at = "intersect", ci = 0.95, ...) {
-  pta <- object$clone()$data
+  pta <- backfill_pta_id(object$clone()$data)
 
   if (at == "intersect") {
     if (length(pta$intersect) > 1) {
@@ -1269,7 +1361,7 @@ summary.PM_pta <- function(object, at = "intersect", ci = 0.95, ...) {
 
   if (at != "intersect") {
     pdi <- pdi |> mutate(
-      label = label, type = type, prop_success = prop_success,
+      label = label, id = id, type = type, prop_success = prop_success,
       median = median(unlist(pdi), na.rm = TRUE),
       lower = quantile(unlist(pdi), probs = 0.5 - ci / 2, na.rm = TRUE),
       upper = quantile(unlist(pdi), probs = 0.5 + ci / 2, na.rm = TRUE),
@@ -1280,7 +1372,7 @@ summary.PM_pta <- function(object, at = "intersect", ci = 0.95, ...) {
       .keep = "none"
     )
   } else {
-    pdi <- pdi |> mutate(type = type, label = label, prop_success = prop_success, .keep = "none")
+    pdi <- pdi |> mutate(id = id, type = type, label = label, prop_success = prop_success, .keep = "none")
   }
 
   pdi <- pdi |> ungroup()

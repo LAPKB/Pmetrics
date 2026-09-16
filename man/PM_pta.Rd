@@ -20,6 +20,13 @@ and creates the PTA. It is described here.
 
 Both methods require the prior creation of a simulation of
 appropriate regimens.
+
+Every result is labeled with the \code{id} of the regimen it was calculated from,
+so results can be associated with the requested regimens without depending on
+the order in which the regimens were simulated. By default that id is also the
+\code{label}. \code{reg_num} is positional: it is the order in which the id first appears
+in \code{simdata}, which for a \link{PM_sim} is the order of the ids in the data, and
+explicit \code{simlabels} are assigned in that order.
 }
 \examples{
 
@@ -128,7 +135,7 @@ Michael Neely and Jan Strojil
 \item \code{NPex$data$standard_data} \emph{PM_data_data}
 \item \code{"simout.txt"} matches files with wildcard ability, see \link{PM_sim}
 }}
-      \item{\code{simlabels}}{Optional character vector of labels for each simulation.  Default is \code{c('Regimen 1', 'Regimen 2',...)}.}
+      \item{\code{simlabels}}{Optional character vector of labels for each simulation.  Default is the \code{id} of each regimen, falling back to \code{c('Regimen 1', 'Regimen 2',...)} for a regimen whose id is not recoverable. Labels are assigned in the order of \code{reg_num}, so the first label is for the first regimen.}
       \item{\code{target}}{One of several options.
 \itemize{
 \item A vector of pharmacodynamic targets, such as Minimum Inhibitory Concentrations (MICs), e.g. \code{c(0.25, 0.5, 1, 2, 4, 8, 16, 32)}.
@@ -165,11 +172,13 @@ For example \code{success = 0.4} or \code{success = c(0.4, 100)}. The length mus
       \item{\code{free_fraction}}{Proportion of free, active drug, expressed as a numeric value >=0 and <=1.  Default is 1, i.e.,
 100\% free drug or 0\% protein binding.}
       \item{\code{start}}{Specify the time to begin PTA calculations. Default is a vector with the first observation time for subjects
-in each element of \code{simdata}, e.g. dose regimen. If specified as a vector, values will be recycled as necessary.}
+in each element of \code{simdata}, e.g. dose regimen. If specified as a vector, one value per regimen is used, recycled as
+necessary, so each regimen keeps its own start. A numerical \code{target_type} overrides \code{start} for that target with its own absolute value.}
       \item{\code{end}}{Specify the time to end PTA calculations so that PTA is calculated
 from \code{start} to \code{end}.  Default for end is the maximum observation
-time for subjects in each element of \code{simdata}, e.g. dose regimen.  If specified as a vector, values will be recycled
-as necessary. Subjects with insufficient data (fewer than 5 simulated observations) for a specified interval will trigger a warning.
+time for subjects in each element of \code{simdata}, e.g. dose regimen.  If specified as a vector, one value per regimen is used,
+recycled as necessary, so each regimen keeps its own end, and a numerical \code{target_type} overrides it as for \code{start}.
+Subjects with insufficient data (fewer than 5 simulated observations) for a specified interval will trigger a warning.
 Ideally then, the simulated datset should contain sufficient observations within the interval specified by \code{start} and \code{end}.}
       \item{\code{icen}}{Can be either "median" for the predictions based on medians of \code{pred.type} parameter value
 distributions, or "mean".  Default is "median".}
@@ -193,8 +202,9 @@ or \code{NA} if only one \code{target_type} was specified.
 The individual elements are tibbles with all possible combinations
 of \code{target}s and simulated regimens for a given \code{target_type}. The tibbles have the following columns:
 \itemize{
-\item \strong{reg_num} The simulation number in \code{simdata}.
-\item \strong{label} Annotation of the simulation, supplied by the \code{simlabels} argument.
+\item \strong{reg_num} The position of the simulation in \code{simdata}, i.e. the order in which its id first appears.
+\item \strong{id} The identifier of the simulated regimen, as it appears in the \code{id} column of the simulation.
+\item \strong{label} Annotation of the simulation, supplied by the \code{simlabels} argument, or the regimen \code{id} by default.
 \item \strong{target} is the specified \code{target} for the results row. If a distribution created by \link{makePTAtarget},
 this will be a tibble with  the simulated targets
 \item \strong{type} is the specified \code{target_type} for the results row
