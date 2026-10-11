@@ -158,3 +158,62 @@ test_that("PM_model$fit supports numeric prior run and normalizes theta.csv colu
   expect_false(file.exists(file.path(getwd(), "prior.csv")))
   expect_equal(names(utils::read.csv(file.path(captured_wd, "prior.csv"), check.names = FALSE)), c(params, "prob"))
 })
+
+run_fit_with_prior_object <- function(prior) {
+  model <- PM_model$new(x = NPex$model, compile = FALSE)
+  run_root <- withr::local_tempdir(pattern = "prior-object-", .local_envir = parent.frame())
+  captured <- list(called = FALSE)
+
+  testthat::with_mocked_bindings(
+    fit = function(model_source, data, params, output_path, solver = NULL) {
+      captured$called <<- TRUE
+      captured$prior <<- params$prior
+      if (identical(params$prior, "prior.csv")) {
+        captured$prior_df <<- utils::read.csv("prior.csv", check.names = FALSE)
+      }
+      dir.create(output_path, recursive = TRUE)
+      invisible(NULL)
+    },
+    PM_parse = function(path) invisible(NULL),
+    PM_load = function(path, file, ...) structure(list(path = path), class = c("PM_result", "R6")),
+    {
+      model$fit(
+        data = NPex$data,
+        path = run_root,
+        run = 1,
+        cycles = 0,
+        prior = prior,
+        overwrite = TRUE,
+        report = "none",
+        quiet = TRUE
+      )
+    }
+  )
+  captured
+}
+
+test_that("PM_model$fit uses final support points of a PM_result prior", {
+  params <- tolower(names(NPex$model$model_list$pri))
+  prior_df <- make_prior_df(params)
+  prior_result <- structure(list(final = list(popPoints = prior_df)), class = "PM_result")
+
+  out <- run_fit_with_prior_object(prior_result)
+
+  expect_equal(out$prior, "prior.csv")
+  expect_equal(out$prior_df, prior_df, ignore_attr = TRUE)
+})
+
+test_that("PM_model$fit uses a data frame prior", {
+  params <- tolower(names(NPex$model$model_list$pri))
+  prior_df <- make_prior_df(params)
+
+  out <- run_fit_with_prior_object(prior_df)
+
+  expect_equal(out$prior, "prior.csv")
+  expect_equal(out$prior_df, prior_df, ignore_attr = TRUE)
+})
+
+test_that("PM_model$fit rejects an unsupported prior instead of using sobol", {
+  out <- run_fit_with_prior_object(c(1, 2))
+  expect_false(out$called)
+})
