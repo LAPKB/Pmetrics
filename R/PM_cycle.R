@@ -236,7 +236,6 @@ PM_cycle <- R6::R6Class(
 
       observed_outeq <- sort(unique(normalize_engine_index(op_raw$outeq)))
       n_out <- max(observed_outeq, na.rm = TRUE)
-      n_cyc <- max(cycle_data$cycle)
 
       # gamlam
       model_types <- decode_error_model_rows(config$errormodels$models, op_raw$outeq) |>
@@ -261,7 +260,7 @@ PM_cycle <- R6::R6Class(
             values_to = "value", names_to = c("type", "outeq"),
             names_sep = "\\."
           ) |>
-          mutate(cycle = rep(1:n_cyc, each = n_out)) |>
+          mutate(cycle = rep(raw$cycle, each = n_out)) |>
           select(cycle, value, outeq) |>
           arrange(cycle, outeq) |>
           mutate(outeq = normalize_engine_index(as.numeric(outeq))) |>
