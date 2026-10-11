@@ -436,7 +436,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
     nvar = purrr::map_int(allObj, \(x) length(names(x$final$popMean))),
     # par = purrr::map_chr(allObj, \(x) paste(names(x$final$popMean), collapse = ", ")),
     converged = purrr::map_lgl(allObj, \(x) {
-      grepl("Converged", x$cycle$data$status)
+      is_converged_status(x$cycle$data$status)
     }),
     ll = purrr::map_dbl(allObj, \(x) {
       tail(x$cycle$data$objective$neg2ll, 1)
@@ -628,4 +628,9 @@ print.PM_compare <- function(x, ...) {
       cli::cli_text(df_tab[i] |> stringr::str_replace_all(" ", "\u00A0"))
     }
   }
+}
+
+# Status is "Converged" (older runs) or "Stopped (converged)" (PMcore).
+is_converged_status <- function(status) {
+  length(status) > 0 && grepl("converged", status[[1]], ignore.case = TRUE)
 }
