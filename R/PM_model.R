@@ -1301,7 +1301,9 @@ PM_model <- R6::R6Class(
       }
 
       # set prior
+      prior_gamlam <- NULL # final gamma/lambda of a prior run, named by outeq
       if (inherits(prior, "PM_result")) {
+        prior_gamlam <- gamlam_from_cycle(prior$cycle$data$gamlam)
         prior <- prior$final$popPoints
         if (!is.data.frame(prior)) {
           msg <- c(msg, "{.arg prior} is a {.cls PM_result} without final population support points.")
@@ -1316,6 +1318,7 @@ PM_model <- R6::R6Class(
             msg <- c(msg, "{.arg prior} file does not exist.", "i" = "Check the file path.")
             run_error <- run_error + 1
           }
+          prior_gamlam <- gamlam_from_cycles_csv(glue::glue("{path}/{prior}/outputs/cycles.csv"))
           prior_file <- make_prior_file()
           file.copy(glue::glue("{path}/{prior}/outputs/theta.csv"), prior_file, overwrite = TRUE)
           prior_res <- normalize_prior_csv(prior_file, self$model_list$parameters)
@@ -1454,6 +1457,21 @@ PM_model <- R6::R6Class(
       }
 
 
+      # start estimated gamma/lambda from the prior run's final values
+      error_models <- lapply(seq_along(self$model_list$err), function(i) {
+        e <- pm_err_flatten(self$model_list$err[[i]], i)
+        oq <- self$model_list$err[[i]]$outeq
+        if (length(oq) != 1 || is.na(oq)) oq <- i
+        start <- if (length(prior_gamlam) == 1) prior_gamlam[[1]] else prior_gamlam[as.character(oq)]
+        if (!isTRUE(e$fixed) && length(start) == 1 && !is.na(start)) {
+          e$initial <- unname(start)
+        }
+        e
+      })
+      if (!is.null(prior_gamlam)) {
+        msg <- c(msg, "Initial gamma/lambda set to the final values of the prior run.")
+      }
+
       if (intern) {
         ### CALL RUST
         out_path <- normalizePath(file.path(path_run, "outputs"), mustWork = FALSE)
@@ -1466,9 +1484,7 @@ PM_model <- R6::R6Class(
             params = list(
               ranges = ranges, # not important but needed for POSTPROB
               algorithm = algorithm,
-              error_models = lapply(seq_along(self$model_list$err), function(i) {
-                pm_err_flatten(self$model_list$err[[i]], i)
-              }),
+              error_models = error_models,
               idelta = as.numeric(idelta),
               tad = as.numeric(tad),
               max_cycles = as.numeric(cycles), # will be hardcoded in Rust to 0 for POSTPROB
@@ -2316,6 +2332,30 @@ pm_err_flatten <- function(e, position) {
     initial = e$initial, coeff = e$coeff, type = e$type,
     fixed = e$fixed, outeq = pm_err_label(e, position)
   )
+}
+
+# Final gamma/lambda of a previous run, named by outeq. `gamlam` is the
+# `$cycle$data$gamlam` tibble of a PM_result.
+gamlam_from_cycle <- function(gamlam) {
+  if (!is.data.frame(gamlam) || nrow(gamlam) == 0) {
+    return(NULL)
+  }
+  last <- gamlam[gamlam$cycle == max(gamlam$cycle), ]
+  stats::setNames(last$value, last$outeq)
+}
+
+# As gamlam_from_cycle(), read from a run's outputs/cycles.csv.
+gamlam_from_cycles_csv <- function(file) {
+  if (!file.exists(file)) {
+    return(NULL)
+  }
+  cyc <- utils::read.csv(file, check.names = FALSE)
+  cols <- grep("^gamlam\\.", names(cyc), value = TRUE)
+  if (nrow(cyc) == 0 || length(cols) == 0) {
+    return(NULL)
+  }
+  outeq <- normalize_engine_index(as.numeric(sub("^gamlam\\.", "", cols)))
+  stats::setNames(unlist(cyc[nrow(cyc), cols]), outeq)
 }
 
 # Canonical output labels for a list of error models, in declaration order.
