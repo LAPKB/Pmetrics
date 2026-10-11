@@ -1413,6 +1413,9 @@ PM_model <- R6::R6Class(
       }
 
       dir.create(path_run, recursive = TRUE)
+      # normalizePath() leaves a not-yet-existing path relative; make it absolute
+      # now, as the fit may run from the prior's temporary folder.
+      path_run <- normalizePath(path_run)
 
       #### Save input objects ####
       dir.create(normalizePath(file.path(path_run, "inputs"), mustWork = FALSE), recursive = TRUE)
