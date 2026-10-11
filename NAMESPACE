@@ -305,6 +305,7 @@ importFrom(readr,
   write_file
 )
 importFrom(rlang,
+  "%||%",
   ":=",
   .data,
   .env,
