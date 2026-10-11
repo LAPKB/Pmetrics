@@ -1301,7 +1301,15 @@ PM_model <- R6::R6Class(
       }
 
       # set prior
-      if (length(prior) == 1 && prior != "sobol") {
+      if (inherits(prior, "PM_result")) {
+        prior <- prior$final$popPoints
+        if (!is.data.frame(prior)) {
+          msg <- c(msg, "{.arg prior} is a {.cls PM_result} without final population support points.")
+          run_error <- run_error + 1
+          prior <- "sobol"
+        }
+      }
+      if (is.data.frame(prior) || (length(prior) == 1 && prior != "sobol")) {
         if (is.numeric(prior)) {
           # prior specified as a run number
           if (!file.exists(glue::glue("{path}/{prior}/outputs/theta.csv"))) {
@@ -1321,7 +1329,7 @@ PM_model <- R6::R6Class(
               msg <- c(msg, prior_res$note)
             }
           }
-        } else if (length(prior) == 1 && is.character(prior)) {
+        } else if (is.character(prior)) {
           # prior specified as a filename
           if (!file.exists(prior)) {
             msg <- c(msg, "{.arg prior} file does not exist.")
@@ -1360,11 +1368,12 @@ PM_model <- R6::R6Class(
             }
           }
         } else {
-          msg <- c(msg, "{.arg prior} must be a numeric run number or character filename.")
+          msg <- c(msg, "{.arg prior} must be a numeric run number, character filename, data frame or {.cls PM_result}.")
           run_error <- run_error + 1
         }
-      } else {
-        prior <- "sobol"
+      } else if (!identical(prior, "sobol")) {
+        msg <- c(msg, "{.arg prior} must be a numeric run number, character filename, data frame or {.cls PM_result}.")
+        run_error <- run_error + 1
       }
 
       #### Abort if errors before creating new folder ####
