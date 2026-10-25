@@ -511,7 +511,11 @@ bd_prune_inputs <- function(p, r) {
   if (is.null(r$use_r) && is.null(r$use_b)) {
     return(p)
   }
-  drop <- c(paste0("R", setdiff(r$inputs, r$use_r)), paste0("B", setdiff(r$inputs, r$use_b)))
+  unused <- function(head, used) {
+    j <- setdiff(r$inputs, used)
+    if (length(j)) paste0(head, j)
+  }
+  drop <- c(unused("R", r$use_r), unused("B", r$use_b))
   if (length(drop) == 0) {
     return(p)
   }
@@ -899,6 +903,10 @@ bd_check <- function(bd) {
     if (any(grepl("[^a-zA-Z0-9_]", cv$names))) err("covariate names may only have letters, numbers and _")
     for (k in seq_along(cv$names)) {
       v <- cv$value[[cv$names[k]]]
+      if (is.null(v)) {
+        err("covariate ", cv$names[k], " has no values")
+        next
+      }
       if (cv$types[k] == "numeric") {
         if (!(v[[1]]$min < v[[1]]$max)) err("covariate ", cv$names[k], ": min must be lower than max")
         if (v[[1]]$default < v[[1]]$min || v[[1]]$default > v[[1]]$max) err("covariate ", cv$names[k], ": default is outside min/max")
@@ -975,10 +983,10 @@ bd_check <- function(bd) {
 }
 
 # Asks one question in the console. Enter keeps the default (shown in brackets).
-bd_ask <- function(question, default = "", required = FALSE) {
+bd_ask <- function(question, default = "", required = FALSE, .read = readline) {
   repeat {
     shown <- if (nzchar(default)) paste0(question, " [", default, "]: ") else paste0(question, ": ")
-    answer <- trimws(readline(shown))
+    answer <- trimws(.read(shown))
     if (nzchar(answer)) {
       return(answer)
     }
@@ -991,18 +999,18 @@ bd_ask <- function(question, default = "", required = FALSE) {
 
 # Asks for what a run cannot provide and patches the exported model. Every
 # question has a default, so Enter keeps what was derived from the run.
-bd_interview <- function(bd) {
+bd_interview <- function(bd, ask = bd_ask) {
   cat("\nBestDose export - press Enter to keep the value in brackets.\n")
-  bd$description$description <- bd_ask("Short model description", bd$description$description)
-  bd$description$reference <- bd_ask("Reference", bd$description$reference)
+  bd$description$description <- ask("Short model description", bd$description$description)
+  bd$description$reference <- ask("Reference", bd$description$reference)
 
   cv <- bd$description$covariates
   if (!is.null(cv)) {
     for (k in seq_along(cv$names)) {
       if (cv$names[k] == "sex") next
       cat("\nCovariate '", cv$names[k], "'\n", sep = "")
-      cv$label[k] <- bd_ask("  Label", cv$label[k])
-      cv$units[k] <- bd_ask("  Unit", cv$units[k])
+      cv$label[k] <- ask("  Label", cv$label[k])
+      cv$units[k] <- ask("  Unit", cv$units[k])
     }
     cv$label <- I(as.character(cv$label))
     cv$units <- I(as.character(cv$units))
@@ -1013,9 +1021,9 @@ bd_interview <- function(bd) {
   for (k in seq_along(outs)) {
     if (is.null(outs[[k]]$pd)) next
     cat("\nOutput ", outs[[k]]$equation, " is a pharmacodynamic (PD) effect\n", sep = "")
-    outs[[k]]$name <- bd_ask("  Name (what is measured, e.g. platelets)", outs[[k]]$name)
-    outs[[k]]$pd$label <- bd_ask("  Label", outs[[k]]$pd$label)
-    outs[[k]]$pd$unit <- bd_ask("  Unit", outs[[k]]$pd$unit)
+    outs[[k]]$name <- ask("  Name (what is measured, e.g. platelets)", outs[[k]]$name)
+    outs[[k]]$pd$label <- ask("  Label", outs[[k]]$pd$label)
+    outs[[k]]$pd$unit <- ask("  Unit", outs[[k]]$pd$unit)
   }
   bd$description$compartment$outputs <- outs
   cat("\n")
