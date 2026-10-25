@@ -70,7 +70,7 @@ test_that("an oral library model exports to a valid BestDose model", {
   for (names_set in list(
     c("Poids", "DFG", "Sexe", "Taille"),
     c("peso", "TFG", "sexo", "Estatura"),
-    c("Vekt", "GFR", "Kjønn", "Høyde")
+    c("Vekt", "GFR", "Kjonn", "Hoyde")  # model identifiers must be ASCII
   )) {
     dat <- dose_data()
     dat[[names_set[1]]] <- c(60, 90)
