@@ -4,7 +4,11 @@
 # read from the run (model, final support points, error model, covariate data,
 # dosing data, fit statistics) is exported automatically. Only the drug and the
 # model name are required; anything that cannot be retrieved is given a neutral
-# default and can be overridden through the `...` of `$export()`.
+# default and can be overridden through `outputs` and `...` of `$export()`.
+#
+# The exported model is built to pass the BestDose model checklist
+# (dev/bestdose_example/model_checklist.md). What cannot be repaired
+# automatically is reported by `bd_check()` after the file is written.
 
 # ==================================================================____
 # Expression helpers
@@ -25,11 +29,16 @@ bd_is_assign <- function(e) {
 
 # BestDose notation: lower case symbols, `<-` written as `=`, and the indexed
 # state/input/output vectors in upper case (X[], B[], R[], Y[]); `dx[]`, `lag[]`
-# and `fa[]` stay lower case.
-bd_norm <- function(e) {
+# and `fa[]` stay lower case. `ren` renames symbols (covariates), old -> new.
+bd_norm <- function(e, ren = NULL) {
   if (is.symbol(e)) {
     s <- as.character(e)
-    return(if (s %in% c("T", "F")) e else as.name(tolower(s)))
+    if (s %in% c("T", "F")) {
+      return(e)
+    }
+    s <- tolower(s)
+    if (!is.null(ren) && s %in% names(ren)) s <- ren[[s]]
+    return(as.name(s))
   }
   if (!is.call(e)) {
     return(e)
@@ -49,11 +58,15 @@ bd_norm <- function(e) {
       y = "Y",
       head
     ))
-    parts[-(1:2)] <- lapply(parts[-(1:2)], bd_norm)
+    parts[-(1:2)] <- lapply(parts[-(1:2)], bd_norm, ren = ren)
   } else {
-    parts <- lapply(parts, bd_norm)
+    parts <- lapply(parts, bd_norm, ren = ren)
   }
   as.call(parts)
+}
+
+bd_text <- function(e) {
+  gsub("\\s*/\\s*", " / ", paste(trimws(deparse(e, width.cutoff = 500L)), collapse = " "))
 }
 
 # literal indices used with a vector, e.g. bd_index_refs(e, "X") -> c(1L, 2L)
@@ -71,8 +84,8 @@ bd_index_refs <- function(e, head) {
 }
 
 # one model statement: normalized expression, text, and what it assigns to
-bd_item <- function(e) {
-  n <- bd_norm(e)
+bd_item <- function(e, ren = NULL) {
+  n <- bd_norm(e, ren)
   name <- NA_character_
   idx <- NA_integer_
   rhs <- n
@@ -87,10 +100,15 @@ bd_item <- function(e) {
       idx <- as.integer(lhs[[3]])
     }
   }
-  list(
-    expr = n, rhs = rhs, name = name, idx = idx,
-    text = gsub("\\s*/\\s*", " / ", paste(trimws(deparse(n, width.cutoff = 500L)), collapse = " "))
-  )
+  list(expr = n, rhs = rhs, name = name, idx = idx, text = bd_text(n))
+}
+
+# the same statement with a new right hand side
+bd_set_rhs <- function(it, rhs) {
+  it$expr[[3]] <- rhs
+  it$rhs <- rhs
+  it$text <- bd_text(it$expr)
+  it
 }
 
 # named list of statement text, the way BestDose names its model lines
@@ -132,6 +150,135 @@ bd_deps <- function(expr, defs) {
   list(vars = seen, states = unique(states))
 }
 
+# removes the standalone additive terms B[j] / R[j] listed in `drop` (e.g. "R1")
+# from a sum, e.g. `R[1] + ka * X[1] - ke * X[2]` -> `ka * X[1] - ke * X[2]`
+bd_drop_terms <- function(e, drop) {
+  is_term <- function(x) {
+    is.call(x) && identical(x[[1]], as.name("[")) && length(x) >= 3 && is.symbol(x[[2]]) &&
+      is.numeric(x[[3]]) && paste0(as.character(x[[2]]), x[[3]]) %in% drop
+  }
+  if (is_term(e)) {
+    return(NULL)
+  }
+  if (is.call(e) && (identical(e[[1]], as.name("+")) || identical(e[[1]], as.name("-")))) {
+    if (length(e) == 3) {
+      l <- bd_drop_terms(e[[2]], drop)
+      r <- bd_drop_terms(e[[3]], drop)
+      if (is.null(l) && is.null(r)) {
+        return(NULL)
+      }
+      if (is.null(r)) {
+        return(l)
+      }
+      if (is.null(l)) {
+        return(if (identical(e[[1]], as.name("-"))) call("-", r) else r)
+      }
+      e[[2]] <- l
+      e[[3]] <- r
+      return(e)
+    }
+    if (length(e) == 2) {
+      a <- bd_drop_terms(e[[2]], drop)
+      if (is.null(a)) {
+        return(NULL)
+      }
+      e[[2]] <- a
+      return(e)
+    }
+  }
+  e
+}
+
+
+# ==================================================================____
+# Reserved covariate names (English, French, Spanish, Norwegian)
+# ==================================================================____
+
+# BestDose reserved covariate names and the other names they go by. Keys are
+# ASCII, lower case, with `_` as separator (see `bd_ascii_key()`).
+bd_cov_keywords <- list(
+  weight = c(
+    "wt", "tbw", "bw", "body_weight", "bodyweight", # en
+    "poids", "pds", "poids_corporel", "poids_total", # fr
+    "peso", "peso_corporal", "peso_total", # es
+    "vekt", "kroppsvekt" # no
+  ),
+  crcl = c(
+    "gfr", "egfr", "ccr", "clcr", "cl_cr", "clcreat", "creatinine_clearance", "cockcroft", "cockcroft_gault", # en
+    "dfg", "edfg", "clairance_creatinine", "clairance_de_la_creatinine", # fr
+    "tfg", "etfg", "aclaramiento_creatinina", "filtrado_glomerular", # es
+    "kreatininclearance", "kreatinin_clearance", "krea_clearance" # no
+  ),
+  creat = c(
+    "creatinine", "scr", "screat", "serum_creatinine", "cr", # en
+    "creatininemie", "creatinine_serique", # fr
+    "creatinina", "crea", "creatinina_serica", # es
+    "kreatinin", "kreat", "krea", "serumkreatinin", "s_kreatinin" # no
+  ),
+  height = c(
+    "ht", "hgt", "size", # en
+    "taille", "hauteur", # fr
+    "talla", "estatura", "altura", # es
+    "hoyde", "kroppshoyde", "lengde" # no
+  ),
+  bmi = c(
+    "imc", "body_mass_index", # en, fr
+    "indice_masse_corporelle", "indice_de_masse_corporelle", # fr
+    "indice_masa_corporal", "indice_de_masa_corporal", # es
+    "kmi", "kroppsmasseindeks" # no
+  ),
+  bsa = c(
+    "sc", "body_surface_area", # en
+    "surface_corporelle", # fr
+    "superficie_corporal", "asc", "area_superficie_corporal", # es
+    "kroppsoverflate", "overflate", "kof" # no
+  ),
+  sex = c(
+    "sexe", "gender", # fr, en
+    "sexo", "genero", # es
+    "kjonn", "kjoenn" # no
+  ),
+  age = c(
+    "edad", # es
+    "alder" # no
+  )
+)
+
+# lower case ASCII key of a name: accents removed, anything else than letters and
+# digits becomes `_`
+bd_ascii_key <- function(x) {
+  x <- tolower(x)
+  x <- chartr(
+    "æøåéèêëàâäîïôöùûüçñáíóú",
+    "aoaeeeeaaaiioouuucnaiou", x
+  )
+  x <- gsub("[^a-z0-9]+", "_", x)
+  gsub("^_+|_+$", "", x)
+}
+
+# reserved name for a covariate name, or its cleaned name if it has none
+bd_cov_canonical <- function(name) {
+  key <- bd_ascii_key(name)
+  for (canon in names(bd_cov_keywords)) {
+    if (key == canon || key %in% bd_cov_keywords[[canon]]) {
+      return(canon)
+    }
+  }
+  if (nzchar(key)) key else "cov"
+}
+
+# old -> new names for the covariates of the model (all lower case)
+bd_cov_rename <- function(cov_names, taken) {
+  old <- tolower(cov_names)
+  new <- vapply(old, bd_cov_canonical, character(1))
+  for (k in seq_along(new)) {
+    if (new[k] %in% taken || new[k] %in% new[-k]) { # would clash: keep a cleaned version of the name
+      new[k] <- bd_ascii_key(old[k])
+    }
+  }
+  stats::setNames(make.unique(new, sep = "_"), old)
+}
+
 
 # ==================================================================____
 # Model blocks
@@ -143,10 +290,11 @@ bd_deps <- function(expr, defs) {
 #' equations, because BestDose models are ODE based. Assignments written in the
 #' `eqn` block that are not derivatives are moved to the secondary block.
 #' @param a The `arg_list` of a [PM_model]
+#' @param ren Named vector renaming covariates, old -> new
 #' @return A list of statement lists (`sec`, `dx`, `ini`, `fa`, `lag`, `out`)
 #' and `defs`, the right hand side of every scalar assignment.
 #' @noRd
-bd_parse_model <- function(a) {
+bd_parse_model <- function(a, ren = NULL) {
   eqn <- bd_statements(a$eqn)
   lag <- bd_statements(a$lag)
   fa <- bd_statements(a$fa)
@@ -159,17 +307,17 @@ bd_parse_model <- function(a) {
     if (is.null(a$fa)) fa <- bd_statements(tmpl$arg_list$fa)
   }
 
-  eqn <- lapply(eqn, bd_item)
+  eqn <- lapply(eqn, bd_item, ren = ren)
   is_dx <- vapply(eqn, function(i) isTRUE(i$name == "dx") && !is.na(i$idx), logical(1))
   by_idx <- function(items) items[order(vapply(items, `[[`, integer(1), "idx"))]
 
   p <- list(
-    sec = c(lapply(bd_statements(a$sec), bd_item), eqn[!is_dx]),
+    sec = c(lapply(bd_statements(a$sec), bd_item, ren = ren), eqn[!is_dx]),
     dx = by_idx(eqn[is_dx]),
-    ini = lapply(bd_statements(a$ini), bd_item),
-    fa = lapply(fa, bd_item),
-    lag = lapply(lag, bd_item),
-    out = lapply(bd_statements(a$out), bd_item)
+    ini = lapply(bd_statements(a$ini), bd_item, ren = ren),
+    fa = lapply(fa, bd_item, ren = ren),
+    lag = lapply(lag, bd_item, ren = ren),
+    out = lapply(bd_statements(a$out), bd_item, ren = ren)
   )
   p$out_y <- by_idx(p$out[vapply(p$out, function(i) isTRUE(i$name == "y") && !is.na(i$idx), logical(1))])
 
@@ -179,18 +327,28 @@ bd_parse_model <- function(a) {
   if (length(p$out_y) == 0) {
     cli::cli_abort(c("x" = "No output equations ({.code y[i]}) were found in the model."))
   }
+  p$defs <- bd_defs(p)
+  p
+}
 
+# right hand side of every scalar assignment, by variable name
+bd_defs <- function(p) {
   all_items <- c(p$sec, p$dx, p$ini, p$fa, p$lag, p$out)
   scalar <- Filter(function(i) !is.na(i$name) && is.na(i$idx), all_items)
-  p$defs <- stats::setNames(lapply(scalar, `[[`, "rhs"), vapply(scalar, `[[`, character(1), "name"))
-  p
+  stats::setNames(lapply(scalar, `[[`, "rhs"), vapply(scalar, `[[`, character(1), "name"))
+}
+
+# BestDose concentration outputs: X[N] divided by a parameter
+bd_is_conc <- function(text) {
+  grepl("X\\[[1-6]\\]\\s*/\\s*(\\(|[A-Za-z])", text)
 }
 
 #' Compartment structure inferred from the equations
 #'
 #' The PK part of the model is every compartment the first output depends on
 #' (directly or through other compartments). Remaining compartments, and
-#' outputs that depend on them, are pharmacodynamic.
+#' outputs that depend on them or that are not a concentration, are
+#' pharmacodynamic.
 #' @noRd
 bd_structure <- function(p, primary) {
   states_of <- function(item) bd_deps(item$rhs, p$defs)$states
@@ -221,17 +379,20 @@ bd_structure <- function(p, primary) {
       cc %in% states_of(dx[[as.character(central)]])
   }, setdiff(pk, central))
   peripheral <- as.integer(unlist(peripheral))
+  depot <- setdiff(pk, c(central, peripheral)) # absorption compartments
 
   is_pd <- vapply(seq_along(out_states), function(k) {
-    k > 1 && length(out_states[[k]]) > 0 && any(!out_states[[k]] %in% pk)
+    k > 1 && (any(!out_states[[k]] %in% pk) || !bd_is_conc(p$out_y[[k]]$text))
   }, logical(1))
 
   out_names <- vapply(seq_along(out_states), function(k) {
     s <- out_states[[k]]
     if (k == 1) {
       "central"
-    } else if (length(s) == 1 && s %in% peripheral) {
+    } else if (!is_pd[k] && length(s) == 1 && s %in% peripheral) {
       "peripheral"
+    } else if (is_pd[k]) {
+      paste0("pd", p$out_y[[k]]$idx)
     } else {
       paste0("output", p$out_y[[k]]$idx)
     }
@@ -253,14 +414,38 @@ bd_structure <- function(p, primary) {
   pd_parameters <- as.character(setdiff(intersect(primary, pd_vars), pk_vars))
 
   list(
-    pk = pk, central = central, peripheral = peripheral,
+    pk = pk, central = central, peripheral = peripheral, depot = depot,
     out_idx = vapply(p$out_y, `[[`, integer(1), "idx"),
     out_names = make.unique(out_names), is_pd = is_pd,
     pd_parameters = pd_parameters
   )
 }
 
+# Compartment block. BestDose numbers the compartments from 1: the central one,
+# then peripheral ones, then absorption compartments; `number` is the count of
+# PK compartments and every one of them is named.
+bd_compartment <- function(s, outputs) {
+  idx <- 0L
+  nxt <- function() {
+    idx <<- idx + 1L
+    idx
+  }
+  comp <- list(number = length(s$pk), central = nxt())
+  named <- function(prefix, n) {
+    if (n == 0) {
+      return(NULL)
+    }
+    v <- lapply(seq_len(n), function(i) nxt())
+    stats::setNames(v, if (n == 1) prefix else paste0(prefix, seq_len(n)))
+  }
+  c(comp, named("peripheral", length(s$peripheral)), named("depot", length(s$depot)), list(outputs = outputs))
+}
+
 #' Routes of administration from the dosing data and the model inputs
+#'
+#' @return A list with `routes` (data frame with `route` and `compartment`, the
+#' input number), and the inputs for which the infusion (`R`) and bolus (`B`)
+#' terms are used by the data. Both are `NULL` when the data hold no dose.
 #' @noRd
 bd_routes <- function(p, data, central) {
   feeds <- do.call(rbind, lapply(p$dx, function(it) {
@@ -272,6 +457,7 @@ bd_routes <- function(p, data, central) {
       input = c(b, r)
     )
   }))
+  feed_b <- function(j) feeds$comp[feeds$kind == "B" & feeds$input == j]
 
   doses <- NULL
   if (!is.null(data) && all(c("evid", "dur") %in% names(data))) {
@@ -292,15 +478,18 @@ bd_routes <- function(p, data, central) {
   }
 
   routes <- data.frame(route = character(), compartment = integer())
+  use_r <- use_b <- integer()
   for (j in inputs) {
     jj <- as.character(j)
+    targets <- feed_b(j)
     if (isTRUE(has_inf[[jj]])) {
       routes <- rbind(routes, data.frame(route = "IV", compartment = as.integer(j)))
+      use_r <- c(use_r, j)
     }
     if (isTRUE(has_bol[[jj]])) {
-      targets <- feeds$comp[feeds$kind == "B" & feeds$input == j]
       route <- if (length(targets) == 0 || all(targets == central)) "IV" else "PO"
       routes <- rbind(routes, data.frame(route = route, compartment = as.integer(j)))
+      if (length(targets) == 0) use_r <- c(use_r, j) else use_b <- c(use_b, j)
     }
   }
   routes <- unique(routes)
@@ -308,7 +497,30 @@ bd_routes <- function(p, data, central) {
     routes <- data.frame(route = "IV", compartment = 1L)
   }
   rownames(routes) <- NULL
-  routes
+  list(
+    routes = routes,
+    inputs = unique(inputs),
+    use_r = if (is.null(doses)) NULL else unique(use_r),
+    use_b = if (is.null(doses)) NULL else unique(use_b)
+  )
+}
+
+# Drops the input terms (library models have both B[j] and R[j]) that the
+# dosing data never use, so every input in the equations has a matching route.
+bd_prune_inputs <- function(p, r) {
+  if (is.null(r$use_r) && is.null(r$use_b)) {
+    return(p)
+  }
+  drop <- c(paste0("R", setdiff(r$inputs, r$use_r)), paste0("B", setdiff(r$inputs, r$use_b)))
+  if (length(drop) == 0) {
+    return(p)
+  }
+  p$dx <- lapply(p$dx, function(it) {
+    new <- bd_drop_terms(it$rhs, drop)
+    bd_set_rhs(it, if (is.null(new)) 0 else new)
+  })
+  p$defs <- bd_defs(p)
+  p
 }
 
 
@@ -322,25 +534,20 @@ bd_primary <- function(pri) {
   })
 }
 
-# label, unit and description for covariate names that are common in PK
+# label, unit and description for the reserved and some common covariate names
 bd_cov_info <- function(name) {
   known <- list(
-    wt = c("Weight", "kg", "Patient weight in kilograms"),
     weight = c("Weight", "kg", "Patient weight in kilograms"),
-    bw = c("Body weight", "kg", "Patient body weight in kilograms"),
     lbw = c("Lean body weight", "kg", "Patient lean body weight in kilograms"),
     ibw = c("Ideal body weight", "kg", "Patient ideal body weight in kilograms"),
     age = c("Age", "years", "Patient age in years"),
-    ht = c("Height", "cm", "Patient height in centimeters"),
     height = c("Height", "cm", "Patient height in centimeters"),
     bsa = c("Body surface area", "m2", "Body surface area in square meters"),
     bmi = c("Body mass index", "kg/m2", "Body mass index"),
     crcl = c("Creatinine clearance", "mL/min", "Creatinine clearance in mL/min"),
-    egfr = c("eGFR", "mL/min/1.73m2", "Estimated glomerular filtration rate"),
-    scr = c("Serum creatinine", "mg/dL", "Serum creatinine in mg/dL"),
-    cr = c("Serum creatinine", "mg/dL", "Serum creatinine in mg/dL"),
-    alb = c("Albumin", "g/dL", "Serum albumin in g/dL"),
-    albumin = c("Albumin", "g/dL", "Serum albumin in g/dL")
+    creat = c("Serum creatinine", "mg/dL", "Serum creatinine in mg/dL"),
+    albumin = c("Albumin", "g/dL", "Serum albumin in g/dL"),
+    sex = c("Sex", "", "Patient sex")
   )
   if (!is.null(known[[name]])) {
     return(known[[name]])
@@ -349,36 +556,68 @@ bd_cov_info <- function(name) {
   c(label, "", paste0("Covariate ", name))
 }
 
+# observed range of a numeric covariate; always min < max with the default inside
 bd_cov_range <- function(x) {
   x <- suppressWarnings(as.numeric(x))
   x <- x[is.finite(x)]
   if (length(x) == 0) {
     return(list(min = 0, max = 1, default = 0))
   }
+  if (all(x %in% c(0, 1))) {
+    return(list(min = 0, max = 1, default = round(stats::median(x))))
+  }
   rng <- range(x)
   step <- if (diff(rng) >= 10) 1 else 0.1
-  list(
-    min = round(floor(rng[1] / step) * step, 6),
-    max = round(ceiling(rng[2] / step) * step, 6),
-    default = round(stats::median(x), 2)
+  lo <- round(floor(rng[1] / step) * step, 6)
+  hi <- round(ceiling(rng[2] / step) * step, 6)
+  if (lo >= hi) { # constant covariate
+    w <- if (lo == 0) 1 else abs(lo) / 2
+    lo <- lo - w
+    hi <- hi + w
+  }
+  list(min = lo, max = hi, default = round(stats::median(x), 2))
+}
+
+# `sex` is categorical with the lower case levels BestDose requires. Codes 1/2
+# mean male/female, otherwise 1/0 do.
+bd_sex_values <- function(x) {
+  x <- suppressWarnings(as.numeric(x))
+  x <- x[is.finite(x)]
+  female <- if (any(x == 2)) 2 else 0
+  mode <- if (length(x) == 0) 1 else as.numeric(names(which.max(table(x))))
+  data.frame(
+    cat_value = c("male", "female"),
+    num_value = c(1, female),
+    default = c(mode != female, mode == female)
   )
 }
 
-# returns the covariate block of the model and of the description
-bd_covariates <- function(cov, data) {
-  if (length(cov) == 0) {
+# Covariate blocks of the model and of the description. `cov` is the model's
+# covariate list, `ren` maps its names to the BestDose names, `keep` the names
+# (new) that the equations actually use.
+bd_covariates <- function(cov, data, ren, keep) {
+  old <- tolower(names(cov))
+  sel <- unname(ren[old]) %in% keep
+  if (!any(sel)) {
     return(list(model = NULL, description = NULL))
   }
-  nm <- tolower(names(cov))
-  model <- stats::setNames(lapply(cov, function(v) {
-    list(interp = if (isTRUE(as.numeric(v) == 1)) "linear" else "none")
+  cov <- cov[sel]
+  old <- old[sel]
+  nm <- unname(ren[old])
+
+  is_cat <- nm == "sex"
+  model <- stats::setNames(lapply(seq_along(cov), function(k) {
+    list(interp = if (!is_cat[k] && isTRUE(as.numeric(cov[[k]]) == 1)) "linear" else "none")
   }), nm)
 
   info <- lapply(nm, bd_cov_info)
   data_names <- if (is.null(data)) character() else tolower(names(data))
-  values <- stats::setNames(lapply(nm, function(n) {
-    col <- which(data_names == n)
-    list(bd_cov_range(if (length(col)) data[[col[1]]] else NULL))
+  column <- function(k) {
+    col <- which(data_names == old[k])
+    if (length(col)) data[[col[1]]] else NULL
+  }
+  values <- stats::setNames(lapply(seq_along(nm), function(k) {
+    if (is_cat[k]) bd_sex_values(column(k)) else list(bd_cov_range(column(k)))
   }), nm)
 
   list(
@@ -388,7 +627,7 @@ bd_covariates <- function(cov, data) {
       names = I(nm),
       label = I(vapply(info, `[`, character(1), 1)),
       units = I(vapply(info, `[`, character(1), 2)),
-      types = I(rep("numeric", length(nm))),
+      types = I(ifelse(is_cat, "categorical", "numeric")),
       value = values,
       description = stats::setNames(lapply(info, `[`, 3), nm)
     )
@@ -398,7 +637,7 @@ bd_covariates <- function(cov, data) {
 # Error models in output order. The first one is described at the top level and
 # the others carry their own type and value, as in the BestDose files. The error
 # value (gamma/lambda) is the one estimated by the run when available.
-bd_error <- function(err, out_idx, cycle) {
+bd_error <- function(err, cycle) {
   if (length(err) == 0) {
     cli::cli_abort(c("x" = "The model has no error model."))
   }
@@ -418,7 +657,8 @@ bd_error <- function(err, out_idx, cycle) {
     }
     cf <- c(e$coeff, rep(0, 4))[1:4] + 0 # + 0 turns -0 into 0
     list(
-      type = e$type, initial_value = value,
+      type = if (e$type == "additive") "additional" else e$type, # BestDose spelling
+      initial_value = value,
       coefficient = list(c0 = cf[1], c1 = cf[2], c2 = cf[3], c3 = cf[4])
     )
   }
@@ -452,12 +692,15 @@ bd_error <- function(err, out_idx, cycle) {
 #' @param PM_result A [PM_result] object
 #' @param drug_name Name of the drug
 #' @param model_name Name of the model
+#' @param outputs Optional named list, named by output equation number, to
+#' give outputs a `name` and, for PD outputs, a `label` and `unit`, e.g.
+#' `list("2" = list(name = "platelets", label = "Platelets", unit = "10^9/L"))`.
 #' @param ... Named elements that replace or complete the `description` block,
 #' e.g. `reference = "Author, Journal, 2024"`.
 #' @return A list with `description`, `model` and `support_point`, ready to be
 #' written as JSON.
 #' @noRd
-createBDmodel <- function(PM_result, drug_name = "Drug", model_name = drug_name, ...) {
+createBDmodel <- function(PM_result, drug_name = "Drug", model_name = drug_name, outputs = NULL, ...) {
   mod <- PM_result$model
   a <- mod$arg_list
   if (is.null(a) || !is.function(a$eqn) || !is.function(a$out) || is.null(a$pri)) {
@@ -474,20 +717,20 @@ createBDmodel <- function(PM_result, drug_name = "Drug", model_name = drug_name,
   cycle <- PM_result$cycle$data
   primary <- tolower(names(a$pri))
 
-  p <- bd_parse_model(a)
-  s <- bd_structure(p, primary)
-  cov <- bd_covariates(a$cov, data)
+  # covariates get the BestDose reserved names (e.g. poids, peso, vekt -> weight)
+  ren <- if (length(a$cov)) bd_cov_rename(names(a$cov), primary) else NULL
+  renamed <- ren[names(ren) != unname(ren)]
 
-  # symbols that are neither parameters, covariates nor defined in the model
-  known <- c(primary, tolower(names(a$cov)), names(p$defs), "X", "B", "R", "Y", "dx", "lag", "fa")
+  p <- bd_parse_model(a, ren)
+  s <- bd_structure(p, primary)
+
+  # covariates the equations never use are not exported
   used <- unique(unlist(lapply(c(p$sec, p$dx, p$ini, p$fa, p$lag, p$out), function(i) all.vars(i$rhs))))
-  undefined <- setdiff(used, known)
-  if (length(undefined) > 0) {
-    cli::cli_warn(c(
-      "!" = "The model uses {.val {undefined}}, which {?is/are} not a primary parameter, covariate or secondary variable.",
-      "i" = "The exported BestDose model will not run until {?it is/they are} defined."
-    ))
-  }
+  cov <- bd_covariates(a$cov, data, ren, keep = intersect(unname(ren), used))
+  dropped <- setdiff(names(ren), names(ren)[unname(ren) %in% used])
+
+  r <- bd_routes(p, data, s$central)
+  p <- bd_prune_inputs(p, r)
 
   # support points, in parameter order
   sp <- as.data.frame(PM_result$final$popPoints)
@@ -498,10 +741,16 @@ createBDmodel <- function(PM_result, drug_name = "Drug", model_name = drug_name,
   }
   sp <- sp[, c(primary, "prob"), drop = FALSE]
 
-  outputs <- lapply(seq_along(s$out_idx), function(k) {
+  out_list <- lapply(seq_along(s$out_idx), function(k) {
     o <- list(name = s$out_names[k], equation = s$out_idx[k])
     if (s$is_pd[k]) {
       o$pd <- list(label = paste("Output", s$out_idx[k]), unit = "")
+    }
+    given <- outputs[[as.character(s$out_idx[k])]]
+    if (!is.null(given$name)) o$name <- given$name
+    if (s$is_pd[k]) {
+      if (!is.null(given$label)) o$pd$label <- given$label
+      if (!is.null(given$unit)) o$pd$unit <- given$unit
     }
     o
   })
@@ -523,14 +772,9 @@ createBDmodel <- function(PM_result, drug_name = "Drug", model_name = drug_name,
 
   description <- list(
     drug = drug_name,
-    route = bd_routes(p, data, s$central),
+    route = r$routes,
     name = model_name,
-    compartment = list(
-      number = length(s$pk),
-      central = s$central - 1L,
-      peripheral = if (length(s$peripheral)) I(s$peripheral - 1L) else NULL,
-      outputs = outputs
-    ),
+    compartment = bd_compartment(s, out_list),
     version = 1,
     description = description_text,
     reference = "Exported from a Pmetrics run",
@@ -554,22 +798,252 @@ createBDmodel <- function(PM_result, drug_name = "Drug", model_name = drug_name,
     lag = bd_named(p$lag),
     equation = bd_named(p$dx),
     out = bd_named(p$out_y),
-    error = bd_error(a$err, s$out_idx, cycle$gamlam)
+    error = bd_error(a$err, cycle$gamlam)
   )
 
-  list(description = description, model = model, support_point = sp)
+  bd <- list(description = description, model = model, support_point = sp)
+  attr(bd, "notes") <- list(renamed = renamed, dropped = dropped)
+  bd
 }
 
-bd_export <- function(run, path = ".", drug, model, ...) {
-  if (missing(drug) || !is.character(drug) || length(drug) != 1 || !nzchar(drug)) {
+
+# ==================================================================____
+# Checklist
+# ==================================================================____
+
+# Checks an exported model against the BestDose model checklist
+# (dev/bestdose_example/model_checklist.md) and returns what is still wrong,
+# as a list of `errors` and `warnings`. Everything that could be repaired
+# automatically has been before this point.
+bd_check <- function(bd) {
+  errors <- character()
+  warnings <- character()
+  err <- function(...) errors <<- c(errors, paste0(...))
+  warn <- function(...) warnings <<- c(warnings, paste0(...))
+
+  d <- bd$description
+  m <- bd$model
+  prim <- names(m$primary)
+  sec <- unlist(m$secondary)
+  eqn <- unlist(m$equation)
+  outs <- unlist(m$out)
+  fa <- unlist(m$fa)
+  lag <- unlist(m$lag)
+  ini <- unlist(m$initial_conditions)
+  covs <- names(m$covariates)
+
+  parse_eq <- function(txt) {
+    e <- tryCatch(parse(text = txt)[[1]], error = function(e) NULL)
+    if (is.null(e)) {
+      return(list(lhs = NULL, vars = character(), ok = FALSE))
+    }
+    if (bd_is_assign(e)) list(lhs = e[[2]], vars = all.vars(e[[3]]), ok = TRUE) else list(lhs = NULL, vars = all.vars(e), ok = FALSE)
+  }
+  sec_vars <- lapply(sec, function(x) parse_eq(x)$vars)
+  fixed <- c("X", "B", "R", "Y", "dx", "lag", "fa", "t", "time")
+
+  # description
+  if (!nzchar(d$name) || !nzchar(d$drug)) err("name and drug must not be empty")
+  if (!nzchar(d$description)) warn("the model description is empty")
+  if (!nzchar(d$reference)) warn("the reference is empty")
+
+  # compartments
+  comp <- d$compartment
+  named <- setdiff(names(comp), c("number", "outputs"))
+  idx <- unlist(comp[named])
+  if (!is.numeric(comp$number) || comp$number < 1 || comp$number > 10) err("compartment$number must be between 1 and 10")
+  if (!"central" %in% named) err("the compartment block must have a central compartment")
+  if (length(named) > 6) err("more than 6 named compartments")
+  if (length(named) != comp$number) err("the number of named compartments (", length(named), ") differs from compartment$number (", comp$number, ")")
+  if (anyDuplicated(idx) || any(idx < 1 | idx > 6) || any(idx > comp$number)) err("compartment indices must be unique, between 1 and 6 and not exceed compartment$number")
+  if (comp$number > length(eqn)) err("compartment$number exceeds the number of state equations")
+  if (comp$number < length(eqn)) warn("compartment$number (", comp$number, ") is lower than the number of state equations (", length(eqn), "), as expected for a PK/PD model")
+
+  # outputs
+  onames <- vapply(comp$outputs, function(o) o$name, character(1))
+  oeq <- vapply(comp$outputs, function(o) as.integer(o$equation), integer(1))
+  if (anyDuplicated(tolower(onames))) err("output names must be unique, whatever their case")
+  if (anyDuplicated(oeq)) err("output equation numbers must be unique")
+  if (any(oeq < 1 | oeq > 6)) err("output equations must be between 1 and 6")
+  if (any(tolower(onames) %in% c("concentration", covs))) err("an output is named 'concentration' or like a covariate")
+  if (length(outs) > 6) err("more than 6 outputs")
+  if (length(outs) != length(oeq)) err("there must be one output equation per declared output")
+  for (o in comp$outputs) {
+    key <- paste0("y", o$equation)
+    if (!key %in% names(outs)) err("output ", o$name, " has no equation ", key)
+    if (is.null(o$pd)) {
+      if (key %in% names(outs) && !bd_is_conc(outs[[key]])) err("concentration output ", key, " is not X[N] divided by a parameter")
+    } else {
+      if (identical(o$name, "central")) err("the central output cannot be a PD effect")
+      if (!nzchar(o$pd$label)) err("PD output ", o$name, " has no label")
+      if (!nzchar(o$pd$unit)) warn("PD output ", o$name, " has no unit")
+      if (tolower(o$name) == "effect") warn("PD output name 'effect' is generic")
+    }
+  }
+
+  # routes
+  rt <- d$route
+  if (anyDuplicated(rt$compartment)) warn("several routes use the same input number")
+  used_r <- unique(unlist(regmatches(eqn, gregexpr("(?<=R\\[)[0-9]+(?=\\])", eqn, perl = TRUE))))
+  used_b <- unique(unlist(regmatches(eqn, gregexpr("(?<=B\\[)[0-9]+(?=\\])", eqn, perl = TRUE))))
+  if (length(c(used_r, used_b)) == 0) err("no dose input (R[N] or B[N]) in the equations")
+  for (j in setdiff(c(used_r, used_b), as.character(rt$compartment))) err("input ", j, " is used by the equations but has no route")
+  for (j in setdiff(as.character(rt$compartment), c(used_r, used_b))) warn("route with input ", j, " is not used by the equations")
+  for (j in used_r) {
+    if (!any(rt$route[rt$compartment == as.integer(j)] %in% c("IV", "SC"))) err("R[", j, "] is used by a route that is not IV or SC")
+  }
+
+  # covariates
+  cv <- d$covariates
+  if (!is.null(cv)) {
+    if (any(grepl("[^a-zA-Z0-9_]", cv$names))) err("covariate names may only have letters, numbers and _")
+    for (k in seq_along(cv$names)) {
+      v <- cv$value[[cv$names[k]]]
+      if (cv$types[k] == "numeric") {
+        if (!(v[[1]]$min < v[[1]]$max)) err("covariate ", cv$names[k], ": min must be lower than max")
+        if (v[[1]]$default < v[[1]]$min || v[[1]]$default > v[[1]]$max) err("covariate ", cv$names[k], ": default is outside min/max")
+      } else {
+        if (sum(v$default) != 1) err("covariate ", cv$names[k], ": exactly one default category is required")
+        if (!identical(m$covariates[[cv$names[k]]]$interp, "none")) err("categorical covariate ", cv$names[k], " must use no interpolation")
+      }
+    }
+  }
+
+  # primary parameters
+  if (length(prim) < 2) err("at least two primary parameters are required")
+  for (q in prim) if (!(m$primary[[q]]$min < m$primary[[q]]$max)) err("primary parameter ", q, ": min must be lower than max")
+
+  # secondary parameters
+  if (any(names(sec) %in% prim)) err("secondary parameter(s) share a name with a primary one: ", paste(intersect(names(sec), prim), collapse = ", "))
+  reach <- function(v, seen = character()) { # variables reached through secondary parameters
+    for (x in setdiff(v, seen)) {
+      seen <- c(seen, x)
+      if (x %in% names(sec)) seen <- union(seen, reach(sec_vars[[x]], seen))
+    }
+    seen
+  }
+  for (nm in names(sec)) {
+    if (!grepl("=", sec[[nm]], fixed = TRUE)) err("secondary ", nm, " is not an equation")
+    v <- sec_vars[[nm]]
+    if (length(v) > 0 && !any(prim %in% reach(v))) err("secondary ", nm, " uses no primary parameter")
+  }
+  in_sec <- unique(unlist(lapply(sec_vars, reach)))
+  for (cv_name in setdiff(covs, in_sec)) warn("covariate ", cv_name, " is not used by any secondary equation")
+
+  # every symbol is defined, every parameter used
+  all_txt <- c(sec, eqn, outs, fa, lag, ini)
+  all_v <- unique(unlist(lapply(all_txt, function(x) parse_eq(x)$vars)))
+  unknown <- setdiff(all_v, c(prim, names(sec), covs, fixed))
+  if (length(unknown) > 0) err("undefined variable(s): ", paste(unknown, collapse = ", "))
+  after_sec <- unique(unlist(lapply(c(eqn, outs, fa, lag, ini), function(x) parse_eq(x)$vars)))
+  expected <- c(names(sec), setdiff(prim, in_sec))
+  for (q in setdiff(expected, reach(after_sec))) err("parameter ", q, " is not used by the state, output, fa or lag equations")
+
+  # structure of the equations
+  if (length(eqn) > 10) err("more than 10 differential equations")
+  for (nm in names(eqn)) if (!grepl(paste0("^dx\\[", sub("^dx", "", nm), "\\]\\s*="), eqn[[nm]])) err("equation ", nm, " is not written dx[N] = ...")
+  for (nm in names(outs)) if (!grepl("^Y\\[[1-6]\\]\\s*=", outs[[nm]])) err("output ", nm, " is not written Y[N] = ...")
+  for (nm in names(ini)) if (!grepl(paste0("^X\\[", sub("^x", "", nm), "\\]\\s*="), ini[[nm]])) err("initial condition ", nm, " is not written X[N] = ...")
+  for (nm in names(fa)) if (!grepl("^fa\\[[0-9]+\\]\\s*=", fa[[nm]], ignore.case = TRUE)) err("fa ", nm, " is not written fa[N] = ...")
+  for (nm in names(lag)) if (!grepl("^lag\\[[0-9]+\\]\\s*=", lag[[nm]], ignore.case = TRUE)) err("lag ", nm, " is not written lag[N] = ...")
+
+  # error model
+  er <- m$error
+  if (!er$type %in% c("additional", "proportional")) err("error type must be additional or proportional")
+  if (!(er$initial_value > 0)) err("the error initial_value must be greater than zero")
+  if (length(er$coefficient) > length(outs)) err("more error rows than outputs")
+  for (k in seq_along(er$coefficient)) {
+    cf <- unlist(er$coefficient[[k]][c("c0", "c1", "c2", "c3")])
+    if (all(cf == 0)) warn("error row ", k, " has only zero coefficients")
+    ev <- if (k == 1) er$initial_value else er$coefficient[[k]]$initial_value
+    if (!(ev > 0)) err("error row ", k, ": initial_value must be greater than zero")
+  }
+  n_pd <- sum(vapply(comp$outputs, function(o) !is.null(o$pd), logical(1)))
+  if (n_pd > 0 && length(er$coefficient) < length(outs)) warn("a PD effect has no error row of its own")
+
+  # PD
+  if (any(!d$pd_parameters %in% prim)) err("a PD parameter is not a primary parameter")
+  if (n_pd > 0 && length(d$pd_parameters) == 0) warn("PD effect output(s) but no PD parameter")
+  if (n_pd == 0 && length(d$pd_parameters) > 0) warn("PD parameter(s) but no PD effect output")
+
+  # support points
+  sp <- bd$support_point
+  if (abs(sum(sp$prob) - 1) > 0.01) warn("support point probabilities sum to ", round(sum(sp$prob), 3))
+  if (!all(prim %in% names(sp))) err("support points do not cover every primary parameter")
+
+  list(errors = errors, warnings = warnings)
+}
+
+# Asks one question in the console. Enter keeps the default (shown in brackets).
+bd_ask <- function(question, default = "", required = FALSE) {
+  repeat {
+    shown <- if (nzchar(default)) paste0(question, " [", default, "]: ") else paste0(question, ": ")
+    answer <- trimws(readline(shown))
+    if (nzchar(answer)) {
+      return(answer)
+    }
+    if (nzchar(default) || !required) {
+      return(default)
+    }
+    cat("An answer is required.\n")
+  }
+}
+
+# Asks for what a run cannot provide and patches the exported model. Every
+# question has a default, so Enter keeps what was derived from the run.
+bd_interview <- function(bd) {
+  cat("\nBestDose export - press Enter to keep the value in brackets.\n")
+  bd$description$description <- bd_ask("Short model description", bd$description$description)
+  bd$description$reference <- bd_ask("Reference", bd$description$reference)
+
+  cv <- bd$description$covariates
+  if (!is.null(cv)) {
+    for (k in seq_along(cv$names)) {
+      if (cv$names[k] == "sex") next
+      cat("\nCovariate '", cv$names[k], "'\n", sep = "")
+      cv$label[k] <- bd_ask("  Label", cv$label[k])
+      cv$units[k] <- bd_ask("  Unit", cv$units[k])
+    }
+    cv$label <- I(as.character(cv$label))
+    cv$units <- I(as.character(cv$units))
+    bd$description$covariates <- cv
+  }
+
+  outs <- bd$description$compartment$outputs
+  for (k in seq_along(outs)) {
+    if (is.null(outs[[k]]$pd)) next
+    cat("\nOutput ", outs[[k]]$equation, " is a pharmacodynamic (PD) effect\n", sep = "")
+    outs[[k]]$name <- bd_ask("  Name (what is measured, e.g. platelets)", outs[[k]]$name)
+    outs[[k]]$pd$label <- bd_ask("  Label", outs[[k]]$pd$label)
+    outs[[k]]$pd$unit <- bd_ask("  Unit", outs[[k]]$pd$unit)
+  }
+  bd$description$compartment$outputs <- outs
+  cat("\n")
+  bd
+}
+
+bd_export <- function(run, path = ".", drug, model, outputs = NULL, ..., ask = interactive()) {
+  if (missing(drug) || is.null(drug)) {
+    drug <- if (ask) bd_ask("Drug name", required = TRUE) else NULL
+  }
+  if (!is.character(drug) || length(drug) != 1 || !nzchar(drug)) {
     cli::cli_abort(c("x" = "{.arg drug} must be a single non-empty character string."))
   }
-  if (missing(model) || !is.character(model) || length(model) != 1 || !nzchar(model)) {
+  if (missing(model) || is.null(model)) {
+    model <- if (ask) bd_ask("Model name (also the file name)", paste0(tolower(gsub("[^A-Za-z0-9]+", "_", drug)), "_model"), required = TRUE) else NULL
+  }
+  if (!is.character(model) || length(model) != 1 || !nzchar(model)) {
     cli::cli_abort(c("x" = "{.arg model} must be a single non-empty character string."))
   }
   model <- sub("\\.bdm$", "", model)
 
-  bd <- createBDmodel(run, drug_name = drug, model_name = model, ...)
+  bd <- createBDmodel(run, drug_name = drug, model_name = model, outputs = outputs, ...)
+  notes <- attr(bd, "notes")
+  attr(bd, "notes") <- NULL
+  if (ask) {
+    bd <- bd_interview(bd)
+  }
+  check <- bd_check(bd)
 
   if (!dir.exists(path)) {
     dir.create(path, recursive = TRUE)
@@ -577,17 +1051,34 @@ bd_export <- function(run, path = ".", drug, model, ...) {
   file <- file.path(path, paste0(model, ".bdm"))
   jsonlite::write_json(bd, file, auto_unbox = TRUE, pretty = TRUE, digits = 10, null = "null", na = "null")
 
-  needs_review <- character()
-  if (!is.null(bd$description$covariates) && any(bd$description$covariates$units == "")) {
-    needs_review <- c(needs_review, "covariate units, labels and descriptions")
-  }
-  if (any(vapply(bd$description$compartment$outputs, function(o) !is.null(o$pd), logical(1)))) {
-    needs_review <- c(needs_review, "PD output labels and units")
-  }
   cli::cli_inform(c(
     "v" = "BestDose model written to {.file {file}}",
-    "i" = "{length(bd$description$compartment$outputs)} output(s), {nrow(bd$support_point)} support points, {length(bd$model$primary)} parameter(s).",
-    if (length(needs_review) > 0) c("!" = "Not available in a Pmetrics run, please review: {needs_review}. They can be supplied through {.code ...}.")
+    "i" = "{length(bd$description$compartment$outputs)} output(s), {nrow(bd$support_point)} support points, {length(bd$model$primary)} parameter(s)."
   ))
+  if (length(notes$renamed) > 0) {
+    cli::cli_inform(c("i" = "Covariates renamed to BestDose reserved names: {paste0(names(notes$renamed), ' -> ', notes$renamed, collapse = ', ')}."))
+  }
+  if (length(notes$dropped) > 0) {
+    cli::cli_inform(c("i" = "Covariates not used by the equations were not exported: {notes$dropped}."))
+  }
+  cv <- bd$description$covariates
+  if ("sex" %in% cv$names) {
+    other <- bd$description$covariates$value$sex$num_value[2]
+    cli::cli_inform(c("i" = "{.code sex} was exported as categorical with 1 = male and {other} = female. Check that this is your coding."))
+  }
+  review <- character()
+  if (!is.null(cv) && any(cv$units[cv$names != "sex"] == "")) review <- c(review, "covariate units, labels and descriptions")
+  if (any(vapply(bd$description$compartment$outputs, function(o) !is.null(o$pd), logical(1)))) {
+    review <- c(review, "PD output names, labels and units (see the outputs argument)")
+  }
+  if (length(review) > 0 && !ask) {
+    cli::cli_inform(c("!" = "Not available in a Pmetrics run, please review: {review}."))
+  }
+  if (length(check$errors) > 0) {
+    cli::cli_warn(c("x" = "The model will not pass the BestDose checks:", stats::setNames(check$errors, rep("*", length(check$errors)))))
+  }
+  if (length(check$warnings) > 0) {
+    cli::cli_inform(c("!" = "BestDose check warnings:", stats::setNames(check$warnings, rep("*", length(check$warnings)))))
+  }
   invisible(file)
 }
