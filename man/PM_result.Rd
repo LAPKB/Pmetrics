@@ -14,6 +14,18 @@ After a run completes, results are stored on your hard drive. They are loaded
 back into R with \link{PM_load} to create the \link{PM_result} object, which contains both
 the results and functions to analyze or plot the result.
 }
+\examples{
+
+## ------------------------------------------------
+## Method `PM_result$export()`
+## ------------------------------------------------
+
+\dontrun{
+run <- PM_load(1)
+run$export() # asks the questions
+run$export(path = "bestdose", drug = "vancomycin", model = "vanco_adult", ask = FALSE)
+}
+}
 \author{
 Michael Neely, Julian Otalvaro
 }
@@ -68,6 +80,7 @@ new optimal sampling results.}
     \item \href{#method-PM_result-report}{\code{PM_result$report()}}
     \item \href{#method-PM_result-sim}{\code{PM_result$sim()}}
     \item \href{#method-PM_result-save}{\code{PM_result$save()}}
+    \item \href{#method-PM_result-export}{\code{PM_result$export()}}
     \item \href{#method-PM_result-validate}{\code{PM_result$validate()}}
     \item \href{#method-PM_result-step}{\code{PM_result$step()}}
     \item \href{#method-PM_result-opt}{\code{PM_result$opt()}}
@@ -292,6 +305,70 @@ results with someone.
 The saved object is an .Rdata file. When loaded, it should be assigned to an R
 object, e.g. \code{run2 <- PM_result$new("filename")}. An equivalent statement would
 be \code{run2 <- PM_load(file = "filename")}.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PM_result-export"></a>}}
+\if{latex}{\out{\hypertarget{method-PM_result-export}{}}}
+\subsection{\code{PM_result$export()}}{
+  Export the run as a BestDose model file (.bdm).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{PM_result$export(
+  path = ".",
+  drug,
+  model,
+  outputs = NULL,
+  ...,
+  ask = interactive()
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{path}}{Folder in which the file is written. Default is the working
+directory. It is created if it does not exist.}
+      \item{\code{drug}}{Name of the drug.}
+      \item{\code{model}}{Name of the model, also used for the file name \verb{<model>.bdm}.}
+      \item{\code{outputs}}{Optional named list, named by output equation number, to
+name the outputs and, for pharmacodynamic outputs, give a \code{label} and \code{unit},
+e.g. \code{list("2" = list(name = "platelets", label = "Platelets", unit = "10^9/L"))}.}
+      \item{\code{...}}{Optional named elements that replace or complete the
+\code{description} block of the file, e.g. \code{reference = "Author, 2024"} or
+\code{description = "Vancomycin in adults"}.}
+      \item{\code{ask}}{In an interactive session (the default), missing \code{drug} and
+\code{model} names are asked in the console, followed by the details a run
+cannot provide (description, reference, covariate labels and units, PD
+output names). Enter keeps the suggested value. Use \code{ask = FALSE} to
+skip the questions.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Details}{
+    The model, final population support points, error model, covariate ranges,
+routes of administration and fit summary are read from the run. Pmetrics
+library (analytical) models are written as their differential equations.
+Compartments and parameters that do not drive the first output are
+flagged as pharmacodynamic (PD). Covariates get the BestDose reserved names
+(\code{weight}, \code{crcl}, \code{creat}, \code{height}, \code{bmi}, \code{bsa}, \code{sex}, \code{age}) whether
+they are named in English, French, Spanish or Norwegian, and covariates
+that no equation uses are left out. The result is checked against the
+BestDose model checklist and what remains is reported.
+Information that is not stored in a run, such as covariate units, is given a
+neutral default and can be replaced through \code{...}.
+  }
+  \subsection{Returns}{
+    Invisibly, the path of the file written.
+  }
+  \subsection{Examples}{
+    \if{html}{\out{<div class="r example copy">}}
+    \preformatted{run <- PM_load(1)
+run$export() # asks the questions
+run$export(path = "bestdose", drug = "vancomycin", model = "vanco_adult", ask = FALSE)
+}
+    \if{html}{\out{</div>}}
   }
 }
 
