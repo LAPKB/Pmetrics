@@ -244,6 +244,46 @@ PM_result <- R6::R6Class(
     },
 
     #' @description
+    #' Export the run as a BestDose model file (.bdm).
+    #' @details
+    #' The model, final population support points, error model, covariate ranges,
+    #' routes of administration and fit summary are read from the run. Pmetrics
+    #' library (analytical) models are written as their differential equations.
+    #' Compartments and parameters that do not drive the first output are
+    #' flagged as pharmacodynamic (PD). Covariates get the BestDose reserved names
+    #' (`weight`, `crcl`, `creat`, `height`, `bmi`, `bsa`, `sex`, `age`) whether
+    #' they are named in English, French, Spanish or Norwegian, and covariates
+    #' that no equation uses are left out. The result is checked against the
+    #' BestDose model checklist and what remains is reported.
+    #' Information that is not stored in a run, such as covariate units, is given a
+    #' neutral default and can be replaced through `...`.
+    #' @param path Folder in which the file is written. Default is the working
+    #' directory. It is created if it does not exist.
+    #' @param drug Name of the drug.
+    #' @param model Name of the model, also used for the file name `<model>.bdm`.
+    #' @param outputs Optional named list, named by output equation number, to
+    #' name the outputs and, for pharmacodynamic outputs, give a `label` and `unit`,
+    #' e.g. `list("2" = list(name = "platelets", label = "Platelets", unit = "10^9/L"))`.
+    #' @param ... Optional named elements that replace or complete the
+    #' `description` block of the file, e.g. `reference = "Author, 2024"` or
+    #' `description = "Vancomycin in adults"`.
+    #' @param ask In an interactive session (the default), missing `drug` and
+    #' `model` names are asked in the console, followed by the details a run
+    #' cannot provide (description, reference, covariate labels and units, PD
+    #' output names). Enter keeps the suggested value. Use `ask = FALSE` to
+    #' skip the questions.
+    #' @return Invisibly, the path of the file written.
+    #' @examples
+    #' \dontrun{
+    #' run <- PM_load(1)
+    #' run$export() # asks the questions
+    #' run$export(path = "bestdose", drug = "vancomycin", model = "vanco_adult", ask = FALSE)
+    #' }
+    export = function(path = ".", drug, model, outputs = NULL, ..., ask = interactive()) {
+      bd_export(self, path = path, drug = drug, model = model, outputs = outputs, ..., ask = ask)
+    },
+
+    #' @description
     #' Validate the result by internal simulation methods.
     #' @param ... Arguments passed to [PM_valid].
     validate = function(...) {
