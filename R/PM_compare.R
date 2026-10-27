@@ -463,7 +463,7 @@ PM_compare <- function(..., icen = "median", outeq = 1, plot = FALSE) {
   op_tbl <- op |>
     map(\(i) {
       i |>
-        filter(icen == "median") |>
+        filter(outeq == !!outeq, icen == !!icen) |>
         group_by(pred.type) |>
         group_map(~ {
           fit <- lm(obs ~ pred, data = .x)
