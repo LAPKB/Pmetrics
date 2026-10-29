@@ -31,13 +31,13 @@
 # ---------------------------------------------------------------------------
 
 # The set of DSL intrinsic functions and how R names map to them. R names that
-# are not present here (e.g. hyperbolic or inverse-trigonometric functions) are
+# are not present here (e.g. inverse-trigonometric functions) are
 # not currently expressible in the DSL and trigger an informative error.
 dsl_function_map <- function() {
   c(
     abs = "abs", exp = "exp", sqrt = "sqrt",
     ln = "ln", log = "ln", log10 = "log10", log2 = "log2",
-    sin = "sin", cos = "cos", tan = "tan",
+    sin = "sin", cos = "cos", tan = "tan", tanh = "tanh",
     floor = "floor", ceiling = "ceil", round = "round",
     max = "max", min = "min"
   )
@@ -56,6 +56,57 @@ dsl_effect_signature <- function() {
     estimate_effect_2 = "estimate_effect_2(u, v, alpha, h1, h2)",
     estimate_effect_3 = "estimate_effect_3(a, b, c, alpha12, alpha13, alpha23, alpha123, h1, h2, h3)"
   )
+}
+
+# DSL functions with named parameters, some of them optional. They may be called
+# by position, by parameter name, or both (positional first), exactly as in the
+# DSL, so argument names are kept in the generated call.
+dsl_signature_functions <- function() {
+  list(
+    effect50 = list(
+      params = c("min", "max", "e50", "h", "x"), required = "x",
+      signature = "effect50(min = 0, max = 1, e50 = 0.5, h = 1, x)"
+    ),
+    sigmoid = list(
+      params = c("x", "k"), required = "x",
+      signature = "sigmoid(x, k = 1)"
+    ),
+    logit = list(params = "p", required = "p", signature = "logit(p)")
+  )
+}
+
+# Bind a call to a signature function, checking its arguments against the
+# signature so a wrong call is reported against the R expression.
+dsl_signature_call <- function(op, sig, args, a, expr) {
+  arg_names <- names(args)
+  if (is.null(arg_names)) arg_names <- rep("", length(args))
+  named <- nzchar(arg_names)
+  n_pos <- sum(!named)
+  bound <- c(sig$params[seq_len(min(n_pos, length(sig$params)))], arg_names[named])
+
+  problem <- if (any(!named & cumsum(named) > 0)) {
+    "positional arguments must come before named ones"
+  } else if (n_pos > length(sig$params)) {
+    sprintf("it takes at most %d arguments", length(sig$params))
+  } else if (length(unknown <- setdiff(arg_names[named], sig$params)) > 0) {
+    sprintf("it has no argument %s", paste0("`", unknown, "`", collapse = ", "))
+  } else if (anyDuplicated(bound)) {
+    sprintf("argument `%s` is given more than once", bound[duplicated(bound)][[1]])
+  } else if (length(missing <- setdiff(sig$required, bound)) > 0) {
+    sprintf("argument %s is required", paste0("`", missing, "`", collapse = ", "))
+  }
+  if (!is.null(problem)) {
+    cli::cli_abort(
+      c(
+        "x" = "Invalid call {.code {dsl_expr_label(expr)}}: {problem}.",
+        "i" = "Write {.code {sig$signature}}, passing arguments by position, by name, or both."
+      ),
+      call = NULL
+    )
+  }
+
+  rendered <- ifelse(named, paste0(arg_names, " = ", unlist(a)), unlist(a))
+  sprintf("%s(%s)", op, paste(rendered, collapse = ", "))
 }
 
 # Function names that used to exist with different arguments. They get a
@@ -488,6 +539,11 @@ expr_to_dsl <- function(expr, ctx = NULL, allow_if = TRUE) {
     return(sprintf("%s(%s)", op, paste(unlist(a), collapse = ", ")))
   }
 
+  signatures <- dsl_signature_functions()
+  if (op %in% names(signatures)) {
+    return(dsl_signature_call(op, signatures[[op]], args, a, expr))
+  }
+
   # pmin/pmax are elementwise in R; for the scalar expressions a model uses,
   # that is min/max. The DSL's min/max are binary while R's are variadic, and
   # trunc/sign are not DSL intrinsics at all.
@@ -566,7 +622,7 @@ expr_to_dsl <- function(expr, ctx = NULL, allow_if = TRUE) {
         dsl_unsupported(
           expr, stringr::str_glue("Unsupported function '{op}':"),
           stringr::str_glue(
-            "Supported functions are {paste(sort(unique(unname(dsl_function_map()))), collapse = ', ')}, "
+            "Supported functions are {paste(sort(unique(c(unname(dsl_function_map()), names(dsl_signature_functions())))), collapse = ', ')}, "
           , "plus the runtime effect functions {paste(names(dsl_effect_functions()), collapse = ', ')}."
           )
         )

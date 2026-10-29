@@ -478,3 +478,33 @@ testthat::test_that("a diagnostic names the file and line when R kept them", {
   testthat::expect_match(conditionMessage(err), "unknown identifier")
   testthat::expect_match(conditionMessage(err), "test-model-dsl-language\\.R:[0-9]+")
 })
+
+testthat::test_that("signature functions keep argument names and apply defaults", {
+  dsl <- model_to_dsl(dose_model("effect50(p1, max = p2, x = x[1] / p3)"))
+  testthat::expect_match(dsl, "out(1) = effect50(p1, max = p2, x = x1 / p3)", fixed = TRUE)
+  testthat::expect_true(dsl_is_valid(dsl))
+
+  hill <- function(min, max, e50, h, x) min + (max - min) * x^h / (e50^h + x^h)
+  testthat::expect_equal(
+    dsl_value("effect50(max = 10, e50 = p2, h = p3, x = x[1])", p2 = 2, p3 = 1.5),
+    hill(0, 10, 2, 1.5, 3.5)
+  )
+  # Positional arguments bind in signature order; omitted ones take defaults.
+  testthat::expect_equal(dsl_value("effect50(p1, 5, x = x[1])", p1 = 1), hill(1, 5, 0.5, 1, 3.5))
+  testthat::expect_equal(dsl_value("sigmoid(p1)", p1 = 0.7), 1 / (1 + exp(-0.7)))
+  testthat::expect_equal(dsl_value("sigmoid(p1, k = p2)", p1 = 0.7, p2 = 3), 1 / (1 + exp(-2.1)))
+  testthat::expect_equal(dsl_value("logit(p1)", p1 = 0.25), log(0.25 / 0.75))
+  testthat::expect_equal(dsl_value("tanh(p1)", p1 = 0.4), tanh(0.4))
+})
+
+testthat::test_that("signature function calls are checked against the R expression", {
+  message_for <- function(expr) {
+    tryCatch(model_to_dsl(dose_model(expr)), error = function(e) conditionMessage(e))
+  }
+  testthat::expect_match(message_for("effect50(0, 1, 0.5, 1)"), "`x` is required")
+  testthat::expect_match(message_for("effect50(x = p1, ec50 = p2)"), "no argument `ec50`")
+  testthat::expect_match(message_for("effect50(x = p1, 1)"), "positional arguments must come before")
+  testthat::expect_match(message_for("effect50(p1, min = p2, x = p3)"), "`min` is given more than once")
+  testthat::expect_match(message_for("sigmoid(p1, p2, p3)"), "at most 2 arguments")
+  testthat::expect_match(message_for("sigmoid(p1, p2, p3)"), "sigmoid(x, k = 1)", fixed = TRUE)
+})

@@ -317,6 +317,19 @@ PM_model <- R6::R6Class(
     #' h2)`. These functions are evaluated at run time, on every derivative or
     #' output evaluation, and cannot be used in the `pri` block.
     #'
+    #' These functions can also be used anywhere an expression is allowed. Arguments
+    #' can be passed by position, by name, or both (positional arguments first), and
+    #' omitted arguments take the defaults shown:
+    #'
+    #'   - `effect50(min = 0, max = 1, e50 = 0.5, h = 1, x)` is the sigmoid Emax
+    #'   (Hill) model \eqn{min + (max - min) x^h / (e50^h + x^h)}. `x` is required;
+    #'   any `x <= 0` returns `min`. For example,
+    #'   `y[2] <- effect50(max = emax, e50 = ec50, h = gam, x = x[1] / v)`.
+    #'   - `sigmoid(x, k = 1)` is \eqn{1 / (1 + e^{-k x})}. `sigmoid(t - t0, k)` is a
+    #'   smooth switch at `t0`, which the ODE solvers handle better than an `if`.
+    #'   - `logit(p)` is \eqn{ln(p / (1 - p))}, the inverse of `sigmoid(x)`.
+    #'   - `tanh(x)` is the hyperbolic tangent.
+    #'
     #' Example:
     #' ```
     #' fa = function() {
