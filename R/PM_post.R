@@ -98,7 +98,7 @@ PM_post <- R6::R6Class(
           file = file.path(path, "pred.csv"),
           col_types = list(
             time = readr::col_double(),
-            outeq = readr::col_integer(),
+            outeq = readr::col_character(),
             block = readr::col_integer(),
             obs = readr::col_double(),
             cens = readr::col_character(),
@@ -108,6 +108,7 @@ PM_post <- R6::R6Class(
             post_median = readr::col_double()
           ), show_col_types = FALSE
         )
+        op_raw$outeq <- engine_outeq_index(op_raw$outeq, engine_output_labels(path))
       } else if (inherits(data, "PM_post") & !is.null(data$data)) { # file not there, and already PM_post
         upgraded_data <- PM_upgrade(data$data)
         class(upgraded_data) <- c("PM_post_data", "data.frame")

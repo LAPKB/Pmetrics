@@ -44,9 +44,10 @@
 #'
 #' `dsl` is one character string containing the model source. Route and output
 #' labels declared in the DSL are the labels Pmetrics expects in the data's
-#' `INPUT` and `OUTEQ` columns. Purely numeric identifiers in the data are
-#' canonicalised to the `input_n` / `outeq_n` form pharmsol requires, so
-#' `INPUT = 1` matches a route declared as `input_1`.
+#' `INPUT` and `OUTEQ` columns, matched exactly: `INPUT = 1` matches a route
+#' declared as `1`, and `OUTEQ = plasma` an output declared as `plasma`. For
+#' models written for earlier versions, `INPUT = 1` / `OUTEQ = 1` also match
+#' routes and outputs declared as `input_1` / `outeq_1`.
 #'
 #' **Some notes on the example at the end of this help page:**
 #'
@@ -315,6 +316,19 @@ PM_model <- R6::R6Class(
     #' h2, alpha_s)` call must be rewritten as `estimate_effect_2(a, b, alpha_s, h1,
     #' h2)`. These functions are evaluated at run time, on every derivative or
     #' output evaluation, and cannot be used in the `pri` block.
+    #'
+    #' These functions can also be used anywhere an expression is allowed. Arguments
+    #' can be passed by position, by name, or both (positional arguments first), and
+    #' omitted arguments take the defaults shown:
+    #'
+    #'   - `effect50(min = 0, max = 1, e50 = 0.5, h = 1, x)` is the sigmoid Emax
+    #'   (Hill) model \eqn{min + (max - min) x^h / (e50^h + x^h)}. `x` is required;
+    #'   any `x <= 0` returns `min`. For example,
+    #'   `y[2] <- effect50(max = emax, e50 = ec50, h = gam, x = x[1] / v)`.
+    #'   - `sigmoid(x, k = 1)` is \eqn{1 / (1 + e^{-k x})}. `sigmoid(t - t0, k)` is a
+    #'   smooth switch at `t0`, which the ODE solvers handle better than an `if`.
+    #'   - `logit(p)` is \eqn{ln(p / (1 - p))}, the inverse of `sigmoid(x)`.
+    #'   - `tanh(x)` is the hyperbolic tangent.
     #'
     #' Example:
     #' ```
@@ -745,7 +759,7 @@ PM_model <- R6::R6Class(
         msg <- c(msg, "There must be one error model for each output equation.")
       }
       # Validate the output equation each error model is declared for. R-defined
-      # models declare outputs as `y[i]`, whose canonical labels are `outeq_i`.
+      # models declare outputs as `y[i]`, whose canonical labels are `i`.
       if (!is.null(self$arg_list$err) && length(self$arg_list$err) > 0) {
         model_outputs <- pm_output_label(seq_len(n_out))
         is_err <- vapply(self$arg_list$err, inherits, logical(1), "PM_err")
@@ -1109,7 +1123,9 @@ PM_model <- R6::R6Class(
 
       # bolus and infusions
       if (self$model_list$type == "ODE") { # only need to check these for ODE models
-        data_inputs <- pm_input_label(data$standard_data$input)
+        data_inputs <- pm_resolve_labels(
+          data$standard_data$input, model_input_labels(self), "input_"
+        )
         bolus <- unique(data_inputs[data$standard_data$dur == 0]) |> purrr::discard(~ is.na(.x))
         infusion <- unique(data_inputs[data$standard_data$dur > 0]) |> purrr::discard(~ is.na(.x))
         if (length(bolus) > 0) {
@@ -1426,7 +1442,9 @@ PM_model <- R6::R6Class(
       # Rewrite the backend's copy of the data so INPUT/OUTEQ carry the same
       # labels the DSL declares.
       label_data_csv(
-        normalizePath(file.path(path_run, "inputs", "gendata.csv"), mustWork = FALSE)
+        normalizePath(file.path(path_run, "inputs", "gendata.csv"), mustWork = FALSE),
+        inputs = model_input_labels(self),
+        outputs = model_output_labels(self)
       )
 
       # Get ranges and calculate points
@@ -1647,7 +1665,11 @@ PM_model <- R6::R6Class(
         }
       }
       # Label the backend's copy of the data to match the DSL.
-      label_data_csv(temp_csv)
+      label_data_csv(
+        temp_csv,
+        inputs = model_input_labels(self),
+        outputs = model_output_labels(self)
+      )
       sim <- simulate_all(
         temp_csv,
         self$dsl,
@@ -1931,6 +1953,16 @@ PM_model <- R6::R6Class(
       names(pri) <- parameters
 
       outputs <- metadata$outputs
+      # Pmetrics maps a numeric output label to its own number and a named one
+      # to its position, so a numeric label must also be its position.
+      numeric_outputs <- grepl("^[0-9]+$", outputs)
+      misplaced <- numeric_outputs & suppressWarnings(as.integer(outputs)) != seq_along(outputs)
+      if (any(misplaced)) {
+        cli::cli_abort(c(
+          "x" = "Numeric DSL output labels must match their position in {.code outputs}.",
+          "i" = "Output {.val {outputs[misplaced]}} is declared at position {which(misplaced)}."
+        ))
+      }
       err_names <- names(err)
       has_err_names <- !is.null(err_names) && any(nzchar(err_names))
       if (has_err_names) {
@@ -1938,7 +1970,11 @@ PM_model <- R6::R6Class(
           cli::cli_abort("When named, every value in {.arg err} must have a unique output name.")
         }
         output_names <- tolower(outputs)
-        normalized_err_names <- tolower(pm_output_label(err_names))
+        normalized_err_names <- tolower(pm_resolve_labels(err_names, outputs, "outeq_"))
+        if (anyDuplicated(normalized_err_names)) {
+          duplicated_err <- err_names[normalized_err_names %in% normalized_err_names[duplicated(normalized_err_names)]]
+          cli::cli_abort("Names {.val {duplicated_err}} in {.arg err} refer to the same DSL output.")
+        }
         missing_err <- outputs[!output_names %in% normalized_err_names]
         extra_err <- err_names[!normalized_err_names %in% output_names]
         if (length(missing_err) > 0 || length(extra_err) > 0) {
@@ -1946,7 +1982,7 @@ PM_model <- R6::R6Class(
         }
         err <- err[match(output_names, normalized_err_names)]
       } else {
-        err_outeqs <- tolower(pm_err_labels(err))
+        err_outeqs <- tolower(pm_resolve_labels(pm_err_labels(err), outputs, "outeq_"))
         if (length(err) != length(outputs) || !setequal(err_outeqs, tolower(outputs))) {
           cli::cli_abort("{.arg err} must define one error model for each DSL output.")
         }

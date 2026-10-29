@@ -143,7 +143,7 @@ PM_cycle <- R6::R6Class(
           file = file.path(path, "pred.csv"),
           col_types = list(
             time = readr::col_double(),
-            outeq = readr::col_integer(),
+            outeq = readr::col_character(),
             block = readr::col_integer(),
             obs = readr::col_double(),
             cens = readr::col_character(),
@@ -153,6 +153,7 @@ PM_cycle <- R6::R6Class(
             post_median = readr::col_double()
           ), show_col_types = FALSE
         ) |> filter(!is.na(obs))
+        op_raw$outeq <- engine_outeq_index(op_raw$outeq, engine_output_labels(path))
       } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_op
         upgraded_data <- PM_upgrade(data$data)
         class(upgraded_data) <- c("PM_cycle_data", "list")
@@ -236,7 +237,6 @@ PM_cycle <- R6::R6Class(
 
       observed_outeq <- sort(unique(normalize_engine_index(op_raw$outeq)))
       n_out <- max(observed_outeq, na.rm = TRUE)
-      n_cyc <- max(cycle_data$cycle)
 
       # gamlam
       model_types <- decode_error_model_rows(config$errormodels$models, op_raw$outeq) |>
@@ -253,18 +253,22 @@ PM_cycle <- R6::R6Class(
         )
       } else {
         if (ncol(gamlam) == 1 && n_out > 1) {
-          gamlam <- cbind(gamlam, replicate((n_out - 1), gamlam[, 1]))
+          gamlam <- as.data.frame(replicate(n_out, gamlam[[1]]))
+          names(gamlam) <- paste0("gamlam.", seq_len(n_out))
         }
+        # Carry the cycle number from cycles.csv: there is one gamlam column per
+        # declared output, which can be more than the outputs with observations.
         gamlam <- gamlam |>
+          mutate(cycle = raw$cycle) |>
           pivot_longer(
-            cols = everything(),
-            values_to = "value", names_to = c("type", "outeq"),
-            names_sep = "\\."
+            cols = -cycle,
+            values_to = "value", names_to = "outeq",
+            # Split on the prefix only: output labels may themselves contain dots.
+            names_prefix = "gamlam\\."
           ) |>
-          mutate(cycle = rep(1:n_cyc, each = n_out)) |>
           select(cycle, value, outeq) |>
+          mutate(outeq = engine_outeq_index(outeq, engine_output_labels(path))) |>
           arrange(cycle, outeq) |>
-          mutate(outeq = normalize_engine_index(as.numeric(outeq))) |>
           dplyr::right_join(model_types, by = "outeq")
       }
 

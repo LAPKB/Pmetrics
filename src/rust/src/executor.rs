@@ -80,10 +80,12 @@ pub(crate) fn simulate_model(
 
     let predictions: Vec<Prediction> = match model {
         CompiledRuntimeModel::Ode(eq) => eq
-            .estimate_predictions_dense(subject, support_point)?
+            .simulate(subject, support_point, None)?
+            .0
             .get_predictions(),
         CompiledRuntimeModel::Analytical(eq) => eq
-            .estimate_predictions_dense(subject, support_point)?
+            .simulate(subject, support_point, None)?
+            .0
             .get_predictions(),
         CompiledRuntimeModel::Sde(_) => {
             return Err(anyhow::anyhow!(
@@ -92,11 +94,7 @@ pub(crate) fn simulate_model(
         }
     };
 
-    Ok(SimulationRow::from_predictions(
-        predictions,
-        subject.id(),
-        spp_index,
-    ))
+    SimulationRow::from_predictions(predictions, &output_names(model), subject.id(), spp_index)
 }
 
 /// Fit a model (given as DSL source) to the data and write the output artifacts.

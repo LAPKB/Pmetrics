@@ -38,9 +38,10 @@ the Pmetrics parameter ranges and error models.
 
 \code{dsl} is one character string containing the model source. Route and output
 labels declared in the DSL are the labels Pmetrics expects in the data's
-\code{INPUT} and \code{OUTEQ} columns. Purely numeric identifiers in the data are
-canonicalised to the \code{input_n} / \code{outeq_n} form pharmsol requires, so
-\code{INPUT = 1} matches a route declared as \code{input_1}.
+\code{INPUT} and \code{OUTEQ} columns, matched exactly: \code{INPUT = 1} matches a route
+declared as \code{1}, and \code{OUTEQ = plasma} an output declared as \code{plasma}. For
+models written for earlier versions, \code{INPUT = 1} / \code{OUTEQ = 1} also match
+routes and outputs declared as \code{input_1} / \code{outeq_1}.
 
 \strong{Some notes on the example at the end of this help page:}
 \itemize{
@@ -366,6 +367,20 @@ for three.
 exponents. The interaction term is computed internally as
 \eqn{w = \alpha \cdot u \cdot v}; the retired six-argument \code{get_e2(a, b, w, h1, h2, alpha_s)} call must be rewritten as \code{estimate_effect_2(a, b, alpha_s, h1, h2)}. These functions are evaluated at run time, on every derivative or
 output evaluation, and cannot be used in the \code{pri} block.
+
+These functions can also be used anywhere an expression is allowed. Arguments
+can be passed by position, by name, or both (positional arguments first), and
+omitted arguments take the defaults shown:
+\itemize{
+\item \code{effect50(min = 0, max = 1, e50 = 0.5, h = 1, x)} is the sigmoid Emax
+(Hill) model \eqn{min + (max - min) x^h / (e50^h + x^h)}. \code{x} is required;
+any \code{x <= 0} returns \code{min}. For example,
+\code{y[2] <- effect50(max = emax, e50 = ec50, h = gam, x = x[1] / v)}.
+\item \code{sigmoid(x, k = 1)} is \eqn{1 / (1 + e^{-k x})}. \code{sigmoid(t - t0, k)} is a
+smooth switch at \code{t0}, which the ODE solvers handle better than an \code{if}.
+\item \code{logit(p)} is \eqn{ln(p / (1 - p))}, the inverse of \code{sigmoid(x)}.
+\item \code{tanh(x)} is the hyperbolic tangent.
+}
 
 Example:
 

@@ -16,16 +16,14 @@
 #
 # Naming conventions used by the emitter:
 #   * States   `x[i]`            -> `x{i}`          (declared in `states = ...`)
-#   * Outputs  `Y[i]` / `y[i]`   -> `outeq_{i}`     (declared in `outputs = ...`)
-#   * ODE inputs `b[j]`/`bolus[j]` -> `bolus(input_{j})`       (RHS term)
-#                `rateiv[j]`/`r[j]`-> `infusion(input_{j})`    (RHS term)
+#   * Outputs  `Y[i]` / `y[i]`   -> `{i}`           (declared in `outputs = ...`)
+#   * ODE inputs `b[j]`/`bolus[j]` -> `bolus({j})`       (RHS term)
+#                `rateiv[j]`/`r[j]`-> `infusion({j})`    (RHS term)
 #   * Params / covariates keep their (lower-cased) names.
 #
-# pharmsol identifies routes and outputs by label and rejects bare numeric
-# labels, so a numeric Pmetrics identifier `n` becomes `input_n` / `outeq_n`
-# (see `pm_input_label()` / `pm_output_label()`). Identifiers are never
-# renumbered: the data's `INPUT`/`OUTEQ` values are canonicalised to the same
-# labels before the backend reads them.
+# pharmsol identifies routes and outputs by label and matches labels exactly, so
+# the data's `INPUT`/`OUTEQ` values are used as labels verbatim (see
+# `pm_input_label()` / `pm_output_label()`). Identifiers are never renumbered.
 #
 # ODE inputs and scales remain on the derivative RHS. The DSL infers their routes
 # and lowers them into the existing simulator machinery. Analytical models keep
@@ -33,13 +31,13 @@
 # ---------------------------------------------------------------------------
 
 # The set of DSL intrinsic functions and how R names map to them. R names that
-# are not present here (e.g. hyperbolic or inverse-trigonometric functions) are
+# are not present here (e.g. inverse-trigonometric functions) are
 # not currently expressible in the DSL and trigger an informative error.
 dsl_function_map <- function() {
   c(
     abs = "abs", exp = "exp", sqrt = "sqrt",
     ln = "ln", log = "ln", log10 = "log10", log2 = "log2",
-    sin = "sin", cos = "cos", tan = "tan",
+    sin = "sin", cos = "cos", tan = "tan", tanh = "tanh",
     floor = "floor", ceiling = "ceil", round = "round",
     max = "max", min = "min"
   )
@@ -58,6 +56,57 @@ dsl_effect_signature <- function() {
     estimate_effect_2 = "estimate_effect_2(u, v, alpha, h1, h2)",
     estimate_effect_3 = "estimate_effect_3(a, b, c, alpha12, alpha13, alpha23, alpha123, h1, h2, h3)"
   )
+}
+
+# DSL functions with named parameters, some of them optional. They may be called
+# by position, by parameter name, or both (positional first), exactly as in the
+# DSL, so argument names are kept in the generated call.
+dsl_signature_functions <- function() {
+  list(
+    effect50 = list(
+      params = c("min", "max", "e50", "h", "x"), required = "x",
+      signature = "effect50(min = 0, max = 1, e50 = 0.5, h = 1, x)"
+    ),
+    sigmoid = list(
+      params = c("x", "k"), required = "x",
+      signature = "sigmoid(x, k = 1)"
+    ),
+    logit = list(params = "p", required = "p", signature = "logit(p)")
+  )
+}
+
+# Bind a call to a signature function, checking its arguments against the
+# signature so a wrong call is reported against the R expression.
+dsl_signature_call <- function(op, sig, args, a, expr) {
+  arg_names <- names(args)
+  if (is.null(arg_names)) arg_names <- rep("", length(args))
+  named <- nzchar(arg_names)
+  n_pos <- sum(!named)
+  bound <- c(sig$params[seq_len(min(n_pos, length(sig$params)))], arg_names[named])
+
+  problem <- if (any(!named & cumsum(named) > 0)) {
+    "positional arguments must come before named ones"
+  } else if (n_pos > length(sig$params)) {
+    sprintf("it takes at most %d arguments", length(sig$params))
+  } else if (length(unknown <- setdiff(arg_names[named], sig$params)) > 0) {
+    sprintf("it has no argument %s", paste0("`", unknown, "`", collapse = ", "))
+  } else if (anyDuplicated(bound)) {
+    sprintf("argument `%s` is given more than once", bound[duplicated(bound)][[1]])
+  } else if (length(missing <- setdiff(sig$required, bound)) > 0) {
+    sprintf("argument %s is required", paste0("`", missing, "`", collapse = ", "))
+  }
+  if (!is.null(problem)) {
+    cli::cli_abort(
+      c(
+        "x" = "Invalid call {.code {dsl_expr_label(expr)}}: {problem}.",
+        "i" = "Write {.code {sig$signature}}, passing arguments by position, by name, or both."
+      ),
+      call = NULL
+    )
+  }
+
+  rendered <- ifelse(named, paste0(arg_names, " = ", unlist(a)), unlist(a))
+  sprintf("%s(%s)", op, paste(rendered, collapse = ", "))
 }
 
 # Function names that used to exist with different arguments. They get a
@@ -490,6 +539,11 @@ expr_to_dsl <- function(expr, ctx = NULL, allow_if = TRUE) {
     return(sprintf("%s(%s)", op, paste(unlist(a), collapse = ", ")))
   }
 
+  signatures <- dsl_signature_functions()
+  if (op %in% names(signatures)) {
+    return(dsl_signature_call(op, signatures[[op]], args, a, expr))
+  }
+
   # pmin/pmax are elementwise in R; for the scalar expressions a model uses,
   # that is min/max. The DSL's min/max are binary while R's are variadic, and
   # trunc/sign are not DSL intrinsics at all.
@@ -568,7 +622,7 @@ expr_to_dsl <- function(expr, ctx = NULL, allow_if = TRUE) {
         dsl_unsupported(
           expr, stringr::str_glue("Unsupported function '{op}':"),
           stringr::str_glue(
-            "Supported functions are {paste(sort(unique(unname(dsl_function_map()))), collapse = ', ')}, "
+            "Supported functions are {paste(sort(unique(c(unname(dsl_function_map()), names(dsl_signature_functions())))), collapse = ', ')}, "
           , "plus the runtime effect functions {paste(names(dsl_effect_functions()), collapse = ', ')}."
           )
         )
@@ -1115,24 +1169,56 @@ dsl_finalize_routes <- function(routes) {
 # ---------------------------------------------------------------------------
 # Input / output labels
 # ---------------------------------------------------------------------------
-# pharmsol identifies dose routes and output equations by *label*, and rejects
-# bare numeric labels in DSL source: a numeric identifier `n` must be written
-# `input_n` (route) or `outeq_n` (output). Pmetrics therefore canonicalises
-# purely numeric `INPUT`/`OUTEQ` identifiers to that form and passes every other
-# identifier through untouched. Identifiers are never renumbered.
+# pharmsol identifies dose routes and output equations by *label* and matches
+# labels exactly: `1` and `input_1` are different routes. A Pmetrics `INPUT` or
+# `OUTEQ` identifier is used as the label as-is, so a numeric identifier `n` is
+# the label `n` and a name such as `plasma` is the label `plasma`. Identifiers
+# are never renumbered.
 
-pm_label <- function(x, prefix) {
-  x <- as.character(x)
-  numeric_label <- !is.na(x) & grepl("^[[:space:]]*[0-9]+[[:space:]]*$", x)
-  x[numeric_label] <- paste0(prefix, trimws(x[numeric_label]))
+pm_label <- function(x) {
+  x <- trimws(as.character(x))
+  # Strip leading zeros so that e.g. `01` and `1` name the same numeric label.
+  numeric_label <- !is.na(x) & grepl("^[0-9]+$", x)
+  x[numeric_label] <- as.character(as.integer(x[numeric_label]))
   x
 }
 
 # Canonical pharmsol route label for a Pmetrics `INPUT` identifier.
-pm_input_label <- function(x) pm_label(x, "input_")
+pm_input_label <- function(x) pm_label(x)
 
 # Canonical pharmsol output label for a Pmetrics `OUTEQ` identifier.
-pm_output_label <- function(x) pm_label(x, "outeq_")
+pm_output_label <- function(x) pm_label(x)
+
+# Resolve identifiers against the labels a model declares. An identifier
+# matches a declared label exactly or, failing that, ignoring case. Models
+# written for earlier Pmetrics versions declared numeric routes and outputs as
+# `input_n` / `outeq_n`, so a numeric identifier `n` also matches
+# `<legacy_prefix>n`. Identifiers that match nothing are returned unchanged.
+pm_resolve_labels <- function(x, declared, legacy_prefix = NULL) {
+  x <- pm_label(x)
+  declared <- as.character(declared)
+  if (length(declared) == 0) {
+    return(x)
+  }
+  resolve_one <- function(id) {
+    if (is.na(id)) {
+      return(id)
+    }
+    candidates <- id
+    if (!is.null(legacy_prefix) && grepl("^[0-9]+$", id)) {
+      candidates <- c(candidates, paste0(legacy_prefix, id))
+    }
+    for (candidate in candidates) {
+      hit <- match(candidate, declared)
+      if (is.na(hit)) hit <- match(tolower(candidate), tolower(declared))
+      if (!is.na(hit)) {
+        return(declared[[hit]])
+      }
+    }
+    id
+  }
+  vapply(x, resolve_one, character(1), USE.NAMES = FALSE)
+}
 
 # The model's output labels, in declaration order. DSL models declare them
 # explicitly; R-defined models declare outputs as `y[i]`.
@@ -1144,12 +1230,30 @@ model_output_labels <- function(model) {
   }
 }
 
-# Rewrite the `INPUT`/`OUTEQ` columns of a written Pmetrics data file to their
-# canonical pharmsol labels, so the data agrees with the labels declared in the
-# DSL. Only the file handed to the backend is touched; the user's data is not.
-label_data_csv <- function(path) {
+# The route labels a DSL model declares, or `NULL` for R-defined models, whose
+# generated routes use the data's `INPUT` identifiers directly.
+model_input_labels <- function(model) {
+  if (!isTRUE(model$model_list$from_dsl)) {
+    return(NULL)
+  }
+  routes <- model$model_list$route_inputs
+  unique(as.character(c(routes$bolus, routes$infusion)))
+}
+
+# Rewrite the `INPUT`/`OUTEQ` columns of a written Pmetrics data file to the
+# labels the model declares, so the data agrees with the DSL. Only the file
+# handed to the backend is touched; the user's data is not.
+label_data_csv <- function(path, inputs = NULL, outputs = NULL) {
   if (!file.exists(path)) {
     return(invisible(path))
+  }
+  if (missing(inputs) && missing(outputs)) {
+    # `PM_model` objects saved before labels were passed in carry `$fit`/`$sim`
+    # methods that call this without them, and a cached DSL that may still use
+    # `input_N`/`outeq_N`. Take the labels from the DSL the caller compiled.
+    declared <- caller_dsl_labels(parent.frame())
+    inputs <- declared$inputs
+    outputs <- declared$outputs
   }
 
   df <- utils::read.csv(
@@ -1161,12 +1265,36 @@ label_data_csv <- function(path) {
   input_col <- match("INPUT", cols)
   outeq_col <- match("OUTEQ", cols)
 
-  if (!is.na(input_col)) df[[input_col]] <- pm_input_label(df[[input_col]])
-  if (!is.na(outeq_col)) df[[outeq_col]] <- pm_output_label(df[[outeq_col]])
+  relabel <- function(x, declared, legacy_prefix) {
+    # "." marks a missing value in Pmetrics data files.
+    present <- !is.na(x) & nzchar(trimws(x)) & trimws(x) != "."
+    x[present] <- pm_resolve_labels(x[present], declared, legacy_prefix)
+    x
+  }
+  if (!is.na(input_col)) df[[input_col]] <- relabel(df[[input_col]], inputs, "input_")
+  if (!is.na(outeq_col)) df[[outeq_col]] <- relabel(df[[outeq_col]], outputs, "outeq_")
 
   utils::write.csv(df, path, row.names = FALSE, quote = FALSE, na = ".")
   invisible(path)
 }
+# The route and output labels of the DSL held by `self` as seen from `env`, the
+# frame of a `PM_model` method (R6 methods find `self` in their enclosing
+# environment). Empty when there is no such model or its DSL cannot be read.
+caller_dsl_labels <- function(env) {
+  model <- get0("self", envir = env)
+  if (!inherits(model, "PM_model") || is.null(model$dsl)) {
+    return(list(inputs = NULL, outputs = NULL))
+  }
+  metadata <- tryCatch(
+    model_metadata(model$dsl, model$model_list$solver),
+    error = function(e) NULL
+  )
+  list(
+    inputs = as.character(unlist(metadata$routes)),
+    outputs = as.character(unlist(metadata$outputs))
+  )
+}
+
 dsl_analytical_structure <- function(tem) {
   dplyr::case_when(
     tem == "one_comp_iv" ~ "one_compartment",

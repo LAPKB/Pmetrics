@@ -37,7 +37,8 @@ write_settings_json <- function(path, param_ranges, error_models, outputs, algor
   # Error models, keyed by output slot. A leading "None" placeholder mirrors the
   # convention used by the parsers (`decode_error_model_rows`), so the error
   # model for output slot `i` occupies index `i` (1-based) in the array.
-  outputs <- tolower(as.character(outputs))
+  output_labels <- as.character(outputs)
+  outputs <- tolower(output_labels)
   models <- vector("list", length(outputs) + 1L)
   models[[1]] <- "None"
   for (i in seq_along(error_models)) {
@@ -69,6 +70,8 @@ write_settings_json <- function(path, param_ranges, error_models, outputs, algor
     config = list(cycles = cycles, algorithm = algorithm, progress = TRUE),
     parameters = list(parameters = parameters),
     errormodels = list(models = models),
+    # Lets the parsers number non-numeric output labels in pred.csv/cycles.csv.
+    outputs = as.list(output_labels),
     predictions = list(idelta = idelta, tad = tad),
     prior = prior_json
   )

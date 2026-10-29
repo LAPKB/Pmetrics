@@ -37,10 +37,10 @@ testthat::test_that("ODE dose inputs and derived scales stay on the RHS", {
   })
 
   dsl <- model_to_dsl(mod)
-  testthat::expect_match(dsl, "bolus(input_1) * (v)", fixed = TRUE)
-  testthat::expect_match(dsl, "infusion(input_1)", fixed = TRUE)
+  testthat::expect_match(dsl, "bolus(1) * (v)", fixed = TRUE)
+  testthat::expect_match(dsl, "infusion(1)", fixed = TRUE)
   testthat::expect_false(grepl("->", dsl, fixed = TRUE))
-  testthat::expect_false(grepl("fa(input_1)", dsl, fixed = TRUE))
+  testthat::expect_false(grepl("fa(1)", dsl, fixed = TRUE))
   testthat::expect_match(dsl, "v = vs * (wt / 70.0)", fixed = TRUE)
 })
 
@@ -50,7 +50,7 @@ testthat::test_that("The bolus may be on either side of the scale", {
     dx[2] <- B[2] + x[1] / v * ff
   })
 
-  testthat::expect_match(model_to_dsl(mod), "bolus(input_1) * (v)", fixed = TRUE)
+  testthat::expect_match(model_to_dsl(mod), "bolus(1) * (v)", fixed = TRUE)
 })
 
 testthat::test_that("Equation scaling and an explicit fa block are multiplied", {
@@ -65,9 +65,9 @@ testthat::test_that("Equation scaling and an explicit fa block are multiplied", 
   )
 
   dsl <- model_to_dsl(mod)
-  testthat::expect_match(dsl, "bolus(input_1) * (ff) * (v)", fixed = TRUE)
-  testthat::expect_false(grepl("fa(input_1)", dsl, fixed = TRUE))
-  matches <- gregexpr("bolus(input_1)", dsl, fixed = TRUE)[[1]]
+  testthat::expect_match(dsl, "bolus(1) * (ff) * (v)", fixed = TRUE)
+  testthat::expect_false(grepl("fa(1)", dsl, fixed = TRUE))
+  matches <- gregexpr("bolus(1)", dsl, fixed = TRUE)[[1]]
   testthat::expect_equal(sum(matches > 0), 1)
 })
 
@@ -84,8 +84,8 @@ testthat::test_that("A linear infusion scale stays explicit in the derivative", 
   for (mod in list(right, left)) {
     dsl <- model_to_dsl(mod)
     testthat::expect_false(grepl("->", dsl, fixed = TRUE))
-    testthat::expect_match(dsl, "infusion(input_1) * (v)", fixed = TRUE)
-    testthat::expect_false(grepl("fa(input_1)", dsl, fixed = TRUE))
+    testthat::expect_match(dsl, "infusion(1) * (v)", fixed = TRUE)
+    testthat::expect_false(grepl("fa(1)", dsl, fixed = TRUE))
   }
 })
 
@@ -129,9 +129,9 @@ testthat::test_that("Analytical bolus models emit lag and fa", {
   )
 
   dsl <- model_to_dsl(mod)
-  testthat::expect_match(dsl, "bolus(input_1) -> x1", fixed = TRUE)
-  testthat::expect_match(dsl, "lag(input_1) = 2.0", fixed = TRUE)
-  testthat::expect_match(dsl, "fa(input_1) = 0.5", fixed = TRUE)
+  testthat::expect_match(dsl, "bolus(1) -> x1", fixed = TRUE)
+  testthat::expect_match(dsl, "lag(1) = 2.0", fixed = TRUE)
+  testthat::expect_match(dsl, "fa(1) = 0.5", fixed = TRUE)
   testthat::expect_no_error(model_parameters(dsl))
 })
 

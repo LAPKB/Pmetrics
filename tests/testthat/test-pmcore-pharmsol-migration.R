@@ -29,12 +29,12 @@ test_that("ODE generation produces 1-based labels and an explicit infusion term"
   dsl <- mod$dsl
 
   testthat::expect_match(dsl, "kind = ode")
-  testthat::expect_match(dsl, "infusion(input_1)", fixed = TRUE)
+  testthat::expect_match(dsl, "infusion(1)", fixed = TRUE)
   testthat::expect_false(grepl("->", dsl, fixed = TRUE))
   testthat::expect_match(dsl, "dx\\(x1\\)")
-  testthat::expect_match(dsl, "out\\(outeq_1\\)")
+  testthat::expect_match(dsl, "out\\(1\\)")
   # Outputs are 1-based to match the Pmetrics data OUTEQ column.
-  testthat::expect_false(grepl("outeq_0", dsl, fixed = TRUE))
+  testthat::expect_false(grepl("out(0)", dsl, fixed = TRUE))
 
   # The DSL model compiles just-in-time and reports its parameters.
   testthat::expect_equal(
