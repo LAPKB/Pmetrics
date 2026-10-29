@@ -16,16 +16,14 @@
 #
 # Naming conventions used by the emitter:
 #   * States   `x[i]`            -> `x{i}`          (declared in `states = ...`)
-#   * Outputs  `Y[i]` / `y[i]`   -> `outeq_{i}`     (declared in `outputs = ...`)
-#   * ODE inputs `b[j]`/`bolus[j]` -> `bolus(input_{j})`       (RHS term)
-#                `rateiv[j]`/`r[j]`-> `infusion(input_{j})`    (RHS term)
+#   * Outputs  `Y[i]` / `y[i]`   -> `{i}`           (declared in `outputs = ...`)
+#   * ODE inputs `b[j]`/`bolus[j]` -> `bolus({j})`       (RHS term)
+#                `rateiv[j]`/`r[j]`-> `infusion({j})`    (RHS term)
 #   * Params / covariates keep their (lower-cased) names.
 #
-# pharmsol identifies routes and outputs by label and rejects bare numeric
-# labels, so a numeric Pmetrics identifier `n` becomes `input_n` / `outeq_n`
-# (see `pm_input_label()` / `pm_output_label()`). Identifiers are never
-# renumbered: the data's `INPUT`/`OUTEQ` values are canonicalised to the same
-# labels before the backend reads them.
+# pharmsol identifies routes and outputs by label and matches labels exactly, so
+# the data's `INPUT`/`OUTEQ` values are used as labels verbatim (see
+# `pm_input_label()` / `pm_output_label()`). Identifiers are never renumbered.
 #
 # ODE inputs and scales remain on the derivative RHS. The DSL infers their routes
 # and lowers them into the existing simulator machinery. Analytical models keep
@@ -1115,24 +1113,56 @@ dsl_finalize_routes <- function(routes) {
 # ---------------------------------------------------------------------------
 # Input / output labels
 # ---------------------------------------------------------------------------
-# pharmsol identifies dose routes and output equations by *label*, and rejects
-# bare numeric labels in DSL source: a numeric identifier `n` must be written
-# `input_n` (route) or `outeq_n` (output). Pmetrics therefore canonicalises
-# purely numeric `INPUT`/`OUTEQ` identifiers to that form and passes every other
-# identifier through untouched. Identifiers are never renumbered.
+# pharmsol identifies dose routes and output equations by *label* and matches
+# labels exactly: `1` and `input_1` are different routes. A Pmetrics `INPUT` or
+# `OUTEQ` identifier is used as the label as-is, so a numeric identifier `n` is
+# the label `n` and a name such as `plasma` is the label `plasma`. Identifiers
+# are never renumbered.
 
-pm_label <- function(x, prefix) {
-  x <- as.character(x)
-  numeric_label <- !is.na(x) & grepl("^[[:space:]]*[0-9]+[[:space:]]*$", x)
-  x[numeric_label] <- paste0(prefix, trimws(x[numeric_label]))
+pm_label <- function(x) {
+  x <- trimws(as.character(x))
+  # Strip leading zeros so that e.g. `01` and `1` name the same numeric label.
+  numeric_label <- !is.na(x) & grepl("^[0-9]+$", x)
+  x[numeric_label] <- as.character(as.integer(x[numeric_label]))
   x
 }
 
 # Canonical pharmsol route label for a Pmetrics `INPUT` identifier.
-pm_input_label <- function(x) pm_label(x, "input_")
+pm_input_label <- function(x) pm_label(x)
 
 # Canonical pharmsol output label for a Pmetrics `OUTEQ` identifier.
-pm_output_label <- function(x) pm_label(x, "outeq_")
+pm_output_label <- function(x) pm_label(x)
+
+# Resolve identifiers against the labels a model declares. An identifier
+# matches a declared label exactly or, failing that, ignoring case. Models
+# written for earlier Pmetrics versions declared numeric routes and outputs as
+# `input_n` / `outeq_n`, so a numeric identifier `n` also matches
+# `<legacy_prefix>n`. Identifiers that match nothing are returned unchanged.
+pm_resolve_labels <- function(x, declared, legacy_prefix = NULL) {
+  x <- pm_label(x)
+  declared <- as.character(declared)
+  if (length(declared) == 0) {
+    return(x)
+  }
+  resolve_one <- function(id) {
+    if (is.na(id)) {
+      return(id)
+    }
+    candidates <- id
+    if (!is.null(legacy_prefix) && grepl("^[0-9]+$", id)) {
+      candidates <- c(candidates, paste0(legacy_prefix, id))
+    }
+    for (candidate in candidates) {
+      hit <- match(candidate, declared)
+      if (is.na(hit)) hit <- match(tolower(candidate), tolower(declared))
+      if (!is.na(hit)) {
+        return(declared[[hit]])
+      }
+    }
+    id
+  }
+  vapply(x, resolve_one, character(1), USE.NAMES = FALSE)
+}
 
 # The model's output labels, in declaration order. DSL models declare them
 # explicitly; R-defined models declare outputs as `y[i]`.
@@ -1144,10 +1174,20 @@ model_output_labels <- function(model) {
   }
 }
 
-# Rewrite the `INPUT`/`OUTEQ` columns of a written Pmetrics data file to their
-# canonical pharmsol labels, so the data agrees with the labels declared in the
-# DSL. Only the file handed to the backend is touched; the user's data is not.
-label_data_csv <- function(path) {
+# The route labels a DSL model declares, or `NULL` for R-defined models, whose
+# generated routes use the data's `INPUT` identifiers directly.
+model_input_labels <- function(model) {
+  if (!isTRUE(model$model_list$from_dsl)) {
+    return(NULL)
+  }
+  routes <- model$model_list$route_inputs
+  unique(as.character(c(routes$bolus, routes$infusion)))
+}
+
+# Rewrite the `INPUT`/`OUTEQ` columns of a written Pmetrics data file to the
+# labels the model declares, so the data agrees with the DSL. Only the file
+# handed to the backend is touched; the user's data is not.
+label_data_csv <- function(path, inputs = NULL, outputs = NULL) {
   if (!file.exists(path)) {
     return(invisible(path))
   }
@@ -1161,8 +1201,14 @@ label_data_csv <- function(path) {
   input_col <- match("INPUT", cols)
   outeq_col <- match("OUTEQ", cols)
 
-  if (!is.na(input_col)) df[[input_col]] <- pm_input_label(df[[input_col]])
-  if (!is.na(outeq_col)) df[[outeq_col]] <- pm_output_label(df[[outeq_col]])
+  relabel <- function(x, declared, legacy_prefix) {
+    # "." marks a missing value in Pmetrics data files.
+    present <- !is.na(x) & nzchar(trimws(x)) & trimws(x) != "."
+    x[present] <- pm_resolve_labels(x[present], declared, legacy_prefix)
+    x
+  }
+  if (!is.na(input_col)) df[[input_col]] <- relabel(df[[input_col]], inputs, "input_")
+  if (!is.na(outeq_col)) df[[outeq_col]] <- relabel(df[[outeq_col]], outputs, "outeq_")
 
   utils::write.csv(df, path, row.names = FALSE, quote = FALSE, na = ".")
   invisible(path)

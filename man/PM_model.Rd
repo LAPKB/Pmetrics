@@ -38,9 +38,10 @@ the Pmetrics parameter ranges and error models.
 
 \code{dsl} is one character string containing the model source. Route and output
 labels declared in the DSL are the labels Pmetrics expects in the data's
-\code{INPUT} and \code{OUTEQ} columns. Purely numeric identifiers in the data are
-canonicalised to the \code{input_n} / \code{outeq_n} form pharmsol requires, so
-\code{INPUT = 1} matches a route declared as \code{input_1}.
+\code{INPUT} and \code{OUTEQ} columns, matched exactly: \code{INPUT = 1} matches a route
+declared as \code{1}, and \code{OUTEQ = plasma} an output declared as \code{plasma}. For
+models written for earlier versions, \code{INPUT = 1} / \code{OUTEQ = 1} also match
+routes and outputs declared as \code{input_1} / \code{outeq_1}.
 
 \strong{Some notes on the example at the end of this help page:}
 \itemize{

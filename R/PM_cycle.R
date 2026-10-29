@@ -143,7 +143,7 @@ PM_cycle <- R6::R6Class(
           file = file.path(path, "pred.csv"),
           col_types = list(
             time = readr::col_double(),
-            outeq = readr::col_integer(),
+            outeq = readr::col_character(),
             block = readr::col_integer(),
             obs = readr::col_double(),
             cens = readr::col_character(),
@@ -153,6 +153,7 @@ PM_cycle <- R6::R6Class(
             post_median = readr::col_double()
           ), show_col_types = FALSE
         ) |> filter(!is.na(obs))
+        op_raw$outeq <- engine_outeq_index(op_raw$outeq, engine_output_labels(path))
       } else if (inherits(data, "PM_cycle")) { # file not there, and already PM_op
         upgraded_data <- PM_upgrade(data$data)
         class(upgraded_data) <- c("PM_cycle_data", "list")
@@ -258,13 +259,14 @@ PM_cycle <- R6::R6Class(
         gamlam <- gamlam |>
           pivot_longer(
             cols = everything(),
-            values_to = "value", names_to = c("type", "outeq"),
-            names_sep = "\\."
+            values_to = "value", names_to = "outeq",
+            # Split on the prefix only: output labels may themselves contain dots.
+            names_prefix = "gamlam\\."
           ) |>
           mutate(cycle = rep(1:n_cyc, each = n_out)) |>
           select(cycle, value, outeq) |>
+          mutate(outeq = engine_outeq_index(outeq, engine_output_labels(path))) |>
           arrange(cycle, outeq) |>
-          mutate(outeq = normalize_engine_index(as.numeric(outeq))) |>
           dplyr::right_join(model_types, by = "outeq")
       }
 

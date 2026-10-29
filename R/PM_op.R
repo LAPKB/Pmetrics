@@ -134,7 +134,7 @@ PM_op <- R6::R6Class(
           file = file.path(path, "pred.csv"),
           col_types = list(
             time = readr::col_double(),
-            outeq = readr::col_integer(),
+            outeq = readr::col_character(),
             block = readr::col_integer(),
             obs = readr::col_double(),
             cens = readr::col_character(),
@@ -144,6 +144,7 @@ PM_op <- R6::R6Class(
             post_median = readr::col_double()
           ), show_col_types = FALSE
         ) |> filter(!is.na(obs))
+        op_raw$outeq <- engine_outeq_index(op_raw$outeq, engine_output_labels(path))
 
         if (!"cens" %in% names(op_raw)) {
           op_raw <- op_raw |> mutate(cens = "none") # if cens column missing, assume all observed

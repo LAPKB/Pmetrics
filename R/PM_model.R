@@ -44,9 +44,10 @@
 #'
 #' `dsl` is one character string containing the model source. Route and output
 #' labels declared in the DSL are the labels Pmetrics expects in the data's
-#' `INPUT` and `OUTEQ` columns. Purely numeric identifiers in the data are
-#' canonicalised to the `input_n` / `outeq_n` form pharmsol requires, so
-#' `INPUT = 1` matches a route declared as `input_1`.
+#' `INPUT` and `OUTEQ` columns, matched exactly: `INPUT = 1` matches a route
+#' declared as `1`, and `OUTEQ = plasma` an output declared as `plasma`. For
+#' models written for earlier versions, `INPUT = 1` / `OUTEQ = 1` also match
+#' routes and outputs declared as `input_1` / `outeq_1`.
 #'
 #' **Some notes on the example at the end of this help page:**
 #'
@@ -745,7 +746,7 @@ PM_model <- R6::R6Class(
         msg <- c(msg, "There must be one error model for each output equation.")
       }
       # Validate the output equation each error model is declared for. R-defined
-      # models declare outputs as `y[i]`, whose canonical labels are `outeq_i`.
+      # models declare outputs as `y[i]`, whose canonical labels are `i`.
       if (!is.null(self$arg_list$err) && length(self$arg_list$err) > 0) {
         model_outputs <- pm_output_label(seq_len(n_out))
         is_err <- vapply(self$arg_list$err, inherits, logical(1), "PM_err")
@@ -1109,7 +1110,9 @@ PM_model <- R6::R6Class(
 
       # bolus and infusions
       if (self$model_list$type == "ODE") { # only need to check these for ODE models
-        data_inputs <- pm_input_label(data$standard_data$input)
+        data_inputs <- pm_resolve_labels(
+          data$standard_data$input, model_input_labels(self), "input_"
+        )
         bolus <- unique(data_inputs[data$standard_data$dur == 0]) |> purrr::discard(~ is.na(.x))
         infusion <- unique(data_inputs[data$standard_data$dur > 0]) |> purrr::discard(~ is.na(.x))
         if (length(bolus) > 0) {
@@ -1426,7 +1429,9 @@ PM_model <- R6::R6Class(
       # Rewrite the backend's copy of the data so INPUT/OUTEQ carry the same
       # labels the DSL declares.
       label_data_csv(
-        normalizePath(file.path(path_run, "inputs", "gendata.csv"), mustWork = FALSE)
+        normalizePath(file.path(path_run, "inputs", "gendata.csv"), mustWork = FALSE),
+        inputs = model_input_labels(self),
+        outputs = model_output_labels(self)
       )
 
       # Get ranges and calculate points
@@ -1647,7 +1652,11 @@ PM_model <- R6::R6Class(
         }
       }
       # Label the backend's copy of the data to match the DSL.
-      label_data_csv(temp_csv)
+      label_data_csv(
+        temp_csv,
+        inputs = model_input_labels(self),
+        outputs = model_output_labels(self)
+      )
       sim <- simulate_all(
         temp_csv,
         self$dsl,
@@ -1938,7 +1947,7 @@ PM_model <- R6::R6Class(
           cli::cli_abort("When named, every value in {.arg err} must have a unique output name.")
         }
         output_names <- tolower(outputs)
-        normalized_err_names <- tolower(pm_output_label(err_names))
+        normalized_err_names <- tolower(pm_resolve_labels(err_names, outputs, "outeq_"))
         missing_err <- outputs[!output_names %in% normalized_err_names]
         extra_err <- err_names[!normalized_err_names %in% output_names]
         if (length(missing_err) > 0 || length(extra_err) > 0) {
@@ -1946,7 +1955,7 @@ PM_model <- R6::R6Class(
         }
         err <- err[match(output_names, normalized_err_names)]
       } else {
-        err_outeqs <- tolower(pm_err_labels(err))
+        err_outeqs <- tolower(pm_resolve_labels(pm_err_labels(err), outputs, "outeq_"))
         if (length(err) != length(outputs) || !setequal(err_outeqs, tolower(outputs))) {
           cli::cli_abort("{.arg err} must define one error model for each DSL output.")
         }

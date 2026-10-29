@@ -184,14 +184,12 @@ pub(crate) fn settings(
             }
             err => bail!("Invalid Error type: {}", err),
         };
-        // Add by dense output slot rather than by label: a label-keyed model is kept
-        // unbound by pharmsol, which leaves the collection pmcore iterates over empty,
-        // so gamma/lambda is never optimized nor written to cycles.csv.
-        ems = ems.add(outeq, model)?;
+        // Key by the label exactly as the model declares it: pharmsol matches
+        // output labels exactly.
+        ems = ems.add(&outputs[outeq], model)?;
     }
 
-    // Slots are only allocated up to the highest `outeq` seen, so a missing
-    // trailing error model would otherwise leave outputs silently unmodelled.
+    // A missing error model would otherwise leave an output silently unmodelled.
     if ems.len() != outputs.len() {
         bail!(
             "the model declares {} output equation{}, but error models cover only {}; \

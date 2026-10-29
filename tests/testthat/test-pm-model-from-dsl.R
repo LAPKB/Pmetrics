@@ -92,7 +92,7 @@ testthat::test_that("PM_model$from_dsl validates Pmetrics settings", {
   )
 })
 
-testthat::test_that("A numeric error model outeq resolves to the canonical output label", {
+testthat::test_that("A numeric error model outeq resolves to a legacy outeq_N output label", {
   numeric_output_dsl <- gsub("cp", "outeq_1", simple_dsl, fixed = TRUE)
 
   model <- PM_model$from_dsl(
@@ -123,9 +123,9 @@ testthat::test_that("Data labels are canonicalised for the backend", {
   label_data_csv(path)
 
   mapped <- utils::read.csv(path, check.names = FALSE, colClasses = "character")
-  expect_identical(mapped$INPUT[1], "input_1")
-  expect_identical(mapped$INPUT[2], "input_2")
-  expect_identical(mapped$OUTEQ[3], "outeq_1")
+  expect_identical(mapped$INPUT[1], "1")
+  expect_identical(mapped$INPUT[2], "2")
+  expect_identical(mapped$OUTEQ[3], "1")
   # Named labels are passed through untouched.
   expect_identical(mapped$OUTEQ[4], "cp")
   # Non-identifier placeholders stay as they are.

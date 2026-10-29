@@ -78,7 +78,7 @@ testthat::test_that("the retired effect name is reported as a migration", {
 
 testthat::test_that("effect functions are available with a checked signature", {
   two <- model_to_dsl(dose_model("estimate_effect_2(p1, p2, p3, 1, 1)"))
-  testthat::expect_match(two, "out(outeq_1) = estimate_effect_2(p1, p2, p3, 1.0, 1.0)", fixed = TRUE)
+  testthat::expect_match(two, "out(1) = estimate_effect_2(p1, p2, p3, 1.0, 1.0)", fixed = TRUE)
   testthat::expect_true(dsl_is_valid(two))
 
   three <- model_to_dsl(dose_model("estimate_effect_3(p1, p2, p3, 0.1, 0.1, 0.1, 0.1, 1, 1, 1)"))

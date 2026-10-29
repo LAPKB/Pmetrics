@@ -40,9 +40,9 @@ test_that("Analytical generation preserves 1-based indices", {
   testthat::expect_equal(mod$model_list$n_out, 1)
   testthat::expect_match(dsl, "kind = analytical")
   testthat::expect_match(dsl, "structure = one_compartment")
-  testthat::expect_match(dsl, "out\\(outeq_1\\)")
+  testthat::expect_match(dsl, "out\\(1\\)")
   # Outputs are 1-based to match the Pmetrics data OUTEQ column.
-  testthat::expect_false(grepl("outeq_0", dsl, fixed = TRUE))
+  testthat::expect_false(grepl("out(0)", dsl, fixed = TRUE))
 })
 
 test_that("Analytical fit runs one NPAG cycle with y[1] and one error model", {
