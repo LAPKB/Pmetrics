@@ -237,7 +237,6 @@ PM_cycle <- R6::R6Class(
 
       observed_outeq <- sort(unique(normalize_engine_index(op_raw$outeq)))
       n_out <- max(observed_outeq, na.rm = TRUE)
-      n_cyc <- max(cycle_data$cycle)
 
       # gamlam
       model_types <- decode_error_model_rows(config$errormodels$models, op_raw$outeq) |>
@@ -254,16 +253,19 @@ PM_cycle <- R6::R6Class(
         )
       } else {
         if (ncol(gamlam) == 1 && n_out > 1) {
-          gamlam <- cbind(gamlam, replicate((n_out - 1), gamlam[, 1]))
+          gamlam <- as.data.frame(replicate(n_out, gamlam[[1]]))
+          names(gamlam) <- paste0("gamlam.", seq_len(n_out))
         }
+        # Carry the cycle number from cycles.csv: there is one gamlam column per
+        # declared output, which can be more than the outputs with observations.
         gamlam <- gamlam |>
+          mutate(cycle = raw$cycle) |>
           pivot_longer(
-            cols = everything(),
+            cols = -cycle,
             values_to = "value", names_to = "outeq",
             # Split on the prefix only: output labels may themselves contain dots.
             names_prefix = "gamlam\\."
           ) |>
-          mutate(cycle = rep(1:n_cyc, each = n_out)) |>
           select(cycle, value, outeq) |>
           mutate(outeq = engine_outeq_index(outeq, engine_output_labels(path))) |>
           arrange(cycle, outeq) |>

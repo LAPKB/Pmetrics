@@ -1953,6 +1953,16 @@ PM_model <- R6::R6Class(
       names(pri) <- parameters
 
       outputs <- metadata$outputs
+      # Pmetrics maps a numeric output label to its own number and a named one
+      # to its position, so a numeric label must also be its position.
+      numeric_outputs <- grepl("^[0-9]+$", outputs)
+      misplaced <- numeric_outputs & suppressWarnings(as.integer(outputs)) != seq_along(outputs)
+      if (any(misplaced)) {
+        cli::cli_abort(c(
+          "x" = "Numeric DSL output labels must match their position in {.code outputs}.",
+          "i" = "Output {.val {outputs[misplaced]}} is declared at position {which(misplaced)}."
+        ))
+      }
       err_names <- names(err)
       has_err_names <- !is.null(err_names) && any(nzchar(err_names))
       if (has_err_names) {
@@ -1961,6 +1971,10 @@ PM_model <- R6::R6Class(
         }
         output_names <- tolower(outputs)
         normalized_err_names <- tolower(pm_resolve_labels(err_names, outputs, "outeq_"))
+        if (anyDuplicated(normalized_err_names)) {
+          duplicated_err <- err_names[normalized_err_names %in% normalized_err_names[duplicated(normalized_err_names)]]
+          cli::cli_abort("Names {.val {duplicated_err}} in {.arg err} refer to the same DSL output.")
+        }
         missing_err <- outputs[!output_names %in% normalized_err_names]
         extra_err <- err_names[!normalized_err_names %in% output_names]
         if (length(missing_err) > 0 || length(extra_err) > 0) {

@@ -1247,6 +1247,14 @@ label_data_csv <- function(path, inputs = NULL, outputs = NULL) {
   if (!file.exists(path)) {
     return(invisible(path))
   }
+  if (missing(inputs) && missing(outputs)) {
+    # `PM_model` objects saved before labels were passed in carry `$fit`/`$sim`
+    # methods that call this without them, and a cached DSL that may still use
+    # `input_N`/`outeq_N`. Take the labels from the DSL the caller compiled.
+    declared <- caller_dsl_labels(parent.frame())
+    inputs <- declared$inputs
+    outputs <- declared$outputs
+  }
 
   df <- utils::read.csv(
     path,
@@ -1269,6 +1277,24 @@ label_data_csv <- function(path, inputs = NULL, outputs = NULL) {
   utils::write.csv(df, path, row.names = FALSE, quote = FALSE, na = ".")
   invisible(path)
 }
+# The route and output labels of the DSL held by `self` as seen from `env`, the
+# frame of a `PM_model` method (R6 methods find `self` in their enclosing
+# environment). Empty when there is no such model or its DSL cannot be read.
+caller_dsl_labels <- function(env) {
+  model <- get0("self", envir = env)
+  if (!inherits(model, "PM_model") || is.null(model$dsl)) {
+    return(list(inputs = NULL, outputs = NULL))
+  }
+  metadata <- tryCatch(
+    model_metadata(model$dsl, model$model_list$solver),
+    error = function(e) NULL
+  )
+  list(
+    inputs = as.character(unlist(metadata$routes)),
+    outputs = as.character(unlist(metadata$outputs))
+  )
+}
+
 dsl_analytical_structure <- function(tem) {
   dplyr::case_when(
     tem == "one_comp_iv" ~ "one_compartment",

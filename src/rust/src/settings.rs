@@ -122,9 +122,19 @@ pub(crate) fn settings(
                 )
             })?
             .to_string();
+        // A numeric label is also the output's position, which binds models
+        // saved with `outeq_N` labels to the `N` the R side now writes.
         let outeq = outputs
             .iter()
             .position(|output| output.eq_ignore_ascii_case(&label))
+            .or_else(|| {
+                label
+                    .trim()
+                    .parse::<usize>()
+                    .ok()
+                    .filter(|n| (1..=outputs.len()).contains(n))
+                    .map(|n| n - 1)
+            })
             .ok_or_else(|| {
                 anyhow!(
                     "error_models[{}].outeq is '{}', but the model declares outputs {:?}",

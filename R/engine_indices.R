@@ -13,8 +13,9 @@ normalize_engine_index <- function(x) {
 # Convert the output labels the backend writes (the `outeq` column of pred.csv,
 # the `gamlam.<label>` columns of cycles.csv) to Pmetrics output numbers. A
 # numeric label is the output number itself. Any other label is numbered by its
-# position among the model's declared `outputs`. Files written by older backends
-# hold 0-based output indices, which `normalize_engine_index()` shifts.
+# position among the model's declared `outputs`, and a legacy `outeq_N` label is
+# output `N`. Files written by older backends hold 0-based output indices, which
+# `normalize_engine_index()` shifts.
 engine_outeq_index <- function(x, outputs = NULL) {
   if (is.numeric(x)) {
     return(normalize_engine_index(x))
@@ -27,6 +28,9 @@ engine_outeq_index <- function(x, outputs = NULL) {
     named <- !is.na(x) & !numeric_label
     idx[named] <- match(x[named], as.character(outputs))
   }
+  # Models saved by earlier releases declare `outeq_N`, which is output `N`.
+  legacy <- is.na(idx) & !is.na(x) & grepl("^outeq_[0-9]+$", x)
+  idx[legacy] <- as.numeric(sub("^outeq_", "", x[legacy]))
   normalize_engine_index(idx)
 }
 

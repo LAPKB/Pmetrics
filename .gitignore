@@ -42,6 +42,9 @@ inst/compiledFortran/
 # Rust artifacts
 target/
 Cargo.lock
+# Copy of the root lockfile, shipped so source-package builds are pinned.
+# Keep it identical to ./Cargo.lock.
+!src/rust/Cargo.lock
 
 # Generated config/templates
 inst/rust/template/*

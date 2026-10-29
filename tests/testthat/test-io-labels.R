@@ -161,3 +161,9 @@ testthat::test_that("settings.json keys error models by output slot, not by decl
     # The output labels are recorded for the parsers.
     testthat::expect_identical(unlist(settings$outputs), c("1", "2"))
 })
+
+testthat::test_that("Legacy outeq_N labels map to output N", {
+  expect_equal(engine_outeq_index(c("outeq_1", "outeq_2", NA), outputs = c("1", "2")), c(1, 2, NA))
+  # A declared label wins over the legacy reading.
+  expect_equal(engine_outeq_index("outeq_2", outputs = c("outeq_2", "x")), 1)
+})
